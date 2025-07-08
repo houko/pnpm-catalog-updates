@@ -1,6 +1,6 @@
 {
   "name": "pnpm-catalog-updater",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A CLI tool to check and update pnpm workspace catalog dependencies",
   "keywords": [
     "pnpm",
