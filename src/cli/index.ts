@@ -272,8 +272,19 @@ export async function main(): Promise<void> {
   // Let commander handle help and version normally
   // program.exitOverride() removed to fix help/version output
 
-  // Handle shorthand options by rewriting arguments
+  // Handle shorthand options and single-letter commands by rewriting arguments
   const args = [...process.argv];
+  // Map single-letter command 'i' -> update -i
+  if (
+    args.includes('i') &&
+    !args.some(
+      (a) => a === 'update' || a === '-u' || a === '--update' || a === '-i' || a === '--interactive'
+    )
+  ) {
+    const index = args.findIndex((arg) => arg === 'i');
+    args.splice(index, 1, 'update', '-i');
+  }
+
   if (args.includes('-u') || args.includes('--update')) {
     const index = args.findIndex((arg) => arg === '-u' || arg === '--update');
     args.splice(index, 1, 'update');
