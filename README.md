@@ -60,13 +60,13 @@ pcu -s
 
 ### Common Commands
 
-| Command  | Description         | Example                   |
-| -------- | ------------------- | ------------------------- |
-| `pcu -c` | Check for updates   | `pcu -c --catalog node18` |
-| `pcu -u` | Update dependencies | `pcu -i -b`               |
-| `pcu -a` | Analyze impact      | `pcu -a default react`    |
-| `pcu -s` | Workspace info      | `pcu -s --validate`       |
-| `pcu -h` | Show help           | `pcu -h update`           |
+| Command  | Description                       | Example                   |
+| -------- | --------------------------------- | ------------------------- |
+| `pcu -c` | Check for updates                 | `pcu -c --catalog node18` |
+| `pcu -i` | Update dependencies (interactive) | `pcu -i -b`               |
+| `pcu -a` | Analyze impact                    | `pcu -a default react`    |
+| `pcu -s` | Workspace info                    | `pcu -s --validate`       |
+| `pcu -h` | Show help                         | `pcu -h update`           |
 
 ## 📖 Complete Usage Guide
 
