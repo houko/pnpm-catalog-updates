@@ -30,11 +30,13 @@ inspired by
 ```bash
 # Global installation
 npm install -g pnpm-catalog-updates
-### or
+# or
 npm install -g pcu
 
 # Or use with npx
 npx pnpm-catalog-updates
+# or
+npx pcu
 
 # Or use the short alias
 pcu
