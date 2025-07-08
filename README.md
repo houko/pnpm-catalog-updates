@@ -1,18 +1,24 @@
 # pnpm-catalog-updates
 
-A powerful CLI tool to check and update pnpm workspace catalog dependencies, inspired by [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
+A powerful CLI tool to check and update pnpm workspace catalog dependencies,
+inspired by
+[npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-[![CI](https://github.com/houko/pnpm-catalog-updates/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updates/actions)
+[![CI](https://github.com/houko/pnpm-catalog-updates/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updater/actions)
 [![npm version](https://badge.fury.io/js/pnpm-catalog-updates.svg)](https://badge.fury.io/js/pnpm-catalog-updates)
 [![Coverage Status](https://coveralls.io/repos/github/houko/pnpm-catalog-updates/badge.svg?branch=main)](https://coveralls.io/github/houko/pnpm-catalog-updates?branch=main)
 
 ## ✨ Features
 
-- 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog configurations
+- 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog
+  configurations
 - 🎯 **Catalog Focused**: Specialized for pnpm catalog dependency management
-- 🚀 **Interactive Mode**: Choose which dependencies to update with an intuitive interface
-- 📊 **Impact Analysis**: Understand which packages will be affected by catalog changes
-- 🔒 **Safe Updates**: Dry-run mode and backup options for safe dependency updates
+- 🚀 **Interactive Mode**: Choose which dependencies to update with an intuitive
+  interface
+- 📊 **Impact Analysis**: Understand which packages will be affected by catalog
+  changes
+- 🔒 **Safe Updates**: Dry-run mode and backup options for safe dependency
+  updates
 - ⚡ **High Performance**: Parallel API queries and intelligent caching
 - 🛡️ **Security Aware**: Built-in security vulnerability scanning
 - 🔧 **Configurable**: Flexible configuration options and update strategies
@@ -241,7 +247,7 @@ pnpm test:watch
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - "packages/*"
+  - 'packages/*'
 
 catalog:
   react: ^18.2.0
@@ -288,7 +294,8 @@ catalogs:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
+for details.
 
 ### Development Workflow
 
@@ -316,11 +323,13 @@ We use [Conventional Commits](https://conventionalcommits.org/):
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
 ## 🙏 Acknowledgments
 
-- Inspired by [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
+- Inspired by
+  [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
 - Built with love for the pnpm community
 - Thanks to all contributors and users
 

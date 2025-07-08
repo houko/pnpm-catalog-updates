@@ -1,6 +1,6 @@
 {
   "name": "pnpm-catalog-updates",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -74,7 +74,6 @@
     "fs-extra": "catalog:",
     "glob": "catalog:",
     "inquirer": "catalog:",
-    "libnpmconfig": "catalog:",
     "lodash": "catalog:",
     "node-fetch": "catalog:",
     "npm-registry-fetch": "catalog:",
@@ -89,7 +88,6 @@
     "@changesets/cli": "^2.29.5",
     "@eslint/js": "catalog:",
     "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^9.0.0",
     "@types/inquirer": "^9.0.8",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.0.10",
