@@ -63,14 +63,23 @@ export class UpdateCommand {
 
       // Check for updates
       console.log(chalk.blue('📦 Scanning workspace...'));
+      console.log(chalk.gray('  ⚡ Loading workspace configuration...'));
       const plan = await this.updateService.planUpdates(updateOptions);
+      console.log(chalk.gray('  ✓ Workspace configuration loaded'));
+      console.log(chalk.gray('  ⚡ Checking package versions...'));
 
       if (!plan.updates.length) {
-        console.log(chalk.green('✨ All dependencies are up to date!'));
+        console.log(chalk.gray('  ✓ Package versions checked'));
+        console.log(chalk.green('\n✨ All dependencies are up to date!'));
         return;
       }
 
-      console.log(chalk.yellow(`\n🔍 Found ${plan.totalUpdates} updates available`));
+      console.log(chalk.gray('  ✓ Package versions checked'));
+      console.log(
+        chalk.blue(
+          `\n📝 Found ${plan.totalUpdates} update${plan.totalUpdates === 1 ? '' : 's'} available`
+        )
+      );
 
       // Interactive selection if enabled
       let finalPlan = plan;
