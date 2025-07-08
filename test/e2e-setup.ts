@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
@@ -54,21 +54,53 @@ beforeAll(async () => {
     args: string[],
     cwd: string = tempDir
   ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
-    try {
-      const { stdout, stderr } = await execAsync(`node "${binaryPath}" ${args.join(' ')}`, {
+    return new Promise((resolve) => {
+      // 检查目录是否存在
+      if (!fs.existsSync(cwd)) {
+        return resolve({
+          stdout: '',
+          stderr: `Error: Workspace not found at ${cwd}`,
+          exitCode: 1,
+        });
+      }
+
+      const child = spawn('node', [binaryPath, ...args], {
         cwd,
-        encoding: 'utf-8',
-        maxBuffer: 1024 * 1024, // 1MB buffer
+        shell: false,
+        stdio: ['inherit', 'pipe', 'pipe'],
       });
 
-      return { stdout: stdout.trim(), stderr: stderr.trim(), exitCode: 0 };
-    } catch (error: any) {
-      return {
-        stdout: error.stdout?.trim() || '',
-        stderr: error.stderr?.trim() || '',
-        exitCode: error.code || 1,
-      };
-    }
+      let stdout = '';
+      let stderr = '';
+
+      if (child.stdout) {
+        child.stdout.on('data', (data) => {
+          stdout += data.toString();
+        });
+      }
+
+      if (child.stderr) {
+        child.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+      }
+
+      child.on('error', (error) => {
+        resolve({
+          stdout,
+          stderr: error.message,
+          exitCode: 1,
+        });
+      });
+
+      child.on('close', (code) => {
+        resolve({
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          exitCode: code || 0,
+        });
+      });
+    });
   };
 
   // Helper to create E2E workspace

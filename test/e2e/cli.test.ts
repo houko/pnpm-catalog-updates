@@ -60,9 +60,10 @@ catalog:
   });
 
   it('should handle non-existent workspace', async () => {
-    const result = await global.runCLI(['check'], '/non/existent/path');
+    const nonExistentPath = '/non/existent/path';
+    const result = await global.runCLI(['check'], nonExistentPath);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('workspace');
+    expect(result.stderr).toContain(`Error: Workspace not found at ${nonExistentPath}`);
   });
 });

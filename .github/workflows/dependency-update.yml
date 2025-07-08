@@ -27,14 +27,21 @@ jobs:
         uses: pnpm/action-setup@v2
 
       - name: Get pnpm store directory
+        id: pnpm-store
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          store_path=$(pnpm store path --silent)
+          if [ -z "$store_path" ]; then
+              echo "::error::Failed to get pnpm store path"
+            exit 1
+          fi
+          echo "Using pnpm store path: $store_path"
+          echo "store_path=$store_path" >> $GITHUB_OUTPUT
 
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.pnpm-store.outputs.store_path }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-

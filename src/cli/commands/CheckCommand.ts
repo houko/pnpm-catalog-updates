@@ -74,8 +74,9 @@ export class CheckCommand {
         this.showSummary(report, options);
       }
 
-      // Exit with appropriate code
-      process.exit(report.hasUpdates ? 1 : 0);
+      // Always exit with 0 since this is just a check command
+      // and finding updates is not an error condition
+      process.exit(0);
     } catch (error) {
       console.error(chalk.red('❌ Error checking dependencies:'));
       console.error(chalk.red(String(error)));

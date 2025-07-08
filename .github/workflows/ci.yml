@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -37,7 +38,7 @@ jobs:
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: $STORE_PATH
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -84,7 +85,7 @@ jobs:
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: $STORE_PATH
           key: ${{ runner.os }}-${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node-version }}-pnpm-store-
@@ -118,6 +119,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -130,7 +132,7 @@ jobs:
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: $STORE_PATH
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -157,6 +159,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -184,6 +187,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -196,7 +200,7 @@ jobs:
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: $STORE_PATH
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
