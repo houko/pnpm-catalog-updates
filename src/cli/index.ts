@@ -277,6 +277,14 @@ export async function main(): Promise<void> {
   if (args.includes('-u') || args.includes('--update')) {
     const index = args.findIndex((arg) => arg === '-u' || arg === '--update');
     args.splice(index, 1, 'update');
+  } else if (
+    (args.includes('-i') || args.includes('--interactive')) &&
+    !args.some((a) => a === 'update' || a === '-u' || a === '--update')
+  ) {
+    // Map standalone -i to `update -i`
+    const index = args.findIndex((arg) => arg === '-i' || arg === '--interactive');
+    // Replace the flag position with 'update' and keep the flag after it
+    args.splice(index, 1, 'update', '-i');
   } else if (args.includes('-c') || args.includes('--check')) {
     const index = args.findIndex((arg) => arg === '-c' || arg === '--check');
     args.splice(index, 1, 'check');

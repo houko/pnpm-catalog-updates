@@ -10,16 +10,18 @@ import inquirer from 'inquirer';
 
 import {
   CatalogUpdateService,
-  UpdateOptions,
   PlannedUpdate,
+  UpdateOptions,
+  UpdatePlan,
+  UpdateTarget,
 } from '../../application/services/CatalogUpdateService.js';
-import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
+import { OutputFormat, OutputFormatter } from '../formatters/OutputFormatter.js';
 
 export interface UpdateCommandOptions {
   workspace?: string;
   catalog?: string;
   format?: OutputFormat;
-  target?: 'latest' | 'greatest' | 'minor' | 'patch' | 'newest';
+  target?: UpdateTarget;
   interactive?: boolean;
   dryRun?: boolean;
   force?: boolean;
@@ -32,252 +34,124 @@ export interface UpdateCommandOptions {
 }
 
 export class UpdateCommand {
-  constructor(
-    private readonly catalogUpdateService: CatalogUpdateService,
-    private readonly outputFormatter: OutputFormatter
-  ) {}
+  private readonly updateService: CatalogUpdateService;
+  private readonly outputFormatter: OutputFormatter;
+
+  constructor(updateService: CatalogUpdateService, outputFormatter: OutputFormatter) {
+    this.updateService = updateService;
+    this.outputFormatter = outputFormatter;
+  }
 
   /**
    * Execute the update command
    */
   async execute(options: UpdateCommandOptions = {}): Promise<void> {
     try {
-      // Show loading message
-      if (options.verbose) {
-        console.log(chalk.blue('🔄 Planning catalog dependency updates...'));
-        console.log(chalk.gray(`Workspace: ${options.workspace || process.cwd()}`));
-
-        if (options.catalog) {
-          console.log(chalk.gray(`Catalog: ${options.catalog}`));
-        }
-
-        if (options.dryRun) {
-          console.log(chalk.yellow('🔍 Dry run mode - no files will be modified'));
-        }
-
-        console.log('');
-      }
-
-      // Prepare update options
+      // Convert command options to service options
       const updateOptions: UpdateOptions = {
         workspacePath: options.workspace,
         catalogName: options.catalog,
-        target: options.target || 'latest',
-        interactive: options.interactive || false,
-        dryRun: options.dryRun || false,
-        force: options.force || false,
-        includePrerelease: options.prerelease || false,
+        target: options.target,
+        includePrerelease: options.prerelease ?? false,
         include: options.include,
         exclude: options.exclude,
-        createBackup: options.createBackup || false,
+        interactive: options.interactive ?? false,
+        dryRun: options.dryRun ?? false,
+        force: options.force ?? false,
+        createBackup: options.createBackup ?? false,
       };
 
-      // Plan updates
-      const plan = await this.catalogUpdateService.planUpdates(updateOptions);
+      // Check for updates
+      console.log(chalk.blue('📦 Scanning workspace...'));
+      console.log(chalk.gray('  ⚡ Loading workspace configuration...'));
+      const plan = await this.updateService.planUpdates(updateOptions);
+      console.log(chalk.gray('  ✓ Workspace configuration loaded'));
+      console.log(chalk.gray('  ⚡ Checking package versions...'));
 
-      // Show plan
-      if (options.verbose || options.dryRun) {
-        this.showUpdatePlan(plan, options);
-      }
-
-      // Check if there are any updates
-      if (plan.totalUpdates === 0) {
-        console.log(chalk.green('✅ All catalog dependencies are already up to date!'));
+      if (!plan.updates.length) {
+        console.log(chalk.gray('  ✓ Package versions checked'));
+        console.log(chalk.green('\n✨ All dependencies are up to date!'));
         return;
       }
 
-      // Show conflicts if any
-      if (plan.hasConflicts && !options.force) {
-        this.showConflicts(plan, options);
+      console.log(chalk.gray('  ✓ Package versions checked'));
+      console.log(
+        chalk.blue(
+          `\n📝 Found ${plan.totalUpdates} update${plan.totalUpdates === 1 ? '' : 's'} available`
+        )
+      );
 
-        if (!options.interactive) {
-          console.log(
-            chalk.red(
-              '❌ Cannot proceed due to conflicts. Use --force to override or --interactive to resolve.'
-            )
-          );
-          process.exit(1);
-        }
-      }
-
-      // Interactive selection
+      // Interactive selection if enabled
       let finalPlan = plan;
       if (options.interactive) {
-        finalPlan = await this.interactiveSelection(plan, options);
-      }
-
-      // Confirm before proceeding (unless in non-interactive mode)
-      if (!options.dryRun && options.interactive) {
-        const confirmed = await this.confirmUpdates(finalPlan, options);
-        if (!confirmed) {
-          console.log(chalk.yellow('❌ Update cancelled by user'));
+        finalPlan = await this.interactiveSelection(plan);
+        if (!finalPlan.updates.length) {
+          console.log(chalk.yellow('\n⚪ No updates selected'));
           return;
         }
       }
 
-      // Execute updates
+      // Apply updates
       if (!options.dryRun) {
-        if (options.verbose) {
-          console.log(chalk.blue('🚀 Executing updates...'));
-        }
-
-        const result = await this.catalogUpdateService.executeUpdates(finalPlan, updateOptions);
-
-        // Show results
-        const formattedOutput = this.outputFormatter.formatUpdateResult(result);
-        console.log(formattedOutput);
-
-        // Show summary
-        if (options.verbose || options.format === 'table') {
-          this.showUpdateSummary(result, options);
-        }
-
-        // Exit with appropriate code
-        process.exit(result.success ? 0 : 1);
+        console.log(chalk.blue('\n🚀 Applying updates...'));
+        const result = await this.updateService.executeUpdates(finalPlan, updateOptions);
+        console.log(this.outputFormatter.formatUpdateResult(result));
       } else {
-        console.log(chalk.blue('🔍 Dry run completed - no changes made'));
-        console.log(chalk.gray(`Would update ${finalPlan.totalUpdates} dependencies`));
+        console.log(chalk.yellow('\n🔍 Dry run - no changes made'));
+        console.log(JSON.stringify(finalPlan, null, 2));
       }
+
+      console.log(chalk.green('\n✨ Done!'));
     } catch (error) {
-      console.error(chalk.red('❌ Error updating dependencies:'));
-      console.error(chalk.red(String(error)));
-
-      if (options.verbose && error instanceof Error) {
-        console.error(chalk.gray('Stack trace:'));
-        console.error(chalk.gray(error.stack || 'No stack trace available'));
+      if (error instanceof Error) {
+        console.error(chalk.red(`\n❌ Error: ${error.message}`));
+      } else {
+        console.error(chalk.red('\n❌ Unknown error occurred'));
       }
-
-      process.exit(1);
-    }
-  }
-
-  /**
-   * Show the update plan
-   */
-  private showUpdatePlan(plan: any, options: UpdateCommandOptions): void {
-    console.log(chalk.bold(`📋 Update Plan (${plan.totalUpdates} updates):`));
-    console.log('');
-
-    const updatesByType = { major: 0, minor: 0, patch: 0 };
-
-    for (const update of plan.updates) {
-      const typeColor = this.getUpdateTypeColor(update.updateType);
-      console.log(
-        `  ${chalk.cyan(update.catalogName)}:${chalk.white(update.packageName)} ${chalk.gray(update.currentVersion)} → ${typeColor(update.newVersion)} ${chalk.gray(`(${update.updateType})`)}`
-      );
-
-      updatesByType[update.updateType as keyof typeof updatesByType]++;
-
-      if (options.verbose && update.affectedPackages.length > 0) {
-        console.log(chalk.gray(`    Affects: ${update.affectedPackages.join(', ')}`));
-      }
-    }
-
-    console.log('');
-    console.log(
-      chalk.gray(
-        `Summary: ${updatesByType.major} major, ${updatesByType.minor} minor, ${updatesByType.patch} patch`
-      )
-    );
-    console.log('');
-  }
-
-  /**
-   * Show version conflicts
-   */
-  private showConflicts(plan: any, _options: UpdateCommandOptions): void {
-    console.log(chalk.red('⚠️  Version Conflicts Detected:'));
-    console.log('');
-
-    for (const conflict of plan.conflicts) {
-      console.log(chalk.yellow(`${conflict.packageName}:`));
-
-      for (const catalog of conflict.catalogs) {
-        console.log(
-          `  ${catalog.catalogName}: ${catalog.currentVersion} → ${catalog.proposedVersion}`
-        );
-      }
-
-      console.log(chalk.gray(`  Recommendation: ${conflict.recommendation}`));
-      console.log('');
+      throw error;
     }
   }
 
   /**
    * Interactive update selection
    */
-  private async interactiveSelection(plan: any, _options: UpdateCommandOptions): Promise<any> {
-    console.log(chalk.blue('🎯 Interactive Update Selection'));
-    console.log('');
+  private async interactiveSelection(plan: UpdatePlan): Promise<UpdatePlan> {
+    console.log(chalk.blue('\n🎯 Interactive Update Selection'));
+    console.log(chalk.gray('Use ↑/↓ to navigate, Space to toggle, Enter to confirm'));
 
-    const selectedUpdates: PlannedUpdate[] = [];
+    // Group updates by catalog for better organization
+    const updatesByDir = plan.updates.reduce(
+      (acc, update) => {
+        const dir = update.catalogName;
+        if (!acc[dir]) {
+          acc[dir] = [];
+        }
+        acc[dir].push(update);
+        return acc;
+      },
+      {} as Record<string, PlannedUpdate[]>
+    );
 
-    // Group updates by type for better UX
-    const updatesByType = {
-      major: plan.updates.filter((u: any) => u.updateType === 'major'),
-      minor: plan.updates.filter((u: any) => u.updateType === 'minor'),
-      patch: plan.updates.filter((u: any) => u.updateType === 'patch'),
-    };
+    // Create choices with separators
+    const choices = Object.entries(updatesByDir).flatMap(([dir, updates]) => [
+      new inquirer.Separator(`\n📂 ${dir}`),
+      ...updates.map((update) => ({
+        name: this.formatUpdateChoice(update),
+        value: update,
+        checked: true,
+      })),
+    ]);
 
-    // Ask about patch updates first (safest)
-    if (updatesByType.patch.length > 0) {
-      const patchChoice = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'applyPatch',
-          message: `Apply all ${updatesByType.patch.length} patch updates? (recommended)`,
-          default: true,
-        },
-      ]);
-
-      if (patchChoice.applyPatch) {
-        selectedUpdates.push(...updatesByType.patch);
-      } else {
-        // Let user select individual patch updates
-        const patchSelections = await this.selectIndividualUpdates(updatesByType.patch, 'patch');
-        selectedUpdates.push(...patchSelections);
-      }
-    }
-
-    // Ask about minor updates
-    if (updatesByType.minor.length > 0) {
-      const minorChoice = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'applyMinor',
-          message: `Apply all ${updatesByType.minor.length} minor updates?`,
-          default: true,
-        },
-      ]);
-
-      if (minorChoice.applyMinor) {
-        selectedUpdates.push(...updatesByType.minor);
-      } else {
-        const minorSelections = await this.selectIndividualUpdates(updatesByType.minor, 'minor');
-        selectedUpdates.push(...minorSelections);
-      }
-    }
-
-    // Ask about major updates (most risky)
-    if (updatesByType.major.length > 0) {
-      const majorChoice = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'applyMajor',
-          message: chalk.yellow(
-            `Apply ${updatesByType.major.length} major updates? (may contain breaking changes)`
-          ),
-          default: false,
-        },
-      ]);
-
-      if (majorChoice.applyMajor) {
-        selectedUpdates.push(...updatesByType.major);
-      } else {
-        const majorSelections = await this.selectIndividualUpdates(updatesByType.major, 'major');
-        selectedUpdates.push(...majorSelections);
-      }
-    }
+    const { selectedUpdates } = await inquirer.prompt([
+      {
+        type: 'checkbox',
+        name: 'selectedUpdates',
+        message: 'Select updates to apply:',
+        choices,
+        pageSize: process.stdout.rows ? Math.max(10, process.stdout.rows - 8) : 40,
+        loop: true,
+      },
+    ]);
 
     return {
       ...plan,
@@ -287,92 +161,21 @@ export class UpdateCommand {
   }
 
   /**
-   * Select individual updates
+   * Format update choice for interactive selection
    */
-  private async selectIndividualUpdates(
-    updates: PlannedUpdate[],
-    type: string
-  ): Promise<PlannedUpdate[]> {
-    if (updates.length === 0) return [];
+  private formatUpdateChoice(update: PlannedUpdate): string {
+    const typeColor = this.getUpdateTypeColor(update.updateType);
+    const packageInfo = `${update.packageName} ${update.currentVersion} → ${update.newVersion}`;
+    const typeInfo = `[${update.updateType}]`;
+    const dirInfo = chalk.gray(`(${update.catalogName})`);
 
-    const choices = updates.map((update) => ({
-      name: `${update.catalogName}:${update.packageName} ${update.currentVersion} → ${update.newVersion}`,
-      value: update,
-      checked: type === 'patch', // Default to checked for patch updates
-    }));
-
-    const selection = await inquirer.prompt([
-      {
-        type: 'checkbox',
-        name: 'selectedUpdates',
-        message: `Select ${type} updates to apply:`,
-        choices,
-        pageSize: 10,
-      },
-    ]);
-
-    return selection.selectedUpdates;
+    return `${packageInfo} ${typeColor(typeInfo)} ${dirInfo}`;
   }
 
   /**
-   * Confirm updates before execution
+   * Get color function for update type
    */
-  private async confirmUpdates(plan: any, options: UpdateCommandOptions): Promise<boolean> {
-    if (plan.totalUpdates === 0) {
-      return false;
-    }
-
-    console.log(chalk.blue(`\n🚀 Ready to update ${plan.totalUpdates} dependencies`));
-
-    if (plan.hasConflicts && !options.force) {
-      console.log(chalk.yellow('⚠️  Some conflicts will be resolved with --force behavior'));
-    }
-
-    const confirmation = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'proceed',
-        message: 'Proceed with updates?',
-        default: true,
-      },
-    ]);
-
-    return confirmation.proceed;
-  }
-
-  /**
-   * Show update summary
-   */
-  private showUpdateSummary(result: any, _options: UpdateCommandOptions): void {
-    const lines: string[] = [];
-
-    if (result.success) {
-      lines.push(chalk.green('\n🎉 Update completed successfully!'));
-    } else {
-      lines.push(chalk.red('\n❌ Update completed with errors'));
-    }
-
-    lines.push('');
-    lines.push(`📊 Summary:`);
-    lines.push(`  • ${result.totalUpdated} dependencies updated`);
-    lines.push(`  • ${result.totalSkipped} dependencies skipped`);
-    lines.push(`  • ${result.totalErrors} errors occurred`);
-
-    if (result.totalUpdated > 0) {
-      lines.push('');
-      lines.push(chalk.blue('💡 Next steps:'));
-      lines.push('  • Test your application thoroughly');
-      lines.push('  • Update package-lock.json/pnpm-lock.yaml if needed');
-      lines.push('  • Check for any breaking changes in updated packages');
-    }
-
-    console.log(lines.join('\n'));
-  }
-
-  /**
-   * Get color for update type
-   */
-  private getUpdateTypeColor(updateType: string): typeof chalk {
+  private getUpdateTypeColor(updateType: string): (text: string) => string {
     switch (updateType) {
       case 'major':
         return chalk.red;
