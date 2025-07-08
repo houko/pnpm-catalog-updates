@@ -1,6 +1,6 @@
 {
   "name": "pnpm-catalog-updater",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },
