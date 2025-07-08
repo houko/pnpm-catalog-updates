@@ -15,8 +15,8 @@ export class Workspace {
   private constructor(
     private readonly id: WorkspaceId,
     private readonly path: WorkspacePath,
-    private readonly config: WorkspaceConfig,
-    private readonly catalogs: CatalogCollection,
+    private config: WorkspaceConfig,
+    private catalogs: CatalogCollection,
     private readonly packages: PackageCollection
   ) {}
 
@@ -139,7 +139,11 @@ export class Workspace {
       throw new Error(`Catalog "${catalogName}" not found`);
     }
 
+    // Update the catalog in the collection
     catalog.updateDependencyVersion(packageName, newVersion);
+
+    // Also update the WorkspaceConfig to ensure consistency
+    this.config = this.config.updateCatalogDependency(catalogName, packageName, newVersion);
   }
 }
 

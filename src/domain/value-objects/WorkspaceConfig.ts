@@ -13,19 +13,22 @@ export class WorkspaceConfig {
   private readonly catalogs: Map<string, CatalogDefinition>;
   private readonly shamefullyHoist: boolean;
   private readonly linkWorkspacePackages: boolean | 'deep';
+  private readonly originalData: PnpmWorkspaceData;
 
   private constructor(
     catalogMode: CatalogMode,
     packagePatterns: string[],
     catalogs: Map<string, CatalogDefinition>,
     shamefullyHoist: boolean = false,
-    linkWorkspacePackages: boolean | 'deep' = true
+    linkWorkspacePackages: boolean | 'deep' = true,
+    originalData: PnpmWorkspaceData = {} as PnpmWorkspaceData
   ) {
     this.catalogMode = catalogMode;
     this.packagePatterns = [...packagePatterns];
     this.catalogs = new Map(catalogs);
     this.shamefullyHoist = shamefullyHoist;
     this.linkWorkspacePackages = linkWorkspacePackages;
+    this.originalData = { ...originalData };
   }
 
   /**
@@ -55,7 +58,8 @@ export class WorkspaceConfig {
       packagePatterns,
       catalogs,
       data.shamefullyHoist,
-      data.linkWorkspacePackages
+      data.linkWorkspacePackages,
+      data
     );
   }
 
@@ -63,7 +67,10 @@ export class WorkspaceConfig {
    * Create a default WorkspaceConfig
    */
   public static createDefault(): WorkspaceConfig {
-    return new WorkspaceConfig(CatalogMode.MANUAL, ['packages/*'], new Map(), false, true);
+    const defaultData: PnpmWorkspaceData = {
+      packages: ['packages/*']
+    };
+    return new WorkspaceConfig(CatalogMode.MANUAL, ['packages/*'], new Map(), false, true, defaultData);
   }
 
   /**
@@ -130,6 +137,33 @@ export class WorkspaceConfig {
   }
 
   /**
+   * Update a catalog dependency (creates a new WorkspaceConfig)
+   */
+  public updateCatalogDependency(catalogName: string, packageName: string, version: string): WorkspaceConfig {
+    const catalogDef = this.catalogs.get(catalogName);
+    if (!catalogDef) {
+      throw new Error(`Catalog "${catalogName}" not found`);
+    }
+
+    // Create updated catalog definition
+    const updatedCatalogDef = catalogDef.updateDependencyVersion(packageName, version);
+    
+    // Create new catalogs map with the updated definition
+    const updatedCatalogs = new Map(this.catalogs);
+    updatedCatalogs.set(catalogName, updatedCatalogDef);
+
+    // Return new WorkspaceConfig instance
+    return new WorkspaceConfig(
+      this.catalogMode,
+      this.packagePatterns,
+      updatedCatalogs,
+      this.shamefullyHoist,
+      this.linkWorkspacePackages,
+      this.originalData
+    );
+  }
+
+  /**
    * Get the default catalog definition
    */
   public getDefaultCatalog(): CatalogDefinition | undefined {
@@ -179,19 +213,27 @@ export class WorkspaceConfig {
    * Convert to pnpm-workspace.yaml data format
    */
   public toPnpmWorkspaceData(): PnpmWorkspaceData {
-    const data: PnpmWorkspaceData = {
-      packages: this.packagePatterns,
-    };
+    // Start with the original data to preserve all fields
+    const data: PnpmWorkspaceData = { ...this.originalData };
+
+    // Update the fields that we manage
+    data.packages = this.packagePatterns;
 
     // Add catalog mode if not default
     if (this.catalogMode !== CatalogMode.MANUAL) {
       data.catalogMode = this.catalogMode;
+    } else {
+      // Remove catalogMode if it's back to default
+      delete data.catalogMode;
     }
 
-    // Add catalogs
+    // Update catalogs
     const defaultCatalog = this.catalogs.get('default');
     if (defaultCatalog) {
       data.catalog = defaultCatalog.getDependencies();
+    } else {
+      // Remove catalog if it no longer exists
+      delete data.catalog;
     }
 
     const namedCatalogs: Record<string, Record<string, string>> = {};
@@ -203,15 +245,24 @@ export class WorkspaceConfig {
 
     if (Object.keys(namedCatalogs).length > 0) {
       data.catalogs = namedCatalogs;
+    } else {
+      // Remove catalogs if none exist
+      delete data.catalogs;
     }
 
-    // Add other settings if not default
+    // Update other settings
     if (this.shamefullyHoist) {
       data.shamefullyHoist = this.shamefullyHoist;
+    } else {
+      // Remove if false/default
+      delete data.shamefullyHoist;
     }
 
     if (this.linkWorkspacePackages !== true) {
       data.linkWorkspacePackages = this.linkWorkspacePackages;
+    } else {
+      // Remove if true/default
+      delete data.linkWorkspacePackages;
     }
 
     return data;
@@ -279,6 +330,15 @@ export class CatalogDefinition {
 
   public getDependencyVersion(packageName: string): string | undefined {
     return this.dependencies[packageName];
+  }
+
+  /**
+   * Update a dependency version (returns a new instance)
+   */
+  public updateDependencyVersion(packageName: string, version: string): CatalogDefinition {
+    const updatedDependencies = { ...this.dependencies };
+    updatedDependencies[packageName] = version;
+    return new CatalogDefinition(this.name, updatedDependencies);
   }
 
   public validate(): CatalogDefinitionValidationResult {

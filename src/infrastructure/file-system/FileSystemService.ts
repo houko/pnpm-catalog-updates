@@ -134,7 +134,7 @@ export class FileSystemService {
     config: PnpmWorkspaceData
   ): Promise<void> {
     const configPath = workspacePath.getPnpmWorkspaceConfigPath().toString();
-    await this.writeYamlFile(configPath, config);
+    await this.writeYamlFilePreservingFormat(configPath, config);
   }
 
   /**
