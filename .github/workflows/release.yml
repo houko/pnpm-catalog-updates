@@ -101,6 +101,8 @@ jobs:
 
             ```bash
             npm install -g pnpm-catalog-updates@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            # or
+            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
             ```
 
             ## Usage
