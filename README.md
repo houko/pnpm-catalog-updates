@@ -90,6 +90,10 @@ pcu chk [options]
 Options:
   --catalog <name>      Check specific catalog only
   -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+                        - table: Rich table format with colors and details
+                        - minimal: Simple npm-check-updates style (package → version)
+                        - json: JSON output for programmatic use
+                        - yaml: YAML output for configuration files
   -t, --target <type>   Update target: latest, greatest, minor, patch, newest (default: latest)
   --prerelease          Include prerelease versions
   --include <pattern>   Include packages matching pattern
@@ -118,6 +122,10 @@ Options:
   --prerelease          Include prerelease versions
   -b, --create-backup   Create backup files before updating
   -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+                        - table: Rich table format with colors and details
+                        - minimal: Simple npm-check-updates style (package → version)
+                        - json: JSON output for programmatic use
+                        - yaml: YAML output for configuration files
   -w, --workspace <path> Workspace directory (default: current directory)
   -v, --verbose         Show detailed information
 ```
@@ -202,6 +210,9 @@ These options work with all commands:
 # Quick check for updates
 pcu -c
 
+# Check with simple output (like npm-check-updates)
+pcu -c --format minimal
+
 # Interactive update with backup
 pcu -u -i -b
 
@@ -216,6 +227,9 @@ pcu -u --exclude "eslint*"
 
 # Dry run with verbose output
 pcu -u -d -v
+
+# Update with simple output format
+pcu -u --format minimal
 
 # Analyze impact before updating
 pcu -a default react

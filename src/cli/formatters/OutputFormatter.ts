@@ -5,21 +5,25 @@
  * Supports table, JSON, YAML, and minimal output formats.
  */
 
-import chalk from 'chalk';
-import Table from 'cli-table3';
-import YAML from 'yaml';
-
 import {
+  ImpactAnalysis,
   OutdatedReport,
   UpdateResult,
-  ImpactAnalysis,
 } from '../../application/services/CatalogUpdateService.js';
 import {
-  WorkspaceValidationReport,
   WorkspaceStats,
+  WorkspaceValidationReport,
 } from '../../application/services/WorkspaceService.js';
 
+import Table from 'cli-table3';
+import YAML from 'yaml';
+import chalk from 'chalk';
+
 export type OutputFormat = 'table' | 'json' | 'yaml' | 'minimal';
+
+// Build ANSI escape regex without literal control characters
+const ANSI_ESCAPE = String.fromCharCode(27);
+const ansiRegex: RegExp = new RegExp(`${ANSI_ESCAPE}\\[[0-9;]*m`, 'g');
 
 export class OutputFormatter {
   constructor(
@@ -191,21 +195,61 @@ export class OutputFormatter {
   }
 
   /**
-   * Format outdated dependencies minimally
+   * Format outdated dependencies minimally (npm-check-updates style)
    */
   private formatOutdatedMinimal(report: OutdatedReport): string {
     if (!report.hasUpdates) {
       return 'All dependencies up to date';
     }
 
-    const lines: string[] = [];
+    // Collect all dependencies first to calculate max package name width
+    const allDeps: Array<{
+      securityIcon: string;
+      packageName: string;
+      currentColored: string;
+      latestColored: string;
+    }> = [];
+
     for (const catalogInfo of report.catalogs) {
       for (const dep of catalogInfo.outdatedDependencies) {
-        lines.push(
-          `${catalogInfo.catalogName}:${dep.packageName} ${dep.currentVersion} → ${dep.latestVersion}`
+        const securityIcon = dep.isSecurityUpdate ? '🔒 ' : '';
+        const { currentColored, latestColored } = this.colorizeVersionDiff(
+          dep.currentVersion,
+          dep.latestVersion,
+          dep.updateType
         );
+        allDeps.push({
+          securityIcon,
+          packageName: dep.packageName,
+          currentColored,
+          latestColored,
+        });
       }
     }
+
+    // Calculate max widths for alignment
+    const maxNameWidth = Math.max(
+      ...allDeps.map((dep) => (dep.securityIcon + dep.packageName).length)
+    );
+
+    // Calculate max version widths (need to strip color codes for accurate width calculation)
+    const stripAnsi = (str: string) => str.replace(ansiRegex, '');
+    const maxCurrentWidth = Math.max(...allDeps.map((dep) => stripAnsi(dep.currentColored).length));
+
+    // Format lines with proper alignment
+    const lines: string[] = [];
+    for (const dep of allDeps) {
+      const nameWithIcon = dep.securityIcon + dep.packageName;
+      const paddedName = nameWithIcon.padEnd(maxNameWidth);
+
+      // For current version alignment, we need to pad the visible text, not the colored version
+      const currentVisible = stripAnsi(dep.currentColored);
+      const currentPadding = maxCurrentWidth - currentVisible.length;
+      const paddedCurrent = dep.currentColored + ' '.repeat(currentPadding);
+
+      lines.push(`${paddedName}  ${paddedCurrent} → ${dep.latestColored}`);
+    }
+
     return lines.join('\n');
   }
 
@@ -283,7 +327,7 @@ export class OutputFormatter {
   }
 
   /**
-   * Format update result minimally
+   * Format update result minimally (npm-check-updates style)
    */
   private formatUpdateMinimal(result: UpdateResult): string {
     const lines: string[] = [];
@@ -294,8 +338,39 @@ export class OutputFormatter {
       lines.push(`Update failed with ${result.totalErrors} errors`);
     }
 
-    for (const dep of result.updatedDependencies) {
-      lines.push(`${dep.catalogName}:${dep.packageName} ${dep.fromVersion} → ${dep.toVersion}`);
+    if (result.updatedDependencies.length > 0) {
+      // Collect version info for alignment calculation
+      const depsWithVersions = result.updatedDependencies.map((dep) => {
+        const { currentColored, latestColored } = this.colorizeVersionDiff(
+          dep.fromVersion,
+          dep.toVersion,
+          dep.updateType
+        );
+        return {
+          packageName: dep.packageName,
+          currentColored,
+          latestColored,
+        };
+      });
+
+      // Calculate max widths for alignment
+      const maxNameWidth = Math.max(...depsWithVersions.map((dep) => dep.packageName.length));
+
+      const stripAnsi = (str: string) => str.replace(ansiRegex, '');
+      const maxCurrentWidth = Math.max(
+        ...depsWithVersions.map((dep) => stripAnsi(dep.currentColored).length)
+      );
+
+      for (const dep of depsWithVersions) {
+        const paddedName = dep.packageName.padEnd(maxNameWidth);
+
+        // Pad current version for alignment
+        const currentVisible = stripAnsi(dep.currentColored);
+        const currentPadding = maxCurrentWidth - currentVisible.length;
+        const paddedCurrent = dep.currentColored + ' '.repeat(currentPadding);
+
+        lines.push(`${paddedName}  ${paddedCurrent} → ${dep.latestColored}`);
+      }
     }
 
     return lines.join('\n');
@@ -519,11 +594,11 @@ export class OutputFormatter {
   private getUpdateTypeColor(updateType: string): typeof chalk {
     switch (updateType) {
       case 'major':
-        return chalk.red;
+        return chalk.cyan;
       case 'minor':
-        return chalk.yellow;
-      case 'patch':
         return chalk.green;
+      case 'patch':
+        return chalk.cyan;
       default:
         return chalk.gray;
     }
@@ -583,16 +658,16 @@ export class OutputFormatter {
     // Build colored version strings by comparing each part
     const colorCurrentPart = (part: string, latestPart: string, isChanged: boolean) => {
       if (isChanged && part !== latestPart) {
-        return chalk.gray(part); // Dim the old version part
+        return chalk.dim.white(part); // Dim white for old version part
       }
-      return part;
+      return chalk.white(part); // Unchanged parts in white
     };
 
     const colorLatestPart = (part: string, currentPart: string, isChanged: boolean) => {
       if (isChanged && part !== currentPart) {
         return diffColor(part); // Highlight the new version part with update type color
       }
-      return part;
+      return chalk.white(part); // Unchanged parts in white
     };
 
     // Check which parts are different
