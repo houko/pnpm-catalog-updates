@@ -95,7 +95,7 @@ jobs:
             # Check for updates
             pcu -c
 
-            # Update interactively  
+            # Update interactively
             pcu -u -i
 
             # Update with dry run
@@ -109,11 +109,11 @@ jobs:
 
             | Command | Shorthand | Description |
             |---------|-----------|-------------|
-            | `pcu check` | `pcu -c` or `pcu chk` | Check for outdated catalog dependencies |
-            | `pcu update` | `pcu -u` or `pcu u` | Update catalog dependencies |
-            | `pcu analyze` | `pcu -a` or `pcu a` | Analyze impact of dependency updates |
-            | `pcu workspace` | `pcu -s` or `pcu w` | Show workspace information and validation |
-            | `pcu help` | `pcu -h` or `pcu h` | Display help information |
+            | `pcu check` | `pcu -c` | Check for outdated catalog dependencies |
+            | `pcu update` | `pcu -u` | Update catalog dependencies |
+            | `pcu analyze` | `pcu -a` | Analyze impact of dependency updates |
+            | `pcu workspace` | `pcu -s` | Show workspace information and validation |
+            | `pcu help` | `pcu -h` | Display help information |
 
             ### Common Examples
 
