@@ -1,29 +1,28 @@
 #!/usr/bin/env node
 
 /**
- * pnpm-catalog-updater CLI Entry Point
+ * pnpm-catalog-updates CLI Entry Point
  *
  * A CLI tool for checking and updating pnpm workspace catalog dependencies.
  * This is the main entry point that handles command parsing and execution.
  */
 
-import chalk from 'chalk';
-import { Command } from 'commander';
-import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { OutputFormat, OutputFormatter } from './formatters/OutputFormatter.js';
 
 // Services and Dependencies
 import { CatalogUpdateService } from '../application/services/CatalogUpdateService.js';
+// CLI Commands
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { WorkspaceService } from '../application/services/WorkspaceService.js';
 import { NpmRegistryService } from '../infrastructure/external-services/NpmRegistryService.js';
 import { FileSystemService } from '../infrastructure/file-system/FileSystemService.js';
 import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWorkspaceRepository.js';
-
-// CLI Commands
 import { CheckCommand } from './commands/CheckCommand.js';
 import { UpdateCommand } from './commands/UpdateCommand.js';
-import { OutputFormat, OutputFormatter } from './formatters/OutputFormatter.js';
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);

@@ -1,10 +1,10 @@
-# pnpm-catalog-updater
+# pnpm-catalog-updates
 
 A powerful CLI tool to check and update pnpm workspace catalog dependencies, inspired by [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-[![CI](https://github.com/houko/pnpm-catalog-updater/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updater/actions)
-[![npm version](https://badge.fury.io/js/pnpm-catalog-updater.svg)](https://badge.fury.io/js/pnpm-catalog-updater)
-[![Coverage Status](https://coveralls.io/repos/github/houko/pnpm-catalog-updater/badge.svg?branch=main)](https://coveralls.io/github/houko/pnpm-catalog-updater?branch=main)
+[![CI](https://github.com/houko/pnpm-catalog-updates/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updates/actions)
+[![npm version](https://badge.fury.io/js/pnpm-catalog-updates.svg)](https://badge.fury.io/js/pnpm-catalog-updates)
+[![Coverage Status](https://coveralls.io/repos/github/houko/pnpm-catalog-updates/badge.svg?branch=main)](https://coveralls.io/github/houko/pnpm-catalog-updates?branch=main)
 
 ## ✨ Features
 
@@ -23,10 +23,10 @@ A powerful CLI tool to check and update pnpm workspace catalog dependencies, ins
 
 ```bash
 # Global installation
-npm install -g pnpm-catalog-updater
+npm install -g pnpm-catalog-updates
 
 # Or use with npx
-npx pnpm-catalog-updater
+npx pnpm-catalog-updates
 
 # Or use the short alias
 pcu
@@ -172,8 +172,8 @@ src/
 
 ```bash
 # Clone the repository
-git clone https://github.com/houko/pnpm-catalog-updater.git
-cd pnpm-catalog-updater
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
 
 # Install dependencies
 pnpm install
@@ -326,9 +326,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📖 [Documentation](https://github.com/houko/pnpm-catalog-updater#readme)
-- 🐛 [Issue Tracker](https://github.com/houko/pnpm-catalog-updater/issues)
-- 💬 [Discussions](https://github.com/houko/pnpm-catalog-updater/discussions)
+- 📖 [Documentation](https://github.com/houko/pnpm-catalog-updates#readme)
+- 🐛 [Issue Tracker](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 [Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
 
 ---
 

@@ -144,7 +144,7 @@ test/temp/
 
 # Binary output
 bin/pcu
-bin/pnpm-catalog-updater
+bin/pnpm-catalog-updates
 
 # Linter and formatter cache
 .eslintcache

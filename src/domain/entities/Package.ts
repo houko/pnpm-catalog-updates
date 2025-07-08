@@ -21,19 +21,22 @@ export class Package {
   private readonly path: WorkspacePath;
   private readonly dependencies: DependencyCollection;
   private readonly catalogReferences: CatalogReference[];
+  private readonly originalData: PackageJsonData;
 
   private constructor(
     id: PackageId,
     name: PackageName,
     path: WorkspacePath,
     dependencies: DependencyCollection,
-    catalogReferences: CatalogReference[]
+    catalogReferences: CatalogReference[],
+    originalData: PackageJsonData
   ) {
     this.id = id;
     this.name = name;
     this.path = path;
     this.dependencies = dependencies;
     this.catalogReferences = [...catalogReferences];
+    this.originalData = { ...originalData };
   }
 
   /**
@@ -48,7 +51,7 @@ export class Package {
     const dependencies = DependencyCollection.fromPackageJson(packageJsonData);
     const catalogReferences = Package.extractCatalogReferences(packageJsonData);
 
-    return new Package(id, name, path, dependencies, catalogReferences);
+    return new Package(id, name, path, dependencies, catalogReferences, packageJsonData);
   }
 
   /**
@@ -142,15 +145,10 @@ export class Package {
    * Get package.json data representation
    */
   public toPackageJsonData(): PackageJsonData {
-    const data: PackageJsonData = {
-      name: this.name,
-      dependencies: {},
-      devDependencies: {},
-      peerDependencies: {},
-      optionalDependencies: {},
-    };
+    // Start with original package.json to preserve fields like scripts, author, etc.
+    const data: PackageJsonData = { ...this.originalData };
 
-    // Add dependencies from collection
+    // Replace dependency sections with updated versions
     data.dependencies = Object.fromEntries(this.dependencies.getDependenciesByType('dependencies'));
     data.devDependencies = Object.fromEntries(
       this.dependencies.getDependenciesByType('devDependencies')

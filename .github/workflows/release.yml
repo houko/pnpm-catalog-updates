@@ -84,7 +84,7 @@ jobs:
             ## Installation
 
             ```bash
-            npm install -g pnpm-catalog-updater@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            npm install -g pnpm-catalog-updates@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
             ```
 
             ## Usage

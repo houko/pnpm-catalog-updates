@@ -1,6 +1,6 @@
-# Contributing to pnpm-catalog-updater
+# Contributing to pnpm-catalog-updates
 
-Thank you for your interest in contributing to pnpm-catalog-updater! This document provides guidelines and information about contributing to this project.
+Thank you for your interest in contributing to pnpm-catalog-updates! This document provides guidelines and information about contributing to this project.
 
 ## 🚀 Getting Started
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing to pnpm-catalog-updater! This docume
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/houko/pnpm-catalog-updater.git
-   cd pnpm-catalog-updater
+   git clone https://github.com/houko/pnpm-catalog-updates.git
+   cd pnpm-catalog-updates
    ```
 
 2. **Install Dependencies**
@@ -438,4 +438,4 @@ Contributors will be recognized in:
 - Release notes
 - Hall of fame (for significant contributions)
 
-Thank you for contributing to pnpm-catalog-updater! 🙏
+Thank you for contributing to pnpm-catalog-updates! 🙏
