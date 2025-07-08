@@ -68,13 +68,13 @@ pcu -s
 
 ### All Commands & Shortcuts
 
-| Full Command    | Shorthand             | Description                               |
-| --------------- | --------------------- | ----------------------------------------- |
-| `pcu check`     | `pcu -c` or `pcu chk` | Check for outdated catalog dependencies   |
-| `pcu update`    | `pcu -u` or `pcu u`   | Update catalog dependencies               |
-| `pcu analyze`   | `pcu -a` or `pcu a`   | Analyze impact of dependency updates      |
-| `pcu workspace` | `pcu -s` or `pcu w`   | Show workspace information and validation |
-| `pcu help`      | `pcu -h` or `pcu h`   | Display help information                  |
+| Full Command    | Shorthand | Description                               |
+| --------------- | --------- | ----------------------------------------- |
+| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies   |
+| `pcu update`    | `pcu -u`  | Update catalog dependencies               |
+| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates      |
+| `pcu workspace` | `pcu -s`  | Show workspace information and validation |
+| `pcu help`      | `pcu -h`  | Display help information                  |
 
 ### Commands
 
@@ -102,7 +102,7 @@ Options:
   -v, --verbose         Show detailed information
 ```
 
-#### `pcu update` / `pcu -u` / `pcu u`
+#### `pcu update` / `pcu -u`
 
 Update catalog dependencies to newer versions.
 
@@ -130,7 +130,7 @@ Options:
   -v, --verbose         Show detailed information
 ```
 
-#### `pcu analyze` / `pcu -a` / `pcu a`
+#### `pcu analyze` / `pcu -a`
 
 Analyze the impact of updating a specific dependency.
 
@@ -155,7 +155,7 @@ Examples:
   pcu -a react17 @types/react
 ```
 
-#### `pcu workspace` / `pcu -s` / `pcu w`
+#### `pcu workspace` / `pcu -s`
 
 Show workspace information and validation.
 
@@ -177,14 +177,13 @@ Examples:
   pcu w --validate       # Validate workspace configuration
 ```
 
-#### `pcu help` / `pcu -h` / `pcu h`
+#### `pcu help` / `pcu -h`
 
 Display help information.
 
 ```bash
 pcu help [command]
 pcu -h [command]
-pcu h [command]
 
 Examples:
   pcu help              # Show general help
