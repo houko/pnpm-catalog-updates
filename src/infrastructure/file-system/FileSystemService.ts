@@ -114,6 +114,191 @@ export class FileSystemService {
   }
 
   /**
+   * Write a YAML file while preserving comments and formatting
+   */
+  async writeYamlFilePreservingFormat(filePath: string, data: any): Promise<void> {
+    try {
+      // Read the original file to preserve comments and formatting
+      const originalContent = await this.readTextFile(filePath);
+      
+      // Use smart YAML updating that preserves comments and formatting
+      const updatedContent = this.updateYamlPreservingFormat(originalContent, data);
+      
+      await this.writeTextFile(filePath, updatedContent);
+    } catch (error) {
+      // If reading the original file fails, fall back to regular YAML writing
+      console.warn(`Could not preserve YAML format for ${filePath}, falling back to standard formatting`);
+      await this.writeYamlFile(filePath, data);
+    }
+  }
+
+  /**
+   * Update YAML content while preserving comments and formatting
+   */
+  private updateYamlPreservingFormat(originalContent: string, newData: any): string {
+    const lines = originalContent.split('\n');
+    const result: string[] = [];
+    let i = 0;
+
+    // Helper function to update a specific section
+    const updateSection = (sectionName: string, newValue: any): boolean => {
+      if (!(sectionName in newData)) {
+        return false;
+      }
+
+      // Find the section in the original content
+      let sectionStartIndex = -1;
+      let sectionEndIndex = -1;
+      let indentLevel = 0;
+
+      for (let j = i; j < lines.length; j++) {
+        const fullLine = lines[j];
+        if (!fullLine) continue;
+        
+        const line = fullLine.trim();
+        
+        if (line.startsWith(`${sectionName}:`)) {
+          sectionStartIndex = j;
+          indentLevel = fullLine.length - fullLine.trimStart().length;
+          
+          // Find the end of this section
+          for (let k = j + 1; k < lines.length; k++) {
+            const nextLine = lines[k];
+            if (!nextLine) continue;
+            
+            const nextLineTrimmed = nextLine.trim();
+            
+            // Skip empty lines and comments
+            if (nextLineTrimmed === '' || nextLineTrimmed.startsWith('#')) {
+              continue;
+            }
+            
+            // If we find a line with same or less indentation that's not part of this section, stop
+            const nextIndentLevel = nextLine.length - nextLine.trimStart().length;
+            if (nextIndentLevel <= indentLevel && nextLineTrimmed.includes(':')) {
+              sectionEndIndex = k - 1;
+              break;
+            }
+          }
+          
+          if (sectionEndIndex === -1) {
+            sectionEndIndex = lines.length - 1;
+          }
+          break;
+        }
+      }
+
+      if (sectionStartIndex !== -1) {
+        // Update the section
+        const sectionContent = this.formatYamlSection(sectionName, newValue, indentLevel);
+        
+        // Add lines before the section
+        for (let j = i; j < sectionStartIndex; j++) {
+          const lineContent = lines[j];
+          if (lineContent !== undefined) {
+            result.push(lineContent);
+          }
+        }
+        
+        // Add the updated section
+        result.push(...sectionContent);
+        
+        // Update the position to after this section
+        i = sectionEndIndex + 1;
+        return true;
+      }
+      
+      return false;
+    };
+
+    // Process the file line by line
+    while (i < lines.length) {
+      const currentLine = lines[i];
+      if (!currentLine) {
+        result.push('');
+        i++;
+        continue;
+      }
+      
+      const line = currentLine.trim();
+      
+      // Handle main sections
+      if (line.startsWith('packages:')) {
+        if (updateSection('packages', newData.packages)) {
+          continue;
+        }
+      } else if (line.startsWith('catalog:')) {
+        if (updateSection('catalog', newData.catalog)) {
+          continue;
+        }
+      } else if (line.startsWith('catalogs:')) {
+        if (updateSection('catalogs', newData.catalogs)) {
+          continue;
+        }
+      } else if (line.startsWith('catalogMode:')) {
+        if ('catalogMode' in newData) {
+          const indent = currentLine.length - currentLine.trimStart().length;
+          result.push(' '.repeat(indent) + `catalogMode: ${newData.catalogMode}`);
+          i++;
+          continue;
+        }
+      } else if (line.startsWith('shamefullyHoist:')) {
+        if ('shamefullyHoist' in newData) {
+          const indent = currentLine.length - currentLine.trimStart().length;
+          result.push(' '.repeat(indent) + `shamefullyHoist: ${newData.shamefullyHoist}`);
+          i++;
+          continue;
+        }
+      } else if (line.startsWith('linkWorkspacePackages:')) {
+        if ('linkWorkspacePackages' in newData) {
+          const indent = currentLine.length - currentLine.trimStart().length;
+          result.push(' '.repeat(indent) + `linkWorkspacePackages: ${newData.linkWorkspacePackages}`);
+          i++;
+          continue;
+        }
+      }
+      
+      // Keep the original line if not updated
+      result.push(currentLine);
+      i++;
+    }
+
+    return result.join('\n');
+  }
+
+  /**
+   * Format a YAML section with proper indentation
+   */
+  private formatYamlSection(sectionName: string, value: any, baseIndent: number = 0): string[] {
+    const lines: string[] = [];
+    const indent = ' '.repeat(baseIndent);
+    
+    if (sectionName === 'packages' && Array.isArray(value)) {
+      lines.push(`${indent}packages:`);
+      for (const pkg of value) {
+        lines.push(`${indent}  - "${pkg}"`);
+      }
+    } else if ((sectionName === 'catalog' || sectionName === 'catalogs') && typeof value === 'object') {
+      if (sectionName === 'catalog') {
+        lines.push(`${indent}catalog:`);
+        for (const [pkg, version] of Object.entries(value)) {
+          lines.push(`${indent}  ${pkg}: ${version}`);
+        }
+      } else {
+        lines.push(`${indent}catalogs:`);
+        for (const [catalogName, catalog] of Object.entries(value as Record<string, any>)) {
+          lines.push(`${indent}  ${catalogName}:`);
+          for (const [pkg, version] of Object.entries(catalog)) {
+            lines.push(`${indent}    ${pkg}: ${version}`);
+          }
+        }
+      }
+    }
+    
+    return lines;
+  }
+
+  /**
    * Read pnpm-workspace.yaml configuration
    */
   async readPnpmWorkspaceConfig(workspacePath: WorkspacePath): Promise<PnpmWorkspaceData> {
