@@ -1,13 +1,16 @@
 /**
  * Check Command
- * 
+ *
  * CLI command to check for outdated catalog dependencies.
  * Provides detailed information about available updates.
  */
 
 import chalk from 'chalk';
 
-import { CatalogUpdateService, CheckOptions } from '../../application/services/CatalogUpdateService.js';
+import {
+  CatalogUpdateService,
+  CheckOptions,
+} from '../../application/services/CatalogUpdateService.js';
 import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
 
 export interface CheckCommandOptions {
@@ -37,15 +40,15 @@ export class CheckCommand {
       if (options.verbose) {
         console.log(chalk.blue('🔍 Checking for outdated catalog dependencies...'));
         console.log(chalk.gray(`Workspace: ${options.workspace || process.cwd()}`));
-        
+
         if (options.catalog) {
           console.log(chalk.gray(`Catalog: ${options.catalog}`));
         }
-        
+
         if (options.target && options.target !== 'latest') {
           console.log(chalk.gray(`Target: ${options.target}`));
         }
-        
+
         console.log('');
       }
 
@@ -56,7 +59,7 @@ export class CheckCommand {
         target: options.target || 'latest',
         includePrerelease: options.prerelease || false,
         include: options.include,
-        exclude: options.exclude
+        exclude: options.exclude,
       };
 
       // Execute check
@@ -73,16 +76,15 @@ export class CheckCommand {
 
       // Exit with appropriate code
       process.exit(report.hasUpdates ? 1 : 0);
-
     } catch (error) {
       console.error(chalk.red('❌ Error checking dependencies:'));
       console.error(chalk.red(String(error)));
-      
+
       if (options.verbose && error instanceof Error) {
         console.error(chalk.gray('Stack trace:'));
         console.error(chalk.gray(error.stack || 'No stack trace available'));
       }
-      
+
       process.exit(1);
     }
   }
@@ -99,13 +101,16 @@ export class CheckCommand {
       lines.push(chalk.yellow(`\n📋 Summary:`));
       lines.push(`  • ${report.totalOutdated} outdated dependencies found`);
       lines.push(`  • ${report.catalogs.length} catalogs checked`);
-      
-      const totalPackages = report.catalogs.reduce((sum: number, cat: any) => sum + cat.totalPackages, 0);
+
+      const totalPackages = report.catalogs.reduce(
+        (sum: number, cat: any) => sum + cat.totalPackages,
+        0
+      );
       lines.push(`  • ${totalPackages} total catalog entries`);
 
       // Show breakdown by update type
       const updateTypes = { major: 0, minor: 0, patch: 0 };
-      
+
       for (const catalog of report.catalogs) {
         for (const dep of catalog.outdatedDependencies) {
           updateTypes[dep.updateType as keyof typeof updateTypes]++;
@@ -133,7 +138,7 @@ export class CheckCommand {
 
       lines.push('');
       lines.push(chalk.blue('💡 Run with --update to apply updates'));
-      
+
       if (updateTypes.major > 0) {
         lines.push(chalk.yellow('⚠️  Major updates may contain breaking changes'));
       }
@@ -154,16 +159,19 @@ export class CheckCommand {
     }
 
     // Validate target
-    if (options.target && !['latest', 'greatest', 'minor', 'patch', 'newest'].includes(options.target)) {
+    if (
+      options.target &&
+      !['latest', 'greatest', 'minor', 'patch', 'newest'].includes(options.target)
+    ) {
       errors.push('Invalid target. Must be one of: latest, greatest, minor, patch, newest');
     }
 
     // Validate include/exclude patterns
-    if (options.include && options.include.some(pattern => !pattern.trim())) {
+    if (options.include && options.include.some((pattern) => !pattern.trim())) {
       errors.push('Include patterns cannot be empty');
     }
 
-    if (options.exclude && options.exclude.some(pattern => !pattern.trim())) {
+    if (options.exclude && options.exclude.some((pattern) => !pattern.trim())) {
       errors.push('Exclude patterns cannot be empty');
     }
 

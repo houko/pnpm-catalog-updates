@@ -1,6 +1,6 @@
 /**
  * Common Utilities
- * 
+ *
  * Collection of utility functions used throughout the application.
  */
 

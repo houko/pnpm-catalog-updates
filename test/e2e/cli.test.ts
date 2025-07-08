@@ -7,14 +7,18 @@ describe('CLI E2E Tests', () => {
   beforeEach(async () => {
     // Create a test workspace with catalog configuration
     workspacePath = await global.createE2EWorkspace({
-      'package.json': JSON.stringify({
-        name: 'test-workspace',
-        version: '1.0.0',
-        dependencies: {
-          react: 'catalog:',
-          lodash: 'catalog:',
+      'package.json': JSON.stringify(
+        {
+          name: 'test-workspace',
+          version: '1.0.0',
+          dependencies: {
+            react: 'catalog:',
+            lodash: 'catalog:',
+          },
         },
-      }, null, 2),
+        null,
+        2
+      ),
       'pnpm-workspace.yaml': `
 packages:
   - "."
@@ -28,14 +32,14 @@ catalog:
 
   it('should show version', async () => {
     const result = await global.runCLI(['--version']);
-    
+
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toMatch(/\d+\.\d+\.\d+/);
   });
 
   it('should show help', async () => {
     const result = await global.runCLI(['--help']);
-    
+
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Usage:');
     expect(result.stdout).toContain('Options:');
@@ -43,21 +47,21 @@ catalog:
 
   it('should check for outdated dependencies', async () => {
     const result = await global.runCLI(['check'], workspacePath);
-    
+
     // Should succeed even if no updates are available
     expect(result.exitCode).toBe(0);
   });
 
   it('should handle dry-run mode', async () => {
     const result = await global.runCLI(['update', '--dry-run'], workspacePath);
-    
+
     // Dry run should not modify files
     expect(result.exitCode).toBe(0);
   });
 
   it('should handle non-existent workspace', async () => {
     const result = await global.runCLI(['check'], '/non/existent/path');
-    
+
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain('workspace');
   });

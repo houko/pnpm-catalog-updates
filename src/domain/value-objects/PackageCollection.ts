@@ -1,6 +1,6 @@
 /**
  * PackageCollection Value Object
- * 
+ *
  * Represents a collection of packages in a workspace.
  * Provides operations for managing and querying multiple packages.
  */
@@ -26,7 +26,7 @@ export class PackageCollection {
    */
   public static fromPackages(packages: Package[]): PackageCollection {
     const packageMap = new Map<PackageName, Package>();
-    
+
     for (const pkg of packages) {
       packageMap.set(pkg.getName(), pkg);
     }
@@ -108,7 +108,7 @@ export class PackageCollection {
     if (!this.has(pkg.getName())) {
       throw new Error(`Package "${pkg.getName()}" not found in collection`);
     }
-    
+
     const newPackages = new Map(this.packages);
     newPackages.set(pkg.getName(), pkg);
     return new PackageCollection(newPackages);
@@ -119,7 +119,7 @@ export class PackageCollection {
    */
   public filter(predicate: (pkg: Package) => boolean): PackageCollection {
     const filteredPackages = new Map<PackageName, Package>();
-    
+
     for (const [name, pkg] of this.packages) {
       if (predicate(pkg)) {
         filteredPackages.set(name, pkg);
@@ -133,22 +133,22 @@ export class PackageCollection {
    * Filter packages that use a specific catalog dependency
    */
   public filterByCatalogDependency(catalogName: string, packageName: string): PackageCollection {
-    return this.filter(pkg => pkg.usesCatalogDependency(catalogName, packageName));
+    return this.filter((pkg) => pkg.usesCatalogDependency(catalogName, packageName));
   }
 
   /**
    * Find packages that have catalog references
    */
   public findPackagesWithCatalogReferences(): Package[] {
-    return this.getAll().filter(pkg => pkg.getCatalogReferences().length > 0);
+    return this.getAll().filter((pkg) => pkg.getCatalogReferences().length > 0);
   }
 
   /**
    * Find packages that reference a specific catalog
    */
   public findPackagesUsingCatalog(catalogName: string): Package[] {
-    return this.getAll().filter(pkg => 
-      pkg.getCatalogReferences().some(ref => ref.getCatalogName() === catalogName)
+    return this.getAll().filter((pkg) =>
+      pkg.getCatalogReferences().some((ref) => ref.getCatalogName() === catalogName)
     );
   }
 
@@ -157,7 +157,7 @@ export class PackageCollection {
    */
   public getReferencedCatalogNames(): string[] {
     const catalogNames = new Set<string>();
-    
+
     for (const pkg of this.packages.values()) {
       for (const ref of pkg.getCatalogReferences()) {
         catalogNames.add(ref.getCatalogName());
@@ -172,12 +172,17 @@ export class PackageCollection {
    */
   public getAllDependencyNames(): string[] {
     const dependencyNames = new Set<string>();
-    
+
     for (const pkg of this.packages.values()) {
       const deps = pkg.getDependencies();
-      
+
       // Add dependencies from all types
-      for (const depType of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const) {
+      for (const depType of [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+        'optionalDependencies',
+      ] as const) {
         for (const depName of deps.getDependenciesByType(depType).keys()) {
           dependencyNames.add(depName);
         }
@@ -191,10 +196,10 @@ export class PackageCollection {
    * Find packages that have a specific dependency
    */
   public findPackagesWithDependency(dependencyName: string): Package[] {
-    return this.getAll().filter(pkg => {
+    return this.getAll().filter((pkg) => {
       const deps = pkg.getDependencies();
-      return ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'].some(depType =>
-        deps.getDependenciesByType(depType as any).has(dependencyName)
+      return ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'].some(
+        (depType) => deps.getDependenciesByType(depType as any).has(dependencyName)
       );
     });
   }
@@ -214,8 +219,8 @@ export class PackageCollection {
     // Validate each package
     for (const pkg of this.packages.values()) {
       const result = pkg.validate();
-      errors.push(...result.getErrors().map(err => `Package "${pkg.getName()}": ${err}`));
-      warnings.push(...result.getWarnings().map(warn => `Package "${pkg.getName()}": ${warn}`));
+      errors.push(...result.getErrors().map((err) => `Package "${pkg.getName()}": ${err}`));
+      warnings.push(...result.getWarnings().map((warn) => `Package "${pkg.getName()}": ${warn}`));
     }
 
     // Check for duplicate package names (shouldn't happen with Map, but good to verify)
@@ -233,7 +238,7 @@ export class PackageCollection {
    */
   public groupByWorkspacePath(): Map<string, Package[]> {
     const grouped = new Map<string, Package[]>();
-    
+
     for (const pkg of this.packages.values()) {
       const pathKey = pkg.getPath().toString();
       if (!grouped.has(pathKey)) {

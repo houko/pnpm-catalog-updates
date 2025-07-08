@@ -1,6 +1,6 @@
 /**
  * Output Formatter
- * 
+ *
  * Provides formatted output for CLI commands in various formats.
  * Supports table, JSON, YAML, and minimal output formats.
  */
@@ -9,8 +9,15 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import YAML from 'yaml';
 
-import { OutdatedReport, UpdateResult, ImpactAnalysis } from '../../application/services/CatalogUpdateService.js';
-import { WorkspaceValidationReport, WorkspaceStats } from '../../application/services/WorkspaceService.js';
+import {
+  OutdatedReport,
+  UpdateResult,
+  ImpactAnalysis,
+} from '../../application/services/CatalogUpdateService.js';
+import {
+  WorkspaceValidationReport,
+  WorkspaceStats,
+} from '../../application/services/WorkspaceService.js';
 
 export type OutputFormat = 'table' | 'json' | 'yaml' | 'minimal';
 
@@ -141,30 +148,32 @@ export class OutputFormatter {
       return lines.join('\n');
     }
 
-    lines.push(this.colorize(chalk.yellow, `\n🔄 Found ${report.totalOutdated} outdated dependencies\n`));
+    lines.push(
+      this.colorize(chalk.yellow, `\n🔄 Found ${report.totalOutdated} outdated dependencies\n`)
+    );
 
     for (const catalogInfo of report.catalogs) {
       if (catalogInfo.outdatedCount === 0) continue;
 
       lines.push(this.colorize(chalk.bold, `📋 Catalog: ${catalogInfo.catalogName}`));
-      
+
       const table = new Table({
         head: this.colorizeHeaders(['Package', 'Current', 'Latest', 'Type', 'Packages']),
         style: { head: [], border: [] },
-        colWidths: [25, 15, 15, 8, 20]
+        colWidths: [25, 15, 15, 8, 20],
       });
 
       for (const dep of catalogInfo.outdatedDependencies) {
         const typeColor = this.getUpdateTypeColor(dep.updateType);
         // const securityIcon = dep.isSecurityUpdate ? '🔒 ' : '';
         // TODO: Use securityIcon in table display
-        
+
         table.push([
           dep.packageName,
           dep.currentVersion,
           dep.latestVersion,
           this.colorize(typeColor, dep.updateType),
-          `${dep.affectedPackages.length} package(s)`
+          `${dep.affectedPackages.length} package(s)`,
         ]);
       }
 
@@ -186,7 +195,9 @@ export class OutputFormatter {
     const lines: string[] = [];
     for (const catalogInfo of report.catalogs) {
       for (const dep of catalogInfo.outdatedDependencies) {
-        lines.push(`${catalogInfo.catalogName}:${dep.packageName} ${dep.currentVersion} → ${dep.latestVersion}`);
+        lines.push(
+          `${catalogInfo.catalogName}:${dep.packageName} ${dep.currentVersion} → ${dep.latestVersion}`
+        );
       }
     }
     return lines.join('\n');
@@ -200,7 +211,7 @@ export class OutputFormatter {
 
     // Header
     lines.push(this.colorize(chalk.bold, `\n📦 Workspace: ${result.workspace.name}`));
-    
+
     if (result.success) {
       lines.push(this.colorize(chalk.green, '✅ Update completed successfully!'));
     } else {
@@ -212,11 +223,11 @@ export class OutputFormatter {
     // Updated dependencies
     if (result.updatedDependencies.length > 0) {
       lines.push(this.colorize(chalk.green, `🎉 Updated ${result.totalUpdated} dependencies:`));
-      
+
       const table = new Table({
         head: this.colorizeHeaders(['Catalog', 'Package', 'From', 'To', 'Type']),
         style: { head: [], border: [] },
-        colWidths: [15, 25, 15, 15, 8]
+        colWidths: [15, 25, 15, 15, 8],
       });
 
       for (const dep of result.updatedDependencies) {
@@ -226,7 +237,7 @@ export class OutputFormatter {
           dep.packageName,
           dep.fromVersion,
           dep.toVersion,
-          this.colorize(typeColor, dep.updateType)
+          this.colorize(typeColor, dep.updateType),
         ]);
       }
 
@@ -237,7 +248,7 @@ export class OutputFormatter {
     // Skipped dependencies
     if (result.skippedDependencies.length > 0) {
       lines.push(this.colorize(chalk.yellow, `⚠️  Skipped ${result.totalSkipped} dependencies:`));
-      
+
       for (const dep of result.skippedDependencies) {
         lines.push(`  ${dep.catalogName}:${dep.packageName} - ${dep.reason}`);
       }
@@ -247,7 +258,7 @@ export class OutputFormatter {
     // Errors
     if (result.errors.length > 0) {
       lines.push(this.colorize(chalk.red, `❌ ${result.totalErrors} errors occurred:`));
-      
+
       for (const error of result.errors) {
         const prefix = error.fatal ? '💥' : '⚠️ ';
         lines.push(`  ${prefix} ${error.catalogName}:${error.packageName} - ${error.error}`);
@@ -262,7 +273,7 @@ export class OutputFormatter {
    */
   private formatUpdateMinimal(result: UpdateResult): string {
     const lines: string[] = [];
-    
+
     if (result.success) {
       lines.push(`Updated ${result.totalUpdated} dependencies`);
     } else {
@@ -285,9 +296,11 @@ export class OutputFormatter {
     // Header
     lines.push(this.colorize(chalk.bold, `\n🔍 Impact Analysis: ${analysis.packageName}`));
     lines.push(this.colorize(chalk.gray, `Catalog: ${analysis.catalogName}`));
-    lines.push(this.colorize(chalk.gray, `Update: ${analysis.currentVersion} → ${analysis.proposedVersion}`));
+    lines.push(
+      this.colorize(chalk.gray, `Update: ${analysis.currentVersion} → ${analysis.proposedVersion}`)
+    );
     lines.push(this.colorize(chalk.gray, `Type: ${analysis.updateType}`));
-    
+
     // Risk level
     const riskColor = this.getRiskColor(analysis.riskLevel);
     lines.push(this.colorize(riskColor, `Risk Level: ${analysis.riskLevel.toUpperCase()}`));
@@ -296,11 +309,11 @@ export class OutputFormatter {
     // Affected packages
     if (analysis.affectedPackages.length > 0) {
       lines.push(this.colorize(chalk.bold, '📦 Affected Packages:'));
-      
+
       const table = new Table({
         head: this.colorizeHeaders(['Package', 'Path', 'Dependency Type', 'Risk']),
         style: { head: [], border: [] },
-        colWidths: [20, 30, 15, 10]
+        colWidths: [20, 30, 15, 10],
       });
 
       for (const pkg of analysis.affectedPackages) {
@@ -309,7 +322,7 @@ export class OutputFormatter {
           pkg.packageName,
           pkg.packagePath,
           pkg.dependencyType,
-          this.colorize(riskColor, pkg.compatibilityRisk)
+          this.colorize(riskColor, pkg.compatibilityRisk),
         ]);
       }
 
@@ -320,15 +333,25 @@ export class OutputFormatter {
     // Security impact
     if (analysis.securityImpact.hasVulnerabilities) {
       lines.push(this.colorize(chalk.bold, '🔒 Security Impact:'));
-      
+
       if (analysis.securityImpact.fixedVulnerabilities > 0) {
-        lines.push(this.colorize(chalk.green, `  ✅ Fixes ${analysis.securityImpact.fixedVulnerabilities} vulnerabilities`));
+        lines.push(
+          this.colorize(
+            chalk.green,
+            `  ✅ Fixes ${analysis.securityImpact.fixedVulnerabilities} vulnerabilities`
+          )
+        );
       }
-      
+
       if (analysis.securityImpact.newVulnerabilities > 0) {
-        lines.push(this.colorize(chalk.red, `  ⚠️  Introduces ${analysis.securityImpact.newVulnerabilities} vulnerabilities`));
+        lines.push(
+          this.colorize(
+            chalk.red,
+            `  ⚠️  Introduces ${analysis.securityImpact.newVulnerabilities} vulnerabilities`
+          )
+        );
       }
-      
+
       lines.push('');
     }
 
@@ -350,7 +373,7 @@ export class OutputFormatter {
     return [
       `${analysis.packageName}: ${analysis.currentVersion} → ${analysis.proposedVersion}`,
       `Risk: ${analysis.riskLevel}`,
-      `Affected: ${analysis.affectedPackages.length} packages`
+      `Affected: ${analysis.affectedPackages.length} packages`,
     ].join('\n');
   }
 
@@ -363,7 +386,7 @@ export class OutputFormatter {
     // Header
     const statusIcon = report.isValid ? '✅' : '❌';
     const statusColor = report.isValid ? chalk.green : chalk.red;
-    
+
     lines.push(this.colorize(chalk.bold, `\n${statusIcon} Workspace Validation`));
     lines.push(this.colorize(statusColor, `Status: ${report.isValid ? 'VALID' : 'INVALID'}`));
     lines.push('');
@@ -412,7 +435,7 @@ export class OutputFormatter {
     const status = report.isValid ? 'VALID' : 'INVALID';
     const errors = report.errors.length;
     const warnings = report.warnings.length;
-    
+
     return `${status} (${errors} errors, ${warnings} warnings)`;
   }
 
@@ -429,7 +452,7 @@ export class OutputFormatter {
     const table = new Table({
       head: this.colorizeHeaders(['Metric', 'Count']),
       style: { head: [], border: [] },
-      colWidths: [30, 10]
+      colWidths: [30, 10],
     });
 
     table.push(['Total Packages', stats.packages.total.toString()]);
@@ -441,7 +464,10 @@ export class OutputFormatter {
     table.push(['Dependencies', stats.dependencies.byType.dependencies.toString()]);
     table.push(['Dev Dependencies', stats.dependencies.byType.devDependencies.toString()]);
     table.push(['Peer Dependencies', stats.dependencies.byType.peerDependencies.toString()]);
-    table.push(['Optional Dependencies', stats.dependencies.byType.optionalDependencies.toString()]);
+    table.push([
+      'Optional Dependencies',
+      stats.dependencies.byType.optionalDependencies.toString(),
+    ]);
 
     lines.push(table.toString());
 
@@ -455,7 +481,7 @@ export class OutputFormatter {
     return [
       `Packages: ${stats.packages.total}`,
       `Catalogs: ${stats.catalogs.total}`,
-      `Dependencies: ${stats.dependencies.total}`
+      `Dependencies: ${stats.dependencies.total}`,
     ].join(', ');
   }
 
@@ -470,7 +496,7 @@ export class OutputFormatter {
    * Colorize table headers
    */
   private colorizeHeaders(headers: string[]): string[] {
-    return this.useColor ? headers.map(h => chalk.bold.cyan(h)) : headers;
+    return this.useColor ? headers.map((h) => chalk.bold.cyan(h)) : headers;
   }
 
   /**

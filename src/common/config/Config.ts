@@ -1,6 +1,6 @@
 /**
  * Configuration System
- * 
+ *
  * Handles application configuration from multiple sources:
  * - CLI arguments
  * - Configuration files (.pcurc, pcu.config.js)
@@ -21,7 +21,7 @@ export interface PcuConfig {
     cache: boolean;
     cacheTtl: number; // TTL in seconds
   };
-  
+
   // Update behavior
   update: {
     target: 'latest' | 'greatest' | 'minor' | 'patch' | 'newest';
@@ -30,7 +30,7 @@ export interface PcuConfig {
     createBackup: boolean;
     force: boolean;
   };
-  
+
   // Output formatting
   output: {
     format: 'table' | 'json' | 'yaml' | 'minimal';
@@ -38,14 +38,14 @@ export interface PcuConfig {
     verbose: boolean;
     silent: boolean;
   };
-  
+
   // Workspace settings
   workspace: {
     autoDetect: boolean;
     patterns: string[];
     excludePatterns: string[];
   };
-  
+
   // Notification settings
   notification: {
     enabled: boolean;
@@ -58,7 +58,7 @@ export interface PcuConfig {
       headers: Record<string, string>;
     };
   };
-  
+
   // Logging
   logging: {
     level: 'error' | 'warn' | 'info' | 'debug';
@@ -76,7 +76,7 @@ export const DEFAULT_CONFIG: PcuConfig = {
     cache: true,
     cacheTtl: 3600, // 1 hour
   },
-  
+
   update: {
     target: 'latest',
     includePrerelease: false,
@@ -84,27 +84,27 @@ export const DEFAULT_CONFIG: PcuConfig = {
     createBackup: false,
     force: false,
   },
-  
+
   output: {
     format: 'table',
     color: true,
     verbose: false,
     silent: false,
   },
-  
+
   workspace: {
     autoDetect: true,
     patterns: ['packages/*', 'apps/*'],
     excludePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**'],
   },
-  
+
   notification: {
     enabled: false,
     onSuccess: true,
     onError: true,
     methods: ['console'],
   },
-  
+
   logging: {
     level: 'info',
     maxSize: '10MB',
@@ -145,22 +145,24 @@ export class ConfigManager {
   /**
    * Merge configuration from CLI options
    */
-  mergeCliOptions(options: Partial<{
-    registry: string;
-    timeout: number;
-    target: string;
-    prerelease: boolean;
-    interactive: boolean;
-    dryRun: boolean;
-    force: boolean;
-    format: string;
-    color: boolean;
-    verbose: boolean;
-    silent: boolean;
-    workspace: string;
-    include: string[];
-    exclude: string[];
-  }>): void {
+  mergeCliOptions(
+    options: Partial<{
+      registry: string;
+      timeout: number;
+      target: string;
+      prerelease: boolean;
+      interactive: boolean;
+      dryRun: boolean;
+      force: boolean;
+      format: string;
+      color: boolean;
+      verbose: boolean;
+      silent: boolean;
+      workspace: string;
+      include: string[];
+      exclude: string[];
+    }>
+  ): void {
     if (options.registry) {
       this.config.registry.url = options.registry;
     }
@@ -207,7 +209,7 @@ export class ConfigManager {
   private loadConfig(): void {
     // Load from files (in order of priority)
     this.loadFromFile(this.findConfigFile());
-    
+
     // Load from environment variables
     this.loadFromEnvironment();
   }
@@ -216,13 +218,7 @@ export class ConfigManager {
    * Find configuration file
    */
   private findConfigFile(): string | undefined {
-    const configNames = [
-      '.pcurc',
-      '.pcurc.json',
-      '.pcurc.js',
-      'pcu.config.js',
-      'pcu.config.json',
-    ];
+    const configNames = ['.pcurc', '.pcurc.json', '.pcurc.js', 'pcu.config.js', 'pcu.config.json'];
 
     // Check current directory
     for (const name of configNames) {
@@ -258,7 +254,7 @@ export class ConfigManager {
         // Dynamic import for ES modules
         delete require.cache[require.resolve(filePath)];
         fileConfig = require(filePath);
-        
+
         // Handle default export
         if (fileConfig && typeof fileConfig === 'object' && 'default' in fileConfig) {
           fileConfig = (fileConfig as any).default;
@@ -272,7 +268,6 @@ export class ConfigManager {
       // Deep merge with current config
       this.config = this.deepMerge(this.config, fileConfig);
       this.configPath = filePath;
-
     } catch (error) {
       console.warn(`Failed to load config from ${filePath}:`, error);
     }
@@ -289,51 +284,51 @@ export class ConfigManager {
       envConfig.registry = { ...this.config.registry, url: process.env.PCU_REGISTRY_URL };
     }
     if (process.env.PCU_REGISTRY_TIMEOUT) {
-      envConfig.registry = { 
-        ...envConfig.registry || this.config.registry, 
-        timeout: parseInt(process.env.PCU_REGISTRY_TIMEOUT, 10) 
+      envConfig.registry = {
+        ...(envConfig.registry || this.config.registry),
+        timeout: parseInt(process.env.PCU_REGISTRY_TIMEOUT, 10),
       };
     }
 
     // Update settings
     if (process.env.PCU_UPDATE_TARGET) {
-      envConfig.update = { 
-        ...this.config.update, 
-        target: process.env.PCU_UPDATE_TARGET as any 
+      envConfig.update = {
+        ...this.config.update,
+        target: process.env.PCU_UPDATE_TARGET as any,
       };
     }
     if (process.env.PCU_UPDATE_PRERELEASE) {
-      envConfig.update = { 
-        ...envConfig.update || this.config.update, 
-        includePrerelease: process.env.PCU_UPDATE_PRERELEASE === 'true' 
+      envConfig.update = {
+        ...(envConfig.update || this.config.update),
+        includePrerelease: process.env.PCU_UPDATE_PRERELEASE === 'true',
       };
     }
 
     // Output settings
     if (process.env.PCU_OUTPUT_FORMAT) {
-      envConfig.output = { 
-        ...this.config.output, 
-        format: process.env.PCU_OUTPUT_FORMAT as any 
+      envConfig.output = {
+        ...this.config.output,
+        format: process.env.PCU_OUTPUT_FORMAT as any,
       };
     }
     if (process.env.PCU_OUTPUT_COLOR) {
-      envConfig.output = { 
-        ...envConfig.output || this.config.output, 
-        color: process.env.PCU_OUTPUT_COLOR !== 'false' 
+      envConfig.output = {
+        ...(envConfig.output || this.config.output),
+        color: process.env.PCU_OUTPUT_COLOR !== 'false',
       };
     }
 
     // Logging settings
     if (process.env.PCU_LOG_LEVEL) {
-      envConfig.logging = { 
-        ...this.config.logging, 
-        level: process.env.PCU_LOG_LEVEL as any 
+      envConfig.logging = {
+        ...this.config.logging,
+        level: process.env.PCU_LOG_LEVEL as any,
       };
     }
     if (process.env.PCU_LOG_FILE) {
-      envConfig.logging = { 
-        ...envConfig.logging || this.config.logging, 
-        file: process.env.PCU_LOG_FILE 
+      envConfig.logging = {
+        ...(envConfig.logging || this.config.logging),
+        file: process.env.PCU_LOG_FILE,
       };
     }
 
@@ -354,14 +349,14 @@ export class ConfigManager {
   private setNestedValue(obj: any, path: string, value: any): void {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
-    
+
     const target = keys.reduce((current, key) => {
       if (!(key in current)) {
         current[key] = {};
       }
       return current[key];
     }, obj);
-    
+
     target[lastKey] = value;
   }
 
@@ -438,7 +433,7 @@ export class ConfigManager {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -447,15 +442,15 @@ export class ConfigManager {
    */
   async exportConfig(filePath: string, format: 'json' | 'js' = 'json'): Promise<void> {
     const { writeFile } = await import('fs/promises');
-    
+
     let content: string;
-    
+
     if (format === 'js') {
       content = `module.exports = ${JSON.stringify(this.config, null, 2)};`;
     } else {
       content = JSON.stringify(this.config, null, 2);
     }
-    
+
     await writeFile(filePath, content, 'utf-8');
   }
 }

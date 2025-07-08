@@ -1,6 +1,6 @@
 /**
  * Workspace Entity
- * 
+ *
  * Represents a pnpm workspace with catalog configuration.
  * This is a core domain entity that encapsulates workspace business logic.
  */
@@ -96,19 +96,19 @@ export class Workspace {
     // Check if all catalog references in packages exist
     for (const pkg of this.packages.getAll()) {
       const catalogRefs = pkg.getCatalogReferences();
-      
+
       for (const ref of catalogRefs) {
         if (!this.catalogs.has(ref.getCatalogName())) {
           errors.push(
             `Package "${pkg.getName()}" references unknown catalog "${ref.getCatalogName()}"`
           );
         }
-        
+
         const catalog = this.catalogs.get(ref.getCatalogName());
         if (catalog && !catalog.hasDependency(ref.getPackageName())) {
           warnings.push(
             `Package "${pkg.getName()}" references "${ref.getPackageName()}" ` +
-            `from catalog "${ref.getCatalogName()}" but it's not defined in the catalog`
+              `from catalog "${ref.getCatalogName()}" but it's not defined in the catalog`
           );
         }
       }

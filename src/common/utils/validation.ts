@@ -46,7 +46,8 @@ export function isValidUrl(url: string): boolean {
  * Validate semver version
  */
 export function isValidSemver(version: string): boolean {
-  const semverRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  const semverRegex =
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
   return semverRegex.test(version);
 }
 
@@ -87,18 +88,18 @@ export function isValidYaml(yamlString: string): boolean {
     // Simple YAML validation - check for basic structure
     const lines = yamlString.split('\n');
     // let indentLevel = 0; // Reserved for future use
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed === '' || trimmed.startsWith('#')) {
         continue; // Skip empty lines and comments
       }
-      
+
       const currentIndent = line.length - line.trimStart().length;
       if (currentIndent % 2 !== 0) {
         return false; // YAML uses 2-space indentation
       }
-      
+
       if (trimmed.includes(':') && !trimmed.startsWith('-')) {
         // Key-value pair
         const [key] = trimmed.split(':');
@@ -107,7 +108,7 @@ export function isValidYaml(yamlString: string): boolean {
         }
       }
     }
-    
+
     return true;
   } catch {
     return false;
@@ -123,26 +124,26 @@ export function isValidGlob(pattern: string): boolean {
     if (pattern.includes('**/**/**')) {
       return false; // Too many recursive wildcards
     }
-    
+
     if (pattern.includes('//')) {
       return false; // Double slashes
     }
-    
+
     // Check for balanced brackets
     let bracketDepth = 0;
     let braceDepth = 0;
-    
+
     for (const char of pattern) {
       if (char === '[') bracketDepth++;
       else if (char === ']') bracketDepth--;
       else if (char === '{') braceDepth++;
       else if (char === '}') braceDepth--;
-      
+
       if (bracketDepth < 0 || braceDepth < 0) {
         return false;
       }
     }
-    
+
     return bracketDepth === 0 && braceDepth === 0;
   } catch {
     return false;
@@ -260,11 +261,11 @@ export function validateConfig(config: Record<string, any>): ValidationResult {
     if (config.registry.url && !isValidUrl(config.registry.url)) {
       errors.push('Invalid registry URL in configuration');
     }
-    
+
     if (config.registry.timeout && !isValidTimeout(config.registry.timeout)) {
       errors.push('Invalid registry timeout in configuration');
     }
-    
+
     if (config.registry.retries && (config.registry.retries < 0 || config.registry.retries > 10)) {
       warnings.push('Registry retries should be between 0 and 10');
     }
@@ -289,7 +290,7 @@ export function validateConfig(config: Record<string, any>): ValidationResult {
     if (config.logging.level && !isValidLogLevel(config.logging.level)) {
       errors.push('Invalid log level in configuration');
     }
-    
+
     if (config.logging.file && !isValidPath(config.logging.file)) {
       errors.push('Invalid log file path in configuration');
     }
@@ -301,11 +302,14 @@ export function validateConfig(config: Record<string, any>): ValidationResult {
 /**
  * Sanitize string input
  */
-export function sanitizeString(input: string, options: {
-  maxLength?: number;
-  allowedChars?: RegExp;
-  stripHtml?: boolean;
-} = {}): string {
+export function sanitizeString(
+  input: string,
+  options: {
+    maxLength?: number;
+    allowedChars?: RegExp;
+    stripHtml?: boolean;
+  } = {}
+): string {
   let result = input;
 
   // Strip HTML tags if requested

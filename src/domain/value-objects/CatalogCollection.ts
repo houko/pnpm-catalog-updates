@@ -1,6 +1,6 @@
 /**
  * CatalogCollection Value Object
- * 
+ *
  * Represents a collection of catalogs in a workspace.
  * Provides operations for managing and querying multiple catalogs.
  */
@@ -26,7 +26,7 @@ export class CatalogCollection {
    */
   public static fromCatalogs(catalogs: Catalog[]): CatalogCollection {
     const catalogMap = new Map<CatalogName, Catalog>();
-    
+
     for (const catalog of catalogs) {
       catalogMap.set(catalog.getName(), catalog);
     }
@@ -108,7 +108,7 @@ export class CatalogCollection {
     if (!this.has(catalog.getName())) {
       throw new Error(`Catalog "${catalog.getName()}" not found in collection`);
     }
-    
+
     const newCatalogs = new Map(this.catalogs);
     newCatalogs.set(catalog.getName(), catalog);
     return new CatalogCollection(newCatalogs);
@@ -134,7 +134,7 @@ export class CatalogCollection {
    */
   public filter(predicate: (catalog: Catalog) => boolean): CatalogCollection {
     const filteredCatalogs = new Map<CatalogName, Catalog>();
-    
+
     for (const [name, catalog] of this.catalogs) {
       if (predicate(catalog)) {
         filteredCatalogs.set(name, catalog);
@@ -148,7 +148,7 @@ export class CatalogCollection {
    * Find catalogs that contain a specific package
    */
   public findCatalogsWithPackage(packageName: string): Catalog[] {
-    return this.getAll().filter(catalog => catalog.hasDependency(packageName));
+    return this.getAll().filter((catalog) => catalog.hasDependency(packageName));
   }
 
   /**
@@ -156,7 +156,7 @@ export class CatalogCollection {
    */
   public getAllPackageNames(): string[] {
     const packageNames = new Set<string>();
-    
+
     for (const catalog of this.catalogs.values()) {
       for (const packageName of catalog.getPackageNames()) {
         packageNames.add(packageName);
@@ -181,13 +181,15 @@ export class CatalogCollection {
     // Validate each catalog
     for (const catalog of this.catalogs.values()) {
       const result = catalog.validate();
-      errors.push(...result.getErrors().map(err => `Catalog "${catalog.getName()}": ${err}`));
-      warnings.push(...result.getWarnings().map(warn => `Catalog "${catalog.getName()}": ${warn}`));
+      errors.push(...result.getErrors().map((err) => `Catalog "${catalog.getName()}": ${err}`));
+      warnings.push(
+        ...result.getWarnings().map((warn) => `Catalog "${catalog.getName()}": ${warn}`)
+      );
     }
 
     // Check for duplicate package definitions across catalogs
     const packageCatalogMap = new Map<string, string[]>();
-    
+
     for (const catalog of this.catalogs.values()) {
       for (const packageName of catalog.getPackageNames()) {
         if (!packageCatalogMap.has(packageName)) {

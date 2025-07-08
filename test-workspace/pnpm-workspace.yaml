@@ -1,8 +1,0 @@
-packages:
-  - "packages/*"
-
-catalog:
-  react: "^17.0.2"
-  typescript: "^4.9.5"
-  express: "^4.18.2"
-  lodash: "^4.17.21"

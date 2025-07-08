@@ -1,6 +1,6 @@
 /**
  * File System Service
- * 
+ *
  * Provides abstracted file system operations for the application.
  * Handles reading/writing workspace files, package.json, and pnpm-workspace.yaml.
  */
@@ -104,8 +104,8 @@ export class FileSystemService {
    */
   async writeYamlFile(filePath: string, data: any): Promise<void> {
     try {
-      const content = YAML.stringify(data, { 
-        indent: 2
+      const content = YAML.stringify(data, {
+        indent: 2,
       });
       await this.writeTextFile(filePath, content);
     } catch (error) {
@@ -118,8 +118,8 @@ export class FileSystemService {
    */
   async readPnpmWorkspaceConfig(workspacePath: WorkspacePath): Promise<PnpmWorkspaceData> {
     const configPath = workspacePath.getPnpmWorkspaceConfigPath().toString();
-    
-    if (!await this.exists(configPath)) {
+
+    if (!(await this.exists(configPath))) {
       throw new Error(`pnpm-workspace.yaml not found at ${configPath}`);
     }
 
@@ -129,7 +129,10 @@ export class FileSystemService {
   /**
    * Write pnpm-workspace.yaml configuration
    */
-  async writePnpmWorkspaceConfig(workspacePath: WorkspacePath, config: PnpmWorkspaceData): Promise<void> {
+  async writePnpmWorkspaceConfig(
+    workspacePath: WorkspacePath,
+    config: PnpmWorkspaceData
+  ): Promise<void> {
     const configPath = workspacePath.getPnpmWorkspaceConfigPath().toString();
     await this.writeYamlFile(configPath, config);
   }
@@ -139,8 +142,8 @@ export class FileSystemService {
    */
   async readPackageJson(packagePath: WorkspacePath): Promise<PackageJsonData> {
     const packageJsonPath = packagePath.getPackageJsonPath().toString();
-    
-    if (!await this.exists(packageJsonPath)) {
+
+    if (!(await this.exists(packageJsonPath))) {
       throw new Error(`package.json not found at ${packageJsonPath}`);
     }
 
@@ -160,14 +163,14 @@ export class FileSystemService {
    */
   async findPackageJsonFiles(workspacePath: WorkspacePath, patterns: string[]): Promise<string[]> {
     const results: string[] = [];
-    
+
     for (const pattern of patterns) {
       try {
         // Convert pattern to absolute path and look for package.json
         const absolutePattern = path.resolve(workspacePath.toString(), pattern, 'package.json');
         const matches = await glob(absolutePattern, {
           ignore: ['**/node_modules/**'],
-          absolute: true
+          absolute: true,
         });
         results.push(...matches);
       } catch (error) {
@@ -185,13 +188,13 @@ export class FileSystemService {
    */
   async findDirectories(workspacePath: WorkspacePath, patterns: string[]): Promise<string[]> {
     const results: string[] = [];
-    
+
     for (const pattern of patterns) {
       try {
         const absolutePattern = path.resolve(workspacePath.toString(), pattern);
         const matches = await glob(absolutePattern, {
           ignore: ['**/node_modules/**'],
-          absolute: true
+          absolute: true,
         });
         results.push(...matches);
       } catch (error) {
@@ -208,9 +211,9 @@ export class FileSystemService {
   async isPnpmWorkspace(dirPath: string): Promise<boolean> {
     const workspaceConfigPath = path.join(dirPath, 'pnpm-workspace.yaml');
     const packageJsonPath = path.join(dirPath, 'package.json');
-    
+
     // Must have both pnpm-workspace.yaml and package.json
-    return await this.exists(workspaceConfigPath) && await this.exists(packageJsonPath);
+    return (await this.exists(workspaceConfigPath)) && (await this.exists(packageJsonPath));
   }
 
   /**
@@ -218,7 +221,7 @@ export class FileSystemService {
    */
   async findNearestWorkspace(startPath: string): Promise<string | null> {
     let currentPath = path.resolve(startPath);
-    
+
     while (currentPath !== path.dirname(currentPath)) {
       if (await this.isPnpmWorkspace(currentPath)) {
         return currentPath;
@@ -247,7 +250,7 @@ export class FileSystemService {
   async createBackup(filePath: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = `${filePath}.backup.${timestamp}`;
-    
+
     try {
       await fs.copyFile(filePath, backupPath);
       return backupPath;
@@ -284,9 +287,7 @@ export class FileSystemService {
   async listFiles(dirPath: string): Promise<string[]> {
     try {
       const items = await fs.readdir(dirPath, { withFileTypes: true });
-      return items
-        .filter(item => item.isFile())
-        .map(item => path.join(dirPath, item.name));
+      return items.filter((item) => item.isFile()).map((item) => path.join(dirPath, item.name));
     } catch (error) {
       throw new Error(`Failed to list files in ${dirPath}: ${error}`);
     }
@@ -299,8 +300,8 @@ export class FileSystemService {
     try {
       const items = await fs.readdir(dirPath, { withFileTypes: true });
       return items
-        .filter(item => item.isDirectory())
-        .map(item => path.join(dirPath, item.name));
+        .filter((item) => item.isDirectory())
+        .map((item) => path.join(dirPath, item.name));
     } catch (error) {
       throw new Error(`Failed to list directories in ${dirPath}: ${error}`);
     }

@@ -16,22 +16,30 @@ export interface Result<T = void, E = Error> {
  * Success result constructor
  */
 export function Success<T>(data?: T, message?: string): Result<T> {
-  return {
+  const result: Result<T> = {
     success: true,
-    data,
-    message,
   };
+  if (data !== undefined) {
+    result.data = data;
+  }
+  if (message !== undefined) {
+    result.message = message;
+  }
+  return result;
 }
 
 /**
  * Error result constructor
  */
 export function Failure<E = Error>(error: E, message?: string): Result<never, E> {
-  return {
+  const result: Result<never, E> = {
     success: false,
     error,
-    message,
   };
+  if (message !== undefined) {
+    result.message = message;
+  }
+  return result;
 }
 
 /**
@@ -231,11 +239,14 @@ export interface HealthStatus {
   timestamp: Date;
   uptime: number;
   version: string;
-  services: Record<string, {
-    status: 'up' | 'down' | 'degraded';
-    responseTime?: number;
-    message?: string;
-  }>;
+  services: Record<
+    string,
+    {
+      status: 'up' | 'down' | 'degraded';
+      responseTime?: number;
+      message?: string;
+    }
+  >;
 }
 
 /**

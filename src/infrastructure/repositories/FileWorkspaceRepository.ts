@@ -1,6 +1,6 @@
 /**
  * File-based Workspace Repository Implementation
- * 
+ *
  * Implements WorkspaceRepository interface using the file system.
  * Handles loading and saving workspace data from pnpm-workspace.yaml and package.json files.
  */
@@ -27,13 +27,13 @@ export class FileWorkspaceRepository implements WorkspaceRepository {
   async findByPath(path: WorkspacePath): Promise<Workspace | null> {
     try {
       // Check if the path contains a valid workspace
-      if (!await this.isValidWorkspace(path)) {
+      if (!(await this.isValidWorkspace(path))) {
         return null;
       }
 
       // Load workspace configuration
       const config = await this.loadConfiguration(path);
-      
+
       // Create workspace ID from path
       const id = WorkspaceId.fromPath(path.toString());
 
@@ -110,10 +110,10 @@ export class FileWorkspaceRepository implements WorkspaceRepository {
    */
   async discoverWorkspace(searchPath?: WorkspacePath): Promise<Workspace | null> {
     const startPath = searchPath?.toString() || process.cwd();
-    
+
     try {
       const workspacePath = await this.fileSystemService.findNearestWorkspace(startPath);
-      
+
       if (!workspacePath) {
         return null;
       }
@@ -128,13 +128,16 @@ export class FileWorkspaceRepository implements WorkspaceRepository {
   /**
    * Load packages from workspace
    */
-  private async loadPackages(workspacePath: WorkspacePath, config: WorkspaceConfig): Promise<PackageCollection> {
+  private async loadPackages(
+    workspacePath: WorkspacePath,
+    config: WorkspaceConfig
+  ): Promise<PackageCollection> {
     try {
       const packagePatterns = config.getPackagePatterns();
-      
+
       // Find all package.json files matching the patterns
       const packageJsonFiles = await this.fileSystemService.findPackageJsonFiles(
-        workspacePath, 
+        workspacePath,
         packagePatterns
       );
 
@@ -144,14 +147,14 @@ export class FileWorkspaceRepository implements WorkspaceRepository {
         try {
           const packageDir = path.dirname(packageJsonPath);
           const packagePath = WorkspacePath.fromString(packageDir);
-          
+
           // Read package.json
           const packageData = await this.fileSystemService.readPackageJson(packagePath);
-          
+
           // Create package
           const packageId = `${packageData.name}-${packageDir}`;
           const pkg = Package.create(packageId, packageData.name, packagePath, packageData);
-          
+
           packages.push(pkg);
         } catch (error) {
           console.warn(`Failed to load package from ${packageJsonPath}:`, error);

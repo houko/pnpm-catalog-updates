@@ -1,6 +1,6 @@
 /**
  * Package Entity
- * 
+ *
  * Represents a package in a pnpm workspace that may reference catalog dependencies.
  * Handles package.json structure and catalog dependency references.
  */
@@ -9,7 +9,11 @@ import { WorkspacePath } from '../value-objects/WorkspacePath.js';
 
 export type PackageId = string;
 export type PackageName = string;
-export type DependencyType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies';
+export type DependencyType =
+  | 'dependencies'
+  | 'devDependencies'
+  | 'peerDependencies'
+  | 'optionalDependencies';
 
 export class Package {
   private readonly id: PackageId;
@@ -86,28 +90,31 @@ export class Package {
    * Get catalog dependencies only
    */
   public getCatalogDependencies(): CatalogDependency[] {
-    return this.catalogReferences.map(ref => new CatalogDependency(
-      ref.getPackageName(),
-      ref.getCatalogName(),
-      ref.getDependencyType()
-    ));
+    return this.catalogReferences.map(
+      (ref) =>
+        new CatalogDependency(ref.getPackageName(), ref.getCatalogName(), ref.getDependencyType())
+    );
   }
 
   /**
    * Check if package uses a specific catalog dependency
    */
   public usesCatalogDependency(catalogName: string, packageName: string): boolean {
-    return this.catalogReferences.some(ref => 
-      ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
+    return this.catalogReferences.some(
+      (ref) => ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
     );
   }
 
   /**
    * Update a dependency from catalog
    */
-  public updateDependencyFromCatalog(catalogName: string, packageName: string, _newVersion: string): void {
-    const reference = this.catalogReferences.find(ref => 
-      ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
+  public updateDependencyFromCatalog(
+    catalogName: string,
+    packageName: string,
+    _newVersion: string
+  ): void {
+    const reference = this.catalogReferences.find(
+      (ref) => ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
     );
 
     if (!reference) {
@@ -145,9 +152,15 @@ export class Package {
 
     // Add dependencies from collection
     data.dependencies = Object.fromEntries(this.dependencies.getDependenciesByType('dependencies'));
-    data.devDependencies = Object.fromEntries(this.dependencies.getDependenciesByType('devDependencies'));
-    data.peerDependencies = Object.fromEntries(this.dependencies.getDependenciesByType('peerDependencies'));
-    data.optionalDependencies = Object.fromEntries(this.dependencies.getDependenciesByType('optionalDependencies'));
+    data.devDependencies = Object.fromEntries(
+      this.dependencies.getDependenciesByType('devDependencies')
+    );
+    data.peerDependencies = Object.fromEntries(
+      this.dependencies.getDependenciesByType('peerDependencies')
+    );
+    data.optionalDependencies = Object.fromEntries(
+      this.dependencies.getDependenciesByType('optionalDependencies')
+    );
 
     return data;
   }
@@ -157,11 +170,16 @@ export class Package {
    */
   private static extractCatalogReferences(packageJsonData: PackageJsonData): CatalogReference[] {
     const references: CatalogReference[] = [];
-    const dependencyTypes: DependencyType[] = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
+    const dependencyTypes: DependencyType[] = [
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+      'optionalDependencies',
+    ];
 
     for (const depType of dependencyTypes) {
       const deps = packageJsonData[depType] || {};
-      
+
       for (const [packageName, version] of Object.entries(deps)) {
         if (typeof version === 'string' && version.startsWith('catalog:')) {
           const catalogName = version === 'catalog:' ? 'default' : version.substring(8);
@@ -234,9 +252,11 @@ export class CatalogReference {
   }
 
   public equals(other: CatalogReference): boolean {
-    return this.catalogName === other.catalogName &&
-           this.packageName === other.packageName &&
-           this.dependencyType === other.dependencyType;
+    return (
+      this.catalogName === other.catalogName &&
+      this.packageName === other.packageName &&
+      this.dependencyType === other.dependencyType
+    );
   }
 }
 
@@ -284,11 +304,14 @@ export class DependencyCollection {
 
   public static fromPackageJson(packageJsonData: PackageJsonData): DependencyCollection {
     const deps = new Map<DependencyType, Map<string, string>>();
-    
+
     deps.set('dependencies', new Map(Object.entries(packageJsonData.dependencies || {})));
     deps.set('devDependencies', new Map(Object.entries(packageJsonData.devDependencies || {})));
     deps.set('peerDependencies', new Map(Object.entries(packageJsonData.peerDependencies || {})));
-    deps.set('optionalDependencies', new Map(Object.entries(packageJsonData.optionalDependencies || {})));
+    deps.set(
+      'optionalDependencies',
+      new Map(Object.entries(packageJsonData.optionalDependencies || {}))
+    );
 
     return new DependencyCollection(deps);
   }
@@ -304,7 +327,10 @@ export class DependencyCollection {
     }
   }
 
-  public filterByCatalogDependency(_catalogName: string, _packageName: string): DependencyCollection {
+  public filterByCatalogDependency(
+    _catalogName: string,
+    _packageName: string
+  ): DependencyCollection {
     // This would filter dependencies that match catalog references
     // Implementation would require catalog reference information
     return this;

@@ -6,7 +6,7 @@
  * Delay execution for specified milliseconds
  */
 export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -62,7 +62,7 @@ export async function parallelLimit<T, R>(
   const executing: Promise<void>[] = [];
 
   for (let i = 0; i < items.length; i++) {
-    const promise = fn(items[i]!, i).then(result => {
+    const promise = fn(items[i]!, i).then((result) => {
       results[i] = result;
     });
 
@@ -70,7 +70,10 @@ export async function parallelLimit<T, R>(
 
     if (executing.length >= limit) {
       await Promise.race(executing);
-      executing.splice(executing.findIndex(p => p === promise), 1);
+      executing.splice(
+        executing.findIndex((p) => p === promise),
+        1
+      );
     }
   }
 
@@ -81,11 +84,7 @@ export async function parallelLimit<T, R>(
 /**
  * Race with timeout
  */
-export async function timeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  message?: string
-): Promise<T> {
+export async function timeout<T>(promise: Promise<T>, ms: number, message?: string): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => {
       reject(new Error(message || `Operation timed out after ${ms}ms`));
@@ -98,10 +97,7 @@ export async function timeout<T>(
 /**
  * Debounce async function
  */
-export function debounce<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  ms: number
-): T {
+export function debounce<T extends (...args: any[]) => Promise<any>>(fn: T, ms: number): T {
   let timeoutId: NodeJS.Timeout;
   let latestResolve: ((value: any) => void) | undefined;
   let latestReject: ((reason: any) => void) | undefined;
@@ -127,10 +123,7 @@ export function debounce<T extends (...args: any[]) => Promise<any>>(
 /**
  * Throttle async function
  */
-export function throttle<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  ms: number
-): T {
+export function throttle<T extends (...args: any[]) => Promise<any>>(fn: T, ms: number): T {
   let inThrottle = false;
   let lastResult: any;
 
@@ -138,7 +131,9 @@ export function throttle<T extends (...args: any[]) => Promise<any>>(
     if (!inThrottle) {
       inThrottle = true;
       lastResult = await fn(...args);
-      setTimeout(() => { inThrottle = false; }, ms);
+      setTimeout(() => {
+        inThrottle = false;
+      }, ms);
     }
     return lastResult;
   }) as T;
@@ -147,19 +142,17 @@ export function throttle<T extends (...args: any[]) => Promise<any>>(
 /**
  * Create a cancelable promise
  */
-export function cancelable<T>(
-  promise: Promise<T>
-): { promise: Promise<T>; cancel: () => void } {
+export function cancelable<T>(promise: Promise<T>): { promise: Promise<T>; cancel: () => void } {
   let isCanceled = false;
 
   const cancelablePromise = new Promise<T>((resolve, reject) => {
     promise
-      .then(value => {
+      .then((value) => {
         if (!isCanceled) {
           resolve(value);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         if (!isCanceled) {
           reject(error);
         }
@@ -190,11 +183,7 @@ export class CircuitBreaker<T extends (...args: any[]) => Promise<any>> {
       monitoringPeriod?: number;
     } = {}
   ) {
-    const {
-      failureThreshold = 5,
-      recoveryTimeout = 60000,
-      monitoringPeriod = 10000,
-    } = options;
+    const { failureThreshold = 5, recoveryTimeout = 60000, monitoringPeriod = 10000 } = options;
 
     this.options = { failureThreshold, recoveryTimeout, monitoringPeriod };
   }

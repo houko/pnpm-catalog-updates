@@ -1,6 +1,6 @@
 /**
  * Workspace Service
- * 
+ *
  * Application service for workspace discovery, validation, and management.
  * Provides high-level operations for working with pnpm workspaces.
  */
@@ -64,12 +64,12 @@ export class WorkspaceService {
    */
   async discoverWorkspace(searchPath?: string): Promise<Workspace> {
     const path = searchPath ? WorkspacePath.fromString(searchPath) : undefined;
-    
+
     const workspace = await this.workspaceRepository.discoverWorkspace(path);
-    
+
     if (!workspace) {
       throw new Error(
-        searchPath 
+        searchPath
           ? `No pnpm workspace found at or above ${searchPath}`
           : 'No pnpm workspace found in current directory or parent directories'
       );
@@ -83,10 +83,10 @@ export class WorkspaceService {
    */
   async getWorkspaceInfo(workspacePath?: string): Promise<WorkspaceInfo> {
     const path = WorkspacePath.fromString(workspacePath || process.cwd());
-    
+
     // Try to load workspace
     const workspace = await this.workspaceRepository.findByPath(path);
-    
+
     if (!workspace) {
       return {
         path: path.toString(),
@@ -96,7 +96,7 @@ export class WorkspaceService {
         hasCatalogs: false,
         packageCount: 0,
         catalogCount: 0,
-        catalogNames: []
+        catalogNames: [],
       };
     }
 
@@ -111,7 +111,7 @@ export class WorkspaceService {
       hasCatalogs: !catalogs.isEmpty(),
       packageCount: packages.size(),
       catalogCount: catalogs.size(),
-      catalogNames: catalogs.getCatalogNames()
+      catalogNames: catalogs.getCatalogNames(),
     };
   }
 
@@ -131,8 +131,8 @@ export class WorkspaceService {
         recommendations: [
           'Initialize a pnpm workspace with: pnpm init',
           'Create pnpm-workspace.yaml file',
-          'Define package patterns in pnpm-workspace.yaml'
-        ]
+          'Define package patterns in pnpm-workspace.yaml',
+        ],
       };
     }
 
@@ -152,30 +152,28 @@ export class WorkspaceService {
     }
 
     if (workspaceInfo.packageCount === 0) {
-      recommendations.push('No packages found - check your package patterns in pnpm-workspace.yaml');
+      recommendations.push(
+        'No packages found - check your package patterns in pnpm-workspace.yaml'
+      );
     }
 
     if (workspaceInfo.packageCount > 20) {
-      recommendations.push('Large workspace detected - consider organizing packages into logical groups');
+      recommendations.push(
+        'Large workspace detected - consider organizing packages into logical groups'
+      );
     }
 
     // Validate catalogs
     const catalogValidation = workspace.getCatalogs().validate();
-    const allErrors = [
-      ...validationResult.getErrors(),
-      ...catalogValidation.getErrors()
-    ];
-    const allWarnings = [
-      ...validationResult.getWarnings(),
-      ...catalogValidation.getWarnings()
-    ];
+    const allErrors = [...validationResult.getErrors(), ...catalogValidation.getErrors()];
+    const allWarnings = [...validationResult.getWarnings(), ...catalogValidation.getWarnings()];
 
     return {
       isValid: validationResult.getIsValid() && catalogValidation.getIsValid(),
       workspace: workspaceInfo,
       errors: allErrors,
       warnings: allWarnings,
-      recommendations
+      recommendations,
     };
   }
 
@@ -185,12 +183,12 @@ export class WorkspaceService {
   async getCatalogs(workspacePath?: string): Promise<CatalogInfo[]> {
     const workspace = await this.discoverWorkspace(workspacePath);
     const catalogs = workspace.getCatalogs();
-    
-    return catalogs.getAll().map(catalog => ({
+
+    return catalogs.getAll().map((catalog) => ({
       name: catalog.getName(),
       packageCount: catalog.getPackageNames().length,
       packages: catalog.getPackageNames(),
-      mode: catalog.getMode()
+      mode: catalog.getMode(),
     }));
   }
 
@@ -200,15 +198,20 @@ export class WorkspaceService {
   async getPackages(workspacePath?: string): Promise<PackageInfo[]> {
     const workspace = await this.discoverWorkspace(workspacePath);
     const packages = workspace.getPackages();
-    
-    return packages.getAll().map(pkg => {
+
+    return packages.getAll().map((pkg) => {
       const catalogReferences = pkg.getCatalogReferences();
       const dependencies = pkg.getDependencies();
-      
+
       // Collect all dependencies from all types
       const allDependencies: DependencyInfo[] = [];
-      const depTypes = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const;
-      
+      const depTypes = [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+        'optionalDependencies',
+      ] as const;
+
       for (const depType of depTypes) {
         const deps = dependencies.getDependenciesByType(depType);
         for (const [name, version] of deps) {
@@ -216,7 +219,7 @@ export class WorkspaceService {
             name,
             version,
             type: depType,
-            isCatalogReference: version.startsWith('catalog:')
+            isCatalogReference: version.startsWith('catalog:'),
           });
         }
       }
@@ -225,12 +228,12 @@ export class WorkspaceService {
         name: pkg.getName(),
         path: pkg.getPath().toString(),
         hasPackageJson: true, // If package was loaded, it has package.json
-        catalogReferences: catalogReferences.map(ref => ({
+        catalogReferences: catalogReferences.map((ref) => ({
           catalogName: ref.getCatalogName(),
           packageName: ref.getPackageName(),
-          dependencyType: ref.getDependencyType()
+          dependencyType: ref.getDependencyType(),
         })),
-        dependencies: allDependencies
+        dependencies: allDependencies,
       };
     });
   }
@@ -250,19 +253,27 @@ export class WorkspaceService {
   /**
    * Get packages that use a specific catalog
    */
-  async getPackagesUsingCatalog(catalogName: string, workspacePath?: string): Promise<PackageInfo[]> {
+  async getPackagesUsingCatalog(
+    catalogName: string,
+    workspacePath?: string
+  ): Promise<PackageInfo[]> {
     const workspace = await this.discoverWorkspace(workspacePath);
     const packagesUsingCatalog = workspace.getPackages().findPackagesUsingCatalog(catalogName);
-    
-    return packagesUsingCatalog.map(pkg => {
-      const catalogReferences = pkg.getCatalogReferences().filter(
-        ref => ref.getCatalogName() === catalogName
-      );
-      
+
+    return packagesUsingCatalog.map((pkg) => {
+      const catalogReferences = pkg
+        .getCatalogReferences()
+        .filter((ref) => ref.getCatalogName() === catalogName);
+
       const dependencies = pkg.getDependencies();
       const allDependencies: DependencyInfo[] = [];
-      const depTypes = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const;
-      
+      const depTypes = [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+        'optionalDependencies',
+      ] as const;
+
       for (const depType of depTypes) {
         const deps = dependencies.getDependenciesByType(depType);
         for (const [name, version] of deps) {
@@ -270,7 +281,7 @@ export class WorkspaceService {
             name,
             version,
             type: depType,
-            isCatalogReference: version.startsWith('catalog:')
+            isCatalogReference: version.startsWith('catalog:'),
           });
         }
       }
@@ -279,12 +290,12 @@ export class WorkspaceService {
         name: pkg.getName(),
         path: pkg.getPath().toString(),
         hasPackageJson: true,
-        catalogReferences: catalogReferences.map(ref => ({
+        catalogReferences: catalogReferences.map((ref) => ({
           catalogName: ref.getCatalogName(),
           packageName: ref.getPackageName(),
-          dependencyType: ref.getDependencyType()
+          dependencyType: ref.getDependencyType(),
         })),
-        dependencies: allDependencies
+        dependencies: allDependencies,
       };
     });
   }
@@ -300,12 +311,17 @@ export class WorkspaceService {
     // Count dependencies
     let totalDependencies = 0;
     let catalogDependencies = 0;
-    const dependencyTypes = { dependencies: 0, devDependencies: 0, peerDependencies: 0, optionalDependencies: 0 };
+    const dependencyTypes = {
+      dependencies: 0,
+      devDependencies: 0,
+      peerDependencies: 0,
+      optionalDependencies: 0,
+    };
 
     for (const pkg of packages.getAll()) {
       const deps = pkg.getDependencies();
       const catalogRefs = pkg.getCatalogReferences();
-      
+
       catalogDependencies += catalogRefs.length;
 
       for (const depType of Object.keys(dependencyTypes) as Array<keyof typeof dependencyTypes>) {
@@ -324,21 +340,21 @@ export class WorkspaceService {
     return {
       workspace: {
         path: workspace.getPath().toString(),
-        name: workspace.getPath().getDirectoryName()
+        name: workspace.getPath().getDirectoryName(),
       },
       packages: {
         total: packages.size(),
-        withCatalogReferences: packages.findPackagesWithCatalogReferences().length
+        withCatalogReferences: packages.findPackagesWithCatalogReferences().length,
       },
       catalogs: {
         total: catalogs.size(),
-        totalEntries: totalCatalogEntries
+        totalEntries: totalCatalogEntries,
       },
       dependencies: {
         total: totalDependencies,
         catalogReferences: catalogDependencies,
-        byType: dependencyTypes
-      }
+        byType: dependencyTypes,
+      },
     };
   }
 
@@ -368,7 +384,7 @@ export class WorkspaceService {
       validation,
       stats,
       issues,
-      lastChecked: new Date()
+      lastChecked: new Date(),
     };
   }
 
@@ -398,7 +414,7 @@ export class WorkspaceService {
       issues.push({
         type: 'warning',
         message: 'No packages found in workspace',
-        suggestion: 'Check package patterns in pnpm-workspace.yaml'
+        suggestion: 'Check package patterns in pnpm-workspace.yaml',
       });
     }
 
@@ -407,7 +423,7 @@ export class WorkspaceService {
       issues.push({
         type: 'info',
         message: 'No catalogs defined',
-        suggestion: 'Consider using catalogs for better dependency management'
+        suggestion: 'Consider using catalogs for better dependency management',
       });
     }
 

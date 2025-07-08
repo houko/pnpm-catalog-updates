@@ -30,12 +30,10 @@ export default defineConfig({
 
     // Watch disabled for E2E
     watch: false,
-
-    // Cache
-    cache: {
-      dir: 'node_modules/.vitest-e2e',
-    },
   },
+
+  // Cache directory
+  cacheDir: 'node_modules/.vitest-e2e',
 
   // Path resolution
   resolve: {

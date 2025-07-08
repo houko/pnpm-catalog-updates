@@ -36,9 +36,14 @@ export function truncate(str: string, maxLength: number, ellipsis: string = '...
 /**
  * Pad string to specified length
  */
-export function pad(str: string, length: number, char: string = ' ', direction: 'left' | 'right' | 'both' = 'right'): string {
+export function pad(
+  str: string,
+  length: number,
+  char: string = ' ',
+  direction: 'left' | 'right' | 'both' = 'right'
+): string {
   const padding = Math.max(0, length - str.length);
-  
+
   switch (direction) {
     case 'left':
       return char.repeat(padding) + str;
@@ -69,7 +74,10 @@ export function pluralize(word: string, count: number, suffix: string = 's'): st
 /**
  * Generate random string
  */
-export function randomString(length: number, chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+export function randomString(
+  length: number,
+  chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+): string {
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -103,7 +111,7 @@ export function parseBoolean(value: string | boolean): boolean {
   if (typeof value === 'boolean') {
     return value;
   }
-  
+
   const normalized = value.toLowerCase().trim();
   return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on';
 }
@@ -122,15 +130,15 @@ export function template(str: string, variables: Record<string, any>): string {
  */
 export function similarity(a: string, b: string): number {
   const matrix: number[][] = [];
-  
+
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
   }
-  
+
   for (let j = 0; j <= a.length; j++) {
     matrix[0]![j] = j;
   }
-  
+
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       if (b.charAt(i - 1) === a.charAt(j - 1)) {
@@ -138,13 +146,13 @@ export function similarity(a: string, b: string): number {
       } else {
         matrix[i]![j] = Math.min(
           matrix[i - 1]![j - 1]! + 1, // substitution
-          matrix[i]![j - 1]! + 1,     // insertion
-          matrix[i - 1]![j]! + 1      // deletion
+          matrix[i]![j - 1]! + 1, // insertion
+          matrix[i - 1]![j]! + 1 // deletion
         );
       }
     }
   }
-  
+
   const maxLength = Math.max(a.length, b.length);
   return maxLength === 0 ? 1 : (maxLength - matrix[b.length]![a.length]!) / maxLength;
 }

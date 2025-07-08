@@ -2,35 +2,33 @@
 
 /**
  * pnpm-catalog-updater CLI Entry Point
- * 
+ *
  * A CLI tool for checking and updating pnpm workspace catalog dependencies.
  * This is the main entry point that handles command parsing and execution.
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 // Services and Dependencies
-import { FileSystemService } from '../infrastructure/file-system/FileSystemService.js';
-import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWorkspaceRepository.js';
-import { NpmRegistryService } from '../infrastructure/external-services/NpmRegistryService.js';
 import { CatalogUpdateService } from '../application/services/CatalogUpdateService.js';
 import { WorkspaceService } from '../application/services/WorkspaceService.js';
+import { NpmRegistryService } from '../infrastructure/external-services/NpmRegistryService.js';
+import { FileSystemService } from '../infrastructure/file-system/FileSystemService.js';
+import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWorkspaceRepository.js';
 
 // CLI Commands
 import { CheckCommand } from './commands/CheckCommand.js';
 import { UpdateCommand } from './commands/UpdateCommand.js';
-import { OutputFormatter, OutputFormat } from './formatters/OutputFormatter.js';
+import { OutputFormat, OutputFormatter } from './formatters/OutputFormatter.js';
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(
-  readFileSync(join(__dirname, '../../package.json'), 'utf-8')
-);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'));
 
 /**
  * Create service dependencies
@@ -47,7 +45,7 @@ function createServices() {
     workspaceRepository,
     registryService,
     catalogUpdateService,
-    workspaceService
+    workspaceService,
   };
 }
 
@@ -56,7 +54,7 @@ function createServices() {
  */
 export async function main(): Promise<void> {
   const program = new Command();
-  
+
   // Create services
   const services = createServices();
 
@@ -86,19 +84,23 @@ export async function main(): Promise<void> {
           options.format as OutputFormat,
           !globalOptions.noColor
         );
-        
+
         const checkCommand = new CheckCommand(services.catalogUpdateService, formatter);
-        
+
         await checkCommand.execute({
           workspace: globalOptions.workspace,
           catalog: options.catalog,
           format: options.format,
           target: options.target,
           prerelease: options.prerelease,
-          include: Array.isArray(options.include) ? options.include : [options.include].filter(Boolean),
-          exclude: Array.isArray(options.exclude) ? options.exclude : [options.exclude].filter(Boolean),
+          include: Array.isArray(options.include)
+            ? options.include
+            : [options.include].filter(Boolean),
+          exclude: Array.isArray(options.exclude)
+            ? options.exclude
+            : [options.exclude].filter(Boolean),
           verbose: globalOptions.verbose,
-          color: !globalOptions.noColor
+          color: !globalOptions.noColor,
         });
       } catch (error) {
         console.error(chalk.red('❌ Error:'), error);
@@ -127,9 +129,9 @@ export async function main(): Promise<void> {
           options.format as OutputFormat,
           !globalOptions.noColor
         );
-        
+
         const updateCommand = new UpdateCommand(services.catalogUpdateService, formatter);
-        
+
         await updateCommand.execute({
           workspace: globalOptions.workspace,
           catalog: options.catalog,
@@ -139,11 +141,15 @@ export async function main(): Promise<void> {
           dryRun: options.dryRun,
           force: options.force,
           prerelease: options.prerelease,
-          include: Array.isArray(options.include) ? options.include : [options.include].filter(Boolean),
-          exclude: Array.isArray(options.exclude) ? options.exclude : [options.exclude].filter(Boolean),
+          include: Array.isArray(options.include)
+            ? options.include
+            : [options.include].filter(Boolean),
+          exclude: Array.isArray(options.exclude)
+            ? options.exclude
+            : [options.exclude].filter(Boolean),
           createBackup: options.createBackup,
           verbose: globalOptions.verbose,
-          color: !globalOptions.noColor
+          color: !globalOptions.noColor,
         });
       } catch (error) {
         console.error(chalk.red('❌ Error:'), error);
@@ -168,8 +174,9 @@ export async function main(): Promise<void> {
         );
 
         // Get latest version if not specified
-        const targetVersion = version || (await services.registryService.getLatestVersion(packageName)).toString();
-        
+        const targetVersion =
+          version || (await services.registryService.getLatestVersion(packageName)).toString();
+
         const analysis = await services.catalogUpdateService.analyzeImpact(
           catalog,
           packageName,
@@ -215,9 +222,11 @@ export async function main(): Promise<void> {
           console.log(formatter.formatMessage(`Path: ${info.path}`, 'info'));
           console.log(formatter.formatMessage(`Packages: ${info.packageCount}`, 'info'));
           console.log(formatter.formatMessage(`Catalogs: ${info.catalogCount}`, 'info'));
-          
+
           if (info.catalogNames.length > 0) {
-            console.log(formatter.formatMessage(`Catalog names: ${info.catalogNames.join(', ')}`, 'info'));
+            console.log(
+              formatter.formatMessage(`Catalog names: ${info.catalogNames.join(', ')}`, 'info')
+            );
           }
         }
       } catch (error) {
@@ -233,7 +242,7 @@ export async function main(): Promise<void> {
     .description('display help for command')
     .action((command) => {
       if (command) {
-        const cmd = program.commands.find(c => c.name() === command);
+        const cmd = program.commands.find((c) => c.name() === command);
         if (cmd) {
           cmd.help();
         } else {
@@ -244,19 +253,8 @@ export async function main(): Promise<void> {
       }
     });
 
-  // Global error handler
-  program.exitOverride((err) => {
-    if (err.code === 'commander.version') {
-      console.log(packageJson.version);
-      process.exit(0);
-    }
-    if (err.code === 'commander.help') {
-      console.log(err.message);
-      process.exit(0);
-    }
-    console.error(chalk.red('❌ Error:'), err.message);
-    process.exit(1);
-  });
+  // Let commander handle help and version normally
+  // program.exitOverride() removed to fix help/version output
 
   // Show help if no arguments provided
   if (process.argv.length <= 2) {

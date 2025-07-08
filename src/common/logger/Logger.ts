@@ -1,6 +1,6 @@
 /**
  * Logging System
- * 
+ *
  * Provides structured logging with multiple output targets and log levels.
  * Integrates with the configuration system for runtime control.
  */
@@ -41,9 +41,9 @@ export class Logger {
 
   private constructor(context: string, options: Partial<LoggerOptions> = {}) {
     this.context = context;
-    
+
     const config = getConfig().getConfig();
-    
+
     this.options = {
       context: options.context || context,
       level: options.level || config.logging.level,
@@ -58,11 +58,11 @@ export class Logger {
    */
   static getLogger(context: string, options?: Partial<LoggerOptions>): Logger {
     const key = `${context}:${JSON.stringify(options || {})}`;
-    
+
     if (!Logger.instances.has(key)) {
       Logger.instances.set(key, new Logger(context, options));
     }
-    
+
     return Logger.instances.get(key)!;
   }
 
@@ -156,7 +156,7 @@ export class Logger {
   private writeToConsole(entry: LogEntry): void {
     const config = getConfig().getConfig();
     const useColors = config.output.color;
-    
+
     let colorFn: (text: string) => string;
     let consoleMethod: 'error' | 'warn' | 'info' | 'log';
 
@@ -164,8 +164,8 @@ export class Logger {
       // Simple color functions (avoiding external dependencies)
       const colors = {
         error: (text: string) => `\u001b[31m${text}\u001b[0m`, // Red
-        warn: (text: string) => `\u001b[33m${text}\u001b[0m`,  // Yellow
-        info: (text: string) => `\u001b[36m${text}\u001b[0m`,  // Cyan
+        warn: (text: string) => `\u001b[33m${text}\u001b[0m`, // Yellow
+        info: (text: string) => `\u001b[36m${text}\u001b[0m`, // Cyan
         debug: (text: string) => `\u001b[90m${text}\u001b[0m`, // Gray
       };
       colorFn = colors[entry.level];
@@ -178,7 +178,7 @@ export class Logger {
     const timestamp = new Date(entry.timestamp).toLocaleTimeString();
     const levelStr = entry.level.toUpperCase().padEnd(5);
     const contextStr = entry.context ? `[${entry.context}]` : '';
-    
+
     let logMessage = `${timestamp} ${colorFn(levelStr)} ${contextStr} ${entry.message}`;
 
     // Add data if present and in debug mode
@@ -202,7 +202,7 @@ export class Logger {
 
     try {
       const filePath = resolve(this.options.file);
-      
+
       // Ensure directory exists
       const dir = dirname(filePath);
       if (!existsSync(dir)) {
@@ -214,33 +214,32 @@ export class Logger {
 
       // Format log entry
       let logLine: string;
-      
+
       if (this.options.json) {
         logLine = JSON.stringify(entry) + '\n';
       } else {
         const timestamp = entry.timestamp;
         const level = entry.level.toUpperCase().padEnd(5);
         const context = entry.context ? `[${entry.context}]` : '';
-        
+
         logLine = `${timestamp} ${level} ${context} ${entry.message}`;
-        
+
         if (entry.data) {
           logLine += ` | Data: ${JSON.stringify(entry.data)}`;
         }
-        
+
         if (entry.error) {
           logLine += ` | Error: ${entry.error.message}`;
           if (entry.error.stack) {
             logLine += `\n${entry.error.stack}`;
           }
         }
-        
+
         logLine += '\n';
       }
 
       // Append to file
       writeFileSync(filePath, logLine, { flag: 'a', encoding: 'utf-8' });
-
     } catch (error) {
       // Fallback to console if file writing fails
       console.error('Failed to write to log file:', error);
@@ -260,7 +259,7 @@ export class Logger {
 
     try {
       const stats = statSync(filePath);
-      
+
       if (stats.size < maxSize) {
         return;
       }
@@ -269,7 +268,7 @@ export class Logger {
       for (let i = maxFiles - 1; i > 0; i--) {
         const oldFile = `${filePath}.${i}`;
         const newFile = `${filePath}.${i + 1}`;
-        
+
         if (existsSync(oldFile)) {
           if (i === maxFiles - 1) {
             // Delete oldest file
@@ -283,7 +282,6 @@ export class Logger {
 
       // Move current file to .1
       require('fs').renameSync(filePath, `${filePath}.1`);
-
     } catch (error) {
       console.warn('Failed to rotate log file:', error);
     }
@@ -307,7 +305,7 @@ export class Logger {
 
     const [, size, unit] = match;
     const multiplier = units[unit?.toUpperCase() || ''] || 1;
-    
+
     return Math.floor(parseFloat(size || '0') * multiplier);
   }
 
@@ -345,7 +343,7 @@ export class Logger {
   timer(label: string): () => void {
     const start = Date.now();
     this.debug(`Timer started: ${label}`);
-    
+
     return () => {
       const duration = Date.now() - start;
       this.debug(`Timer finished: ${label} (${duration}ms)`);
@@ -364,5 +362,5 @@ export class Logger {
 export const logger = Logger.getLogger('pcu');
 
 // Convenience functions
-export const createLogger = (context: string, options?: Partial<LoggerOptions>) => 
+export const createLogger = (context: string, options?: Partial<LoggerOptions>) =>
   Logger.getLogger(context, options);

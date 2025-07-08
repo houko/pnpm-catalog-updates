@@ -1,6 +1,6 @@
 /**
  * WorkspacePath Value Object
- * 
+ *
  * Represents a file system path to a pnpm workspace.
  * This is an immutable value object that validates and normalizes workspace paths.
  */
@@ -25,7 +25,7 @@ export class WorkspacePath {
 
     // Normalize the path
     const normalized = path.resolve(pathString.trim());
-    
+
     return new WorkspacePath(normalized);
   }
 

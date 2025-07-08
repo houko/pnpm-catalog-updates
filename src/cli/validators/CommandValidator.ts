@@ -1,6 +1,6 @@
 /**
  * CLI Command Validation
- * 
+ *
  * Validates CLI command options and arguments before execution.
  * Provides detailed error messages and suggestions.
  */
@@ -58,7 +58,7 @@ export class CommandValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -84,12 +84,14 @@ export class CommandValidator {
     }
 
     if (options.target === 'major' && !options.force && !options.interactive) {
-      warnings.push('Major updates may contain breaking changes. Consider using --interactive or --force');
+      warnings.push(
+        'Major updates may contain breaking changes. Consider using --interactive or --force'
+      );
     }
 
     // Validate include/exclude patterns
     if (options.include && options.exclude) {
-      const overlapping = options.include.some((inc: string) => 
+      const overlapping = options.include.some((inc: string) =>
         options.exclude.some((exc: string) => inc === exc)
       );
       if (overlapping) {
@@ -100,7 +102,7 @@ export class CommandValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -131,7 +133,8 @@ export class CommandValidator {
 
     // Validate version if provided
     if (version) {
-      const semverRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+      const semverRegex =
+        /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
       if (!semverRegex.test(version)) {
         errors.push('Invalid version format. Use semantic versioning (e.g., 1.2.3)');
       }
@@ -140,7 +143,7 @@ export class CommandValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -165,7 +168,7 @@ export class CommandValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -191,14 +194,16 @@ export class CommandValidator {
     const deprecatedOptions = ['silent']; // Example
     for (const deprecated of deprecatedOptions) {
       if (options[deprecated]) {
-        warnings.push(`Option --${deprecated} is deprecated and will be removed in future versions`);
+        warnings.push(
+          `Option --${deprecated} is deprecated and will be removed in future versions`
+        );
       }
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -219,7 +224,7 @@ export class CommandValidator {
       }
 
       let config: any;
-      
+
       if (configPath.endsWith('.js')) {
         // JavaScript config file
         try {
@@ -261,12 +266,11 @@ export class CommandValidator {
 
       // Check for unknown top-level keys
       const knownKeys = ['registry', 'update', 'output', 'workspace', 'notification', 'logging'];
-      const unknownKeys = Object.keys(config).filter(key => !knownKeys.includes(key));
-      
+      const unknownKeys = Object.keys(config).filter((key) => !knownKeys.includes(key));
+
       if (unknownKeys.length > 0) {
         warnings.push(`Unknown configuration keys: ${unknownKeys.join(', ')}`);
       }
-
     } catch (error) {
       errors.push(`Failed to validate configuration file: ${error}`);
     }
@@ -274,7 +278,7 @@ export class CommandValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -308,7 +312,7 @@ export class CommandValidator {
     sanitized.prerelease = Boolean(options.prerelease);
     sanitized.createBackup = Boolean(options.createBackup);
     sanitized.verbose = Boolean(options.verbose);
-    
+
     // Handle color option (tri-state: true, false, or undefined)
     if (options.color !== undefined) {
       sanitized.color = Boolean(options.color);
@@ -326,12 +330,12 @@ export class CommandValidator {
 
     // Array options
     if (options.include) {
-      sanitized.include = Array.isArray(options.include) 
+      sanitized.include = Array.isArray(options.include)
         ? options.include.map((p: any) => String(p).trim()).filter(Boolean)
         : [String(options.include).trim()].filter(Boolean);
     }
     if (options.exclude) {
-      sanitized.exclude = Array.isArray(options.exclude) 
+      sanitized.exclude = Array.isArray(options.exclude)
         ? options.exclude.map((p: any) => String(p).trim()).filter(Boolean)
         : [String(options.exclude).trim()].filter(Boolean);
     }
@@ -351,7 +355,9 @@ export class CommandValidator {
           suggestions.push('Consider specifying --workspace for non-standard directory structures');
         }
         if (options.format === 'json' && options.verbose) {
-          suggestions.push('JSON output already includes detailed info, --verbose may be redundant');
+          suggestions.push(
+            'JSON output already includes detailed info, --verbose may be redundant'
+          );
         }
         break;
 
@@ -372,7 +378,9 @@ export class CommandValidator {
 
       case 'workspace':
         if (!options.validate && !options.stats) {
-          suggestions.push('Use --validate to check workspace integrity or --stats for detailed information');
+          suggestions.push(
+            'Use --validate to check workspace integrity or --stats for detailed information'
+          );
         }
         break;
     }

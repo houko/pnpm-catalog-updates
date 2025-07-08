@@ -1,6 +1,6 @@
 /**
  * Workspace Repository Interface
- * 
+ *
  * Defines the contract for workspace persistence and retrieval operations.
  * This is a domain interface implemented by infrastructure layer.
  */

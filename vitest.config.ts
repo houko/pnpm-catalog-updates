@@ -58,12 +58,10 @@ export default defineConfig({
 
     // Threads
     maxConcurrency: 4,
-
-    // Cache
-    cache: {
-      dir: 'node_modules/.vitest',
-    },
   },
+
+  // Cache directory
+  cacheDir: 'node_modules/.vitest',
 
   // Path resolution
   resolve: {

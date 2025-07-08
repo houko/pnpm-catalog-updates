@@ -22,10 +22,10 @@ export function isGitRepository(path: string = process.cwd()): boolean {
  */
 export function getCurrentBranch(cwd: string = process.cwd()): string | null {
   try {
-    const branch = execSync('git branch --show-current', { 
-      cwd, 
+    const branch = execSync('git branch --show-current', {
+      cwd,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     }).trim();
     return branch || null;
   } catch {
@@ -38,10 +38,10 @@ export function getCurrentBranch(cwd: string = process.cwd()): string | null {
  */
 export function isWorkingDirectoryClean(cwd: string = process.cwd()): boolean {
   try {
-    const status = execSync('git status --porcelain', { 
-      cwd, 
+    const status = execSync('git status --porcelain', {
+      cwd,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     }).trim();
     return status === '';
   } catch {
@@ -54,10 +54,10 @@ export function isWorkingDirectoryClean(cwd: string = process.cwd()): boolean {
  */
 export function getLastCommitHash(cwd: string = process.cwd()): string | null {
   try {
-    const hash = execSync('git rev-parse HEAD', { 
-      cwd, 
+    const hash = execSync('git rev-parse HEAD', {
+      cwd,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     }).trim();
     return hash || null;
   } catch {
@@ -70,10 +70,10 @@ export function getLastCommitHash(cwd: string = process.cwd()): string | null {
  */
 export function getRepositoryUrl(cwd: string = process.cwd()): string | null {
   try {
-    const url = execSync('git config --get remote.origin.url', { 
-      cwd, 
+    const url = execSync('git config --get remote.origin.url', {
+      cwd,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     }).trim();
     return url || null;
   } catch {
@@ -86,10 +86,8 @@ export function getRepositoryUrl(cwd: string = process.cwd()): string | null {
  */
 export function createTag(tag: string, message?: string, cwd: string = process.cwd()): boolean {
   try {
-    const cmd = message 
-      ? `git tag -a "${tag}" -m "${message}"`
-      : `git tag "${tag}"`;
-    
+    const cmd = message ? `git tag -a "${tag}" -m "${message}"` : `git tag "${tag}"`;
+
     execSync(cmd, { cwd, stdio: 'pipe' });
     return true;
   } catch {
@@ -109,17 +107,17 @@ export function hasUncommittedChanges(cwd: string = process.cwd()): boolean {
  */
 export function getModifiedFiles(cwd: string = process.cwd()): string[] {
   try {
-    const output = execSync('git status --porcelain', { 
-      cwd, 
+    const output = execSync('git status --porcelain', {
+      cwd,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     }).trim();
-    
+
     if (!output) return [];
-    
+
     return output
       .split('\n')
-      .map(line => line.substring(3)) // Remove status indicators
+      .map((line) => line.substring(3)) // Remove status indicators
       .filter(Boolean);
   } catch {
     return [];
@@ -131,7 +129,7 @@ export function getModifiedFiles(cwd: string = process.cwd()): string[] {
  */
 export function stageFiles(files: string[], cwd: string = process.cwd()): boolean {
   try {
-    const fileList = files.map(f => `"${f}"`).join(' ');
+    const fileList = files.map((f) => `"${f}"`).join(' ');
     execSync(`git add ${fileList}`, { cwd, stdio: 'pipe' });
     return true;
   } catch {

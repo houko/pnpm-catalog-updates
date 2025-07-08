@@ -1,6 +1,6 @@
 /**
  * NPM Registry Service
- * 
+ *
  * Provides access to NPM registry for package version information.
  * Handles API calls, caching, and version resolution.
  */
@@ -62,7 +62,7 @@ export class NpmRegistryService {
    */
   async getPackageInfo(packageName: string): Promise<PackageInfo> {
     const cacheKey = `package-info:${packageName}`;
-    
+
     // Check cache first
     const cached = this.getFromCache(cacheKey);
     if (cached) {
@@ -73,7 +73,7 @@ export class NpmRegistryService {
       const packument = await pacote.packument(packageName, {
         registry: this.registryUrl,
         timeout: this.timeout,
-        fullMetadata: true
+        fullMetadata: true,
       });
 
       const versions = Object.keys(packument.versions || {}).sort(semver.rcompare);
@@ -91,7 +91,7 @@ export class NpmRegistryService {
         versions,
         latestVersion,
         tags: packument['dist-tags'] || {},
-        time: packument.time || {}
+        time: packument.time || {},
       };
 
       // Cache the result
@@ -121,13 +121,13 @@ export class NpmRegistryService {
   async getGreatestVersion(packageName: string, range?: VersionRange): Promise<Version> {
     try {
       const packageInfo = await this.getPackageInfo(packageName);
-      
+
       if (!range) {
         return Version.fromString(packageInfo.latestVersion);
       }
 
       // Find the greatest version that satisfies the range
-      const satisfyingVersions = packageInfo.versions.filter(v => {
+      const satisfyingVersions = packageInfo.versions.filter((v) => {
         try {
           const version = Version.fromString(v);
           return version.satisfies(range);
@@ -156,17 +156,17 @@ export class NpmRegistryService {
   async getNewestVersions(packageName: string, count: number = 10): Promise<Version[]> {
     try {
       const packageInfo = await this.getPackageInfo(packageName);
-      
+
       // Sort versions by publication time
       const versionsWithTime = packageInfo.versions
-        .map(version => ({
+        .map((version) => ({
           version,
-          time: packageInfo.time[version] ? new Date(packageInfo.time[version]) : new Date(0)
+          time: packageInfo.time[version] ? new Date(packageInfo.time[version]) : new Date(0),
         }))
         .sort((a, b) => b.time.getTime() - a.time.getTime())
         .slice(0, count);
 
-      return versionsWithTime.map(item => Version.fromString(item.version));
+      return versionsWithTime.map((item) => Version.fromString(item.version));
     } catch (error) {
       throw new Error(`Failed to get newest versions for ${packageName}: ${error}`);
     }
@@ -175,9 +175,12 @@ export class NpmRegistryService {
   /**
    * Check for security vulnerabilities
    */
-  async checkSecurityVulnerabilities(packageName: string, version: string): Promise<SecurityReport> {
+  async checkSecurityVulnerabilities(
+    packageName: string,
+    version: string
+  ): Promise<SecurityReport> {
     const cacheKey = `security:${packageName}@${version}`;
-    
+
     // Check cache first
     const cached = this.getFromCache(cacheKey);
     if (cached) {
@@ -190,17 +193,17 @@ export class NpmRegistryService {
         name: packageName,
         version: version,
         requires: {},
-        dependencies: {}
+        dependencies: {},
       };
 
       const response = await npmRegistryFetch('/-/npm/v1/security/audits', {
         method: 'POST',
         body: JSON.stringify(auditData),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         registry: this.registryUrl,
-        timeout: this.timeout
+        timeout: this.timeout,
       });
 
       const auditResult = await response.json();
@@ -217,7 +220,7 @@ export class NpmRegistryService {
             reference: advisory.url,
             vulnerable_versions: advisory.vulnerable_versions,
             patched_versions: advisory.patched_versions,
-            recommendation: advisory.recommendation
+            recommendation: advisory.recommendation,
           });
         }
       }
@@ -226,7 +229,7 @@ export class NpmRegistryService {
         package: packageName,
         version: version,
         vulnerabilities,
-        hasVulnerabilities: vulnerabilities.length > 0
+        hasVulnerabilities: vulnerabilities.length > 0,
       };
 
       // Cache the result
@@ -236,12 +239,12 @@ export class NpmRegistryService {
     } catch (error) {
       // If security check fails, return empty report
       console.warn(`Security check failed for ${packageName}@${version}:`, error);
-      
+
       const emptyReport: SecurityReport = {
         package: packageName,
         version: version,
         vulnerabilities: [],
-        hasVulnerabilities: false
+        hasVulnerabilities: false,
       };
 
       return emptyReport;
@@ -253,7 +256,7 @@ export class NpmRegistryService {
    */
   async batchQueryVersions(packages: string[]): Promise<Map<string, PackageInfo>> {
     const results = new Map<string, PackageInfo>();
-    
+
     // Process packages in parallel with limited concurrency
     const concurrency = 5;
     const chunks = this.chunkArray(packages, concurrency);
@@ -277,18 +280,22 @@ export class NpmRegistryService {
   /**
    * Check if package author has changed
    */
-  async hasPackageAuthorChanged(packageName: string, fromVersion: string, toVersion: string): Promise<boolean> {
+  async hasPackageAuthorChanged(
+    packageName: string,
+    fromVersion: string,
+    toVersion: string
+  ): Promise<boolean> {
     try {
       // const packageInfo = await this.getPackageInfo(packageName);
-      
+
       const fromVersionData = await pacote.manifest(`${packageName}@${fromVersion}`, {
         registry: this.registryUrl,
-        timeout: this.timeout
+        timeout: this.timeout,
       });
 
       const toVersionData = await pacote.manifest(`${packageName}@${toVersion}`, {
         registry: this.registryUrl,
-        timeout: this.timeout
+        timeout: this.timeout,
       });
 
       // Compare authors/maintainers
@@ -305,10 +312,15 @@ export class NpmRegistryService {
   /**
    * Get package download statistics
    */
-  async getDownloadStats(packageName: string, period: 'last-day' | 'last-week' | 'last-month' = 'last-week'): Promise<number> {
+  async getDownloadStats(
+    packageName: string,
+    period: 'last-day' | 'last-week' | 'last-month' = 'last-week'
+  ): Promise<number> {
     try {
-      const response = await fetch(`https://api.npmjs.org/downloads/point/${period}/${packageName}`);
-      const data = await response.json() as any;
+      const response = await fetch(
+        `https://api.npmjs.org/downloads/point/${period}/${packageName}`
+      );
+      const data = (await response.json()) as any;
       return data.downloads || 0;
     } catch (error) {
       console.warn(`Failed to get download stats for ${packageName}:`, error);
@@ -346,7 +358,7 @@ export class NpmRegistryService {
   private setCache(key: string, data: any): void {
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 

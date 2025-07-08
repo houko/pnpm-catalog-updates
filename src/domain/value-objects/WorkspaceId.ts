@@ -1,6 +1,6 @@
 /**
  * WorkspaceId Value Object
- * 
+ *
  * Represents a unique identifier for a pnpm workspace.
  * This is an immutable value object that ensures workspace identity.
  */
@@ -52,17 +52,17 @@ export class WorkspaceId {
     const normalizedPath = path.replace(/\\/g, '/');
     const pathParts = normalizedPath.split('/').filter(Boolean);
     const lastPart = pathParts[pathParts.length - 1] || 'workspace';
-    
+
     // Sanitize the path part to create a valid ID
     const sanitized = lastPart
       .replace(/[^a-zA-Z0-9_-]/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
-    
+
     if (sanitized.length === 0) {
       return WorkspaceId.generate();
     }
-    
+
     return new WorkspaceId(sanitized);
   }
 

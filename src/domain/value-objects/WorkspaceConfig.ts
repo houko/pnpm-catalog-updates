@@ -1,6 +1,6 @@
 /**
  * WorkspaceConfig Value Object
- * 
+ *
  * Represents the configuration settings for a pnpm workspace.
  * Includes catalog mode, package patterns, and other workspace-specific settings.
  */
@@ -34,15 +34,15 @@ export class WorkspaceConfig {
   public static fromWorkspaceData(data: PnpmWorkspaceData): WorkspaceConfig {
     const packagePatterns = data.packages || [];
     const catalogMode = data.catalogMode || CatalogMode.MANUAL;
-    
+
     // Process catalogs
     const catalogs = new Map<string, CatalogDefinition>();
-    
+
     // Add default catalog if exists
     if (data.catalog) {
       catalogs.set('default', new CatalogDefinition('default', data.catalog));
     }
-    
+
     // Add named catalogs if they exist
     if (data.catalogs) {
       for (const [name, dependencies] of Object.entries(data.catalogs)) {
@@ -63,13 +63,7 @@ export class WorkspaceConfig {
    * Create a default WorkspaceConfig
    */
   public static createDefault(): WorkspaceConfig {
-    return new WorkspaceConfig(
-      CatalogMode.MANUAL,
-      ['packages/*'],
-      new Map(),
-      false,
-      true
-    );
+    return new WorkspaceConfig(CatalogMode.MANUAL, ['packages/*'], new Map(), false, true);
   }
 
   /**
@@ -159,7 +153,7 @@ export class WorkspaceConfig {
       if (!pattern || pattern.trim().length === 0) {
         errors.push('Empty package pattern found');
       }
-      
+
       // Basic glob pattern validation
       if (pattern.includes('**') && pattern.indexOf('**') !== pattern.lastIndexOf('**')) {
         warnings.push(`Complex glob pattern may be inefficient: ${pattern}`);
@@ -169,8 +163,8 @@ export class WorkspaceConfig {
     // Validate catalog definitions
     for (const [name, catalogDef] of this.catalogs) {
       const validationResult = catalogDef.validate();
-      errors.push(...validationResult.getErrors().map(err => `Catalog "${name}": ${err}`));
-      warnings.push(...validationResult.getWarnings().map(warn => `Catalog "${name}": ${warn}`));
+      errors.push(...validationResult.getErrors().map((err) => `Catalog "${name}": ${err}`));
+      warnings.push(...validationResult.getWarnings().map((warn) => `Catalog "${name}": ${warn}`));
     }
 
     // Check for conflicting settings

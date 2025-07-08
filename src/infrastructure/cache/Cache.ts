@@ -1,6 +1,6 @@
 /**
  * Cache System
- * 
+ *
  * Provides caching capabilities for NPM registry responses and other expensive operations.
  * Supports both in-memory and file-based caching with TTL and size limits.
  */
@@ -41,7 +41,7 @@ export class Cache<T = any> {
     hits: 0,
     misses: 0,
   };
-  
+
   private options: Required<CacheOptions>;
 
   constructor(name: string, options: CacheOptions = {}) {
@@ -66,7 +66,7 @@ export class Cache<T = any> {
    */
   get(key: string): T | undefined {
     const entry = this.entries.get(key);
-    
+
     if (!entry) {
       this.stats.misses++;
       return undefined;
@@ -89,7 +89,7 @@ export class Cache<T = any> {
   set(key: string, value: T, ttl?: number): void {
     const entryTtl = ttl || this.options.ttl;
     const size = this.estimateSize(value);
-    
+
     const entry: CacheEntry<T> = {
       key,
       value,
@@ -105,9 +105,9 @@ export class Cache<T = any> {
 
     // Check size limits before adding
     this.ensureCapacity(size);
-    
+
     this.entries.set(key, entry);
-    
+
     if (this.options.persistToDisk) {
       this.saveToDisk(key, entry);
     }
@@ -118,7 +118,7 @@ export class Cache<T = any> {
    */
   has(key: string): boolean {
     const entry = this.entries.get(key);
-    
+
     if (!entry) {
       return false;
     }
@@ -137,11 +137,11 @@ export class Cache<T = any> {
    */
   delete(key: string): boolean {
     const deleted = this.entries.delete(key);
-    
+
     if (deleted && this.options.persistToDisk) {
       this.deleteFromDisk(key);
     }
-    
+
     return deleted;
   }
 
@@ -152,7 +152,7 @@ export class Cache<T = any> {
     this.entries.clear();
     this.stats.hits = 0;
     this.stats.misses = 0;
-    
+
     if (this.options.persistToDisk) {
       this.clearDisk();
     }
@@ -163,7 +163,7 @@ export class Cache<T = any> {
    */
   getStats(): CacheStats {
     const total = this.stats.hits + this.stats.misses;
-    
+
     return {
       totalEntries: this.entries.size,
       totalSize: this.getTotalSize(),
@@ -177,20 +177,16 @@ export class Cache<T = any> {
   /**
    * Get or set with factory function
    */
-  async getOrSet(
-    key: string, 
-    factory: () => Promise<T> | T, 
-    ttl?: number
-  ): Promise<T> {
+  async getOrSet(key: string, factory: () => Promise<T> | T, ttl?: number): Promise<T> {
     const cached = this.get(key);
-    
+
     if (cached !== undefined) {
       return cached;
     }
 
     const value = await factory();
     this.set(key, value, ttl);
-    
+
     return value;
   }
 
@@ -291,7 +287,7 @@ export class Cache<T = any> {
           if (existsSync(entryPath)) {
             const entryContent = readFileSync(entryPath, 'utf-8');
             const entry = JSON.parse(entryContent);
-            
+
             // Check if entry is still valid
             if (Date.now() - entry.timestamp <= entry.ttl) {
               this.entries.set(key, entry);

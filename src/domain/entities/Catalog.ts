@@ -1,6 +1,6 @@
 /**
  * Catalog Entity
- * 
+ *
  * Represents a pnpm catalog that manages dependency versions centrally.
  * A catalog contains a collection of dependencies with their version ranges.
  */
@@ -110,9 +110,7 @@ export class Catalog {
       const parsedRange = VersionRange.fromString(versionRange);
       this.dependencies.set(packageName, parsedRange);
     } catch (error) {
-      throw new Error(
-        `Invalid version range for package "${packageName}": ${versionRange}`
-      );
+      throw new Error(`Invalid version range for package "${packageName}": ${versionRange}`);
     }
   }
 
@@ -201,7 +199,7 @@ export class Catalog {
    */
   public toPlainObject(): CatalogData {
     const dependencies: Record<string, string> = {};
-    
+
     for (const [packageName, versionRange] of this.dependencies) {
       dependencies[packageName] = versionRange.toString();
     }

@@ -1,8 +1,8 @@
 /**
  * Catalog Update Service
- * 
+ *
  * Core application service that handles catalog dependency updates.
- * Orchestrates domain objects and infrastructure services to provide 
+ * Orchestrates domain objects and infrastructure services to provide
  * high-level use cases for checking and updating catalog dependencies.
  */
 
@@ -161,7 +161,7 @@ export class CatalogUpdateService {
    */
   async checkOutdatedDependencies(options: CheckOptions = {}): Promise<OutdatedReport> {
     const workspacePath = WorkspacePath.fromString(options.workspacePath || process.cwd());
-    
+
     // Load workspace
     const workspace = await this.workspaceRepository.findByPath(workspacePath);
     if (!workspace) {
@@ -173,14 +173,15 @@ export class CatalogUpdateService {
     let totalOutdated = 0;
 
     // Filter catalogs if specific catalog requested
-    const catalogsToCheck = options.catalogName 
+    const catalogsToCheck = options.catalogName
       ? [catalogs.get(options.catalogName)].filter(Boolean)
       : catalogs.getAll();
 
     if (catalogsToCheck.length === 0) {
-      throw new Error(options.catalogName 
-        ? `Catalog "${options.catalogName}" not found`
-        : 'No catalogs found in workspace'
+      throw new Error(
+        options.catalogName
+          ? `Catalog "${options.catalogName}" not found`
+          : 'No catalogs found in workspace'
       );
     }
 
@@ -200,8 +201,8 @@ export class CatalogUpdateService {
 
         try {
           const outdatedInfo = await this.checkPackageUpdate(
-            packageName, 
-            currentRange, 
+            packageName,
+            currentRange,
             options.target || 'latest',
             options.includePrerelease || false
           );
@@ -214,7 +215,7 @@ export class CatalogUpdateService {
 
             outdatedDependencies.push({
               ...outdatedInfo,
-              affectedPackages
+              affectedPackages,
             });
           }
         } catch (error) {
@@ -226,7 +227,7 @@ export class CatalogUpdateService {
         catalogName: catalog!.getName(),
         outdatedDependencies,
         totalPackages: dependencies.size,
-        outdatedCount: outdatedDependencies.length
+        outdatedCount: outdatedDependencies.length,
       };
 
       catalogInfos.push(catalogInfo);
@@ -236,11 +237,11 @@ export class CatalogUpdateService {
     return {
       workspace: {
         path: workspacePath.toString(),
-        name: workspacePath.getDirectoryName()
+        name: workspacePath.getDirectoryName(),
       },
       catalogs: catalogInfos,
       totalOutdated,
-      hasUpdates: totalOutdated > 0
+      hasUpdates: totalOutdated > 0,
     };
   }
 
@@ -249,7 +250,7 @@ export class CatalogUpdateService {
    */
   async planUpdates(options: UpdateOptions): Promise<UpdatePlan> {
     const outdatedReport = await this.checkOutdatedDependencies(options);
-    
+
     const updates: PlannedUpdate[] = [];
     const conflicts: VersionConflict[] = [];
 
@@ -263,7 +264,7 @@ export class CatalogUpdateService {
           newVersion: outdated.latestVersion,
           updateType: outdated.updateType,
           reason: this.getUpdateReason(outdated),
-          affectedPackages: outdated.affectedPackages
+          affectedPackages: outdated.affectedPackages,
         };
 
         updates.push(update);
@@ -272,7 +273,7 @@ export class CatalogUpdateService {
 
     // Detect conflicts (same package in multiple catalogs with different versions)
     const packageCatalogMap = new Map<string, PlannedUpdate[]>();
-    
+
     for (const update of updates) {
       if (!packageCatalogMap.has(update.packageName)) {
         packageCatalogMap.set(update.packageName, []);
@@ -282,16 +283,16 @@ export class CatalogUpdateService {
 
     for (const [packageName, packageUpdates] of packageCatalogMap) {
       if (packageUpdates.length > 1) {
-        const uniqueVersions = new Set(packageUpdates.map(u => u.newVersion));
+        const uniqueVersions = new Set(packageUpdates.map((u) => u.newVersion));
         if (uniqueVersions.size > 1) {
           const conflict: VersionConflict = {
             packageName,
-            catalogs: packageUpdates.map(u => ({
+            catalogs: packageUpdates.map((u) => ({
               catalogName: u.catalogName,
               currentVersion: u.currentVersion,
-              proposedVersion: u.newVersion
+              proposedVersion: u.newVersion,
             })),
-            recommendation: `Consider using the same version across all catalogs`
+            recommendation: `Consider using the same version across all catalogs`,
           };
           conflicts.push(conflict);
         }
@@ -303,7 +304,7 @@ export class CatalogUpdateService {
       updates,
       conflicts,
       totalUpdates: updates.length,
-      hasConflicts: conflicts.length > 0
+      hasConflicts: conflicts.length > 0,
     };
   }
 
@@ -312,7 +313,7 @@ export class CatalogUpdateService {
    */
   async executeUpdates(plan: UpdatePlan, options: UpdateOptions): Promise<UpdateResult> {
     const workspacePath = WorkspacePath.fromString(plan.workspace.path);
-    
+
     // Load workspace
     const workspace = await this.workspaceRepository.findByPath(workspacePath);
     if (!workspace) {
@@ -328,13 +329,13 @@ export class CatalogUpdateService {
       try {
         // Skip if conflicts exist and force is not enabled
         if (plan.hasConflicts && !options.force) {
-          const hasConflict = plan.conflicts.some(c => c.packageName === update.packageName);
+          const hasConflict = plan.conflicts.some((c) => c.packageName === update.packageName);
           if (hasConflict) {
             skippedDependencies.push({
               catalogName: update.catalogName,
               packageName: update.packageName,
               currentVersion: update.currentVersion,
-              reason: 'Version conflict - use --force to override'
+              reason: 'Version conflict - use --force to override',
             });
             continue;
           }
@@ -352,15 +353,14 @@ export class CatalogUpdateService {
           packageName: update.packageName,
           fromVersion: update.currentVersion,
           toVersion: update.newVersion,
-          updateType: update.updateType
+          updateType: update.updateType,
         });
-
       } catch (error) {
         errors.push({
           catalogName: update.catalogName,
           packageName: update.packageName,
           error: String(error),
-          fatal: false
+          fatal: false,
         });
       }
     }
@@ -374,20 +374,20 @@ export class CatalogUpdateService {
           catalogName: '',
           packageName: '',
           error: `Failed to save workspace: ${error}`,
-          fatal: true
+          fatal: true,
         });
       }
     }
 
     return {
-      success: errors.filter(e => e.fatal).length === 0,
+      success: errors.filter((e) => e.fatal).length === 0,
       workspace: plan.workspace,
       updatedDependencies,
       skippedDependencies,
       errors,
       totalUpdated: updatedDependencies.length,
       totalSkipped: skippedDependencies.length,
-      totalErrors: errors.length
+      totalErrors: errors.length,
     };
   }
 
@@ -395,13 +395,13 @@ export class CatalogUpdateService {
    * Analyze the impact of updating a specific dependency
    */
   async analyzeImpact(
-    catalogName: string, 
-    packageName: string, 
+    catalogName: string,
+    packageName: string,
     newVersion: string,
     workspacePath?: string
   ): Promise<ImpactAnalysis> {
     const wsPath = WorkspacePath.fromString(workspacePath || process.cwd());
-    
+
     // Load workspace
     const workspace = await this.workspaceRepository.findByPath(wsPath);
     if (!workspace) {
@@ -429,13 +429,18 @@ export class CatalogUpdateService {
     const updateType = currentVersionObj.getDifferenceType(proposedVersion);
 
     // Get affected packages
-    const affectedPackagesCollection = workspace.getPackagesUsingCatalogDependency(catalogName, packageName);
+    const affectedPackagesCollection = workspace.getPackagesUsingCatalogDependency(
+      catalogName,
+      packageName
+    );
     const packageImpacts: PackageImpact[] = [];
 
     for (const pkg of affectedPackagesCollection.getAll()) {
-      const catalogRefs = pkg.getCatalogReferences().filter(
-        ref => ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
-      );
+      const catalogRefs = pkg
+        .getCatalogReferences()
+        .filter(
+          (ref) => ref.getCatalogName() === catalogName && ref.getPackageName() === packageName
+        );
 
       for (const ref of catalogRefs) {
         const isBreakingChange = updateType === 'major';
@@ -446,19 +451,27 @@ export class CatalogUpdateService {
           packagePath: pkg.getPath().toString(),
           dependencyType: ref.getDependencyType(),
           isBreakingChange,
-          compatibilityRisk
+          compatibilityRisk,
         });
       }
     }
 
     // Check security impact
-    const securityImpact = await this.analyzeSecurityImpact(packageName, currentVersion, newVersion);
+    const securityImpact = await this.analyzeSecurityImpact(
+      packageName,
+      currentVersion,
+      newVersion
+    );
 
     // Assess overall risk
     const riskLevel = this.assessOverallRisk(updateType, packageImpacts, securityImpact);
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(updateType, securityImpact, packageImpacts);
+    const recommendations = this.generateRecommendations(
+      updateType,
+      securityImpact,
+      packageImpacts
+    );
 
     return {
       packageName,
@@ -469,7 +482,7 @@ export class CatalogUpdateService {
       affectedPackages: packageImpacts,
       riskLevel,
       securityImpact,
-      recommendations
+      recommendations,
     };
   }
 
@@ -504,10 +517,8 @@ export class CatalogUpdateService {
    */
   private matchesPattern(packageName: string, pattern: string): boolean {
     // Convert glob pattern to regex
-    const regexPattern = pattern
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.');
-    
+    const regexPattern = pattern.replace(/\*/g, '.*').replace(/\?/g, '.');
+
     const regex = new RegExp(`^${regexPattern}$`, 'i');
     return regex.test(packageName);
   }
@@ -523,9 +534,9 @@ export class CatalogUpdateService {
   ): Promise<OutdatedDependencyInfo | null> {
     try {
       const packageInfo = await this.registryService.getPackageInfo(packageName);
-      
+
       let targetVersion: Version;
-      
+
       switch (target) {
         case 'latest':
           targetVersion = Version.fromString(packageInfo.latestVersion);
@@ -564,10 +575,10 @@ export class CatalogUpdateService {
       }
 
       const updateType = currentVersion.getDifferenceType(targetVersion);
-      
+
       // Check for security vulnerabilities
       const securityReport = await this.registryService.checkSecurityVulnerabilities(
-        packageName, 
+        packageName,
         currentVersion.toString()
       );
 
@@ -578,9 +589,8 @@ export class CatalogUpdateService {
         wantedVersion: targetVersion.toString(),
         updateType: updateType as 'major' | 'minor' | 'patch',
         isSecurityUpdate: securityReport.hasVulnerabilities,
-        affectedPackages: [] // Will be filled by caller
+        affectedPackages: [], // Will be filled by caller
       };
-
     } catch (error) {
       console.warn(`Failed to check updates for ${packageName}:`, error);
       return null;
@@ -591,8 +601,8 @@ export class CatalogUpdateService {
    * Get version constrained by update type
    */
   private async getConstrainedVersion(
-    packageName: string, 
-    currentRange: VersionRange, 
+    packageName: string,
+    currentRange: VersionRange,
     constraint: 'minor' | 'patch'
   ): Promise<Version> {
     const currentVersion = currentRange.getMinVersion();
@@ -601,19 +611,19 @@ export class CatalogUpdateService {
     }
 
     const packageInfo = await this.registryService.getPackageInfo(packageName);
-    
+
     // Filter versions based on constraint
-    const compatibleVersions = packageInfo.versions.filter(v => {
+    const compatibleVersions = packageInfo.versions.filter((v) => {
       try {
         const version = Version.fromString(v);
         const diff = currentVersion.getDifferenceType(version);
-        
+
         if (constraint === 'patch') {
           return diff === 'patch' || diff === 'same';
         } else if (constraint === 'minor') {
           return diff === 'minor' || diff === 'patch' || diff === 'same';
         }
-        
+
         return false;
       } catch {
         return false;
@@ -638,7 +648,7 @@ export class CatalogUpdateService {
     if (outdated.isSecurityUpdate) {
       return 'Security update available';
     }
-    
+
     switch (outdated.updateType) {
       case 'major':
         return 'Major version update available';
@@ -655,18 +665,22 @@ export class CatalogUpdateService {
    * Analyze security impact of version change
    */
   private async analyzeSecurityImpact(
-    packageName: string, 
-    currentVersion: string, 
+    packageName: string,
+    currentVersion: string,
     newVersion: string
   ): Promise<SecurityImpact> {
     try {
       const [currentSecurity, newSecurity] = await Promise.all([
         this.registryService.checkSecurityVulnerabilities(packageName, currentVersion),
-        this.registryService.checkSecurityVulnerabilities(packageName, newVersion)
+        this.registryService.checkSecurityVulnerabilities(packageName, newVersion),
       ]);
 
-      const fixedVulnerabilities = currentSecurity.vulnerabilities.length - newSecurity.vulnerabilities.length;
-      const newVulnerabilities = Math.max(0, newSecurity.vulnerabilities.length - currentSecurity.vulnerabilities.length);
+      const fixedVulnerabilities =
+        currentSecurity.vulnerabilities.length - newSecurity.vulnerabilities.length;
+      const newVulnerabilities = Math.max(
+        0,
+        newSecurity.vulnerabilities.length - currentSecurity.vulnerabilities.length
+      );
 
       let severityChange: SecurityImpact['severityChange'] = 'same';
       if (fixedVulnerabilities > 0) {
@@ -679,14 +693,14 @@ export class CatalogUpdateService {
         hasVulnerabilities: currentSecurity.hasVulnerabilities || newSecurity.hasVulnerabilities,
         fixedVulnerabilities: Math.max(0, fixedVulnerabilities),
         newVulnerabilities,
-        severityChange
+        severityChange,
       };
     } catch {
       return {
         hasVulnerabilities: false,
         fixedVulnerabilities: 0,
         newVulnerabilities: 0,
-        severityChange: 'same'
+        severityChange: 'same',
       };
     }
   }
@@ -727,7 +741,7 @@ export class CatalogUpdateService {
 
     // Base risk on update type and number of affected packages
     const affectedPackageCount = packageImpacts.length;
-    
+
     if (updateType === 'major') {
       return affectedPackageCount > 5 ? 'high' : 'medium';
     } else if (updateType === 'minor') {
@@ -760,7 +774,7 @@ export class CatalogUpdateService {
       recommendations.push('🧪 Test thoroughly in development environment');
     }
 
-    const breakingChangePackages = packageImpacts.filter(p => p.isBreakingChange);
+    const breakingChangePackages = packageImpacts.filter((p) => p.isBreakingChange);
     if (breakingChangePackages.length > 0) {
       recommendations.push(`🔧 ${breakingChangePackages.length} package(s) may need code changes`);
     }

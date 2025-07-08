@@ -1,6 +1,6 @@
 /**
  * Global CLI Options
- * 
+ *
  * Defines standardized option definitions for all CLI commands.
  * Provides consistent option parsing and validation.
  */
@@ -47,24 +47,19 @@ export interface WorkspaceCliOptions extends GlobalCliOptions {
  * Global options available to all commands
  */
 export const globalOptions = [
-  new Option('-w, --workspace <path>', 'workspace directory path')
-    .env('PCU_WORKSPACE'),
-  
-  new Option('-v, --verbose', 'enable verbose logging')
-    .env('PCU_VERBOSE'),
-  
-  new Option('--no-color', 'disable colored output')
-    .env('PCU_NO_COLOR'),
-  
-  new Option('--registry <url>', 'NPM registry URL')
-    .env('PCU_REGISTRY'),
-  
+  new Option('-w, --workspace <path>', 'workspace directory path').env('PCU_WORKSPACE'),
+
+  new Option('-v, --verbose', 'enable verbose logging').env('PCU_VERBOSE'),
+
+  new Option('--no-color', 'disable colored output').env('PCU_NO_COLOR'),
+
+  new Option('--registry <url>', 'NPM registry URL').env('PCU_REGISTRY'),
+
   new Option('--timeout <ms>', 'request timeout in milliseconds')
     .argParser(parseInt)
     .env('PCU_TIMEOUT'),
-  
-  new Option('--config <path>', 'path to configuration file')
-    .env('PCU_CONFIG'),
+
+  new Option('--config <path>', 'path to configuration file').env('PCU_CONFIG'),
 ];
 
 /**
@@ -72,28 +67,24 @@ export const globalOptions = [
  */
 export const checkOptions = [
   ...globalOptions,
-  
-  new Option('--catalog <name>', 'check specific catalog only')
-    .env('PCU_CATALOG'),
-  
+
+  new Option('--catalog <name>', 'check specific catalog only').env('PCU_CATALOG'),
+
   new Option('-f, --format <type>', 'output format')
     .choices(['table', 'json', 'yaml', 'minimal'])
     .default('table')
     .env('PCU_OUTPUT_FORMAT'),
-  
+
   new Option('-t, --target <type>', 'update target')
     .choices(['latest', 'greatest', 'minor', 'patch', 'newest'])
     .default('latest')
     .env('PCU_UPDATE_TARGET'),
-  
-  new Option('--prerelease', 'include prerelease versions')
-    .env('PCU_PRERELEASE'),
-  
-  new Option('--include <pattern...>', 'include packages matching pattern')
-    .env('PCU_INCLUDE'),
-  
-  new Option('--exclude <pattern...>', 'exclude packages matching pattern')
-    .env('PCU_EXCLUDE'),
+
+  new Option('--prerelease', 'include prerelease versions').env('PCU_PRERELEASE'),
+
+  new Option('--include <pattern...>', 'include packages matching pattern').env('PCU_INCLUDE'),
+
+  new Option('--exclude <pattern...>', 'exclude packages matching pattern').env('PCU_EXCLUDE'),
 ];
 
 /**
@@ -101,18 +92,14 @@ export const checkOptions = [
  */
 export const updateOptions = [
   ...checkOptions,
-  
-  new Option('-i, --interactive', 'interactive mode to choose updates')
-    .env('PCU_INTERACTIVE'),
-  
-  new Option('-d, --dry-run', 'preview changes without writing files')
-    .env('PCU_DRY_RUN'),
-  
-  new Option('--force', 'force updates even if risky')
-    .env('PCU_FORCE'),
-  
-  new Option('--create-backup', 'create backup files before updating')
-    .env('PCU_CREATE_BACKUP'),
+
+  new Option('-i, --interactive', 'interactive mode to choose updates').env('PCU_INTERACTIVE'),
+
+  new Option('-d, --dry-run', 'preview changes without writing files').env('PCU_DRY_RUN'),
+
+  new Option('--force', 'force updates even if risky').env('PCU_FORCE'),
+
+  new Option('--create-backup', 'create backup files before updating').env('PCU_CREATE_BACKUP'),
 ];
 
 /**
@@ -120,7 +107,7 @@ export const updateOptions = [
  */
 export const analyzeOptions = [
   ...globalOptions,
-  
+
   new Option('-f, --format <type>', 'output format')
     .choices(['table', 'json', 'yaml', 'minimal'])
     .default('table')
@@ -132,13 +119,13 @@ export const analyzeOptions = [
  */
 export const workspaceOptions = [
   ...globalOptions,
-  
+
   new Option('--validate', 'validate workspace configuration'),
-  
+
   new Option('--stats', 'show workspace statistics'),
-  
+
   new Option('--info', 'show workspace information'),
-  
+
   new Option('-f, --format <type>', 'output format')
     .choices(['table', 'json', 'yaml', 'minimal'])
     .default('table')
@@ -188,8 +175,7 @@ export const optionGroups = {
     title: 'Registry Options',
     options: [
       new Option('--registry <url>', 'NPM registry URL'),
-      new Option('--timeout <ms>', 'request timeout')
-        .argParser(parseInt),
+      new Option('--timeout <ms>', 'request timeout').argParser(parseInt),
     ],
   },
 };
@@ -245,12 +231,12 @@ export class OptionUtils {
       check.catalog = String(options.catalog).trim();
     }
 
-    if (options.format) {
-      check.format = options.format as CheckCliOptions['format'];
+    if (options.format && typeof options.format === 'string') {
+      check.format = options.format as Exclude<CheckCliOptions['format'], undefined>;
     }
 
-    if (options.target) {
-      check.target = options.target as CheckCliOptions['target'];
+    if (options.target && typeof options.target === 'string') {
+      check.target = options.target as Exclude<CheckCliOptions['target'], undefined>;
     }
 
     if (options.prerelease !== undefined) {
@@ -258,13 +244,13 @@ export class OptionUtils {
     }
 
     if (options.include) {
-      check.include = Array.isArray(options.include) 
+      check.include = Array.isArray(options.include)
         ? options.include.map((p: any) => String(p).trim()).filter(Boolean)
         : [String(options.include).trim()].filter(Boolean);
     }
 
     if (options.exclude) {
-      check.exclude = Array.isArray(options.exclude) 
+      check.exclude = Array.isArray(options.exclude)
         ? options.exclude.map((p: any) => String(p).trim()).filter(Boolean)
         : [String(options.exclude).trim()].filter(Boolean);
     }
@@ -305,8 +291,8 @@ export class OptionUtils {
     const global = this.parseGlobalOptions(options);
     const analyze: AnalyzeCliOptions = { ...global };
 
-    if (options.format) {
-      analyze.format = options.format as AnalyzeCliOptions['format'];
+    if (options.format && typeof options.format === 'string') {
+      analyze.format = options.format as Exclude<AnalyzeCliOptions['format'], undefined>;
     }
 
     return analyze;
@@ -331,8 +317,8 @@ export class OptionUtils {
       workspace.info = Boolean(options.info);
     }
 
-    if (options.format) {
-      workspace.format = options.format as WorkspaceCliOptions['format'];
+    if (options.format && typeof options.format === 'string') {
+      workspace.format = options.format as Exclude<WorkspaceCliOptions['format'], undefined>;
     }
 
     return workspace;
@@ -346,13 +332,13 @@ export class OptionUtils {
     if (!group) return '';
 
     const lines = [`${group.title}:`];
-    
+
     for (const option of group.options) {
       const flags = option.flags;
       const description = option.description || '';
       const choices = option.argChoices ? ` (choices: ${option.argChoices.join(', ')})` : '';
       const defaultValue = option.defaultValue ? ` (default: ${option.defaultValue})` : '';
-      
+
       lines.push(`  ${flags.padEnd(30)} ${description}${choices}${defaultValue}`);
     }
 
@@ -373,8 +359,7 @@ export class OptionUtils {
         break;
 
       case 'workspace':
-        const actionCount = [options.validate, options.stats, options.info]
-          .filter(Boolean).length;
+        const actionCount = [options.validate, options.stats, options.info].filter(Boolean).length;
         if (actionCount > 1) {
           errors.push('Cannot use multiple workspace actions simultaneously');
         }

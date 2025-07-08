@@ -1,6 +1,6 @@
 /**
  * Version Value Object
- * 
+ *
  * Represents a semantic version with comparison and validation capabilities.
  * Handles version ranges, pre-release versions, and semantic version operations.
  */
@@ -37,7 +37,12 @@ export class Version {
   /**
    * Create a Version from semver components
    */
-  public static fromComponents(major: number, minor: number, patch: number, prerelease?: string): Version {
+  public static fromComponents(
+    major: number,
+    minor: number,
+    patch: number,
+    prerelease?: string
+  ): Version {
     let versionString = `${major}.${minor}.${patch}`;
     if (prerelease) {
       versionString += `-${prerelease}`;
@@ -85,7 +90,7 @@ export class Version {
    * Get prerelease identifier
    */
   public getPrerelease(): string[] {
-    return this.semverInstance.prerelease.map(p => p.toString());
+    return this.semverInstance.prerelease.map((p) => p.toString());
   }
 
   /**
@@ -170,7 +175,7 @@ export class Version {
 
 /**
  * Version Range Value Object
- * 
+ *
  * Represents a version range (e.g., "^1.2.3", "~2.0.0", ">=1.0.0 <2.0.0")
  */
 export class VersionRange {
@@ -280,9 +285,14 @@ export class VersionRange {
    * Check if this is an exact version
    */
   public isExact(): boolean {
-    return !this.value.includes('^') && !this.value.includes('~') && 
-           !this.value.includes('>') && !this.value.includes('<') &&
-           !this.value.includes('*') && !this.value.includes('x');
+    return (
+      !this.value.includes('^') &&
+      !this.value.includes('~') &&
+      !this.value.includes('>') &&
+      !this.value.includes('<') &&
+      !this.value.includes('*') &&
+      !this.value.includes('x')
+    );
   }
 
   /**

@@ -80,8 +80,8 @@ export function formatTable(
 
   // Calculate column widths
   const widths = headers.map((header, i) => {
-    const columnValues = [header, ...rows.map(row => row[i] || '')];
-    return Math.max(...columnValues.map(val => val.length));
+    const columnValues = [header, ...rows.map((row) => row[i] || '')];
+    return Math.max(...columnValues.map((val) => val.length));
   });
 
   // Format row function
@@ -89,7 +89,7 @@ export function formatTable(
     const formattedCells = cells.map((cell, i) => {
       const width = widths[i] || 0;
       const alignment = align[i] || 'left';
-      
+
       let formatted = cell;
       if (alignment === 'center') {
         const totalPad = width - cell.length;
@@ -101,7 +101,7 @@ export function formatTable(
       } else {
         formatted = cell.padEnd(width);
       }
-      
+
       return ' '.repeat(padding) + formatted + ' '.repeat(padding);
     });
 
@@ -113,7 +113,7 @@ export function formatTable(
 
   if (borders) {
     // Top border
-    const topBorder = widths.map(w => '-'.repeat(w + padding * 2)).join('+');
+    const topBorder = widths.map((w) => '-'.repeat(w + padding * 2)).join('+');
     lines.push(`+${topBorder}+`);
   }
 
@@ -122,18 +122,18 @@ export function formatTable(
 
   if (borders) {
     // Header separator
-    const headerSep = widths.map(w => '-'.repeat(w + padding * 2)).join('+');
+    const headerSep = widths.map((w) => '-'.repeat(w + padding * 2)).join('+');
     lines.push(`+${headerSep}+`);
   }
 
   // Rows
-  rows.forEach(row => {
+  rows.forEach((row) => {
     lines.push(formatRow(row));
   });
 
   if (borders) {
     // Bottom border
-    const bottomBorder = widths.map(w => '-'.repeat(w + padding * 2)).join('+');
+    const bottomBorder = widths.map((w) => '-'.repeat(w + padding * 2)).join('+');
     lines.push(`+${bottomBorder}+`);
   }
 
