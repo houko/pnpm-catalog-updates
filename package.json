@@ -1,5 +1,5 @@
 {
-  "name": "pnpm-catalog-updater",
+  "name": "pnpm-catalog-updates",
   "version": "0.1.1",
   "publishConfig": {
     "access": "public"
