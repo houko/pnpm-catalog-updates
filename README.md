@@ -2,9 +2,9 @@
 
 A powerful CLI tool to check and update pnpm workspace catalog dependencies, inspired by [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-[![CI](https://github.com/yourusername/pnpm-catalog-updater/workflows/CI/badge.svg)](https://github.com/yourusername/pnpm-catalog-updater/actions)
+[![CI](https://github.com/houko/pnpm-catalog-updater/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updater/actions)
 [![npm version](https://badge.fury.io/js/pnpm-catalog-updater.svg)](https://badge.fury.io/js/pnpm-catalog-updater)
-[![Coverage Status](https://coveralls.io/repos/github/yourusername/pnpm-catalog-updater/badge.svg?branch=main)](https://coveralls.io/github/yourusername/pnpm-catalog-updater?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/houko/pnpm-catalog-updater/badge.svg?branch=main)](https://coveralls.io/github/houko/pnpm-catalog-updater?branch=main)
 
 ## ✨ Features
 
@@ -172,7 +172,7 @@ src/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pnpm-catalog-updater.git
+git clone https://github.com/houko/pnpm-catalog-updater.git
 cd pnpm-catalog-updater
 
 # Install dependencies
@@ -267,7 +267,7 @@ catalogs:
   react17:
     react: ^17.0.2
     @types/react: ^17.0.62
-  
+
   # Latest versions
   latest:
     react: ^18.2.0
@@ -326,9 +326,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📖 [Documentation](https://github.com/yourusername/pnpm-catalog-updater#readme)
-- 🐛 [Issue Tracker](https://github.com/yourusername/pnpm-catalog-updater/issues)
-- 💬 [Discussions](https://github.com/yourusername/pnpm-catalog-updater/discussions)
+- 📖 [Documentation](https://github.com/houko/pnpm-catalog-updater#readme)
+- 🐛 [Issue Tracker](https://github.com/houko/pnpm-catalog-updater/issues)
+- 💬 [Discussions](https://github.com/houko/pnpm-catalog-updater/discussions)
 
 ---
 

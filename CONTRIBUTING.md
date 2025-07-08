@@ -14,7 +14,7 @@ Thank you for your interest in contributing to pnpm-catalog-updater! This docume
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/yourusername/pnpm-catalog-updater.git
+   git clone https://github.com/houko/pnpm-catalog-updater.git
    cd pnpm-catalog-updater
    ```
 
@@ -138,7 +138,7 @@ describe('VersionParser', () => {
   it('should parse semantic version', () => {
     const parser = new VersionParser();
     const version = parser.parse('1.2.3');
-    
+
     expect(version.major).toBe(1);
     expect(version.minor).toBe(2);
     expect(version.patch).toBe(3);
@@ -155,9 +155,9 @@ describe('CLI E2E', () => {
     const workspace = await global.createE2EWorkspace({
       'pnpm-workspace.yaml': 'catalog:\n  react: ^17.0.0',
     });
-    
+
     const result = await global.runCLI(['check'], workspace);
-    
+
     expect(result.exitCode).toBe(0);
     await global.cleanupE2EWorkspace(workspace);
   });
@@ -216,7 +216,7 @@ This project follows DDD principles:
    // src/domain/entities/NewEntity.ts
    export class NewEntity {
      constructor(private id: EntityId) {}
-     
+
      // Business methods
    }
    ```
@@ -243,7 +243,7 @@ This project follows DDD principles:
    // src/application/services/NewEntityService.ts
    export class NewEntityService {
      constructor(private repository: NewEntityRepository) {}
-     
+
      // Use cases
    }
    ```
@@ -336,11 +336,11 @@ For feature requests, please:
 ```typescript
 /**
  * Parses a version string into semantic version components.
- * 
+ *
  * @param versionString - The version string to parse (e.g., "1.2.3")
  * @returns Parsed version object with major, minor, patch properties
  * @throws {InvalidVersionError} When the version string is malformed
- * 
+ *
  * @example
  * ```typescript
  * const parser = new VersionParser();

@@ -18,12 +18,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/pnpm-catalog-updater.git"
+    "url": "https://github.com/houko/pnpm-catalog-updater.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/pnpm-catalog-updater/issues"
+    "url": "https://github.com/houko/pnpm-catalog-updater/issues"
   },
-  "homepage": "https://github.com/yourusername/pnpm-catalog-updater#readme",
+  "homepage": "https://github.com/houko/pnpm-catalog-updater#readme",
   "engines": {
     "node": ">=18.0.0"
   },
