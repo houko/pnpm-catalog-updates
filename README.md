@@ -4,7 +4,7 @@ A powerful CLI tool to check and update pnpm workspace catalog dependencies,
 inspired by
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-[![CI](https://github.com/houko/pnpm-catalog-updates/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updater/actions)
+[![CI](https://github.com/houko/pnpm-catalog-updates/workflows/CI/badge.svg)](https://github.com/houko/pnpm-catalog-updates/actions)
 [![npm version](https://badge.fury.io/js/pnpm-catalog-updates.svg)](https://badge.fury.io/js/pnpm-catalog-updates)
 [![Coverage Status](https://coveralls.io/repos/github/houko/pnpm-catalog-updates/badge.svg?branch=main)](https://coveralls.io/github/houko/pnpm-catalog-updates?branch=main)
 

@@ -150,6 +150,6 @@ jobs:
             pcu -s --validate
             ```
 
-            For complete documentation, visit: https://github.com/houko/pnpm-catalog-updater#readme
+            For complete documentation, visit: https://github.com/houko/pnpm-catalog-updates#readme
           draft: false
           prerelease: false
