@@ -114,7 +114,7 @@ jobs:
             pcu -c
 
             # Update interactively
-            pcu -u -i
+            pcu -i
 
             # Update with dry run
             pcu -u -d
@@ -137,7 +137,7 @@ jobs:
 
             ```bash
             # Interactive update with backup
-            pcu -u -i -b
+            pcu -i -b
 
             # Update only minor versions
             pcu -u --target minor

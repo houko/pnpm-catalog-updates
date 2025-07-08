@@ -49,7 +49,7 @@ pcu
 pcu -c
 
 # Quick update (interactive)
-pcu -u -i
+pcu -i
 
 # Quick update (dry run)
 pcu -u -d
@@ -63,7 +63,7 @@ pcu -s
 | Command  | Description         | Example                   |
 | -------- | ------------------- | ------------------------- |
 | `pcu -c` | Check for updates   | `pcu -c --catalog node18` |
-| `pcu -u` | Update dependencies | `pcu -u -i -b`            |
+| `pcu -u` | Update dependencies | `pcu -i -b`               |
 | `pcu -a` | Analyze impact      | `pcu -a default react`    |
 | `pcu -s` | Workspace info      | `pcu -s --validate`       |
 | `pcu -h` | Show help           | `pcu -h update`           |
@@ -217,7 +217,7 @@ pcu -c
 pcu -c --format minimal
 
 # Interactive update with backup
-pcu -u -i -b
+pcu -i -b
 
 # Update only minor and patch versions
 pcu -u --target minor
