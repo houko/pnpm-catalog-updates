@@ -336,6 +336,6 @@ export function sanitizeString(
 export function sanitizePackageName(name: string): string {
   return sanitizeString(name, {
     maxLength: 214,
-    allowedChars: /a-z0-9@\/\-\._~*/,
+    allowedChars: /[a-z0-9@/._~*-]/,
   }).toLowerCase();
 }

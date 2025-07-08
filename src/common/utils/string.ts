@@ -61,7 +61,9 @@ export function pad(
  * Remove ANSI color codes from string
  */
 export function stripAnsi(str: string): string {
-  return str.replace(/\u001b\[[0-9;]*m/g, '');
+  const escapeChar = String.fromCharCode(27);
+  const ansiPattern = new RegExp(`${escapeChar}\\[[0-9;]*m`, 'g');
+  return str.replace(ansiPattern, '');
 }
 
 /**

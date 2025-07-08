@@ -28,6 +28,7 @@ module.exports = {
       files: ['test/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
       rules: {
         'no-console': 'off',
+        'no-var': 'off', // Allow var in test global declarations
       },
     },
   ],

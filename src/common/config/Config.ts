@@ -8,9 +8,9 @@
  * - Default values
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { join, resolve } from 'path';
+import { existsSync, readFileSync } from 'fs';
 import { homedir } from 'os';
+import { join, resolve } from 'path';
 
 export interface PcuConfig {
   // Registry settings
@@ -371,7 +371,7 @@ export class ConfigManager {
     const result = { ...target };
 
     for (const key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (Object.hasOwn(source, key)) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           result[key] = this.deepMerge(target[key] || {}, source[key]);
         } else {
