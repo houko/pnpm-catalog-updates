@@ -87,6 +87,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
+    "@eslint/js": "catalog:",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^9.0.0",
     "@types/inquirer": "^9.0.8",

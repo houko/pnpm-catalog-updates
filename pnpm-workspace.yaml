@@ -20,6 +20,7 @@ catalog:
   typescript: 5.8.3
   vitest: ^3.2.4
   eslint: 9.30.1
+  "@eslint/js": ^9.30.1
   prettier: 3.6.2
 catalogs:
   node18:
