@@ -70,6 +70,22 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Publish alias package "pcu" pointing to the same code
+      - name: Publish alias package pcu
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          cp package.json package.original.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.name = 'pcu';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          NODE
+          npm publish --access public
+          mv package.original.json package.json
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         uses: actions/create-release@v1
