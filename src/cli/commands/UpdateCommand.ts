@@ -108,6 +108,7 @@ export class UpdateCommand {
    */
   private async interactiveSelection(plan: UpdatePlan): Promise<UpdatePlan> {
     console.log(chalk.blue('\n🎯 Interactive Update Selection'));
+    console.log(chalk.gray('Use ↑/↓ to navigate, Space to toggle, Enter to confirm'));
 
     // Group updates by catalog for better organization
     const updatesByDir = plan.updates.reduce(
@@ -136,9 +137,10 @@ export class UpdateCommand {
       {
         type: 'checkbox',
         name: 'selectedUpdates',
-        message: 'Select updates to apply (Space to toggle, Enter to confirm):',
+        message: 'Select updates to apply:',
         choices,
-        pageSize: 20,
+        pageSize: process.stdout.rows ? Math.max(10, process.stdout.rows - 8) : 40,
+        loop: true,
       },
     ]);
 
