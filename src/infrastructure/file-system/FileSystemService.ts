@@ -6,13 +6,12 @@
  */
 
 import fs from 'fs/promises';
-import path from 'path';
 import { glob } from 'glob';
+import path from 'path';
 import YAML from 'yaml';
-
-import { WorkspacePath } from '../../domain/value-objects/WorkspacePath.js';
-import { PnpmWorkspaceData } from '../../domain/value-objects/WorkspaceConfig.js';
 import { PackageJsonData } from '../../domain/entities/Package.js';
+import { PnpmWorkspaceData } from '../../domain/value-objects/WorkspaceConfig.js';
+import { WorkspacePath } from '../../domain/value-objects/WorkspacePath.js';
 
 export class FileSystemService {
   /**
@@ -120,10 +119,10 @@ export class FileSystemService {
     try {
       // Read the original file to preserve comments and formatting
       const originalContent = await this.readTextFile(filePath);
-      
+
       // Use smart YAML updating that preserves comments and formatting
       const updatedContent = this.updateYamlPreservingFormat(originalContent, data);
-      
+
       await this.writeTextFile(filePath, updatedContent);
     } catch (error) {
       // If reading the original file fails, fall back to regular YAML writing
@@ -154,33 +153,54 @@ export class FileSystemService {
       for (let j = i; j < lines.length; j++) {
         const fullLine = lines[j];
         if (!fullLine) continue;
-        
+
         const line = fullLine.trim();
-        
+
         if (line.startsWith(`${sectionName}:`)) {
           sectionStartIndex = j;
           indentLevel = fullLine.length - fullLine.trimStart().length;
-          
+
           // Find the end of this section
           for (let k = j + 1; k < lines.length; k++) {
             const nextLine = lines[k];
             if (!nextLine) continue;
-            
+
             const nextLineTrimmed = nextLine.trim();
-            
-            // Skip empty lines and comments
-            if (nextLineTrimmed === '' || nextLineTrimmed.startsWith('#')) {
-              continue;
-            }
-            
-            // If we find a line with same or less indentation that's not part of this section, stop
             const nextIndentLevel = nextLine.length - nextLine.trimStart().length;
-            if (nextIndentLevel <= indentLevel && nextLineTrimmed.includes(':')) {
+
+            // If we find a line with same or less indentation that defines a new section, stop
+            if (nextIndentLevel <= indentLevel && nextLineTrimmed.includes(':') && !nextLineTrimmed.startsWith('#')) {
               sectionEndIndex = k - 1;
               break;
             }
+
+            // If we find a line that's not empty, not indented enough to be part of this section, stop
+            // Special case: comments at the same level after an empty line should end the section
+            if (nextLineTrimmed !== '' && nextIndentLevel <= indentLevel) {
+              if (nextLineTrimmed.startsWith('#') && nextIndentLevel === indentLevel) {
+                // Check if there was an empty line before this comment
+                let hasEmptyLineBefore = false;
+                for (let m = k - 1; m > j; m--) {
+                  const prevLine = lines[m];
+                  if (!prevLine || prevLine.trim() === '') {
+                    hasEmptyLineBefore = true;
+                    break;
+                  }
+                  if (prevLine.trim() !== '') {
+                    break;
+                  }
+                }
+                if (hasEmptyLineBefore) {
+                  sectionEndIndex = k - 1;
+                  break;
+                }
+              } else if (!nextLineTrimmed.startsWith('#')) {
+                sectionEndIndex = k - 1;
+                break;
+              }
+            }
           }
-          
+
           if (sectionEndIndex === -1) {
             sectionEndIndex = lines.length - 1;
           }
@@ -190,8 +210,15 @@ export class FileSystemService {
 
       if (sectionStartIndex !== -1) {
         // Update the section
-        const sectionContent = this.formatYamlSection(sectionName, newValue, indentLevel);
-        
+        const sectionContent = this.formatYamlSection(
+          sectionName,
+          newValue,
+          indentLevel,
+          lines,
+          sectionStartIndex,
+          sectionEndIndex
+        );
+
         // Add lines before the section
         for (let j = i; j < sectionStartIndex; j++) {
           const lineContent = lines[j];
@@ -199,15 +226,15 @@ export class FileSystemService {
             result.push(lineContent);
           }
         }
-        
+
         // Add the updated section
         result.push(...sectionContent);
-        
+
         // Update the position to after this section
         i = sectionEndIndex + 1;
         return true;
       }
-      
+
       return false;
     };
 
@@ -219,9 +246,9 @@ export class FileSystemService {
         i++;
         continue;
       }
-      
+
       const line = currentLine.trim();
-      
+
       // Handle main sections
       if (line.startsWith('packages:')) {
         if (updateSection('packages', newData.packages)) {
@@ -257,7 +284,7 @@ export class FileSystemService {
           continue;
         }
       }
-      
+
       // Keep the original line if not updated
       result.push(currentLine);
       i++;
@@ -267,12 +294,12 @@ export class FileSystemService {
   }
 
   /**
-   * Format a YAML section with proper indentation
+   * Format a YAML section with proper indentation while preserving internal structure
    */
-  private formatYamlSection(sectionName: string, value: any, baseIndent: number = 0): string[] {
+  private formatYamlSection(sectionName: string, value: any, baseIndent: number = 0, originalLines?: string[], sectionStart?: number, sectionEnd?: number): string[] {
     const lines: string[] = [];
     const indent = ' '.repeat(baseIndent);
-    
+
     if (sectionName === 'packages' && Array.isArray(value)) {
       lines.push(`${indent}packages:`);
       for (const pkg of value) {
@@ -281,8 +308,58 @@ export class FileSystemService {
     } else if ((sectionName === 'catalog' || sectionName === 'catalogs') && typeof value === 'object') {
       if (sectionName === 'catalog') {
         lines.push(`${indent}catalog:`);
-        for (const [pkg, version] of Object.entries(value)) {
-          lines.push(`${indent}  ${pkg}: ${version}`);
+
+        // Try to preserve original structure and comments if available
+        if (originalLines && sectionStart !== undefined && sectionEnd !== undefined) {
+          const valueEntries = Object.entries(value);
+          const processedPackages = new Set<string>();
+
+          // First pass: update existing packages while preserving comments
+          for (let i = sectionStart + 1; i <= sectionEnd; i++) {
+            const line = originalLines[i];
+            if (!line) continue;
+
+            const trimmed = line.trim();
+
+            // Preserve comments and empty lines
+            if (trimmed.startsWith('#') || trimmed === '') {
+              lines.push(line);
+              continue;
+            }
+
+            // Check if this line defines a package (with or without quotes)
+            const packageMatch = trimmed.match(/^(['"]?)([a-zA-Z0-9@\-_.\\/]+)\1:\s*(.+)$/);
+            if (packageMatch && packageMatch[2]) {
+              const packageName = packageMatch[2];
+              const newVersion = value[packageName];
+
+              if (newVersion !== undefined) {
+                // Update with new version while preserving indentation and quotes
+                const originalIndent = line.length - line.trimStart().length;
+                const quote = packageMatch[1] || ''; // Preserve original quote style
+                lines.push(' '.repeat(originalIndent) + `${quote}${packageName}${quote}: ${newVersion}`);
+                processedPackages.add(packageName);
+              } else {
+                // Keep the line as is if package not in new data
+                lines.push(line);
+              }
+            } else {
+              // Keep other lines as is
+              lines.push(line);
+            }
+          }
+
+          // Second pass: add any new packages that weren't in the original
+          for (const [pkg, version] of valueEntries) {
+            if (!processedPackages.has(pkg)) {
+              lines.push(`${indent}  ${pkg}: ${version}`);
+            }
+          }
+        } else {
+          // Fallback to simple formatting
+          for (const [pkg, version] of Object.entries(value)) {
+            lines.push(`${indent}  ${pkg}: ${version}`);
+          }
         }
       } else {
         lines.push(`${indent}catalogs:`);
@@ -294,7 +371,7 @@ export class FileSystemService {
         }
       }
     }
-    
+
     return lines;
   }
 

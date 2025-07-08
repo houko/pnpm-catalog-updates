@@ -63,16 +63,17 @@ export async function main(): Promise<void> {
     .description('A CLI tool to check and update pnpm workspace catalog dependencies')
     .version(packageJson.version)
     .option('-v, --verbose', 'enable verbose logging')
-    .option('--workspace <path>', 'workspace directory path')
+    .option('-w, --workspace <path>', 'workspace directory path')
     .option('--no-color', 'disable colored output');
 
   // Check command
   program
     .command('check')
+    .alias('chk')
     .description('check for outdated catalog dependencies')
     .option('--catalog <name>', 'check specific catalog only')
-    .option('--format <type>', 'output format: table, json, yaml, minimal', 'table')
-    .option('--target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .option('-t, --target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
     .option('--prerelease', 'include prerelease versions')
     .option('--include <pattern>', 'include packages matching pattern', [])
     .option('--exclude <pattern>', 'exclude packages matching pattern', [])
@@ -110,17 +111,18 @@ export async function main(): Promise<void> {
   // Update command
   program
     .command('update')
+    .alias('u')
     .description('update catalog dependencies')
     .option('-i, --interactive', 'interactive mode to choose updates')
     .option('-d, --dry-run', 'preview changes without writing files')
-    .option('--target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
+    .option('-t, --target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
     .option('--catalog <name>', 'update specific catalog only')
     .option('--include <pattern>', 'include packages matching pattern', [])
     .option('--exclude <pattern>', 'exclude packages matching pattern', [])
     .option('--force', 'force updates even if risky')
     .option('--prerelease', 'include prerelease versions')
-    .option('--create-backup', 'create backup files before updating')
-    .option('--format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .option('-b, --create-backup', 'create backup files before updating')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
     .action(async (options, command) => {
       try {
         const globalOptions = command.parent.opts();
@@ -159,11 +161,12 @@ export async function main(): Promise<void> {
   // Analyze command
   program
     .command('analyze')
+    .alias('a')
     .description('analyze the impact of updating a specific dependency')
     .argument('<catalog>', 'catalog name')
     .argument('<package>', 'package name')
     .argument('[version]', 'new version (default: latest)')
-    .option('--format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
     .action(async (catalog, packageName, version, options, command) => {
       try {
         const globalOptions = command.parent.opts();
@@ -194,10 +197,11 @@ export async function main(): Promise<void> {
   // Workspace command
   program
     .command('workspace')
+    .alias('w')
     .description('workspace information and validation')
     .option('--validate', 'validate workspace configuration')
-    .option('--stats', 'show workspace statistics')
-    .option('--format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .option('-s, --stats', 'show workspace statistics')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
     .action(async (options, command) => {
       try {
         const globalOptions = command.parent.opts();
@@ -237,6 +241,7 @@ export async function main(): Promise<void> {
   // Add help command
   program
     .command('help')
+    .alias('h')
     .argument('[command]', 'command to get help for')
     .description('display help for command')
     .action((command) => {
