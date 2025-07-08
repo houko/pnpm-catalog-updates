@@ -68,9 +68,16 @@ export class WorkspaceConfig {
    */
   public static createDefault(): WorkspaceConfig {
     const defaultData: PnpmWorkspaceData = {
-      packages: ['packages/*']
+      packages: ['packages/*'],
     };
-    return new WorkspaceConfig(CatalogMode.MANUAL, ['packages/*'], new Map(), false, true, defaultData);
+    return new WorkspaceConfig(
+      CatalogMode.MANUAL,
+      ['packages/*'],
+      new Map(),
+      false,
+      true,
+      defaultData
+    );
   }
 
   /**
@@ -139,7 +146,11 @@ export class WorkspaceConfig {
   /**
    * Update a catalog dependency (creates a new WorkspaceConfig)
    */
-  public updateCatalogDependency(catalogName: string, packageName: string, version: string): WorkspaceConfig {
+  public updateCatalogDependency(
+    catalogName: string,
+    packageName: string,
+    version: string
+  ): WorkspaceConfig {
     const catalogDef = this.catalogs.get(catalogName);
     if (!catalogDef) {
       throw new Error(`Catalog "${catalogName}" not found`);
@@ -147,7 +158,7 @@ export class WorkspaceConfig {
 
     // Create updated catalog definition
     const updatedCatalogDef = catalogDef.updateDependencyVersion(packageName, version);
-    
+
     // Create new catalogs map with the updated definition
     const updatedCatalogs = new Map(this.catalogs);
     updatedCatalogs.set(catalogName, updatedCatalogDef);

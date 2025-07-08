@@ -73,7 +73,11 @@ export async function main(): Promise<void> {
     .description('check for outdated catalog dependencies')
     .option('--catalog <name>', 'check specific catalog only')
     .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
-    .option('-t, --target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
+    .option(
+      '-t, --target <type>',
+      'update target: latest, greatest, minor, patch, newest',
+      'latest'
+    )
     .option('--prerelease', 'include prerelease versions')
     .option('--include <pattern>', 'include packages matching pattern', [])
     .option('--exclude <pattern>', 'exclude packages matching pattern', [])
@@ -115,7 +119,11 @@ export async function main(): Promise<void> {
     .description('update catalog dependencies')
     .option('-i, --interactive', 'interactive mode to choose updates')
     .option('-d, --dry-run', 'preview changes without writing files')
-    .option('-t, --target <type>', 'update target: latest, greatest, minor, patch, newest', 'latest')
+    .option(
+      '-t, --target <type>',
+      'update target: latest, greatest, minor, patch, newest',
+      'latest'
+    )
     .option('--catalog <name>', 'update specific catalog only')
     .option('--include <pattern>', 'include packages matching pattern', [])
     .option('--exclude <pattern>', 'exclude packages matching pattern', [])

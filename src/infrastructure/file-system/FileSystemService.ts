@@ -126,7 +126,9 @@ export class FileSystemService {
       await this.writeTextFile(filePath, updatedContent);
     } catch (error) {
       // If reading the original file fails, fall back to regular YAML writing
-      console.warn(`Could not preserve YAML format for ${filePath}, falling back to standard formatting`);
+      console.warn(
+        `Could not preserve YAML format for ${filePath}, falling back to standard formatting`
+      );
       await this.writeYamlFile(filePath, data);
     }
   }
@@ -169,7 +171,11 @@ export class FileSystemService {
             const nextIndentLevel = nextLine.length - nextLine.trimStart().length;
 
             // If we find a line with same or less indentation that defines a new section, stop
-            if (nextIndentLevel <= indentLevel && nextLineTrimmed.includes(':') && !nextLineTrimmed.startsWith('#')) {
+            if (
+              nextIndentLevel <= indentLevel &&
+              nextLineTrimmed.includes(':') &&
+              !nextLineTrimmed.startsWith('#')
+            ) {
               sectionEndIndex = k - 1;
               break;
             }
@@ -279,7 +285,9 @@ export class FileSystemService {
       } else if (line.startsWith('linkWorkspacePackages:')) {
         if ('linkWorkspacePackages' in newData) {
           const indent = currentLine.length - currentLine.trimStart().length;
-          result.push(' '.repeat(indent) + `linkWorkspacePackages: ${newData.linkWorkspacePackages}`);
+          result.push(
+            ' '.repeat(indent) + `linkWorkspacePackages: ${newData.linkWorkspacePackages}`
+          );
           i++;
           continue;
         }
@@ -296,7 +304,14 @@ export class FileSystemService {
   /**
    * Format a YAML section with proper indentation while preserving internal structure
    */
-  private formatYamlSection(sectionName: string, value: any, baseIndent: number = 0, originalLines?: string[], sectionStart?: number, sectionEnd?: number): string[] {
+  private formatYamlSection(
+    sectionName: string,
+    value: any,
+    baseIndent: number = 0,
+    originalLines?: string[],
+    sectionStart?: number,
+    sectionEnd?: number
+  ): string[] {
     const lines: string[] = [];
     const indent = ' '.repeat(baseIndent);
 
@@ -305,7 +320,10 @@ export class FileSystemService {
       for (const pkg of value) {
         lines.push(`${indent}  - "${pkg}"`);
       }
-    } else if ((sectionName === 'catalog' || sectionName === 'catalogs') && typeof value === 'object') {
+    } else if (
+      (sectionName === 'catalog' || sectionName === 'catalogs') &&
+      typeof value === 'object'
+    ) {
       if (sectionName === 'catalog') {
         lines.push(`${indent}catalog:`);
 
@@ -337,7 +355,9 @@ export class FileSystemService {
                 // Update with new version while preserving indentation and quotes
                 const originalIndent = line.length - line.trimStart().length;
                 const quote = packageMatch[1] || ''; // Preserve original quote style
-                lines.push(' '.repeat(originalIndent) + `${quote}${packageName}${quote}: ${newVersion}`);
+                lines.push(
+                  ' '.repeat(originalIndent) + `${quote}${packageName}${quote}: ${newVersion}`
+                );
                 processedPackages.add(packageName);
               } else {
                 // Keep the line as is if package not in new data
