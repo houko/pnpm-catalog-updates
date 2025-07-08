@@ -98,8 +98,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Unit tests
-        run: pnpm test --reporter=verbose
+      - name: Unit tests with coverage
+        run: pnpm test:coverage --reporter=verbose
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '18.19.1'
