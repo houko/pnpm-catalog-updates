@@ -1,6 +1,6 @@
 {
   "name": "pnpm-catalog-updates",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -75,7 +75,6 @@
     "glob": "catalog:",
     "inquirer": "catalog:",
     "lodash": "catalog:",
-    "node-fetch": "catalog:",
     "npm-registry-fetch": "catalog:",
     "ora": "catalog:",
     "pacote": "catalog:",
@@ -91,7 +90,6 @@
     "@types/inquirer": "^9.0.8",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.0.10",
-    "@types/node-fetch": "^2.6.12",
     "@types/semver": "^7.7.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",

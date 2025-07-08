@@ -41,67 +41,188 @@ pcu
 ### Basic Usage
 
 ```bash
-# Check for outdated catalog dependencies
-pcu check
+# Quick check for updates
+pcu -c
 
-# Update catalog dependencies interactively
-pcu update --interactive
+# Quick update (interactive)
+pcu -u -i
 
-# Update to latest versions (dry run)
-pcu update --dry-run
+# Quick update (dry run)
+pcu -u -d
 
-# Update specific catalog
-pcu update --catalog react17
-
-# Update with specific target
-pcu update --target minor
+# Get workspace info
+pcu -s
 ```
 
-## 📖 Usage
+### Common Commands
+
+| Command  | Description         | Example                   |
+| -------- | ------------------- | ------------------------- |
+| `pcu -c` | Check for updates   | `pcu -c --catalog node18` |
+| `pcu -u` | Update dependencies | `pcu -u -i -b`            |
+| `pcu -a` | Analyze impact      | `pcu -a default react`    |
+| `pcu -s` | Workspace info      | `pcu -s --validate`       |
+| `pcu -h` | Show help           | `pcu -h update`           |
+
+## 📖 Complete Usage Guide
+
+### All Commands & Shortcuts
+
+| Full Command    | Shorthand             | Description                               |
+| --------------- | --------------------- | ----------------------------------------- |
+| `pcu check`     | `pcu -c` or `pcu chk` | Check for outdated catalog dependencies   |
+| `pcu update`    | `pcu -u` or `pcu u`   | Update catalog dependencies               |
+| `pcu analyze`   | `pcu -a` or `pcu a`   | Analyze impact of dependency updates      |
+| `pcu workspace` | `pcu -s` or `pcu w`   | Show workspace information and validation |
+| `pcu help`      | `pcu -h` or `pcu h`   | Display help information                  |
 
 ### Commands
 
-#### `pcu check`
+#### `pcu check` / `pcu -c` / `pcu chk`
 
 Check for outdated dependencies in your pnpm workspace catalogs.
 
 ```bash
 pcu check [options]
+pcu -c [options]
+pcu chk [options]
 
 Options:
-  --workspace <path>    Workspace directory (default: current directory)
   --catalog <name>      Check specific catalog only
-  --format <type>       Output format: table, json, yaml (default: table)
-  --verbose             Show detailed information
+  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+  -t, --target <type>   Update target: latest, greatest, minor, patch, newest (default: latest)
+  --prerelease          Include prerelease versions
+  --include <pattern>   Include packages matching pattern
+  --exclude <pattern>   Exclude packages matching pattern
+  -w, --workspace <path> Workspace directory (default: current directory)
+  -v, --verbose         Show detailed information
 ```
 
-#### `pcu update`
+#### `pcu update` / `pcu -u` / `pcu u`
 
 Update catalog dependencies to newer versions.
 
 ```bash
 pcu update [options]
+pcu -u [options]
+pcu u [options]
 
 Options:
-  --interactive, -i     Interactive mode to choose updates
-  --dry-run, -d         Preview changes without writing files
-  --target <type>       Update target: latest, greatest, minor, patch (default: latest)
+  -i, --interactive     Interactive mode to choose updates
+  -d, --dry-run         Preview changes without writing files
+  -t, --target <type>   Update target: latest, greatest, minor, patch, newest (default: latest)
   --catalog <name>      Update specific catalog only
   --include <pattern>   Include packages matching pattern
   --exclude <pattern>   Exclude packages matching pattern
-  --force              Force updates even if risky
+  --force               Force updates even if risky
+  --prerelease          Include prerelease versions
+  -b, --create-backup   Create backup files before updating
+  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+  -w, --workspace <path> Workspace directory (default: current directory)
+  -v, --verbose         Show detailed information
 ```
 
-#### `pcu analyze`
+#### `pcu analyze` / `pcu -a` / `pcu a`
 
 Analyze the impact of updating a specific dependency.
 
 ```bash
-pcu analyze <catalog> <package>
+pcu analyze <catalog> <package> [version]
+pcu -a <catalog> <package> [version]
+pcu a <catalog> <package> [version]
 
-Example:
+Arguments:
+  catalog               Catalog name (e.g., 'default', 'react17')
+  package               Package name (e.g., 'react', '@types/node')
+  version               New version (optional, defaults to latest)
+
+Options:
+  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+  -w, --workspace <path> Workspace directory (default: current directory)
+  -v, --verbose         Show detailed information
+
+Examples:
   pcu analyze default react
-  pcu analyze react17 @types/react
+  pcu a default react 18.3.0
+  pcu -a react17 @types/react
+```
+
+#### `pcu workspace` / `pcu -s` / `pcu w`
+
+Show workspace information and validation.
+
+```bash
+pcu workspace [options]
+pcu -s [options]
+pcu w [options]
+
+Options:
+  --validate            Validate workspace configuration
+  -s, --stats           Show workspace statistics
+  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
+  -w, --workspace <path> Workspace directory (default: current directory)
+  -v, --verbose         Show detailed information
+
+Examples:
+  pcu workspace           # Show basic workspace info
+  pcu -s --stats         # Show detailed statistics
+  pcu w --validate       # Validate workspace configuration
+```
+
+#### `pcu help` / `pcu -h` / `pcu h`
+
+Display help information.
+
+```bash
+pcu help [command]
+pcu -h [command]
+pcu h [command]
+
+Examples:
+  pcu help              # Show general help
+  pcu help update       # Show help for update command
+  pcu -h check          # Show help for check command
+```
+
+### Global Options
+
+These options work with all commands:
+
+```bash
+-w, --workspace <path>   Workspace directory path
+-v, --verbose            Enable verbose logging
+--no-color               Disable colored output
+-V, --version            Output the version number
+-h, --help               Display help for command
+```
+
+### Common Usage Patterns
+
+```bash
+# Quick check for updates
+pcu -c
+
+# Interactive update with backup
+pcu -u -i -b
+
+# Update only minor and patch versions
+pcu -u --target minor
+
+# Check specific catalog
+pcu -c --catalog node18
+
+# Update excluding certain packages
+pcu -u --exclude "eslint*"
+
+# Dry run with verbose output
+pcu -u -d -v
+
+# Analyze impact before updating
+pcu -a default react
+pcu -u --catalog default --include react
+
+# Validate workspace configuration
+pcu -s --validate
 ```
 
 ### Configuration

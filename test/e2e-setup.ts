@@ -55,7 +55,7 @@ beforeAll(async () => {
     cwd: string = tempDir
   ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
     return new Promise((resolve) => {
-      // 检查目录是否存在
+      // Check if directory exists
       if (!fs.existsSync(cwd)) {
         return resolve({
           stdout: '',

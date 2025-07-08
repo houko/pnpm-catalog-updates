@@ -8,7 +8,6 @@
 import npmRegistryFetch from 'npm-registry-fetch';
 import pacote from 'pacote';
 import semver from 'semver';
-import fetch from 'node-fetch';
 
 import { Version, VersionRange } from '../../domain/value-objects/Version.js';
 
@@ -320,6 +319,9 @@ export class NpmRegistryService {
       const response = await fetch(
         `https://api.npmjs.org/downloads/point/${period}/${packageName}`
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = (await response.json()) as any;
       return data.downloads || 0;
     } catch (error) {

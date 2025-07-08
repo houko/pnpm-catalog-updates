@@ -165,13 +165,19 @@ export class OutputFormatter {
 
       for (const dep of catalogInfo.outdatedDependencies) {
         const typeColor = this.getUpdateTypeColor(dep.updateType);
-        // const securityIcon = dep.isSecurityUpdate ? '🔒 ' : '';
-        // TODO: Use securityIcon in table display
+        const securityIcon = dep.isSecurityUpdate ? '🔒 ' : '';
 
-        table.push([
-          dep.packageName,
+        // Colorize version differences
+        const { currentColored, latestColored } = this.colorizeVersionDiff(
           dep.currentVersion,
           dep.latestVersion,
+          dep.updateType
+        );
+
+        table.push([
+          `${securityIcon}${dep.packageName}`,
+          currentColored,
+          latestColored,
           this.colorize(typeColor, dep.updateType),
           `${dep.affectedPackages.length} package(s)`,
         ]);
@@ -232,11 +238,19 @@ export class OutputFormatter {
 
       for (const dep of result.updatedDependencies) {
         const typeColor = this.getUpdateTypeColor(dep.updateType);
+
+        // Colorize version differences
+        const { currentColored, latestColored } = this.colorizeVersionDiff(
+          dep.fromVersion,
+          dep.toVersion,
+          dep.updateType
+        );
+
         table.push([
           dep.catalogName,
           dep.packageName,
-          dep.fromVersion,
-          dep.toVersion,
+          currentColored,
+          latestColored,
           this.colorize(typeColor, dep.updateType),
         ]);
       }
@@ -529,5 +543,86 @@ export class OutputFormatter {
       default:
         return chalk.gray;
     }
+  }
+
+  /**
+   * Colorize version differences between current and latest
+   */
+  private colorizeVersionDiff(
+    current: string,
+    latest: string,
+    updateType: string
+  ): {
+    currentColored: string;
+    latestColored: string;
+  } {
+    if (!this.useColor) {
+      return { currentColored: current, latestColored: latest };
+    }
+
+    // Parse version numbers to identify different parts
+    const parseVersion = (version: string) => {
+      // Remove leading ^ or ~ or other prefix characters
+      const cleanVersion = version.replace(/^[\^~>=<]+/, '');
+      const parts = cleanVersion.split('.');
+      return {
+        major: parts[0] || '0',
+        minor: parts[1] || '0',
+        patch: parts[2] || '0',
+        extra: parts.slice(3).join('.'),
+        prefix: version.substring(0, version.length - cleanVersion.length),
+      };
+    };
+
+    const currentParts = parseVersion(current);
+    const latestParts = parseVersion(latest);
+
+    // Determine color based on update type for highlighting differences
+    const diffColor = this.getUpdateTypeColor(updateType);
+
+    // Build colored version strings by comparing each part
+    const colorCurrentPart = (part: string, latestPart: string, isChanged: boolean) => {
+      if (isChanged && part !== latestPart) {
+        return chalk.gray(part); // Dim the old version part
+      }
+      return part;
+    };
+
+    const colorLatestPart = (part: string, currentPart: string, isChanged: boolean) => {
+      if (isChanged && part !== currentPart) {
+        return diffColor(part); // Highlight the new version part with update type color
+      }
+      return part;
+    };
+
+    // Check which parts are different
+    const majorChanged = currentParts.major !== latestParts.major;
+    const minorChanged = currentParts.minor !== latestParts.minor;
+    const patchChanged = currentParts.patch !== latestParts.patch;
+    const extraChanged = currentParts.extra !== latestParts.extra;
+
+    // Build colored current version
+    let currentColored = currentParts.prefix;
+    currentColored += colorCurrentPart(currentParts.major, latestParts.major, majorChanged);
+    currentColored += '.';
+    currentColored += colorCurrentPart(currentParts.minor, latestParts.minor, minorChanged);
+    currentColored += '.';
+    currentColored += colorCurrentPart(currentParts.patch, latestParts.patch, patchChanged);
+    if (currentParts.extra) {
+      currentColored += '.' + colorCurrentPart(currentParts.extra, latestParts.extra, extraChanged);
+    }
+
+    // Build colored latest version
+    let latestColored = latestParts.prefix;
+    latestColored += colorLatestPart(latestParts.major, currentParts.major, majorChanged);
+    latestColored += '.';
+    latestColored += colorLatestPart(latestParts.minor, currentParts.minor, minorChanged);
+    latestColored += '.';
+    latestColored += colorLatestPart(latestParts.patch, currentParts.patch, patchChanged);
+    if (latestParts.extra) {
+      latestColored += '.' + colorLatestPart(latestParts.extra, currentParts.extra, extraChanged);
+    }
+
+    return { currentColored, latestColored };
   }
 }
