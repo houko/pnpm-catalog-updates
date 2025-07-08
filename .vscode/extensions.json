@@ -1,0 +1,45 @@
+{
+  "recommendations": [
+    // TypeScript and JavaScript
+    "ms-vscode.vscode-typescript-next",
+    
+    // Linting and Formatting
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    
+    // Testing
+    "vitest.explorer",
+    
+    // YAML Support
+    "redhat.vscode-yaml",
+    
+    // Git
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    
+    // Markdown
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    
+    // Utilities
+    "christian-kohler.path-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    
+    // Package Management
+    "mskelton.npm-outdated",
+    
+    // Node.js
+    "ms-vscode.js-debug-nightly",
+    
+    // Productivity
+    "usernamehw.errorlens",
+    "aaron-bond.better-comments",
+    "alefragnani.bookmarks"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-json"
+  ]
+}
