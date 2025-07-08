@@ -15,9 +15,9 @@ import {
   WorkspaceValidationReport,
 } from '../../application/services/WorkspaceService.js';
 
+import chalk from 'chalk';
 import Table from 'cli-table3';
 import YAML from 'yaml';
-import chalk from 'chalk';
 
 export type OutputFormat = 'table' | 'json' | 'yaml' | 'minimal';
 
@@ -594,11 +594,11 @@ export class OutputFormatter {
   private getUpdateTypeColor(updateType: string): typeof chalk {
     switch (updateType) {
       case 'major':
-        return chalk.cyan;
+        return chalk.red;
       case 'minor':
-        return chalk.green;
+        return chalk.yellow;
       case 'patch':
-        return chalk.cyan;
+        return chalk.green;
       default:
         return chalk.gray;
     }
