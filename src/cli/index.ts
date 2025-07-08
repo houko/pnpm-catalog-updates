@@ -64,7 +64,11 @@ export async function main(): Promise<void> {
     .version(packageJson.version)
     .option('-v, --verbose', 'enable verbose logging')
     .option('-w, --workspace <path>', 'workspace directory path')
-    .option('--no-color', 'disable colored output');
+    .option('--no-color', 'disable colored output')
+    .option('-u, --update', 'shorthand for update command')
+    .option('-c, --check', 'shorthand for check command')
+    .option('-a, --analyze', 'shorthand for analyze command')
+    .option('-s, --workspace-info', 'shorthand for workspace command');
 
   // Check command
   program
@@ -268,14 +272,30 @@ export async function main(): Promise<void> {
   // Let commander handle help and version normally
   // program.exitOverride() removed to fix help/version output
 
+  // Handle shorthand options by rewriting arguments
+  const args = [...process.argv];
+  if (args.includes('-u') || args.includes('--update')) {
+    const index = args.findIndex((arg) => arg === '-u' || arg === '--update');
+    args.splice(index, 1, 'update');
+  } else if (args.includes('-c') || args.includes('--check')) {
+    const index = args.findIndex((arg) => arg === '-c' || arg === '--check');
+    args.splice(index, 1, 'check');
+  } else if (args.includes('-a') || args.includes('--analyze')) {
+    const index = args.findIndex((arg) => arg === '-a' || arg === '--analyze');
+    args.splice(index, 1, 'analyze');
+  } else if (args.includes('-s') || args.includes('--workspace-info')) {
+    const index = args.findIndex((arg) => arg === '-s' || arg === '--workspace-info');
+    args.splice(index, 1, 'workspace');
+  }
+
   // Show help if no arguments provided
-  if (process.argv.length <= 2) {
+  if (args.length <= 2) {
     program.help();
   }
 
   // Parse command line arguments
   try {
-    await program.parseAsync(process.argv);
+    await program.parseAsync(args);
   } catch (error) {
     console.error(chalk.red('❌ Unexpected error:'), error);
     if (error instanceof Error && error.stack) {

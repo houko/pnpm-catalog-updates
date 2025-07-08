@@ -382,17 +382,205 @@ export class FileSystemService {
           }
         }
       } else {
+        // Handle catalogs section with format preservation
         lines.push(`${indent}catalogs:`);
-        for (const [catalogName, catalog] of Object.entries(value as Record<string, any>)) {
-          lines.push(`${indent}  ${catalogName}:`);
-          for (const [pkg, version] of Object.entries(catalog)) {
-            lines.push(`${indent}    ${pkg}: ${version}`);
+
+        if (originalLines && sectionStart !== undefined && sectionEnd !== undefined) {
+          // Try to preserve original structure for catalogs section
+          this.formatCatalogsSection(
+            lines,
+            value,
+            baseIndent,
+            originalLines,
+            sectionStart,
+            sectionEnd
+          );
+        } else {
+          // Fallback to simple formatting
+          for (const [catalogName, catalog] of Object.entries(value as Record<string, any>)) {
+            lines.push(`${indent}  ${catalogName}:`);
+            for (const [pkg, version] of Object.entries(catalog)) {
+              lines.push(`${indent}    ${pkg}: ${version}`);
+            }
           }
         }
       }
     }
 
     return lines;
+  }
+
+  /**
+   * Format catalogs section while preserving structure and comments
+   */
+  private formatCatalogsSection(
+    lines: string[],
+    value: Record<string, any>,
+    baseIndent: number,
+    originalLines: string[],
+    sectionStart: number,
+    sectionEnd: number
+  ): void {
+    const indent = ' '.repeat(baseIndent);
+    const processedCatalogs = new Set<string>();
+
+    let i = sectionStart + 1;
+    while (i <= sectionEnd) {
+      const line = originalLines[i];
+      if (!line) {
+        i++;
+        continue;
+      }
+
+      const trimmed = line.trim();
+
+      // Preserve comments and empty lines
+      if (trimmed.startsWith('#') || trimmed === '') {
+        lines.push(line);
+        i++;
+        continue;
+      }
+
+      // Check if this line defines a catalog
+      const catalogMatch = trimmed.match(/^([a-zA-Z0-9\-_.]+):\s*$/);
+      if (catalogMatch && catalogMatch[1]) {
+        const catalogName = catalogMatch[1];
+        const catalogData = value[catalogName];
+
+        if (catalogData) {
+          // This catalog exists in the new data
+          const originalIndent = line.length - line.trimStart().length;
+          lines.push(' '.repeat(originalIndent) + `${catalogName}:`);
+          processedCatalogs.add(catalogName);
+
+          // Process packages within this catalog
+          i++;
+          while (i <= sectionEnd) {
+            const packageLine = originalLines[i];
+            if (!packageLine) {
+              i++;
+              continue;
+            }
+
+            const packageTrimmed = packageLine.trim();
+            const packageIndent = packageLine.length - packageLine.trimStart().length;
+
+            // If we hit another catalog or section at same/lesser indent, break
+            if (
+              packageIndent <= originalIndent &&
+              packageTrimmed !== '' &&
+              !packageTrimmed.startsWith('#')
+            ) {
+              break;
+            }
+
+            // Preserve comments and empty lines
+            if (packageTrimmed.startsWith('#') || packageTrimmed === '') {
+              lines.push(packageLine);
+              i++;
+              continue;
+            }
+
+            // Check if this line defines a package
+            const packageMatch = packageTrimmed.match(/^(['"]?)([a-zA-Z0-9@\-_.\\/]+)\1:\s*(.+)$/);
+            if (packageMatch && packageMatch[2]) {
+              const packageName = packageMatch[2];
+              const newVersion = catalogData[packageName];
+
+              if (newVersion !== undefined) {
+                // Update with new version while preserving indentation and quotes
+                const quote = packageMatch[1] || '';
+                lines.push(
+                  ' '.repeat(packageIndent) + `${quote}${packageName}${quote}: ${newVersion}`
+                );
+              } else {
+                // Keep the line as is if package not in new data
+                lines.push(packageLine);
+              }
+            } else {
+              // Keep other lines as is
+              lines.push(packageLine);
+            }
+
+            i++;
+          }
+
+          // Add any new packages that weren't in the original
+          for (const [pkg, version] of Object.entries(catalogData)) {
+            if (
+              !this.packageExistsInCatalogSection(
+                originalLines,
+                sectionStart,
+                sectionEnd,
+                catalogName,
+                pkg
+              )
+            ) {
+              lines.push(`${indent}  ${pkg}: ${version}`);
+            }
+          }
+        } else {
+          // This catalog doesn't exist in new data, keep as is
+          lines.push(line);
+          i++;
+        }
+      } else {
+        // Not a catalog definition, keep as is
+        lines.push(line);
+        i++;
+      }
+    }
+
+    // Add any new catalogs that weren't in the original
+    for (const [catalogName, catalogData] of Object.entries(value)) {
+      if (!processedCatalogs.has(catalogName)) {
+        lines.push(`${indent}  ${catalogName}:`);
+        for (const [pkg, version] of Object.entries(catalogData)) {
+          lines.push(`${indent}    ${pkg}: ${version}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Check if a package exists in a catalog section
+   */
+  private packageExistsInCatalogSection(
+    lines: string[],
+    sectionStart: number,
+    sectionEnd: number,
+    catalogName: string,
+    packageName: string
+  ): boolean {
+    let foundCatalog = false;
+
+    for (let i = sectionStart + 1; i <= sectionEnd; i++) {
+      const line = lines[i];
+      if (!line) continue;
+
+      const trimmed = line.trim();
+
+      // Check if we found the catalog
+      if (trimmed === `${catalogName}:`) {
+        foundCatalog = true;
+        continue;
+      }
+
+      // If we found another catalog, stop
+      if (foundCatalog && trimmed.match(/^[a-zA-Z0-9\-_.]+:\s*$/)) {
+        break;
+      }
+
+      // If we're in the right catalog, check for the package
+      if (foundCatalog) {
+        const packageMatch = trimmed.match(/^(['"]?)([a-zA-Z0-9@\-_.\\/]+)\1:\s*(.+)$/);
+        if (packageMatch && packageMatch[2] === packageName) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   /**

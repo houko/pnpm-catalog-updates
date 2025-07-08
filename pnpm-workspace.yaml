@@ -1,29 +1,28 @@
 packages:
-  - .
-
+  - "."
 catalog:
-  commander: ^11.1.0
-  inquirer: ^9.2.12
-  chalk: ^5.3.0
-  cli-table3: ^0.6.3
-  ora: ^7.0.1
-  yaml: ^2.3.4
-  fs-extra: ^11.2.0
-  glob: ^10.3.10
-  semver: ^7.5.4
-  npm-registry-fetch: ^16.2.1
-  pacote: ^17.0.4
+  commander: 14.0.0
+  inquirer: 12.7.0
+  chalk: 5.4.1
+  cli-table3: 0.6.5
+  ora: 8.2.0
+  yaml: 2.8.0
+  fs-extra: 11.3.0
+  glob: 11.0.3
+  semver: 7.7.2
+  npm-registry-fetch: 18.0.2
+  pacote: 21.0.0
   libnpmconfig: ^1.2.1
   lodash: ^4.17.21
-  rxjs: ^7.8.1
-  zod: ^3.22.4
-  typescript: ^5.3.3
+  node-fetch: ^3.3.2
+  rxjs: 7.8.2
+  zod: 3.25.75
+  typescript: 5.8.3
   vitest: ^3.2.4
-  eslint: ^8.56.0
-  prettier: ^3.1.1
-
+  eslint: 9.30.1
+  prettier: 3.6.2
 catalogs:
   node18:
-    '@types/node': ^18.19.0
+    "@types/node": 24.0.10
   node20:
-    '@types/node': ^20.10.6
+    "@types/node": 24.0.10
