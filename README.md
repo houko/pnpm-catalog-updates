@@ -8,6 +8,7 @@ inspired by
 [![npm](https://img.shields.io/npm/v/pnpm-catalog-updates)](https://www.npmjs.com/package/pnpm-catalog-updates)
 [![Coverage](https://img.shields.io/coveralls/github/houko/pnpm-catalog-updates/main)](https://coveralls.io/github/houko/pnpm-catalog-updates)
 
+<img width="955" height="438" alt="Image" src="https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35" />
 ## ✨ Features
 
 - 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog
