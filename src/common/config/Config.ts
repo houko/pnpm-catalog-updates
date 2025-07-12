@@ -360,13 +360,30 @@ export class ConfigManager {
     }
 
     const target = keys.reduce((current, key) => {
+      // Additional validation for each key in the path
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        throw new Error(`Invalid key in path: ${key}`);
+      }
+      
       if (!(key in current)) {
-        current[key] = Object.create(null); // Use Object.create(null) to avoid prototype
+        // Use Object.defineProperty for safer property creation
+        Object.defineProperty(current, key, {
+          value: Object.create(null),
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
       }
       return current[key];
     }, obj);
 
-    target[lastKey] = value;
+    // Use Object.defineProperty for safer final assignment
+    Object.defineProperty(target, lastKey, {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
   }
 
   /**

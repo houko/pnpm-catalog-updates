@@ -312,22 +312,46 @@ export function sanitizeString(
 ): string {
   let result = input;
 
-  // Strip HTML tags if requested with comprehensive sanitization
+  // Strip HTML tags if requested with comprehensive multi-pass sanitization
   if (options.stripHtml) {
-    // Remove HTML tags, including malformed ones
-    result = result.replace(/<[^>]*>?/g, '');
-
-    // Remove HTML entities
-    result = result.replace(/&[a-zA-Z0-9#]+;/g, '');
-
-    // Remove any remaining < or > characters that might be part of incomplete tags
-    result = result.replace(/[<>]/g, '');
-
-    // Remove potentially dangerous characters and sequences
-    result = result.replace(/javascript:/gi, '');
-    result = result.replace(/data:/gi, '');
-    result = result.replace(/vbscript:/gi, '');
-    result = result.replace(/on\w+\s*=/gi, '');
+    let previousLength: number;
+    
+    // Multi-pass sanitization to handle nested and complex patterns
+    do {
+      previousLength = result.length;
+      
+      // Remove HTML tags, including malformed ones
+      result = result.replace(/<[^>]*>?/g, '');
+      
+      // Remove HTML entities
+      result = result.replace(/&[a-zA-Z0-9#]+;/g, '');
+      
+      // Remove any remaining < or > characters that might be part of incomplete tags
+      result = result.replace(/[<>]/g, '');
+      
+      // Remove potentially dangerous protocol schemes
+      result = result.replace(/javascript:/gi, '');
+      result = result.replace(/data:/gi, '');
+      result = result.replace(/vbscript:/gi, '');
+      result = result.replace(/file:/gi, '');
+      result = result.replace(/ftp:/gi, '');
+      
+      // Remove event handlers
+      result = result.replace(/on\w+\s*=/gi, '');
+      
+      // Remove script-related content
+      result = result.replace(/script[\s\S]*?\/script/gi, '');
+      result = result.replace(/style[\s\S]*?\/style/gi, '');
+      
+      // Remove control characters and non-printable characters
+      // eslint-disable-next-line no-control-regex
+      result = result.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+      
+      // Remove potentially dangerous CSS expressions
+      result = result.replace(/expression\s*\(/gi, '');
+      result = result.replace(/url\s*\(/gi, '');
+      
+    } while (result.length !== previousLength && result.length > 0);
   }
 
   // Filter allowed characters
