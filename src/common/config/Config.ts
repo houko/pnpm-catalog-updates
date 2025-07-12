@@ -344,15 +344,24 @@ export class ConfigManager {
   }
 
   /**
-   * Set nested value using dot notation
+   * Set nested value using dot notation (protected against prototype pollution)
    */
   private setNestedValue(obj: any, path: string, value: any): void {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
 
+    // Validate that keys don't include prototype pollution attempts
+    if (keys.some((key) => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+      throw new Error('Invalid key path: prototype pollution attempt detected');
+    }
+
+    if (lastKey === '__proto__' || lastKey === 'constructor' || lastKey === 'prototype') {
+      throw new Error('Invalid key: prototype pollution attempt detected');
+    }
+
     const target = keys.reduce((current, key) => {
       if (!(key in current)) {
-        current[key] = {};
+        current[key] = Object.create(null); // Use Object.create(null) to avoid prototype
       }
       return current[key];
     }, obj);
@@ -361,7 +370,7 @@ export class ConfigManager {
   }
 
   /**
-   * Deep merge two objects
+   * Deep merge two objects (protected against prototype pollution)
    */
   private deepMerge(target: any, source: any): any {
     if (!source || typeof source !== 'object') {
@@ -371,6 +380,11 @@ export class ConfigManager {
     const result = { ...target };
 
     for (const key in source) {
+      // Prevent prototype pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue;
+      }
+
       if (Object.hasOwn(source, key)) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           result[key] = this.deepMerge(target[key] || {}, source[key]);

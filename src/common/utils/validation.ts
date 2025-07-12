@@ -312,9 +312,22 @@ export function sanitizeString(
 ): string {
   let result = input;
 
-  // Strip HTML tags if requested
+  // Strip HTML tags if requested with comprehensive sanitization
   if (options.stripHtml) {
-    result = result.replace(/<[^>]*>/g, '');
+    // Remove HTML tags, including malformed ones
+    result = result.replace(/<[^>]*>?/g, '');
+
+    // Remove HTML entities
+    result = result.replace(/&[a-zA-Z0-9#]+;/g, '');
+
+    // Remove any remaining < or > characters that might be part of incomplete tags
+    result = result.replace(/[<>]/g, '');
+
+    // Remove potentially dangerous characters and sequences
+    result = result.replace(/javascript:/gi, '');
+    result = result.replace(/data:/gi, '');
+    result = result.replace(/vbscript:/gi, '');
+    result = result.replace(/on\w+\s*=/gi, '');
   }
 
   // Filter allowed characters
