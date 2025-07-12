@@ -3,6 +3,9 @@
 一个强大的 CLI 工具，用于检查和更新 pnpm 工作区目录依赖，灵感来自
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)。
 
+**📖 文档语言**: [English](README.md) | [中文](README.zh-CN.md) |
+[日本語](README.ja.md)
+
 [![CI](https://img.shields.io/github/actions/workflow/status/houko/pnpm-catalog-updates/ci.yml?label=CI&logo=github)](https://github.com/houko/pnpm-catalog-updates/actions)
 [![npm](https://img.shields.io/npm/v/pnpm-catalog-updates)](https://www.npmjs.com/package/pnpm-catalog-updates)
 [![Coverage](https://img.shields.io/coveralls/github/houko/pnpm-catalog-updates/main)](https://coveralls.io/github/houko/pnpm-catalog-updates)
