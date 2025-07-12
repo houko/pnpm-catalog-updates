@@ -1,7 +1,7 @@
 # pnpm-catalog-updates
 
-一个强大的 CLI 工具，用于检查和更新 pnpm 工作区目录依赖，
-灵感来自 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)。
+一个强大的 CLI 工具，用于检查和更新 pnpm 工作区目录依赖，灵感来自
+[npm-check-updates](https://github.com/raineorshine/npm-check-updates)。
 
 [![CI](https://img.shields.io/github/actions/workflow/status/houko/pnpm-catalog-updates/ci.yml?label=CI&logo=github)](https://github.com/houko/pnpm-catalog-updates/actions)
 [![npm](https://img.shields.io/npm/v/pnpm-catalog-updates)](https://www.npmjs.com/package/pnpm-catalog-updates)
@@ -16,14 +16,18 @@
 - 🔒 **安全更新**: 试运行模式和安全选项确保依赖更新安全
 - ⚡ **高性能**: 并行 API 查询和智能缓存
 - 🛡️ **安全感知**: 内置安全漏洞扫描
+- 🎨 **美观界面**: 增强的进度条、颜色主题和交互式提示
+- 🎭 **自定义主题**: 多种颜色主题（默认、现代、简约、霓虹）
+- 📈 **进度跟踪**: 所有操作的实时进度指示器
 - 🔧 **可配置**: 灵活的配置选项和更新策略
 
 ## 🚀 快速开始
-```
+
+```bash
 pcu -c
 ```
 
-<img width="955" height="438" alt="图片" src="https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35" />
+![图片](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
 ### 安装
 
@@ -60,25 +64,27 @@ pcu -s
 
 ### 常用命令
 
-| 命令  | 描述               | 示例                   |
-| ----- | ------------------ | ---------------------- |
+| 命令     | 描述               | 示例                      |
+| -------- | ------------------ | ------------------------- |
 | `pcu -c` | 检查更新           | `pcu -c --catalog node18` |
-| `pcu -i` | 更新依赖（交互式） | `pcu -i -b`             |
-| `pcu -a` | 分析影响           | `pcu -a default react`  |
-| `pcu -s` | 工作区信息         | `pcu -s --validate`     |
-| `pcu -h` | 显示帮助           | `pcu -h update`         |
+| `pcu -i` | 更新依赖（交互式） | `pcu -i -b`               |
+| `pcu -a` | 分析影响           | `pcu -a default react`    |
+| `pcu -s` | 工作区信息         | `pcu -s --validate`       |
+| `pcu -t` | 配置颜色主题       | `pcu -t --set modern`     |
+| `pcu -h` | 显示帮助           | `pcu -h update`           |
 
 ## 📖 完整使用指南
 
 ### 所有命令和快捷方式
 
-| 完整命令        | 缩写      | 描述                           |
-| --------------- | --------- | ------------------------------ |
-| `pcu check`     | `pcu -c`  | 检查过时的目录依赖             |
-| `pcu update`    | `pcu -u`  | 更新目录依赖                   |
-| `pcu analyze`   | `pcu -a`  | 分析依赖更新的影响             |
-| `pcu workspace` | `pcu -s`  | 显示工作区信息和验证           |
-| `pcu help`      | `pcu -h`  | 显示帮助信息                   |
+| 完整命令        | 缩写     | 描述                   |
+| --------------- | -------- | ---------------------- |
+| `pcu check`     | `pcu -c` | 检查过时的目录依赖     |
+| `pcu update`    | `pcu -u` | 更新目录依赖           |
+| `pcu analyze`   | `pcu -a` | 分析依赖更新的影响     |
+| `pcu workspace` | `pcu -s` | 显示工作区信息和验证   |
+| `pcu theme`     | `pcu -t` | 配置颜色主题和界面设置 |
+| `pcu help`      | `pcu -h` | 显示帮助信息           |
 
 ### 命令
 
@@ -195,6 +201,33 @@ pcu -h [命令]
   pcu -h check          # 显示检查命令的帮助
 ```
 
+#### `pcu theme` / `pcu -t`
+
+配置颜色主题和界面外观。
+
+```bash
+pcu theme [选项]
+pcu -t [选项]
+
+选项：
+  -s, --set <主题>      设置颜色主题：default、modern、minimal、neon
+  -l, --list            列出所有可用主题
+  -i, --interactive     交互式主题配置向导
+
+示例：
+  pcu theme             # 显示当前主题信息
+  pcu -t --list         # 列出所有可用主题
+  pcu theme --set modern # 设置为现代主题
+  pcu -t --interactive  # 启动主题配置向导
+```
+
+**可用主题：**
+
+- `default` - 均衡的颜色，适合一般使用
+- `modern` - 鲜艳的颜色，适合开发环境
+- `minimal` - 简洁的样式，适合生产环境
+- `neon` - 高对比度颜色，适合演示
+
 ### 全局选项
 
 这些选项适用于所有命令：
@@ -240,6 +273,11 @@ pcu -u --catalog default --include react
 
 # 验证工作区配置
 pcu -s --validate
+
+# 主题自定义
+pcu -t --list                # 列出可用主题
+pcu -t --set modern         # 设置现代主题
+pcu -t --interactive        # 交互式主题设置
 ```
 
 ### 配置
@@ -266,6 +304,11 @@ pcu -s --validate
     "format": "table",
     "color": true,
     "verbose": false
+  },
+  "ui": {
+    "theme": "default",
+    "progressBars": true,
+    "animations": true
   }
 }
 ```
@@ -274,12 +317,14 @@ pcu -s --validate
 
 本项目遵循领域驱动设计 (DDD) 原则：
 
-```
+```text
 src/
 ├── cli/                    # CLI 接口层
 │   ├── commands/           # 命令处理器
 │   ├── options/            # 选项解析器
-│   ├── formatters/         # 输出格式化器
+│   ├── formatters/         # 输出格式化器和进度条
+│   ├── interactive/        # 交互式提示和界面
+│   ├── themes/             # 颜色主题和样式
 │   └── validators/         # 输入验证
 ├── application/            # 应用服务
 │   ├── services/           # 应用服务
@@ -437,13 +482,13 @@ catalogs:
 ### 开发工作流
 
 1. Fork 仓库
-2. 创建特性分支：	`git checkout -b feature/amazing-feature`
+2. 创建特性分支： `git checkout -b feature/amazing-feature`
 3. 进行更改
 4. 为更改添加测试
-5. 确保所有测试通过：	`pnpm test`
-6. 检查代码：	`pnpm lint:fix`
-7. 提交更改：	`git commit -m 'feat: add amazing feature'`
-8. 推送到分支：	`git push origin feature/amazing-feature`
+5. 确保所有测试通过： `pnpm test`
+6. 检查代码： `pnpm lint:fix`
+7. 提交更改： `git commit -m 'feat: add amazing feature'`
+8. 推送到分支： `git push origin feature/amazing-feature`
 9. 打开拉取请求
 
 ### 提交消息约定
@@ -464,7 +509,8 @@ catalogs:
 
 ## 🙏 致谢
 
-- 灵感来自 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
+- 灵感来自
+  [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
 - 为 pnpm 社区充满爱心地构建
 - 感谢所有贡献者和用户
 

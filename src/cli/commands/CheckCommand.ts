@@ -5,13 +5,13 @@
  * Provides detailed information about available updates.
  */
 
-import chalk from 'chalk';
-
 import {
   CatalogUpdateService,
   CheckOptions,
 } from '../../application/services/CatalogUpdateService.js';
 import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
+import { EnhancedProgressBar } from '../formatters/ProgressBar.js';
+import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 
 export interface CheckCommandOptions {
   workspace?: string;
@@ -35,18 +35,30 @@ export class CheckCommand {
    * Execute the check command
    */
   async execute(options: CheckCommandOptions = {}): Promise<void> {
+    let progressBar: EnhancedProgressBar | undefined;
+
     try {
-      // Show loading message
+      // Initialize theme
+      ThemeManager.setTheme('default');
+
+      // Show loading with progress bar
+      progressBar = new EnhancedProgressBar({
+        text: 'Checking for outdated dependencies...',
+        color: 'cyan',
+        spinner: 'dots',
+      });
+      progressBar.start();
+
       if (options.verbose) {
-        console.log(chalk.blue('🔍 Checking for outdated catalog dependencies...'));
-        console.log(chalk.gray(`Workspace: ${options.workspace || process.cwd()}`));
+        console.log(StyledText.iconAnalysis('Checking for outdated catalog dependencies'));
+        console.log(StyledText.muted(`Workspace: ${options.workspace || process.cwd()}`));
 
         if (options.catalog) {
-          console.log(chalk.gray(`Catalog: ${options.catalog}`));
+          console.log(StyledText.muted(`Catalog: ${options.catalog}`));
         }
 
         if (options.target && options.target !== 'latest') {
-          console.log(chalk.gray(`Target: ${options.target}`));
+          console.log(StyledText.muted(`Target: ${options.target}`));
         }
 
         console.log('');
@@ -65,6 +77,8 @@ export class CheckCommand {
       // Execute check
       const report = await this.catalogUpdateService.checkOutdatedDependencies(checkOptions);
 
+      progressBar.succeed('Analysis completed');
+
       // Format and display results
       const formattedOutput = this.outputFormatter.formatOutdatedReport(report);
       console.log(formattedOutput);
@@ -78,12 +92,16 @@ export class CheckCommand {
       // and finding updates is not an error condition
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('❌ Error checking dependencies:'));
-      console.error(chalk.red(String(error)));
+      if (progressBar) {
+        progressBar.fail('Analysis failed');
+      }
+
+      console.error(StyledText.iconError('Error checking dependencies:'));
+      console.error(StyledText.error(String(error)));
 
       if (options.verbose && error instanceof Error) {
-        console.error(chalk.gray('Stack trace:'));
-        console.error(chalk.gray(error.stack || 'No stack trace available'));
+        console.error(StyledText.muted('Stack trace:'));
+        console.error(StyledText.muted(error.stack || 'No stack trace available'));
       }
 
       process.exit(1);
@@ -95,11 +113,12 @@ export class CheckCommand {
    */
   private showSummary(report: any, _options: CheckCommandOptions): void {
     const lines: string[] = [];
+    const theme = ThemeManager.getTheme();
 
     if (!report.hasUpdates) {
-      lines.push(chalk.green('🎉 All catalog dependencies are up to date!'));
+      lines.push(StyledText.iconSuccess('All catalog dependencies are up to date!'));
     } else {
-      lines.push(chalk.yellow(`\n📋 Summary:`));
+      lines.push(StyledText.iconInfo('Summary:'));
       lines.push(`  • ${report.totalOutdated} outdated dependencies found`);
       lines.push(`  • ${report.catalogs.length} catalogs checked`);
 
@@ -119,13 +138,13 @@ export class CheckCommand {
       }
 
       if (updateTypes.major > 0) {
-        lines.push(chalk.red(`  • ${updateTypes.major} major updates`));
+        lines.push(theme.major(`  • ${updateTypes.major} major updates`));
       }
       if (updateTypes.minor > 0) {
-        lines.push(chalk.yellow(`  • ${updateTypes.minor} minor updates`));
+        lines.push(theme.minor(`  • ${updateTypes.minor} minor updates`));
       }
       if (updateTypes.patch > 0) {
-        lines.push(chalk.green(`  • ${updateTypes.patch} patch updates`));
+        lines.push(theme.patch(`  • ${updateTypes.patch} patch updates`));
       }
 
       // Security updates
@@ -134,14 +153,14 @@ export class CheckCommand {
       }, 0);
 
       if (securityUpdates > 0) {
-        lines.push(chalk.red(`  • ${securityUpdates} security updates`));
+        lines.push(StyledText.iconSecurity(`${securityUpdates} security updates`));
       }
 
       lines.push('');
-      lines.push(chalk.blue('💡 Run with --update to apply updates'));
+      lines.push(StyledText.iconUpdate('Run with --update to apply updates'));
 
       if (updateTypes.major > 0) {
-        lines.push(chalk.yellow('⚠️  Major updates may contain breaking changes'));
+        lines.push(StyledText.iconWarning('Major updates may contain breaking changes'));
       }
     }
 
