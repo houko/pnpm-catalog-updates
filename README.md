@@ -8,7 +8,6 @@ inspired by
 [![npm](https://img.shields.io/npm/v/pnpm-catalog-updates)](https://www.npmjs.com/package/pnpm-catalog-updates)
 [![Coverage](https://img.shields.io/coveralls/github/houko/pnpm-catalog-updates/main)](https://coveralls.io/github/houko/pnpm-catalog-updates)
 
-
 ## ✨ Features
 
 - 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog
@@ -22,14 +21,20 @@ inspired by
   updates
 - ⚡ **High Performance**: Parallel API queries and intelligent caching
 - 🛡️ **Security Aware**: Built-in security vulnerability scanning
+- 🎨 **Beautiful UI**: Enhanced progress bars, color themes, and interactive
+  prompts
+- 🎭 **Customizable Themes**: Multiple color themes (default, modern, minimal,
+  neon)
+- 📈 **Progress Tracking**: Real-time progress indicators for all operations
 - 🔧 **Configurable**: Flexible configuration options and update strategies
 
 ## 🚀 Quick Start
-```
+
+```bash
 pcu -c
 ```
 
-<img width="955" height="438" alt="Image" src="https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35" />
+![Image](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
 ### Installation
 
@@ -72,6 +77,7 @@ pcu -s
 | `pcu -i` | Update dependencies (interactive) | `pcu -i -b`               |
 | `pcu -a` | Analyze impact                    | `pcu -a default react`    |
 | `pcu -s` | Workspace info                    | `pcu -s --validate`       |
+| `pcu -t` | Configure color theme             | `pcu -t --set modern`     |
 | `pcu -h` | Show help                         | `pcu -h update`           |
 
 ## 📖 Complete Usage Guide
@@ -84,6 +90,7 @@ pcu -s
 | `pcu update`    | `pcu -u`  | Update catalog dependencies               |
 | `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates      |
 | `pcu workspace` | `pcu -s`  | Show workspace information and validation |
+| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings    |
 | `pcu help`      | `pcu -h`  | Display help information                  |
 
 ### Commands
@@ -201,6 +208,33 @@ Examples:
   pcu -h check          # Show help for check command
 ```
 
+#### `pcu theme` / `pcu -t`
+
+Configure color themes and UI appearance.
+
+```bash
+pcu theme [options]
+pcu -t [options]
+
+Options:
+  -s, --set <theme>     Set color theme: default, modern, minimal, neon
+  -l, --list            List all available themes
+  -i, --interactive     Interactive theme configuration wizard
+
+Examples:
+  pcu theme             # Show current theme info
+  pcu -t --list         # List all available themes
+  pcu theme --set modern # Set to modern theme
+  pcu -t --interactive  # Launch theme configuration wizard
+```
+
+**Available Themes:**
+
+- `default` - Balanced colors for general use
+- `modern` - Vibrant colors for development environments
+- `minimal` - Clean and simple for production environments
+- `neon` - High contrast colors for presentations
+
 ### Global Options
 
 These options work with all commands:
@@ -246,6 +280,11 @@ pcu -u --catalog default --include react
 
 # Validate workspace configuration
 pcu -s --validate
+
+# Theme customization
+pcu -t --list                # List available themes
+pcu -t --set modern         # Set modern theme
+pcu -t --interactive        # Interactive theme setup
 ```
 
 ### Configuration
@@ -272,6 +311,11 @@ Create a `.pcurc.json` file in your project root:
     "format": "table",
     "color": true,
     "verbose": false
+  },
+  "ui": {
+    "theme": "default",
+    "progressBars": true,
+    "animations": true
   }
 }
 ```
@@ -280,12 +324,14 @@ Create a `.pcurc.json` file in your project root:
 
 This project follows Domain-Driven Design (DDD) principles:
 
-```
+```text
 src/
 ├── cli/                    # CLI interface layer
 │   ├── commands/           # Command handlers
 │   ├── options/            # Option parsers
-│   ├── formatters/         # Output formatters
+│   ├── formatters/         # Output formatters & progress bars
+│   ├── interactive/        # Interactive prompts & UI
+│   ├── themes/             # Color themes & styling
 │   └── validators/         # Input validation
 ├── application/            # Application services
 │   ├── services/           # Application services

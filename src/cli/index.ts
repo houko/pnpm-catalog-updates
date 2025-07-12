@@ -23,6 +23,8 @@ import { FileSystemService } from '../infrastructure/file-system/FileSystemServi
 import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWorkspaceRepository.js';
 import { CheckCommand } from './commands/CheckCommand.js';
 import { UpdateCommand } from './commands/UpdateCommand.js';
+import { InteractivePrompts } from './interactive/InteractivePrompts.js';
+import { ThemeManager, StyledText } from './themes/ColorTheme.js';
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);
@@ -68,7 +70,8 @@ export async function main(): Promise<void> {
     .option('-u, --update', 'shorthand for update command')
     .option('-c, --check', 'shorthand for check command')
     .option('-a, --analyze', 'shorthand for analyze command')
-    .option('-s, --workspace-info', 'shorthand for workspace command');
+    .option('-s, --workspace-info', 'shorthand for workspace command')
+    .option('-t, --theme', 'shorthand for theme command');
 
   // Check command
   program
@@ -250,6 +253,77 @@ export async function main(): Promise<void> {
       }
     });
 
+  // Theme command
+  program
+    .command('theme')
+    .alias('t')
+    .description('configure color theme')
+    .option('-s, --set <theme>', 'set theme: default, modern, minimal, neon')
+    .option('-l, --list', 'list available themes')
+    .option('-i, --interactive', 'interactive theme selection')
+    .action(async (options, _command) => {
+      try {
+        if (options.list) {
+          const themes = ThemeManager.listThemes();
+          console.log(StyledText.iconInfo('Available themes:'));
+          themes.forEach((theme) => {
+            console.log(`  • ${theme}`);
+          });
+          return;
+        }
+
+        if (options.set) {
+          const themes = ThemeManager.listThemes();
+          if (!themes.includes(options.set)) {
+            console.error(StyledText.iconError(`Invalid theme: ${options.set}`));
+            console.log(StyledText.muted(`Available themes: ${themes.join(', ')}`));
+            process.exit(1);
+          }
+
+          ThemeManager.setTheme(options.set);
+          console.log(StyledText.iconSuccess(`Theme set to: ${options.set}`));
+
+          // Show a preview
+          console.log('\nTheme preview:');
+          const theme = ThemeManager.getTheme();
+          console.log(`  ${theme.success('✓ Success message')}`);
+          console.log(`  ${theme.warning('⚠ Warning message')}`);
+          console.log(`  ${theme.error('✗ Error message')}`);
+          console.log(`  ${theme.info('ℹ Info message')}`);
+          console.log(
+            `  ${theme.major('Major update')} | ${theme.minor('Minor update')} | ${theme.patch('Patch update')}`
+          );
+          return;
+        }
+
+        if (options.interactive) {
+          const interactivePrompts = new InteractivePrompts();
+          const config = await interactivePrompts.configurationWizard();
+
+          if (config.theme) {
+            ThemeManager.setTheme(config.theme);
+            console.log(StyledText.iconSuccess(`Theme configured: ${config.theme}`));
+          }
+          return;
+        }
+
+        // Default: show current theme and list
+        const currentTheme = ThemeManager.getTheme();
+        console.log(StyledText.iconInfo('Current theme settings:'));
+        console.log(`  Theme: ${currentTheme ? 'custom' : 'default'}`);
+        console.log('\nAvailable themes:');
+        ThemeManager.listThemes().forEach((theme) => {
+          console.log(`  • ${theme}`);
+        });
+        console.log(
+          StyledText.muted('\nUse --set <theme> to change theme or --interactive for guided setup')
+        );
+      } catch (error) {
+        console.error(StyledText.iconError('Error configuring theme:'), error);
+        process.exit(1);
+      }
+    });
+
   // Add help command
   program
     .command('help')
@@ -305,6 +379,9 @@ export async function main(): Promise<void> {
   } else if (args.includes('-s') || args.includes('--workspace-info')) {
     const index = args.findIndex((arg) => arg === '-s' || arg === '--workspace-info');
     args.splice(index, 1, 'workspace');
+  } else if (args.includes('-t') || args.includes('--theme')) {
+    const index = args.findIndex((arg) => arg === '-t' || arg === '--theme');
+    args.splice(index, 1, 'theme');
   }
 
   // Show help if no arguments provided
