@@ -317,26 +317,26 @@ export function sanitizeString(
     let previousLength: number;
     let iterationCount = 0;
     const maxIterations = 10; // Prevent infinite loops
-    
+
     // Multi-pass sanitization to handle nested and complex patterns
     do {
       previousLength = result.length;
       iterationCount++;
-      
+
       // Remove HTML tags, including malformed and incomplete ones
       result = result.replace(/<[^>]*>?/g, '');
       result = result.replace(/<!--[\s\S]*?-->/g, ''); // Remove HTML comments
-      
+
       // Remove HTML entities
       result = result.replace(/&[a-zA-Z0-9#]+;/g, '');
       result = result.replace(/&#[0-9]+;/g, ''); // Numeric entities
       result = result.replace(/&#x[0-9a-fA-F]+;/g, ''); // Hex entities
-      
+
       // Remove any remaining < or > characters and incomplete tags
       result = result.replace(/[<>]/g, '');
       result = result.replace(/\[script/gi, ''); // Handle [script patterns
       result = result.replace(/\[\/script/gi, ''); // Handle [/script patterns
-      
+
       // Remove potentially dangerous protocol schemes
       result = result.replace(/javascript\s*:/gi, '');
       result = result.replace(/data\s*:/gi, '');
@@ -344,11 +344,11 @@ export function sanitizeString(
       result = result.replace(/file\s*:/gi, '');
       result = result.replace(/ftp\s*:/gi, '');
       result = result.replace(/mailto\s*:/gi, '');
-      
+
       // Remove event handlers (more comprehensive)
       result = result.replace(/on\w+\s*=\s*['"]*[^'"]*['"]*[^>]*/gi, '');
       result = result.replace(/on\w+\s*=/gi, '');
-      
+
       // Remove script-related content (more aggressive)
       result = result.replace(/script[\s\S]*?\/script/gi, '');
       result = result.replace(/style[\s\S]*?\/style/gi, '');
@@ -356,7 +356,7 @@ export function sanitizeString(
       result = result.replace(/object[\s\S]*?\/object/gi, '');
       result = result.replace(/embed[\s\S]*?\/embed/gi, '');
       result = result.replace(/applet[\s\S]*?\/applet/gi, '');
-      
+
       // Remove dangerous HTML elements by name
       result = result.replace(/script\b/gi, '');
       result = result.replace(/iframe\b/gi, '');
@@ -366,29 +366,32 @@ export function sanitizeString(
       result = result.replace(/meta\b/gi, '');
       result = result.replace(/link\b/gi, '');
       result = result.replace(/base\b/gi, '');
-      
+
       // Remove control characters and non-printable characters
       // eslint-disable-next-line no-control-regex
       result = result.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-      
+
       // Remove potentially dangerous CSS expressions
       result = result.replace(/expression\s*\(/gi, '');
       result = result.replace(/url\s*\(/gi, '');
       result = result.replace(/import\s*\(/gi, '');
-      
+
       // Remove additional dangerous patterns
       result = result.replace(/eval\s*\(/gi, '');
       result = result.replace(/setTimeout\s*\(/gi, '');
       result = result.replace(/setInterval\s*\(/gi, '');
       result = result.replace(/Function\s*\(/gi, '');
-      
+
       // Remove dangerous attributes
       result = result.replace(/src\s*=/gi, '');
       result = result.replace(/href\s*=/gi, '');
       result = result.replace(/action\s*=/gi, '');
       result = result.replace(/formaction\s*=/gi, '');
-      
-    } while (result.length !== previousLength && result.length > 0 && iterationCount < maxIterations);
+    } while (
+      result.length !== previousLength &&
+      result.length > 0 &&
+      iterationCount < maxIterations
+    );
   }
 
   // Filter allowed characters
