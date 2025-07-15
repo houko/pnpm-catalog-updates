@@ -66,9 +66,7 @@ export interface SecurityRecommendation {
 }
 
 export class SecurityCommand {
-  constructor(
-    private readonly outputFormatter: OutputFormatter
-  ) {}
+  constructor(private readonly outputFormatter: OutputFormatter) {}
 
   /**
    * Execute the security command
@@ -144,7 +142,7 @@ export class SecurityCommand {
 
     // Check if package.json exists
     const packageJsonPath = path.join(workspacePath, 'package.json');
-    if (!await fs.pathExists(packageJsonPath)) {
+    if (!(await fs.pathExists(packageJsonPath))) {
       throw new Error(`No package.json found in ${workspacePath}`);
     }
 
@@ -164,8 +162,10 @@ export class SecurityCommand {
     recommendations.push(...this.generateRecommendations(vulnerabilities));
 
     // Filter by severity if specified
-    const filteredVulnerabilities = options.severity 
-      ? vulnerabilities.filter(v => this.severityToNumber(v.severity) >= this.severityToNumber(options.severity!))
+    const filteredVulnerabilities = options.severity
+      ? vulnerabilities.filter(
+          (v) => this.severityToNumber(v.severity) >= this.severityToNumber(options.severity!)
+        )
       : vulnerabilities;
 
     return {
@@ -183,10 +183,13 @@ export class SecurityCommand {
   /**
    * Run npm audit scan
    */
-  private async runNpmAudit(workspacePath: string, options: SecurityCommandOptions): Promise<Vulnerability[]> {
+  private async runNpmAudit(
+    workspacePath: string,
+    options: SecurityCommandOptions
+  ): Promise<Vulnerability[]> {
     try {
       const auditArgs = ['audit', '--json'];
-      
+
       if (!options.includeDev) {
         auditArgs.push('--omit=dev');
       }
@@ -217,13 +220,16 @@ export class SecurityCommand {
   /**
    * Run snyk scan
    */
-  private async runSnykScan(workspacePath: string, options: SecurityCommandOptions): Promise<Vulnerability[]> {
+  private async runSnykScan(
+    workspacePath: string,
+    options: SecurityCommandOptions
+  ): Promise<Vulnerability[]> {
     try {
       // Check if snyk is installed
       execSync('snyk --version', { stdio: 'pipe' });
 
       const snykArgs = ['test', '--json'];
-      
+
       if (!options.includeDev) {
         snykArgs.push('--dev');
       }
@@ -250,14 +256,14 @@ export class SecurityCommand {
    */
   private parseNpmAuditResults(auditData: any): Vulnerability[] {
     const vulnerabilities: Vulnerability[] = [];
-    
+
     if (!auditData.vulnerabilities) {
       return vulnerabilities;
     }
 
     for (const [id, vuln] of Object.entries(auditData.vulnerabilities)) {
       const vulnerability = vuln as any;
-      
+
       vulnerabilities.push({
         id: id,
         package: vulnerability.name,
@@ -281,7 +287,7 @@ export class SecurityCommand {
    */
   private parseSnykResults(snykData: any): Vulnerability[] {
     const vulnerabilities: Vulnerability[] = [];
-    
+
     if (!snykData.vulnerabilities) {
       return vulnerabilities;
     }
@@ -310,21 +316,25 @@ export class SecurityCommand {
    */
   private generateRecommendations(vulnerabilities: Vulnerability[]): SecurityRecommendation[] {
     const recommendations: SecurityRecommendation[] = [];
-    const packages = new Set(vulnerabilities.map(v => v.package));
+    const packages = new Set(vulnerabilities.map((v) => v.package));
 
     for (const pkg of packages) {
-      const pkgVulns = vulnerabilities.filter(v => v.package === pkg);
-      const criticalVulns = pkgVulns.filter(v => v.severity === 'critical' || v.severity === 'high');
-      
+      const pkgVulns = vulnerabilities.filter((v) => v.package === pkg);
+      const criticalVulns = pkgVulns.filter(
+        (v) => v.severity === 'critical' || v.severity === 'high'
+      );
+
       if (criticalVulns.length > 0) {
-        const fixVersions = [...new Set(criticalVulns
-          .map(v => v.fixVersion)
-          .filter(v => v && typeof v === 'string'))];
+        const fixVersions = [
+          ...new Set(
+            criticalVulns.map((v) => v.fixVersion).filter((v) => v && typeof v === 'string')
+          ),
+        ];
 
         if (fixVersions.length > 0) {
           const currentVersion = pkgVulns[0]?.range?.split(' ')[0] || 'unknown';
           const recommendedVersion = fixVersions[0] || 'unknown';
-          
+
           recommendations.push({
             package: pkg,
             currentVersion: currentVersion,
@@ -355,7 +365,7 @@ export class SecurityCommand {
 
     for (const vuln of vulnerabilities) {
       const severity = vuln.severity as string;
-    switch (severity) {
+      switch (severity) {
         case 'critical':
           summary.critical++;
           break;
@@ -385,12 +395,18 @@ export class SecurityCommand {
    */
   private severityToNumber(severity: string): number {
     switch (severity) {
-      case 'critical': return 4;
-      case 'high': return 3;
-      case 'moderate': return 2;
-      case 'low': return 1;
-      case 'info': return 0;
-      default: return 0;
+      case 'critical':
+        return 4;
+      case 'high':
+        return 3;
+      case 'moderate':
+        return 2;
+      case 'low':
+        return 1;
+      case 'info':
+        return 0;
+      default:
+        return 0;
     }
   }
 
@@ -403,9 +419,11 @@ export class SecurityCommand {
     }
 
     console.log('\n' + StyledText.iconInfo('Security Recommendations:'));
-    
+
     for (const rec of report.recommendations) {
-      console.log(`  ${StyledText.iconWarning()} ${rec.package}: ${rec.currentVersion} → ${rec.recommendedVersion}`);
+      console.log(
+        `  ${StyledText.iconWarning()} ${rec.package}: ${rec.currentVersion} → ${rec.recommendedVersion}`
+      );
       console.log(`    ${StyledText.muted(rec.reason)}`);
       console.log(`    ${StyledText.muted(rec.impact)}`);
     }
@@ -417,17 +435,20 @@ export class SecurityCommand {
   /**
    * Auto-fix vulnerabilities
    */
-  private async autoFixVulnerabilities(report: SecurityReport, options: SecurityCommandOptions): Promise<void> {
+  private async autoFixVulnerabilities(
+    report: SecurityReport,
+    options: SecurityCommandOptions
+  ): Promise<void> {
     if (report.recommendations.length === 0) {
       console.log(StyledText.iconSuccess('No security fixes available'));
       return;
     }
 
     console.log('\n' + StyledText.iconUpdate('Applying security fixes...'));
-    
+
     const workspacePath = options.workspace || process.cwd();
-    const fixableVulns = report.recommendations.filter(r => r.type === 'update');
-    
+    const fixableVulns = report.recommendations.filter((r) => r.type === 'update');
+
     if (fixableVulns.length === 0) {
       console.log(StyledText.iconInfo('No automatic fixes available'));
       return;
@@ -447,15 +468,21 @@ export class SecurityCommand {
       });
 
       console.log(StyledText.iconSuccess('Security fixes applied successfully'));
-      
+
       // Re-run scan to verify fixes
       console.log(StyledText.iconInfo('Re-running security scan to verify fixes...'));
       const newReport = await this.performSecurityScan({ ...options, fixVulns: false });
-      
+
       if (newReport.summary.critical === 0 && newReport.summary.high === 0) {
-        console.log(StyledText.iconSuccess('All critical and high severity vulnerabilities have been fixed!'));
+        console.log(
+          StyledText.iconSuccess('All critical and high severity vulnerabilities have been fixed!')
+        );
       } else {
-        console.log(StyledText.iconWarning(`${newReport.summary.critical} critical and ${newReport.summary.high} high severity vulnerabilities remain`));
+        console.log(
+          StyledText.iconWarning(
+            `${newReport.summary.critical} critical and ${newReport.summary.high} high severity vulnerabilities remain`
+          )
+        );
       }
     } catch (error: any) {
       console.error(StyledText.iconError('Failed to apply security fixes:'));

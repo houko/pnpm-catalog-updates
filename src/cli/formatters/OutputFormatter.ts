@@ -601,13 +601,15 @@ export class OutputFormatter {
     // Header
     lines.push(this.colorize(chalk.bold, '\n🔒 Security Report'));
     lines.push(this.colorize(chalk.gray, `Workspace: ${report.metadata.workspacePath}`));
-    lines.push(this.colorize(chalk.gray, `Scan Date: ${new Date(report.metadata.scanDate).toLocaleString()}`));
+    lines.push(
+      this.colorize(chalk.gray, `Scan Date: ${new Date(report.metadata.scanDate).toLocaleString()}`)
+    );
     lines.push(this.colorize(chalk.gray, `Tools: ${report.metadata.scanTools.join(', ')}`));
 
     // Summary
     lines.push('');
     lines.push(this.colorize(chalk.bold, '📊 Summary:'));
-    
+
     const summaryTable = new Table({
       head: this.colorizeHeaders(['Severity', 'Count']),
       style: { head: [], border: [] },
@@ -619,7 +621,10 @@ export class OutputFormatter {
     summaryTable.push(['Moderate', this.colorize(chalk.blue, report.summary.moderate.toString())]);
     summaryTable.push(['Low', this.colorize(chalk.green, report.summary.low.toString())]);
     summaryTable.push(['Info', this.colorize(chalk.gray, report.summary.info.toString())]);
-    summaryTable.push(['Total', this.colorize(chalk.bold, report.summary.totalVulnerabilities.toString())]);
+    summaryTable.push([
+      'Total',
+      this.colorize(chalk.bold, report.summary.totalVulnerabilities.toString()),
+    ]);
 
     lines.push(summaryTable.toString());
 
@@ -636,9 +641,11 @@ export class OutputFormatter {
 
       for (const vuln of report.vulnerabilities) {
         const severityColor = this.getSeverityColor(vuln.severity);
-        const fixStatus = vuln.fixAvailable ? 
-          (typeof vuln.fixAvailable === 'string' ? vuln.fixAvailable : 'Yes') : 
-          'No';
+        const fixStatus = vuln.fixAvailable
+          ? typeof vuln.fixAvailable === 'string'
+            ? vuln.fixAvailable
+            : 'Yes'
+          : 'No';
 
         vulnTable.push([
           vuln.package,
