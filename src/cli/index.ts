@@ -23,6 +23,7 @@ import { FileSystemService } from '../infrastructure/file-system/FileSystemServi
 import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWorkspaceRepository.js';
 import { CheckCommand } from './commands/CheckCommand.js';
 import { UpdateCommand } from './commands/UpdateCommand.js';
+import { SecurityCommand } from './commands/SecurityCommand.js';
 import { InteractivePrompts } from './interactive/InteractivePrompts.js';
 import { ThemeManager, StyledText } from './themes/ColorTheme.js';
 
@@ -71,7 +72,9 @@ export async function main(): Promise<void> {
     .option('-c, --check', 'shorthand for check command')
     .option('-a, --analyze', 'shorthand for analyze command')
     .option('-s, --workspace-info', 'shorthand for workspace command')
-    .option('-t, --theme', 'shorthand for theme command');
+    .option('-t, --theme', 'shorthand for theme command')
+    .option('--security-audit', 'shorthand for security command')
+    .option('--security-fix', 'shorthand for security --fix-vulns command');
 
   // Check command
   program
@@ -324,6 +327,44 @@ export async function main(): Promise<void> {
       }
     });
 
+  // Security command
+  program
+    .command('security')
+    .alias('sec')
+    .description('security vulnerability scanning and automated fixes')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .option('--audit', 'perform npm audit scan (default: true)', true)
+    .option('--fix-vulns', 'automatically fix vulnerabilities')
+    .option('--severity <level>', 'filter by severity: low, moderate, high, critical')
+    .option('--include-dev', 'include dev dependencies in scan')
+    .option('--snyk', 'include Snyk scan (requires snyk CLI)')
+    .action(async (options, command) => {
+      try {
+        const globalOptions = command.parent.opts();
+        const formatter = new OutputFormatter(
+          options.format as OutputFormat,
+          !globalOptions.noColor
+        );
+
+        const securityCommand = new SecurityCommand(formatter);
+
+        await securityCommand.execute({
+          workspace: globalOptions.workspace,
+          format: options.format,
+          audit: options.audit,
+          fixVulns: options.fixVulns,
+          severity: options.severity,
+          includeDev: options.includeDev,
+          snyk: options.snyk,
+          verbose: globalOptions.verbose,
+          color: !globalOptions.noColor,
+        });
+      } catch (error) {
+        console.error(chalk.red('❌ Error:'), error);
+        process.exit(1);
+      }
+    });
+
   // Add help command
   program
     .command('help')
@@ -382,6 +423,12 @@ export async function main(): Promise<void> {
   } else if (args.includes('-t') || args.includes('--theme')) {
     const index = args.findIndex((arg) => arg === '-t' || arg === '--theme');
     args.splice(index, 1, 'theme');
+  } else if (args.includes('--security-audit')) {
+    const index = args.findIndex((arg) => arg === '--security-audit');
+    args.splice(index, 1, 'security');
+  } else if (args.includes('--security-fix')) {
+    const index = args.findIndex((arg) => arg === '--security-fix');
+    args.splice(index, 1, 'security', '--fix-vulns');
   }
 
   // Show help if no arguments provided
