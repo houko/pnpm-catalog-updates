@@ -575,6 +575,122 @@ export class OutputFormatter {
   }
 
   /**
+   * Format security report as table
+   */
+  private formatSecurityTable(report: SecurityReport): string {
+    const lines: string[] = [];
+
+    // Header
+    lines.push(this.colorize(chalk.bold, '\n🔒 Security Report'));
+    lines.push(this.colorize(chalk.gray, `Workspace: ${report.metadata.workspacePath}`));
+    lines.push(
+      this.colorize(chalk.gray, `Scan Date: ${new Date(report.metadata.scanDate).toLocaleString()}`)
+    );
+    lines.push(this.colorize(chalk.gray, `Tools: ${report.metadata.scanTools.join(', ')}`));
+
+    // Summary
+    lines.push('');
+    lines.push(this.colorize(chalk.bold, '📊 Summary:'));
+
+    const summaryTable = new Table({
+      head: this.colorizeHeaders(['Severity', 'Count']),
+      style: { head: [], border: [] },
+      colWidths: [15, 10],
+    });
+
+    summaryTable.push(['Critical', this.colorize(chalk.red, report.summary.critical.toString())]);
+    summaryTable.push(['High', this.colorize(chalk.yellow, report.summary.high.toString())]);
+    summaryTable.push(['Moderate', this.colorize(chalk.blue, report.summary.moderate.toString())]);
+    summaryTable.push(['Low', this.colorize(chalk.green, report.summary.low.toString())]);
+    summaryTable.push(['Info', this.colorize(chalk.gray, report.summary.info.toString())]);
+    summaryTable.push([
+      'Total',
+      this.colorize(chalk.bold, report.summary.totalVulnerabilities.toString()),
+    ]);
+
+    lines.push(summaryTable.toString());
+
+    // Vulnerabilities
+    if (report.vulnerabilities.length > 0) {
+      lines.push('');
+      lines.push(this.colorize(chalk.bold, '🐛 Vulnerabilities:'));
+
+      const vulnTable = new Table({
+        head: this.colorizeHeaders(['Package', 'Severity', 'Title', 'Fix Available']),
+        style: { head: [], border: [] },
+        colWidths: [20, 12, 40, 15],
+      });
+
+      for (const vuln of report.vulnerabilities) {
+        const severityColor = this.getSeverityColor(vuln.severity);
+        const fixStatus = vuln.fixAvailable
+          ? typeof vuln.fixAvailable === 'string'
+            ? vuln.fixAvailable
+            : 'Yes'
+          : 'No';
+
+        vulnTable.push([
+          vuln.package,
+          this.colorize(severityColor, vuln.severity.toUpperCase()),
+          vuln.title.length > 35 ? vuln.title.substring(0, 35) + '...' : vuln.title,
+          fixStatus,
+        ]);
+      }
+
+      lines.push(vulnTable.toString());
+    }
+
+    // Recommendations
+    if (report.recommendations.length > 0) {
+      lines.push('');
+      lines.push(this.colorize(chalk.bold, '💡 Recommendations:'));
+
+      for (const rec of report.recommendations) {
+        lines.push(`  ${rec.package}: ${rec.currentVersion} → ${rec.recommendedVersion}`);
+        lines.push(`    ${rec.reason} (${rec.impact})`);
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Format security report minimally
+   */
+  private formatSecurityMinimal(report: SecurityReport): string {
+    const vulnerabilities = report.summary.totalVulnerabilities;
+    if (vulnerabilities === 0) {
+      return 'No vulnerabilities found';
+    }
+
+    return [
+      `${vulnerabilities} vulnerabilities found:`,
+      `  Critical: ${report.summary.critical}`,
+      `  High: ${report.summary.high}`,
+      `  Moderate: ${report.summary.moderate}`,
+      `  Low: ${report.summary.low}`,
+    ].join('\n');
+  }
+
+  /**
+   * Get color for severity level
+   */
+  private getSeverityColor(severity: string): typeof chalk {
+    switch (severity.toLowerCase()) {
+      case 'critical':
+        return chalk.red;
+      case 'high':
+        return chalk.yellow;
+      case 'moderate':
+        return chalk.blue;
+      case 'low':
+        return chalk.green;
+      default:
+        return chalk.gray;
+    }
+  }
+
+  /**
    * Apply color if color is enabled
    */
   private colorize(colorFn: typeof chalk, text: string): string {

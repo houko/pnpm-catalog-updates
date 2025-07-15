@@ -364,14 +364,14 @@ export class ConfigManager {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         throw new Error(`Invalid key in path: ${key}`);
       }
-      
+
       if (!(key in current)) {
         // Use Object.defineProperty for safer property creation
         Object.defineProperty(current, key, {
           value: Object.create(null),
           writable: true,
           enumerable: true,
-          configurable: true
+          configurable: true,
         });
       }
       return current[key];
@@ -382,7 +382,7 @@ export class ConfigManager {
       value: value,
       writable: true,
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
   }
 
