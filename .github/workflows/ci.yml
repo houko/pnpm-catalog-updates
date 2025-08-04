@@ -228,6 +228,32 @@ jobs:
           node bin/pcu.js --version
           node bin/pcu.js --help
 
+      - name: Test npm compatibility
+        run: |
+          # Create a temporary package.json with resolved dependencies
+          cp package.json package.test.json
+          node scripts/resolve-catalog-deps.js
+
+          # Test if npm can install the package locally
+          npm pack
+
+          # Create a test directory
+          mkdir -p test-npm-install
+          cd test-npm-install
+
+          # Test installing the package with npm
+          npm init -y
+          npm install ../pnpm-catalog-updates-*.tgz
+
+          # Verify the CLI is accessible
+          npx pcu --version
+
+          # Cleanup
+          cd ..
+          rm -rf test-npm-install
+          rm pnpm-catalog-updates-*.tgz
+          mv package.test.json package.json
+
       - name: Package for npm
         run: pnpm pack
 
