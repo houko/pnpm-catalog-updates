@@ -61,7 +61,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish
+          publish: node scripts/publish.js
           commit: "chore: release package"
           title: "chore: release package"
           setupGitUser: true
@@ -74,14 +74,58 @@ jobs:
       - name: Publish alias package pcu
         if: steps.changesets.outputs.published == 'true'
         run: |
+          # Backup original package.json
           cp package.json package.original.json
+
+          # Resolve catalog dependencies and rename package
           node - <<'NODE'
           const fs = require('fs');
+          const yaml = require('yaml');
+
+          // Read workspace catalog
+          const workspaceYaml = fs.readFileSync('pnpm-workspace.yaml', 'utf8');
+          const workspace = yaml.parse(workspaceYaml);
+          const catalog = workspace.catalog || {};
+
+          // Read and modify package.json
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+          // Rename package
           pkg.name = 'pcu';
+
+          // Resolve catalog: dependencies
+          const resolveDeps = (deps) => {
+            if (!deps) return deps;
+            const resolved = {};
+            for (const [name, version] of Object.entries(deps)) {
+              if (version === 'catalog:') {
+                resolved[name] = catalog[name] || version;
+              } else {
+                resolved[name] = version;
+              }
+            }
+            return resolved;
+          };
+
+          // Resolve all dependency types
+          if (pkg.dependencies) {
+            pkg.dependencies = resolveDeps(pkg.dependencies);
+          }
+          if (pkg.devDependencies) {
+            pkg.devDependencies = resolveDeps(pkg.devDependencies);
+          }
+          if (pkg.peerDependencies) {
+            pkg.peerDependencies = resolveDeps(pkg.peerDependencies);
+          }
+
+          // Write the modified package.json
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           NODE
+
+          # Publish the alias package
           npm publish --access public
+
+          # Restore original package.json
           mv package.original.json package.json
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
