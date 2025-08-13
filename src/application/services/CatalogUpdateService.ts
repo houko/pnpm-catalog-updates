@@ -225,6 +225,40 @@ export class CatalogUpdateService {
       );
     }
 
+    // Calculate total packages across all catalogs
+    let totalPackages = 0;
+    const allPackagesToCheck: Array<[string, any, any]> = [];
+
+    for (const catalog of catalogsToCheck) {
+      if (!catalog) continue;
+      const dependencies = catalog.getDependencies();
+      const packageArray = Array.from(dependencies);
+
+      const packagesToCheck = packageArray.filter(([packageName]) => {
+        const packageConfig = ConfigLoader.getPackageConfig(packageName, config);
+        return packageConfig.shouldUpdate;
+      });
+
+      // Add catalog info to each package for processing
+      packagesToCheck.forEach(([packageName, range]) => {
+        allPackagesToCheck.push([packageName, range, catalog]);
+      });
+
+      totalPackages += packagesToCheck.length;
+    }
+
+    // Create a single progress bar for all catalogs
+    let progressBar: ProgressBar | null = null;
+    if (totalPackages > 0) {
+      progressBar = new ProgressBar({
+        text: '正在检查依赖包...',
+        total: totalPackages,
+      });
+      progressBar.start(`正在检查 ${totalPackages} 个依赖包...`);
+    }
+
+    let completed = 0;
+
     // Check each catalog for outdated dependencies
     for (const catalog of catalogsToCheck) {
       if (!catalog) {
@@ -241,14 +275,20 @@ export class CatalogUpdateService {
         return packageConfig.shouldUpdate;
       });
 
-      // Process packages in parallel with concurrency control
+      // Process packages in parallel with concurrency control (pass progress info)
       const outdatedDependencies = await this.processPackagesInParallel(
         packagesToCheck,
         catalog,
         workspace,
         config,
-        options
+        options,
+        progressBar,
+        completed,
+        totalPackages
       );
+
+      // Update completed count
+      completed += packagesToCheck.length;
 
       const catalogInfo: CatalogUpdateInfo = {
         catalogName: catalog!.getName(),
@@ -259,6 +299,15 @@ export class CatalogUpdateService {
 
       catalogInfos.push(catalogInfo);
       totalOutdated += outdatedDependencies.length;
+    }
+
+    // Complete the progress bar
+    if (progressBar) {
+      if (totalOutdated > 0) {
+        progressBar.succeed(`✅ 检查完成! 发现 ${totalOutdated} 个可更新的依赖包`);
+      } else {
+        progressBar.succeed('✅ 检查完成! 所有依赖包都是最新的');
+      }
     }
 
     return {
@@ -630,24 +679,14 @@ export class CatalogUpdateService {
     catalog: any,
     workspace: any,
     config: any,
-    options: CheckOptions
+    options: CheckOptions,
+    progressBar?: ProgressBar | null,
+    startingCompleted: number = 0,
+    totalPackages: number = 0
   ): Promise<OutdatedDependencyInfo[]> {
     const concurrency = config.advanced?.concurrency || 8; // Increased from 5 to match NCU
     const outdatedDependencies: OutdatedDependencyInfo[] = [];
-    const total = packagesToCheck.length;
-    let completed = 0;
-
-    // Create progress bar for package checking
-    const progressBar = new ProgressBar({
-      text: '正在检查依赖包...',
-      color: 'cyan',
-      total: total,
-    });
-
-    // Only show progress bar if we have packages to check
-    if (total > 0) {
-      progressBar.start(`正在检查 ${total} 个依赖包...`);
-    }
+    let completed = startingCompleted;
 
     // Process packages in chunks with true parallelism within each chunk
     const chunks = this.chunkArray(packagesToCheck, concurrency);
@@ -667,16 +706,16 @@ export class CatalogUpdateService {
 
             // Update progress for successful package
             completed++;
-            if (total > 0) {
-              progressBar.update(`正在检查依赖包: ${packageName}`, completed, total);
+            if (progressBar && totalPackages > 0) {
+              progressBar.update(`正在检查依赖包: ${packageName}`, completed, totalPackages);
             }
 
             return result;
           } catch (error) {
             // Update progress even for failed packages
             completed++;
-            if (total > 0) {
-              progressBar.update(`跳过包 ${packageName} (检查失败)`, completed, total);
+            if (progressBar && totalPackages > 0) {
+              progressBar.update(`跳过包 ${packageName} (检查失败)`, completed, totalPackages);
             }
 
             UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
@@ -693,15 +732,6 @@ export class CatalogUpdateService {
           outdatedDependencies.push(result);
         }
       });
-    }
-
-    // Complete progress bar
-    if (total > 0) {
-      if (outdatedDependencies.length > 0) {
-        progressBar.succeed(`✅ 检查完成! 发现 ${outdatedDependencies.length} 个可更新的依赖包`);
-      } else {
-        progressBar.succeed('✅ 检查完成! 所有依赖包都是最新的');
-      }
     }
 
     return outdatedDependencies;

@@ -12,7 +12,7 @@ import {
   UpdateTarget,
 } from '../../application/services/CatalogUpdateService.js';
 import { OutputFormat, OutputFormatter } from '../formatters/OutputFormatter.js';
-import { ProgressBar, MultiStepProgress } from '../formatters/ProgressBar.js';
+import { ProgressBar } from '../formatters/ProgressBar.js';
 import { InteractivePrompts } from '../interactive/InteractivePrompts.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
@@ -44,18 +44,18 @@ export class UpdateCommand {
    * Execute the update command
    */
   async execute(options: UpdateCommandOptions = {}): Promise<void> {
-    const multiStep = new MultiStepProgress([
-      'Loading workspace configuration',
-      'Checking package versions',
-      'Planning updates',
-      'Applying updates',
-    ]);
-
     let progressBar: ProgressBar | undefined;
 
     try {
       // Initialize theme
       ThemeManager.setTheme('default');
+
+      // Create progress bar for the update process
+      progressBar = new ProgressBar({
+        text: '正在规划更新...',
+        total: 4, // 4 main steps
+      });
+      progressBar.start('正在加载工作区配置...');
 
       // Load configuration file first
       const config = ConfigLoader.loadConfig(options.workspace || process.cwd());
@@ -84,31 +84,19 @@ export class UpdateCommand {
         createBackup: options.createBackup ?? config.defaults?.createBackup ?? false,
       };
 
-      multiStep.start();
-
-      // Step 1: Loading workspace
-      progressBar = new ProgressBar({
-        text: 'Loading workspace configuration...',
-        color: 'cyan',
-        spinner: 'dots',
-      });
-      progressBar.start();
-
-      multiStep.next('Loading workspace configuration');
+      // Step 1: Planning updates
+      progressBar.update('正在检查包版本...', 1, 4);
       const plan = await this.updateService.planUpdates(updateOptions);
-      progressBar.succeed('Workspace configuration loaded');
 
-      // Step 2: Checking versions
-      multiStep.next('Checking package versions');
+      // Step 2: Check if any updates found
+      progressBar.update('正在分析更新...', 2, 4);
 
       if (!plan.updates.length) {
-        multiStep.complete();
+        progressBar.succeed('所有依赖包都是最新的');
         console.log(StyledText.iconSuccess('All dependencies are up to date!'));
         return;
       }
 
-      // Step 3: Planning updates
-      multiStep.next('Planning updates');
       console.log(
         StyledText.iconPackage(
           `Found ${plan.totalUpdates} update${plan.totalUpdates === 1 ? '' : 's'} available`
@@ -120,32 +108,35 @@ export class UpdateCommand {
       if (options.interactive) {
         finalPlan = await this.interactiveSelection(plan);
         if (!finalPlan.updates.length) {
+          progressBar.warn('未选择任何更新');
           console.log(StyledText.iconWarning('No updates selected'));
           return;
         }
       }
 
-      // Step 4: Apply updates
-      if (!options.dryRun) {
-        multiStep.next('Applying updates');
+      // Step 3: Apply updates
+      progressBar.update('正在准备应用更新...', 3, 4);
 
+      if (!options.dryRun) {
+        // Replace the progress bar with one for applying updates
+        progressBar.stop();
         progressBar = new ProgressBar({
           text: 'Applying updates...',
-          color: 'green',
           total: finalPlan.updates.length,
         });
-        progressBar.start();
+        progressBar.start('正在应用更新...');
 
         const result = await this.updateService.executeUpdates(finalPlan, updateOptions);
         progressBar.succeed(`Applied ${finalPlan.updates.length} updates`);
 
         console.log(formatter.formatUpdateResult(result));
       } else {
+        progressBar.update('正在生成预览...', 4, 4);
+        progressBar.succeed('更新预览完成');
         console.log(StyledText.iconInfo('Dry run - no changes made'));
         console.log(JSON.stringify(finalPlan, null, 2));
       }
 
-      multiStep.complete();
       console.log(StyledText.iconComplete('Update process completed!'));
     } catch (error) {
       if (progressBar) {

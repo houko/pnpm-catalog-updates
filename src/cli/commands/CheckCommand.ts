@@ -10,7 +10,6 @@ import {
   CheckOptions,
 } from '../../application/services/CatalogUpdateService.js';
 import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
-import { ProgressBar } from '../formatters/ProgressBar.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
 
@@ -33,19 +32,9 @@ export class CheckCommand {
    * Execute the check command
    */
   async execute(options: CheckCommandOptions = {}): Promise<void> {
-    let progressBar: ProgressBar | undefined;
-
     try {
       // Initialize theme
       ThemeManager.setTheme('default');
-
-      // Show loading with progress bar
-      progressBar = new ProgressBar({
-        text: 'Checking for outdated dependencies...',
-        color: 'cyan',
-        spinner: 'dots',
-      });
-      progressBar.start();
 
       if (options.verbose) {
         console.log(StyledText.iconAnalysis('Checking for outdated catalog dependencies'));
@@ -88,8 +77,6 @@ export class CheckCommand {
       // Execute check
       const report = await this.catalogUpdateService.checkOutdatedDependencies(checkOptions);
 
-      progressBar.succeed('Analysis completed');
-
       // Format and display results
       const formattedOutput = formatter.formatOutdatedReport(report);
       console.log(formattedOutput);
@@ -103,10 +90,6 @@ export class CheckCommand {
       // and finding updates is not an error condition
       process.exit(0);
     } catch (error) {
-      if (progressBar) {
-        progressBar.fail('Analysis failed');
-      }
-
       console.error(StyledText.iconError('Error checking dependencies:'));
       console.error(StyledText.error(String(error)));
 

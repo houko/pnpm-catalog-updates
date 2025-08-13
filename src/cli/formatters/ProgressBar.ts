@@ -6,35 +6,27 @@
  */
 
 import chalk from 'chalk';
-import ora, { Ora } from 'ora';
 
 export interface ProgressBarOptions {
   text?: string;
-  color?: string;
-  spinner?: string;
   total?: number;
   style?: 'default' | 'gradient' | 'fancy' | 'minimal' | 'rainbow' | 'neon';
-  width?: number;
-  showPercentage?: boolean;
   showSpeed?: boolean;
 }
 
 export class ProgressBar {
-  private spinner: Ora | null = null;
   private percentageBar: PercentageProgressBar | null = null;
   private current = 0;
   private total = 0;
   private text = '';
   private startTime: number = 0;
   private style: string;
-  private showPercentage: boolean;
   private showSpeed: boolean;
 
-  constructor(private readonly options: ProgressBarOptions = {}) {
+  constructor(options: ProgressBarOptions = {}) {
     this.text = options.text || 'Processing...';
     this.total = options.total || 0;
     this.style = options.style || 'default';
-    this.showPercentage = options.showPercentage ?? true;
     this.showSpeed = options.showSpeed ?? true;
   }
 
@@ -45,106 +37,19 @@ export class ProgressBar {
     this.text = text || this.text;
     this.startTime = Date.now();
 
-    // If we have a total count, use the percentage progress bar
-    if (this.total > 0) {
-      this.percentageBar = new PercentageProgressBar(40, {
-        style: this.style,
-        showStats: this.showSpeed,
-      });
-      this.percentageBar.start(this.total, this.text);
-    } else {
-      // Otherwise use spinner for indeterminate progress
-      const spinnerConfig = this.getSpinnerConfig();
+    // 在开始新进度条前，彻底清理可能的残留内容
+    this.clearPreviousOutput();
 
-      this.spinner = ora({
-        text: this.getStyledText(),
-        color: (this.options.color as any) || spinnerConfig.color,
-        spinner: (this.options.spinner as any) || spinnerConfig.spinner,
-      }).start();
-    }
-  }
+    // 强制使用percentageBar，即使没有total也要创建
+    // 这样可以避免spinner导致的冲突问题
+    const effectiveTotal = this.total > 0 ? this.total : 1; // 如果没有total，设为1避免除零错误
 
-  /**
-   * Get spinner configuration based on style
-   */
-  private getSpinnerConfig(): { spinner: string; color: string } {
-    switch (this.style) {
-      case 'gradient':
-        return { spinner: 'arc', color: 'magenta' };
-      case 'fancy':
-        return { spinner: 'bouncingBar', color: 'cyan' };
-      case 'minimal':
-        return { spinner: 'line', color: 'white' };
-      case 'rainbow':
-        return { spinner: 'rainbow', color: 'rainbow' };
-      case 'neon':
-        return { spinner: 'weather', color: 'green' };
-      default:
-        return { spinner: 'dots12', color: 'cyan' };
-    }
-  }
-
-  /**
-   * Get styled text with decorations
-   */
-  private getStyledText(): string {
-    const percentage = this.total > 0 ? Math.round((this.current / this.total) * 100) : 0;
-    const elapsed = Date.now() - this.startTime;
-    const speed = elapsed > 0 ? Math.round((this.current / elapsed) * 1000) : 0;
-
-    let styledText = this.text;
-
-    // Add progress information
-    if (this.total > 0) {
-      if (this.showPercentage) {
-        styledText += ` ${this.getStyledPercentage(percentage)}`;
-      }
-      styledText += ` ${this.getStyledProgress()}`;
-
-      if (this.showSpeed && speed > 0) {
-        styledText += ` ${chalk.gray(`(${speed}/s)`)}`;
-      }
-    }
-
-    return this.applyTextStyle(styledText);
-  }
-
-  /**
-   * Get styled percentage based on progress
-   */
-  private getStyledPercentage(percentage: number): string {
-    if (percentage < 25) return chalk.red(`${percentage}%`);
-    if (percentage < 50) return chalk.yellow(`${percentage}%`);
-    if (percentage < 75) return chalk.blue(`${percentage}%`);
-    if (percentage < 100) return chalk.cyan(`${percentage}%`);
-    return chalk.green(`${percentage}%`);
-  }
-
-  /**
-   * Get styled progress counter
-   */
-  private getStyledProgress(): string {
-    return chalk.gray(`(${this.current}/${this.total})`);
-  }
-
-  /**
-   * Apply text styling based on theme
-   */
-  private applyTextStyle(text: string): string {
-    switch (this.style) {
-      case 'gradient':
-        return `${chalk.magenta('▶')} ${text}`;
-      case 'fancy':
-        return `${chalk.cyan('★')} ${text} ${chalk.cyan('★')}`;
-      case 'minimal':
-        return text;
-      case 'rainbow':
-        return `${chalk.magenta('◉')} ${text}`;
-      case 'neon':
-        return `${chalk.green.bold('⚡')} ${chalk.green(text)}`;
-      default:
-        return `${chalk.cyan('●')} ${text}`;
-    }
+    this.percentageBar = new PercentageProgressBar(40, {
+      style: this.style,
+      showStats: this.showSpeed,
+      multiLine: true, // 使用多行模式减少闪烁
+    });
+    this.percentageBar.start(effectiveTotal, this.text);
   }
 
   /**
@@ -155,12 +60,9 @@ export class ProgressBar {
     if (current !== undefined) this.current = current;
     if (total !== undefined) this.total = total;
 
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
-      // Update percentage progress bar
       this.percentageBar.update(this.current, text);
-    } else if (this.spinner) {
-      // Update spinner
-      this.spinner.text = this.getStyledText();
     }
   }
 
@@ -171,10 +73,9 @@ export class ProgressBar {
     this.current += amount;
     if (text) this.text = text;
 
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
       this.percentageBar.update(this.current, text);
-    } else if (this.spinner) {
-      this.spinner.text = this.getStyledText();
     }
   }
 
@@ -182,15 +83,12 @@ export class ProgressBar {
    * Mark as succeeded
    */
   succeed(text?: string): void {
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
       const successText = text || this.getCompletionText();
       this.percentageBar.complete(successText);
       console.log(this.getSuccessMessage(successText));
       this.percentageBar = null;
-    } else if (this.spinner) {
-      const successText = text || this.getCompletionText();
-      this.spinner.succeed(this.getSuccessMessage(successText));
-      this.spinner = null;
     }
   }
 
@@ -198,14 +96,11 @@ export class ProgressBar {
    * Mark as failed
    */
   fail(text?: string): void {
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
       const failText = text || this.getFailureText();
       console.log(this.getFailureMessage(failText));
       this.percentageBar = null;
-    } else if (this.spinner) {
-      const failText = text || this.getFailureText();
-      this.spinner.fail(this.getFailureMessage(failText));
-      this.spinner = null;
     }
   }
 
@@ -291,14 +186,11 @@ export class ProgressBar {
    * Mark as warning
    */
   warn(text?: string): void {
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
       const warnText = text || this.text;
       console.log(this.getWarningMessage(warnText));
       this.percentageBar = null;
-    } else if (this.spinner) {
-      const warnText = text || this.text;
-      this.spinner.warn(this.getWarningMessage(warnText));
-      this.spinner = null;
     }
   }
 
@@ -306,14 +198,11 @@ export class ProgressBar {
    * Mark as info
    */
   info(text?: string): void {
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
       const infoText = text || this.text;
       console.log(this.getInfoMessage(infoText));
       this.percentageBar = null;
-    } else if (this.spinner) {
-      const infoText = text || this.text;
-      this.spinner.info(this.getInfoMessage(infoText));
-      this.spinner = null;
     }
   }
 
@@ -363,13 +252,22 @@ export class ProgressBar {
    * Stop the progress bar
    */
   stop(): void {
+    // 只使用percentageBar，不使用spinner
     if (this.percentageBar) {
-      // For percentage bar, just clear the instance
       this.percentageBar = null;
-    } else if (this.spinner) {
-      this.spinner.stop();
-      this.spinner = null;
     }
+  }
+
+  /**
+   * Clear previous output to prevent residual progress bars
+   */
+  private clearPreviousOutput(): void {
+    // 清理可能的残留进度条显示（最多清理5行，应该足够了）
+    for (let i = 0; i < 5; i++) {
+      process.stdout.write('\x1b[1A\r\x1b[K'); // 上移一行并清除
+    }
+    // 确保光标在正确位置
+    process.stdout.write('\r');
   }
 
   /**
@@ -385,8 +283,6 @@ export class ProgressBar {
   static createGradient(options?: Partial<ProgressBarOptions>): ProgressBar {
     return new ProgressBar({
       style: 'gradient',
-      color: 'magenta',
-      showPercentage: true,
       showSpeed: true,
       ...options,
     });
@@ -398,8 +294,6 @@ export class ProgressBar {
   static createFancy(options?: Partial<ProgressBarOptions>): ProgressBar {
     return new ProgressBar({
       style: 'fancy',
-      color: 'cyan',
-      showPercentage: true,
       showSpeed: true,
       ...options,
     });
@@ -411,8 +305,6 @@ export class ProgressBar {
   static createMinimal(options?: Partial<ProgressBarOptions>): ProgressBar {
     return new ProgressBar({
       style: 'minimal',
-      color: 'white',
-      showPercentage: false,
       showSpeed: false,
       ...options,
     });
@@ -424,7 +316,6 @@ export class ProgressBar {
   static createRainbow(options?: Partial<ProgressBarOptions>): ProgressBar {
     return new ProgressBar({
       style: 'rainbow',
-      showPercentage: true,
       showSpeed: true,
       ...options,
     });
@@ -436,8 +327,6 @@ export class ProgressBar {
   static createNeon(options?: Partial<ProgressBarOptions>): ProgressBar {
     return new ProgressBar({
       style: 'neon',
-      color: 'green',
-      showPercentage: true,
       showSpeed: true,
       ...options,
     });
@@ -496,12 +385,15 @@ export class PercentageProgressBar {
   private lastRender = '';
   private startTime = 0;
   private style: string;
+  private useMultiLine = true;
+  private isFirstRender = true;
 
   constructor(
     private readonly width = 40,
-    private readonly options: { style?: string; showStats?: boolean } = {}
+    private readonly options: { style?: string; showStats?: boolean; multiLine?: boolean } = {}
   ) {
     this.style = options.style || 'gradient';
+    this.useMultiLine = options.multiLine ?? true; // 默认使用多行模式来减少闪烁
   }
 
   start(total: number, text: string): void {
@@ -509,7 +401,24 @@ export class PercentageProgressBar {
     this.current = 0;
     this.text = text;
     this.startTime = Date.now();
+    this.isFirstRender = true; // 重置首次渲染标记
+
+    // 清理可能的残留输出
+    this.clearPreviousLines();
+
     this.render();
+  }
+
+  /**
+   * Clear any previous output lines to prevent conflicts
+   */
+  private clearPreviousLines(): void {
+    // 更强力的清理：清理多行可能的残留内容
+    for (let i = 0; i < 6; i++) {
+      process.stdout.write('\x1b[1A\r\x1b[2K'); // 上移一行并完全清除该行
+    }
+    // 回到起始位置
+    process.stdout.write('\r');
   }
 
   update(current: number, text?: string): void {
@@ -536,6 +445,17 @@ export class PercentageProgressBar {
     const filledWidth = Math.round((this.current / this.total) * this.width);
     const emptyWidth = this.width - filledWidth;
 
+    if (this.useMultiLine) {
+      this.renderMultiLine(percentage, filledWidth, emptyWidth);
+    } else {
+      this.renderSingleLine(percentage, filledWidth, emptyWidth);
+    }
+  }
+
+  private renderMultiLine(percentage: number, filledWidth: number, emptyWidth: number): void {
+    const currentText = `${this.getStyledPrefix()} ${this.text}`;
+
+    // 构建进度条
     let bar: string;
     switch (this.style) {
       case 'gradient':
@@ -554,7 +474,57 @@ export class PercentageProgressBar {
         bar = this.renderDefaultBar(filledWidth, emptyWidth);
     }
 
-    let progressText = `${this.getStyledPrefix()} ${this.text} [${bar}] ${this.getStyledPercentage(percentage)} (${this.current}/${this.total})`;
+    let progressLine = `(${this.current}/${this.total}) [${bar}] ${this.getStyledPercentage(percentage)}`;
+
+    // Add stats if enabled
+    if (this.options.showStats && this.startTime > 0) {
+      const elapsed = Date.now() - this.startTime;
+      const speed = elapsed > 0 ? Math.round((this.current / elapsed) * 1000) : 0;
+      if (speed > 0) {
+        progressLine += ` ${chalk.gray(`${speed}/s`)}`;
+      }
+    }
+
+    if (this.isFirstRender) {
+      // 第一次渲染：输出两行
+      console.log(currentText);
+      console.log(progressLine);
+      this.isFirstRender = false;
+    } else {
+      // 后续更新：回到两行前的位置，分别更新这两行
+      // 光标上移两行，清除文字行，输出新文字行
+      process.stdout.write('\x1b[2A\r\x1b[2K' + currentText + '\n');
+      // 清除进度条行，输出新进度条行
+      process.stdout.write('\r\x1b[2K' + progressLine);
+    }
+
+    this.lastRender = progressLine;
+
+    if (this.current >= this.total) {
+      process.stdout.write('\n');
+    }
+  }
+
+  private renderSingleLine(percentage: number, filledWidth: number, emptyWidth: number): void {
+    let bar: string;
+    switch (this.style) {
+      case 'gradient':
+        bar = this.renderGradientBar(filledWidth, emptyWidth);
+        break;
+      case 'fancy':
+        bar = this.renderFancyBar(filledWidth, emptyWidth);
+        break;
+      case 'minimal':
+        bar = this.renderMinimalBar(filledWidth, emptyWidth);
+        break;
+      case 'blocks':
+        bar = this.renderBlockBar(filledWidth, emptyWidth);
+        break;
+      default:
+        bar = this.renderDefaultBar(filledWidth, emptyWidth);
+    }
+
+    let progressText = `${this.getStyledPrefix()} ${this.text} (${this.current}/${this.total}) [${bar}] ${this.getStyledPercentage(percentage)}`;
 
     // Add stats if enabled
     if (this.options.showStats && this.startTime > 0) {
@@ -645,28 +615,36 @@ export class PercentageProgressBar {
    * Create a gradient percentage progress bar
    */
   static createGradient(width = 40): PercentageProgressBar {
-    return new PercentageProgressBar(width, { style: 'gradient', showStats: true });
+    return new PercentageProgressBar(width, {
+      style: 'gradient',
+      showStats: true,
+      multiLine: true,
+    });
   }
 
   /**
    * Create a fancy percentage progress bar
    */
   static createFancy(width = 40): PercentageProgressBar {
-    return new PercentageProgressBar(width, { style: 'fancy', showStats: true });
+    return new PercentageProgressBar(width, { style: 'fancy', showStats: true, multiLine: true });
   }
 
   /**
    * Create a minimal percentage progress bar
    */
   static createMinimal(width = 40): PercentageProgressBar {
-    return new PercentageProgressBar(width, { style: 'minimal', showStats: false });
+    return new PercentageProgressBar(width, {
+      style: 'minimal',
+      showStats: false,
+      multiLine: true,
+    });
   }
 
   /**
    * Create a block-style percentage progress bar
    */
   static createBlocks(width = 40): PercentageProgressBar {
-    return new PercentageProgressBar(width, { style: 'blocks', showStats: true });
+    return new PercentageProgressBar(width, { style: 'blocks', showStats: true, multiLine: true });
   }
 }
 

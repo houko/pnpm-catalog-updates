@@ -81,8 +81,6 @@ export class SecurityCommand {
       // Show loading with progress bar
       progressBar = new ProgressBar({
         text: 'Performing security analysis...',
-        color: 'cyan',
-        spinner: 'dots',
       });
       progressBar.start();
 
