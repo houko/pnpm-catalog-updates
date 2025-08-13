@@ -225,78 +225,28 @@ export class CatalogUpdateService {
 
     // Check each catalog for outdated dependencies
     for (const catalog of catalogsToCheck) {
-      const outdatedDependencies: OutdatedDependencyInfo[] = [];
       if (!catalog) {
         throw new Error(`Catalog "${catalogsToCheck[0]?.getName() || 'unknown'}" not found`);
       }
       const dependencies = catalog.getDependencies();
 
-      for (const [packageName, currentRange] of dependencies) {
-        // Apply configuration filters
+      // Convert to array for parallel processing
+      const packageArray = Array.from(dependencies);
+
+      // Filter packages that should be updated based on configuration
+      const packagesToCheck = packageArray.filter(([packageName]) => {
         const packageConfig = ConfigLoader.getPackageConfig(packageName, config);
-        if (!packageConfig.shouldUpdate) {
-          continue;
-        }
+        return packageConfig.shouldUpdate;
+      });
 
-        // Override target from package-specific configuration, considering security settings
-        let effectiveTarget = packageConfig.target as UpdateTarget;
-
-        // Check for security vulnerabilities if security config is enabled
-        let hasSecurityVulnerabilities = false;
-        if (config.security?.autoFixVulnerabilities) {
-          try {
-            const currentVersion = currentRange.getMinVersion()?.toString();
-            if (currentVersion) {
-              const securityReport = await this.registryService.checkSecurityVulnerabilities(
-                packageName,
-                currentVersion
-              );
-              hasSecurityVulnerabilities = securityReport.hasVulnerabilities;
-
-              // Allow major updates for security fixes if configured
-              if (hasSecurityVulnerabilities && config.security.allowMajorForSecurity) {
-                effectiveTarget = 'latest';
-              }
-            }
-          } catch (error) {
-            console.warn(`Failed to check security for ${packageName}:`, error);
-          }
-        }
-
-        try {
-          const outdatedInfo = await this.checkPackageUpdate(
-            packageName,
-            currentRange,
-            effectiveTarget,
-            options.includePrerelease || config.defaults?.includePrerelease || false
-          );
-
-          if (outdatedInfo) {
-            // Get affected packages
-            const affectedPackages = workspace
-              .getPackagesUsingCatalogDependency(catalog!.getName(), packageName)
-              .getPackageNames();
-
-            // Override security update flag based on security check
-            const finalOutdatedInfo = {
-              ...outdatedInfo,
-              affectedPackages,
-              isSecurityUpdate: hasSecurityVulnerabilities || outdatedInfo.isSecurityUpdate,
-            };
-
-            outdatedDependencies.push(finalOutdatedInfo);
-
-            // Log security notifications if enabled
-            if (hasSecurityVulnerabilities && config.security?.notifyOnSecurityUpdate) {
-              console.warn(
-                `🔒 Security vulnerability detected in ${packageName}@${outdatedInfo.currentVersion}`
-              );
-            }
-          }
-        } catch (error) {
-          console.warn(`Failed to check ${packageName}:`, error);
-        }
-      }
+      // Process packages in parallel with concurrency control
+      const outdatedDependencies = await this.processPackagesInParallel(
+        packagesToCheck,
+        catalog,
+        workspace,
+        config,
+        options
+      );
 
       const catalogInfo: CatalogUpdateInfo = {
         catalogName: catalog!.getName(),
@@ -667,6 +617,140 @@ export class CatalogUpdateService {
   }
 
   /**
+   * Process packages in parallel with concurrency control
+   */
+  private async processPackagesInParallel(
+    packagesToCheck: Array<[string, any]>,
+    catalog: any,
+    workspace: any,
+    config: any,
+    options: CheckOptions
+  ): Promise<OutdatedDependencyInfo[]> {
+    const concurrency = config.advanced?.concurrency || 8; // Increased from 5 to match NCU
+    const outdatedDependencies: OutdatedDependencyInfo[] = [];
+
+    // Process packages in chunks with true parallelism within each chunk
+    const chunks = this.chunkArray(packagesToCheck, concurrency);
+
+    for (const chunk of chunks) {
+      const chunkResults = await Promise.all(
+        chunk.map(async ([packageName, currentRange]) => {
+          try {
+            return await this.processPackageCheck(
+              packageName,
+              currentRange,
+              catalog,
+              workspace,
+              config,
+              options
+            );
+          } catch (error) {
+            console.warn(`Failed to check ${packageName}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Add successful results to the array
+      chunkResults.forEach((result) => {
+        if (result) {
+          outdatedDependencies.push(result);
+        }
+      });
+    }
+
+    return outdatedDependencies;
+  }
+
+  /**
+   * Process a single package check (extracted from the main loop)
+   */
+  private async processPackageCheck(
+    packageName: string,
+    currentRange: any,
+    catalog: any,
+    workspace: any,
+    config: any,
+    options: CheckOptions
+  ): Promise<OutdatedDependencyInfo | null> {
+    // Get package-specific configuration
+    const packageConfig = ConfigLoader.getPackageConfig(packageName, config);
+    const effectiveTarget = packageConfig.target as UpdateTarget;
+
+    // Defer security checks - only do them after we know the package needs updating
+    const outdatedInfo = await this.checkPackageUpdate(
+      packageName,
+      currentRange,
+      effectiveTarget,
+      options.includePrerelease || config.defaults?.includePrerelease || false
+    );
+
+    if (!outdatedInfo) {
+      return null; // Package doesn't need updating
+    }
+
+    // Now check for security vulnerabilities only for packages that need updating
+    let hasSecurityVulnerabilities = false;
+    if (config.security?.autoFixVulnerabilities) {
+      try {
+        const currentVersion = currentRange.getMinVersion()?.toString();
+        if (currentVersion) {
+          const securityReport = await this.registryService.checkSecurityVulnerabilities(
+            packageName,
+            currentVersion
+          );
+          hasSecurityVulnerabilities = securityReport.hasVulnerabilities;
+
+          // Allow major updates for security fixes if configured
+          if (hasSecurityVulnerabilities && config.security.allowMajorForSecurity) {
+            // Re-check with 'latest' target if security fix requires it
+            const securityFixInfo = await this.checkPackageUpdate(
+              packageName,
+              currentRange,
+              'latest',
+              options.includePrerelease || config.defaults?.includePrerelease || false
+            );
+            if (securityFixInfo) {
+              Object.assign(outdatedInfo, securityFixInfo);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to check security for ${packageName}:`, error);
+      }
+    }
+
+    // Get affected packages
+    const affectedPackages = workspace
+      .getPackagesUsingCatalogDependency(catalog.getName(), packageName)
+      .getPackageNames();
+
+    // Log security notifications if enabled
+    if (hasSecurityVulnerabilities && config.security?.notifyOnSecurityUpdate) {
+      console.warn(
+        `🔒 Security vulnerability detected in ${packageName}@${outdatedInfo.currentVersion}`
+      );
+    }
+
+    return {
+      ...outdatedInfo,
+      affectedPackages,
+      isSecurityUpdate: hasSecurityVulnerabilities || outdatedInfo.isSecurityUpdate,
+    };
+  }
+
+  /**
+   * Split array into chunks for parallel processing
+   */
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+
+  /**
    * Check if a package needs updating
    */
   private async checkPackageUpdate(
@@ -676,13 +760,14 @@ export class CatalogUpdateService {
     includePrerelease: boolean
   ): Promise<OutdatedDependencyInfo | null> {
     try {
-      const packageInfo = await this.registryService.getPackageInfo(packageName);
+      // Use lightweight version API for better performance
+      const versionInfo = await this.registryService.getPackageVersions(packageName);
 
       let targetVersion: Version;
 
       switch (target) {
         case 'latest':
-          targetVersion = Version.fromString(packageInfo.latestVersion);
+          targetVersion = Version.fromString(versionInfo.latestVersion);
           break;
         case 'greatest':
           targetVersion = await this.registryService.getGreatestVersion(packageName);
@@ -699,7 +784,7 @@ export class CatalogUpdateService {
           targetVersion = await this.getConstrainedVersion(packageName, currentRange, target);
           break;
         default:
-          targetVersion = Version.fromString(packageInfo.latestVersion);
+          targetVersion = Version.fromString(versionInfo.latestVersion);
       }
 
       // Skip prereleases unless explicitly requested
@@ -753,10 +838,10 @@ export class CatalogUpdateService {
       throw new Error(`Cannot determine current version for ${packageName}`);
     }
 
-    const packageInfo = await this.registryService.getPackageInfo(packageName);
+    const versionInfo = await this.registryService.getPackageVersions(packageName);
 
     // Filter versions based on constraint
-    const compatibleVersions = packageInfo.versions.filter((v) => {
+    const compatibleVersions = versionInfo.versions.filter((v) => {
       try {
         const version = Version.fromString(v);
         const diff = currentVersion.getDifferenceType(version);
@@ -965,10 +1050,10 @@ export class CatalogUpdateService {
         targetVersion = existingUpdate.newVersion;
         targetUpdateType = existingUpdate.updateType;
       } else {
-        // Get latest version for this package
+        // Get latest version for this package using lightweight API
         try {
-          const packageInfo = await this.registryService.getPackageInfo(packageName);
-          targetVersion = packageInfo.latestVersion;
+          const versionInfo = await this.registryService.getPackageVersions(packageName);
+          targetVersion = versionInfo.latestVersion;
         } catch (error) {
           console.warn(`Failed to get version info for sync package ${packageName}:`, error);
           continue;

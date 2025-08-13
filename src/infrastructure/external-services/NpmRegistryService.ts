@@ -50,7 +50,11 @@ export interface SecurityReport {
 
 export class NpmRegistryService {
   private readonly cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private readonly cacheTimeout: number;
+
+  // Differentiated cache timeouts for different data types
+  private readonly versionCacheTimeout: number;
+  private readonly packageInfoCacheTimeout: number;
+  private readonly securityCacheTimeout: number;
 
   // Advanced configuration with defaults
   private readonly concurrency: number;
@@ -62,11 +66,17 @@ export class NpmRegistryService {
     private readonly registryUrl: string = 'https://registry.npmjs.org/',
     options: AdvancedConfig = {}
   ) {
-    this.concurrency = options.concurrency ?? 5;
-    this.timeout = options.timeout ?? 30000;
-    this.retries = options.retries ?? 3;
-    this.cacheTimeout = (options.cacheValidityMinutes ?? 60) * 60 * 1000; // Convert minutes to milliseconds
-    this.cachingEnabled = true; // Always enable caching, use cacheValidityMinutes: 0 to disable
+    this.concurrency = options.concurrency ?? 8; // Increased from 5 to match NCU performance
+    this.timeout = options.timeout ?? 15000; // Reduced from 30s to 15s for faster failure detection
+    this.retries = options.retries ?? 2; // Reduced from 3 to 2 for faster overall performance
+
+    // Optimized cache timeouts for different data types
+    const baseCacheMinutes = options.cacheValidityMinutes ?? 10; // Reduced from 60 to 10 minutes
+    this.versionCacheTimeout = baseCacheMinutes * 60 * 1000; // Version info: 10 minutes (frequently checked)
+    this.packageInfoCacheTimeout = baseCacheMinutes * 2 * 60 * 1000; // Package info: 20 minutes
+    this.securityCacheTimeout = baseCacheMinutes * 6 * 60 * 1000; // Security info: 60 minutes (changes less frequently)
+
+    this.cachingEnabled = baseCacheMinutes > 0; // Disable caching if set to 0
   }
 
   /**
@@ -103,7 +113,56 @@ export class NpmRegistryService {
   }
 
   /**
+   * Get lightweight package version information (optimized for performance)
+   */
+  async getPackageVersions(packageName: string): Promise<{
+    name: string;
+    versions: string[];
+    latestVersion: string;
+    tags: Record<string, string>;
+    time?: Record<string, string>;
+  }> {
+    const cacheKey = `package-versions:${packageName}`;
+
+    // Check cache first if caching is enabled
+    if (this.cachingEnabled) {
+      const cached = this.getFromCache(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const packageVersions = await this.executeWithRetry(async () => {
+      // Use lightweight packument call without fullMetadata
+      const packument = await pacote.packument(packageName, {
+        registry: this.registryUrl,
+        timeout: this.timeout,
+        fullMetadata: false, // Key optimization: don't fetch full metadata
+      });
+
+      const versions = Object.keys(packument.versions || {}).sort(semver.rcompare);
+      const latestVersion = packument['dist-tags']?.latest || versions[0];
+
+      return {
+        name: packument.name,
+        versions,
+        latestVersion,
+        tags: packument['dist-tags'] || {},
+        time: packument.time || {}, // Still include time for newest versions feature
+      };
+    }, `Fetching package versions for ${packageName}`);
+
+    // Cache the result if caching is enabled
+    if (this.cachingEnabled) {
+      this.setCache(cacheKey, packageVersions);
+    }
+
+    return packageVersions;
+  }
+
+  /**
    * Get package information including all versions
+   * @deprecated Use getPackageVersions() for better performance
    */
   async getPackageInfo(packageName: string): Promise<PackageInfo> {
     const cacheKey = `package-info:${packageName}`;
@@ -116,18 +175,19 @@ export class NpmRegistryService {
       }
     }
 
+    // Use lightweight version and extend with additional metadata only if needed
+    const versionInfo = await this.getPackageVersions(packageName);
+
     const packageInfo = await this.executeWithRetry(async () => {
+      // Only fetch full metadata if we actually need the extended info
       const packument = await pacote.packument(packageName, {
         registry: this.registryUrl,
         timeout: this.timeout,
         fullMetadata: true,
       });
 
-      const versions = Object.keys(packument.versions || {}).sort(semver.rcompare);
-      const latestVersion = packument['dist-tags']?.latest || versions[0];
-
       return {
-        name: packument.name,
+        name: versionInfo.name,
         description: packument.description,
         homepage: packument.homepage,
         repository: packument.repository,
@@ -135,10 +195,10 @@ export class NpmRegistryService {
         author: packument.author,
         maintainers: packument.maintainers,
         keywords: packument.keywords,
-        versions,
-        latestVersion,
-        tags: packument['dist-tags'] || {},
-        time: packument.time || {},
+        versions: versionInfo.versions,
+        latestVersion: versionInfo.latestVersion,
+        tags: versionInfo.tags,
+        time: versionInfo.time || {},
       };
     }, `Fetching package info for ${packageName}`);
 
@@ -155,8 +215,8 @@ export class NpmRegistryService {
    */
   async getLatestVersion(packageName: string): Promise<Version> {
     try {
-      const packageInfo = await this.getPackageInfo(packageName);
-      return Version.fromString(packageInfo.latestVersion);
+      const versionInfo = await this.getPackageVersions(packageName);
+      return Version.fromString(versionInfo.latestVersion);
     } catch (error) {
       throw new Error(`Failed to get latest version for ${packageName}: ${error}`);
     }
@@ -167,14 +227,14 @@ export class NpmRegistryService {
    */
   async getGreatestVersion(packageName: string, range?: VersionRange): Promise<Version> {
     try {
-      const packageInfo = await this.getPackageInfo(packageName);
+      const versionInfo = await this.getPackageVersions(packageName);
 
       if (!range) {
-        return Version.fromString(packageInfo.latestVersion);
+        return Version.fromString(versionInfo.latestVersion);
       }
 
       // Find the greatest version that satisfies the range
-      const satisfyingVersions = packageInfo.versions.filter((v) => {
+      const satisfyingVersions = versionInfo.versions.filter((v) => {
         try {
           const version = Version.fromString(v);
           return version.satisfies(range);
@@ -202,13 +262,13 @@ export class NpmRegistryService {
    */
   async getNewestVersions(packageName: string, count: number = 10): Promise<Version[]> {
     try {
-      const packageInfo = await this.getPackageInfo(packageName);
+      const versionInfo = await this.getPackageVersions(packageName);
 
       // Sort versions by publication time
-      const versionsWithTime = packageInfo.versions
+      const versionsWithTime = versionInfo.versions
         .map((version) => ({
           version,
-          time: packageInfo.time[version] ? new Date(packageInfo.time[version]) : new Date(0),
+          time: versionInfo.time?.[version] ? new Date(versionInfo.time[version]) : new Date(0),
         }))
         .sort((a, b) => b.time.getTime() - a.time.getTime())
         .slice(0, count);
@@ -378,10 +438,70 @@ export class NpmRegistryService {
   }
 
   /**
-   * Clear cache
+   * Clear all cache
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  /**
+   * Clear cache by type
+   */
+  clearCacheByType(type: 'versions' | 'package-info' | 'security' | 'all' = 'all'): void {
+    if (type === 'all') {
+      this.clearCache();
+      return;
+    }
+
+    const prefix =
+      type === 'versions'
+        ? 'package-versions:'
+        : type === 'package-info'
+          ? 'package-info:'
+          : 'security:';
+
+    const keysToDelete: string[] = [];
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) {
+        keysToDelete.push(key);
+      }
+    }
+
+    keysToDelete.forEach((key) => this.cache.delete(key));
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): {
+    total: number;
+    versions: number;
+    packageInfo: number;
+    security: number;
+    expired: number;
+  } {
+    const stats = { total: 0, versions: 0, packageInfo: 0, security: 0, expired: 0 };
+    const now = Date.now();
+
+    for (const [key, cached] of this.cache.entries()) {
+      stats.total++;
+
+      const timeout = this.getCacheTimeout(key);
+      if (now - cached.timestamp > timeout) {
+        stats.expired++;
+        continue;
+      }
+
+      if (key.startsWith('package-versions:')) {
+        stats.versions++;
+      } else if (key.startsWith('package-info:')) {
+        stats.packageInfo++;
+      } else if (key.startsWith('security:')) {
+        stats.security++;
+      }
+    }
+
+    return stats;
   }
 
   /**
@@ -393,12 +513,31 @@ export class NpmRegistryService {
       return null;
     }
 
-    if (Date.now() - cached.timestamp > this.cacheTimeout) {
+    // Determine timeout based on cache key type
+    const timeout = this.getCacheTimeout(key);
+
+    if (Date.now() - cached.timestamp > timeout) {
       this.cache.delete(key);
       return null;
     }
 
     return cached.data;
+  }
+
+  /**
+   * Get appropriate cache timeout based on key type
+   */
+  private getCacheTimeout(key: string): number {
+    if (key.startsWith('package-versions:')) {
+      return this.versionCacheTimeout;
+    } else if (key.startsWith('security:')) {
+      return this.securityCacheTimeout;
+    } else if (key.startsWith('package-info:')) {
+      return this.packageInfoCacheTimeout;
+    }
+
+    // Default to version cache timeout for unknown keys
+    return this.versionCacheTimeout;
   }
 
   /**
