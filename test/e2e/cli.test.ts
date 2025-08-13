@@ -66,4 +66,50 @@ catalog:
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain(`Error: Workspace not found at ${nonExistentPath}`);
   });
+
+  it('should show user-friendly error for non-existent packages', async () => {
+    // Create workspace with non-existent packages
+    const testWorkspacePath = await global.createE2EWorkspace({
+      'package.json': JSON.stringify(
+        {
+          name: 'error-test-workspace',
+          version: '1.0.0',
+          dependencies: {
+            sveltekit: 'catalog:',
+            'prime-ng': 'catalog:',
+          },
+        },
+        null,
+        2
+      ),
+      'pnpm-workspace.yaml': `
+packages:
+  - "."
+
+catalog:
+  react: ^17.0.0
+  sveltekit: 1.0.0
+  prime-ng: 15.0.0
+`,
+    });
+
+    const result = await global.runCLI(['check'], testWorkspacePath);
+
+    // Should complete successfully even with missing packages
+    expect(result.exitCode).toBe(0);
+
+    // Should show user-friendly messages instead of technical errors
+    expect(result.stdout).toContain('⚠️'); // Warning emoji
+    expect(result.stdout).toContain('💡'); // Suggestion emoji
+
+    // Should suggest correct package names
+    expect(result.stdout).toContain('@sveltejs/kit');
+    expect(result.stdout).toContain('primeng');
+
+    // Should not show technical stack traces or 404 error details
+    expect(result.stdout).not.toContain('Error:');
+    expect(result.stdout).not.toContain('404');
+    expect(result.stdout).not.toContain('Not found');
+    expect(result.stderr).not.toContain('Error:');
+  });
 });

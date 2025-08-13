@@ -11,6 +11,7 @@ import semver from 'semver';
 
 import { Version, VersionRange } from '../../domain/value-objects/Version.js';
 import { AdvancedConfig } from '../../common/config/PackageFilterConfig.js';
+import { UserFriendlyErrorHandler } from '../../common/error-handling/UserFriendlyErrorHandler.js';
 
 export interface PackageInfo {
   name: string;
@@ -102,10 +103,12 @@ export class NpmRegistryService {
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
         await new Promise((resolve) => setTimeout(resolve, delay));
 
-        console.warn(
-          `${context} attempt ${attempt} failed, retrying in ${delay}ms:`,
-          lastError.message
-        );
+        // Extract package name from context for better error handling
+        const packageName = context.includes('for ')
+          ? context.split('for ')[1] || 'unknown package'
+          : 'unknown package';
+
+        UserFriendlyErrorHandler.handleRetryAttempt(packageName, attempt, this.retries, lastError);
       }
     }
 
@@ -345,7 +348,7 @@ export class NpmRegistryService {
       return securityReport;
     } catch (error) {
       // If security check fails, return empty report
-      console.warn(`Security check failed for ${packageName}@${version}:`, error);
+      UserFriendlyErrorHandler.handleSecurityCheckFailure(packageName, error as Error);
 
       const emptyReport: SecurityReport = {
         package: packageName,
@@ -373,7 +376,7 @@ export class NpmRegistryService {
           const info = await this.getPackageInfo(packageName);
           results.set(packageName, info);
         } catch (error) {
-          console.warn(`Failed to query package ${packageName}:`, error);
+          UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error);
         }
       });
 
@@ -410,7 +413,10 @@ export class NpmRegistryService {
 
       return fromAuthor !== toAuthor;
     } catch (error) {
-      console.warn(`Failed to check author change for ${packageName}:`, error);
+      // Log for debugging, don't show to user as this is not critical
+      UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
+        operation: 'author-check',
+      });
       return false;
     }
   }
@@ -432,7 +438,10 @@ export class NpmRegistryService {
       const data = (await response.json()) as any;
       return data.downloads || 0;
     } catch (error) {
-      console.warn(`Failed to get download stats for ${packageName}:`, error);
+      // Log for debugging, don't show to user as this is not critical
+      UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
+        operation: 'download-stats',
+      });
       return 0;
     }
   }

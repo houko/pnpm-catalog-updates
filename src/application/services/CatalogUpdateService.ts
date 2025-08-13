@@ -12,6 +12,7 @@ import { Version, VersionRange } from '../../domain/value-objects/Version.js';
 import { NpmRegistryService } from '../../infrastructure/external-services/NpmRegistryService.js';
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
 import { AdvancedConfig } from '../../common/config/PackageFilterConfig.js';
+import { UserFriendlyErrorHandler } from '../../common/error-handling/UserFriendlyErrorHandler.js';
 
 export interface CheckOptions {
   workspacePath?: string | undefined;
@@ -409,7 +410,11 @@ export class CatalogUpdateService {
               );
             }
           } catch (error) {
-            console.warn(`Failed to check security for ${update.packageName}:`, error);
+            UserFriendlyErrorHandler.handleSecurityCheckFailure(
+              update.packageName,
+              error as Error,
+              { operation: 'update' }
+            );
           }
         }
 
@@ -645,7 +650,9 @@ export class CatalogUpdateService {
               options
             );
           } catch (error) {
-            console.warn(`Failed to check ${packageName}:`, error);
+            UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
+              operation: 'check',
+            });
             return null;
           }
         })
@@ -716,7 +723,7 @@ export class CatalogUpdateService {
           }
         }
       } catch (error) {
-        console.warn(`Failed to check security for ${packageName}:`, error);
+        UserFriendlyErrorHandler.handleSecurityCheckFailure(packageName, error as Error);
       }
     }
 
@@ -820,7 +827,9 @@ export class CatalogUpdateService {
         affectedPackages: [], // Will be filled by caller
       };
     } catch (error) {
-      console.warn(`Failed to check updates for ${packageName}:`, error);
+      UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
+        operation: 'update-check',
+      });
       return null;
     }
   }
@@ -1055,7 +1064,9 @@ export class CatalogUpdateService {
           const versionInfo = await this.registryService.getPackageVersions(packageName);
           targetVersion = versionInfo.latestVersion;
         } catch (error) {
-          console.warn(`Failed to get version info for sync package ${packageName}:`, error);
+          UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
+            operation: 'sync',
+          });
           continue;
         }
       }
