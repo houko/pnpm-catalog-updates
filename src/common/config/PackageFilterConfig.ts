@@ -34,6 +34,7 @@ export interface AdvancedConfig {
   timeout?: number;
   retries?: number;
   cacheValidityMinutes?: number;
+  checkForUpdates?: boolean;
 }
 
 export interface MonorepoConfig {
@@ -127,6 +128,7 @@ export const DEFAULT_PACKAGE_FILTER_CONFIG: Required<PackageFilterConfig> = {
     timeout: 30000,
     retries: 3,
     cacheValidityMinutes: 60,
+    checkForUpdates: true,
   },
   monorepo: {
     syncVersions: [],

@@ -371,7 +371,8 @@ pcu -t --interactive        # 交互式主题设置
     "concurrency": 5, // 并发网络请求数量（默认: 5）
     "timeout": 30000, // 网络请求超时时间（毫秒，默认: 30000）
     "retries": 3, // 失败重试次数（默认: 3）
-    "cacheValidityMinutes": 60 // 缓存有效期（分钟，默认: 60，设为0禁用缓存）
+    "cacheValidityMinutes": 60, // 缓存有效期（分钟，默认: 60，设为0禁用缓存）
+    "checkForUpdates": true // 启动时检查工具更新（默认: true）
   },
 
   // Monorepo 配置
@@ -398,7 +399,7 @@ pcu -t --interactive        # 交互式主题设置
 
 **优先级示例**:
 
-```
+```text
 @types/react → 匹配react规则的relatedPackages → 使用"minor"策略
 @types/node → 匹配@types/node专门规则 → 使用"minor"策略
 @types/lodash → 匹配@types/*通用规则 → 使用"latest"策略

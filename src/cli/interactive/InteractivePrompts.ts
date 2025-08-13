@@ -346,6 +346,22 @@ export class InteractivePrompts {
   }
 
   /**
+   * Confirm tool update
+   */
+  async confirmUpdate(message: string): Promise<boolean> {
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'update',
+        message: StyledText.iconUpdate(message),
+        default: true,
+      },
+    ]);
+
+    return answers.update;
+  }
+
+  /**
    * Format package choice for display
    */
   private formatPackageChoice(pkg: any): string {

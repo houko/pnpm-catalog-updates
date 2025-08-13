@@ -26,6 +26,8 @@ import { UpdateCommand } from './commands/UpdateCommand.js';
 import { SecurityCommand } from './commands/SecurityCommand.js';
 import { InteractivePrompts } from './interactive/InteractivePrompts.js';
 import { ThemeManager, StyledText } from './themes/ColorTheme.js';
+import { VersionChecker } from '../common/utils/VersionChecker.js';
+import { ConfigLoader } from '../common/config/ConfigLoader.js';
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);
@@ -66,6 +68,33 @@ export async function main(): Promise<void> {
   const workspaceIndex = process.argv.findIndex((arg) => arg === '-w' || arg === '--workspace');
   if (workspaceIndex !== -1 && workspaceIndex + 1 < process.argv.length) {
     workspacePath = process.argv[workspaceIndex + 1];
+  }
+
+  // Load configuration to check if version updates are enabled
+  const config = ConfigLoader.loadConfig(workspacePath || process.cwd());
+
+  // Check for version updates (skip in CI environments or if disabled)
+  if (VersionChecker.shouldCheckForUpdates() && config.advanced?.checkForUpdates !== false) {
+    try {
+      const versionResult = await VersionChecker.checkVersion(packageJson.version, {
+        skipPrompt: false,
+        timeout: 3000, // Short timeout to not delay CLI startup
+      });
+
+      if (versionResult.shouldPrompt) {
+        const didUpdate = await VersionChecker.promptAndUpdate(versionResult);
+        if (didUpdate) {
+          // Exit after successful update to allow user to restart with new version
+          console.log(chalk.blue('Please run your command again to use the updated version.'));
+          process.exit(0);
+        }
+      }
+    } catch (error) {
+      // Silently fail version check to not interrupt CLI usage (only show warning in verbose mode)
+      if (process.argv.includes('-v') || process.argv.includes('--verbose')) {
+        console.warn(chalk.yellow('⚠️  Could not check for updates:'), error);
+      }
+    }
   }
 
   // Create services with workspace path for configuration loading

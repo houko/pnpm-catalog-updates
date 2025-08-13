@@ -378,7 +378,8 @@ You can also configure package-specific update rules by creating a `.pcurc.json`
     "concurrency": 5, // Number of concurrent network requests (default: 5)
     "timeout": 30000, // Network request timeout in ms (default: 30000)
     "retries": 3, // Number of retries on failure (default: 3)
-    "cacheValidityMinutes": 60 // Cache validity period in minutes (default: 60, set to 0 to disable caching)
+    "cacheValidityMinutes": 60, // Cache validity period in minutes (default: 60, set to 0 to disable caching)
+    "checkForUpdates": true // Check for tool updates on startup (default: true)
   },
 
   // Monorepo configuration
@@ -408,7 +409,7 @@ options > default configuration
 
 **Priority Examples**:
 
-```
+```bash
 @types/react → matches react rule's relatedPackages → uses "minor" strategy
 @types/node → matches @types/node specific rule → uses "minor" strategy
 @types/lodash → matches @types/* general rule → uses "latest" strategy
