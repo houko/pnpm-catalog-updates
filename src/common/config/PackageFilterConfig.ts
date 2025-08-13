@@ -11,6 +11,7 @@ export interface PackageRule {
   autoUpdate?: boolean;
   requireConfirmation?: boolean;
   groupUpdate?: boolean;
+  relatedPackages?: string[]; // 相关包会自动遵循相同的版本策略
 }
 
 export interface SecurityConfig {
@@ -65,7 +66,33 @@ export const DEFAULT_PACKAGE_FILTER_CONFIG: Required<PackageFilterConfig> = {
     format: 'table',
   },
   packageRules: [
-    // Type definitions - always update to latest
+    // React ecosystem - keep types in sync with main packages
+    {
+      patterns: ['react', 'react-dom'],
+      target: 'minor',
+      autoUpdate: false,
+      requireConfirmation: true,
+      groupUpdate: true,
+      relatedPackages: ['@types/react', '@types/react-dom'],
+    },
+    // Vue ecosystem
+    {
+      patterns: ['vue'],
+      target: 'minor',
+      autoUpdate: false,
+      requireConfirmation: true,
+      groupUpdate: false,
+      relatedPackages: ['@vue/compiler-sfc', '@vue/runtime-core'],
+    },
+    // Node.js types - be conservative
+    {
+      patterns: ['@types/node'],
+      target: 'minor',
+      autoUpdate: false,
+      requireConfirmation: true,
+      groupUpdate: false,
+    },
+    // Other type definitions - can update more freely
     {
       patterns: ['@types/*'],
       target: 'latest',

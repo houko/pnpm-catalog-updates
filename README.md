@@ -292,7 +292,7 @@ pcu -t --interactive        # Interactive theme setup
 
 ### Configuration
 
-Create a `.pcurc.json` file in your project root:
+Create a `.pcurc.json` file (PCU configuration file) in your project root:
 
 ```json
 {
@@ -326,7 +326,7 @@ Create a `.pcurc.json` file in your project root:
 #### Package Filtering Configuration
 
 You can also configure package-specific update rules by creating a `.pcurc.json`
-with filtering options:
+(PCU configuration file) with filtering options:
 
 ```json
 {
@@ -339,14 +339,25 @@ with filtering options:
   // Package-specific update rules
   "packageRules": [
     {
-      "patterns": ["@types/*"],
-      "target": "latest", // Always update type definitions to latest
-      "autoUpdate": true
+      "patterns": ["react", "react-dom"],
+      "target": "minor", // Only minor updates for React
+      "requireConfirmation": true, // Always ask before updating
+      "relatedPackages": ["@types/react", "@types/react-dom"] // Related packages automatically follow same strategy
     },
     {
-      "patterns": ["react", "react-dom"],
-      "target": "patch", // Only patch updates for React
-      "requireConfirmation": true // Always ask before updating
+      "patterns": ["vue"],
+      "target": "minor",
+      "relatedPackages": ["@vue/compiler-sfc", "@vue/runtime-core"] // Vue ecosystem packages
+    },
+    {
+      "patterns": ["@types/node"],
+      "target": "minor", // Conservative updates for Node.js type definitions
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest", // Other type definitions can update more freely
+      "autoUpdate": true
     },
     {
       "patterns": ["eslint*", "prettier"],
@@ -354,6 +365,27 @@ with filtering options:
       "groupUpdate": true // Update related packages together
     }
   ],
+
+  // Security configuration
+  "security": {
+    "autoFixVulnerabilities": true, // Automatically check and fix security vulnerabilities
+    "allowMajorForSecurity": true, // Allow major version upgrades for security fixes
+    "notifyOnSecurityUpdate": true // Show notifications on security updates
+  },
+
+  // Advanced configuration
+  "advanced": {
+    "concurrency": 5, // Number of concurrent network requests (default: 5)
+    "timeout": 30000, // Network request timeout in ms (default: 30000)
+    "retries": 3, // Number of retries on failure (default: 3)
+    "cacheValidityMinutes": 60 // Cache validity period in minutes (default: 60, set to 0 to disable caching)
+  },
+
+  // Monorepo configuration
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"], // Packages that need version sync across multiple catalogs
+    "catalogPriority": ["default", "latest", "react17"] // Catalog priority order
+  },
 
   // Override defaults
   "defaults": {
@@ -363,7 +395,24 @@ with filtering options:
 }
 ```
 
-**Configuration priority**: Package rules > CLI options > Default configuration
+**Related Packages Feature**: `relatedPackages` allows related packages to
+automatically follow the same version strategy
+
+- When you configure `react` with `target: "minor"`, `@types/react` will
+  automatically apply the same strategy
+- Avoid manually duplicating update rules for related packages
+- Ensures version consistency across ecosystem packages
+
+**Configuration priority**: relatedPackages > direct pattern matching > CLI
+options > default configuration
+
+**Priority Examples**:
+
+```
+@types/react → matches react rule's relatedPackages → uses "minor" strategy
+@types/node → matches @types/node specific rule → uses "minor" strategy
+@types/lodash → matches @types/* general rule → uses "latest" strategy
+```
 
 **Pattern matching**: Supports glob patterns like `react*`, `@types/*`,
 `eslint*`

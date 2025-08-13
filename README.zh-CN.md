@@ -285,7 +285,7 @@ pcu -t --interactive        # 交互式主题设置
 
 ### 配置
 
-在项目根目录创建 `.pcurc.json` 文件：
+在项目根目录创建 `.pcurc.json` 文件（PCU配置文件）：
 
 ```json
 {
@@ -318,7 +318,8 @@ pcu -t --interactive        # 交互式主题设置
 
 #### 包过滤配置
 
-您还可以通过创建包含过滤选项的 `.pcurc.json` 来配置特定包的更新规则：
+您还可以通过创建包含过滤选项的
+`.pcurc.json`（PCU配置文件）来配置特定包的更新规则：
 
 ```json
 {
@@ -331,14 +332,25 @@ pcu -t --interactive        # 交互式主题设置
   // 特定包的更新规则
   "packageRules": [
     {
-      "patterns": ["@types/*"],
-      "target": "latest", // 类型定义总是更新到最新版本
-      "autoUpdate": true
+      "patterns": ["react", "react-dom"],
+      "target": "minor", // React 只进行 minor 更新
+      "requireConfirmation": true, // 更新前总是询问
+      "relatedPackages": ["@types/react", "@types/react-dom"] // 相关包自动遵循相同策略
     },
     {
-      "patterns": ["react", "react-dom"],
-      "target": "patch", // React 只进行 patch 更新
-      "requireConfirmation": true // 更新前总是询问
+      "patterns": ["vue"],
+      "target": "minor",
+      "relatedPackages": ["@vue/compiler-sfc", "@vue/runtime-core"] // Vue 生态系统包
+    },
+    {
+      "patterns": ["@types/node"],
+      "target": "minor", // Node.js 类型定义保守更新
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest", // 其他类型定义可以自由更新
+      "autoUpdate": true
     },
     {
       "patterns": ["eslint*", "prettier"],
@@ -376,7 +388,21 @@ pcu -t --interactive        # 交互式主题设置
 }
 ```
 
-**配置优先级**: 包规则 > CLI 选项 > 默认配置
+**关联包功能**: `relatedPackages` 允许相关包自动遵循相同的版本策略
+
+- 当配置了 `react` 的 `target: "minor"`，`@types/react` 也会自动应用相同策略
+- 避免手动重复配置相关包的更新规则
+- 确保生态系统包的版本一致性
+
+**配置优先级**: relatedPackages > 直接pattern匹配 > CLI选项 > 默认配置
+
+**优先级示例**:
+
+```
+@types/react → 匹配react规则的relatedPackages → 使用"minor"策略
+@types/node → 匹配@types/node专门规则 → 使用"minor"策略
+@types/lodash → 匹配@types/*通用规则 → 使用"latest"策略
+```
 
 **模式匹配**: 支持 glob 模式，如 `react*`、`@types/*`、`eslint*`
 

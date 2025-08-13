@@ -1,19 +1,25 @@
 {
-  "exclude": ["typescript", "@types/node"],
+  "exclude": ["typescript"],
   "defaults": {
     "createBackup": true,
     "target": "minor"
   },
   "packageRules": [
     {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/node"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
       "patterns": ["@types/*"],
       "target": "latest",
       "autoUpdate": true
-    },
-    {
-      "patterns": ["react", "react-dom"],
-      "target": "patch",
-      "requireConfirmation": true
     }
   ],
   "security": {

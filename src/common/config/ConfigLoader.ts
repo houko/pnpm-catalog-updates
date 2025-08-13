@@ -166,10 +166,19 @@ export class ConfigLoader {
       }
     }
 
-    // Find matching package rule
-    const matchingRule = config.packageRules?.find((rule) =>
-      rule.patterns.some((pattern) => this.matchesPattern(packageName, pattern))
+    // First check if package is in relatedPackages of any rule (higher priority)
+    let matchingRule = config.packageRules?.find((rule) =>
+      rule.relatedPackages?.some((relatedPattern) =>
+        this.matchesPattern(packageName, relatedPattern)
+      )
     );
+
+    // If no relatedPackages match, find direct pattern match
+    if (!matchingRule) {
+      matchingRule = config.packageRules?.find((rule) =>
+        rule.patterns.some((pattern) => this.matchesPattern(packageName, pattern))
+      );
+    }
 
     if (matchingRule) {
       return {
