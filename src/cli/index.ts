@@ -33,19 +33,21 @@ const __dirname = dirname(__filename);
 const packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'));
 
 /**
- * Create service dependencies
+ * Create service dependencies with configuration support
  */
-function createServices() {
+function createServices(workspacePath?: string) {
   const fileSystemService = new FileSystemService();
   const workspaceRepository = new FileWorkspaceRepository(fileSystemService);
-  const registryService = new NpmRegistryService();
-  const catalogUpdateService = new CatalogUpdateService(workspaceRepository, registryService);
+  // Use factory method to create CatalogUpdateService with configuration
+  const catalogUpdateService = CatalogUpdateService.createWithConfig(
+    workspaceRepository,
+    workspacePath
+  );
   const workspaceService = new WorkspaceService(workspaceRepository);
 
   return {
     fileSystemService,
     workspaceRepository,
-    registryService,
     catalogUpdateService,
     workspaceService,
   };
@@ -57,8 +59,17 @@ function createServices() {
 export async function main(): Promise<void> {
   const program = new Command();
 
-  // Create services
-  const services = createServices();
+  // Parse arguments first to get workspace path
+  let workspacePath: string | undefined;
+
+  // Extract workspace path from arguments for service creation
+  const workspaceIndex = process.argv.findIndex((arg) => arg === '-w' || arg === '--workspace');
+  if (workspaceIndex !== -1 && workspaceIndex + 1 < process.argv.length) {
+    workspacePath = process.argv[workspaceIndex + 1];
+  }
+
+  // Create services with workspace path for configuration loading
+  const services = createServices(workspacePath);
 
   // Configure the main command
   program
@@ -94,12 +105,7 @@ export async function main(): Promise<void> {
     .action(async (options, command) => {
       try {
         const globalOptions = command.parent.opts();
-        const formatter = new OutputFormatter(
-          options.format as OutputFormat,
-          !globalOptions.noColor
-        );
-
-        const checkCommand = new CheckCommand(services.catalogUpdateService, formatter);
+        const checkCommand = new CheckCommand(services.catalogUpdateService);
 
         await checkCommand.execute({
           workspace: globalOptions.workspace,
@@ -144,12 +150,7 @@ export async function main(): Promise<void> {
     .action(async (options, command) => {
       try {
         const globalOptions = command.parent.opts();
-        const formatter = new OutputFormatter(
-          options.format as OutputFormat,
-          !globalOptions.noColor
-        );
-
-        const updateCommand = new UpdateCommand(services.catalogUpdateService, formatter);
+        const updateCommand = new UpdateCommand(services.catalogUpdateService);
 
         await updateCommand.execute({
           workspace: globalOptions.workspace,
@@ -194,8 +195,12 @@ export async function main(): Promise<void> {
         );
 
         // Get latest version if not specified
-        const targetVersion =
-          version || (await services.registryService.getLatestVersion(packageName)).toString();
+        let targetVersion = version;
+        if (!targetVersion) {
+          // Create a temporary registry service for version fetching
+          const tempRegistryService = new NpmRegistryService();
+          targetVersion = (await tempRegistryService.getLatestVersion(packageName)).toString();
+        }
 
         const analysis = await services.catalogUpdateService.analyzeImpact(
           catalog,

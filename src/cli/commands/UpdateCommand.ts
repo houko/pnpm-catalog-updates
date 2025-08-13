@@ -15,6 +15,7 @@ import { OutputFormat, OutputFormatter } from '../formatters/OutputFormatter.js'
 import { EnhancedProgressBar, MultiStepProgress } from '../formatters/ProgressBar.js';
 import { InteractivePrompts } from '../interactive/InteractivePrompts.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
+import { ConfigLoader } from '../../common/config/ConfigLoader.js';
 
 export interface UpdateCommandOptions {
   workspace?: string;
@@ -34,11 +35,9 @@ export interface UpdateCommandOptions {
 
 export class UpdateCommand {
   private readonly updateService: CatalogUpdateService;
-  private readonly outputFormatter: OutputFormatter;
 
-  constructor(updateService: CatalogUpdateService, outputFormatter: OutputFormatter) {
+  constructor(updateService: CatalogUpdateService) {
     this.updateService = updateService;
-    this.outputFormatter = outputFormatter;
   }
 
   /**
@@ -58,18 +57,31 @@ export class UpdateCommand {
       // Initialize theme
       ThemeManager.setTheme('default');
 
-      // Convert command options to service options
+      // Load configuration file first
+      const config = ConfigLoader.loadConfig(options.workspace || process.cwd());
+
+      // Use format from CLI options first, then config file, then default
+      const effectiveFormat = options.format || config.defaults?.format || 'table';
+
+      // Create output formatter with effective format
+      const formatter = new OutputFormatter(
+        effectiveFormat as OutputFormat,
+        options.color !== false
+      );
+
+      // Merge CLI options with configuration file settings
       const updateOptions: UpdateOptions = {
         workspacePath: options.workspace,
         catalogName: options.catalog,
-        target: options.target,
-        includePrerelease: options.prerelease ?? false,
-        include: options.include,
-        exclude: options.exclude,
-        interactive: options.interactive ?? false,
-        dryRun: options.dryRun ?? false,
+        target: options.target || config.defaults?.target,
+        includePrerelease: options.prerelease ?? config.defaults?.includePrerelease ?? false,
+        // CLI include/exclude options take priority over config file
+        include: options.include?.length ? options.include : config.include,
+        exclude: options.exclude?.length ? options.exclude : config.exclude,
+        interactive: options.interactive ?? config.defaults?.interactive ?? false,
+        dryRun: options.dryRun ?? config.defaults?.dryRun ?? false,
         force: options.force ?? false,
-        createBackup: options.createBackup ?? false,
+        createBackup: options.createBackup ?? config.defaults?.createBackup ?? false,
       };
 
       multiStep.start();
@@ -127,7 +139,7 @@ export class UpdateCommand {
         const result = await this.updateService.executeUpdates(finalPlan, updateOptions);
         progressBar.succeed(`Applied ${finalPlan.updates.length} updates`);
 
-        console.log(this.outputFormatter.formatUpdateResult(result));
+        console.log(formatter.formatUpdateResult(result));
       } else {
         console.log(StyledText.iconInfo('Dry run - no changes made'));
         console.log(JSON.stringify(finalPlan, null, 2));

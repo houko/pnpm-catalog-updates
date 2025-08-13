@@ -316,6 +316,70 @@ pcu -t --interactive        # 交互式主题设置
 }
 ```
 
+#### 包过滤配置
+
+您还可以通过创建包含过滤选项的 `.pcurc.json` 来配置特定包的更新规则：
+
+```json
+{
+  // 排除您永远不想更新的包
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+
+  // 仅更新特定包（可选 - 如果不指定，将考虑所有包）
+  "include": ["lodash*", "chalk", "commander"],
+
+  // 特定包的更新规则
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest", // 类型定义总是更新到最新版本
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "patch", // React 只进行 patch 更新
+      "requireConfirmation": true // 更新前总是询问
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor", // 开发工具进行 minor 更新
+      "groupUpdate": true // 相关包一起更新
+    }
+  ],
+
+  // 安全配置
+  "security": {
+    "autoFixVulnerabilities": true, // 自动检查并修复安全漏洞
+    "allowMajorForSecurity": true, // 为安全修复允许主版本升级
+    "notifyOnSecurityUpdate": true // 安全更新时显示通知
+  },
+
+  // 高级配置
+  "advanced": {
+    "concurrency": 5, // 并发网络请求数量（默认: 5）
+    "timeout": 30000, // 网络请求超时时间（毫秒，默认: 30000）
+    "retries": 3, // 失败重试次数（默认: 3）
+    "cacheValidityMinutes": 60 // 缓存有效期（分钟，默认: 60，设为0禁用缓存）
+  },
+
+  // Monorepo 配置
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"], // 需要在多个 catalog 间同步版本的包
+    "catalogPriority": ["default", "latest", "react17"] // catalog 优先级顺序
+  },
+
+  // 覆盖默认设置
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  }
+}
+```
+
+**配置优先级**: 包规则 > CLI 选项 > 默认配置
+
+**模式匹配**: 支持 glob 模式，如 `react*`、`@types/*`、`eslint*`
+
 ## 📁 项目结构
 
 本项目遵循领域驱动设计 (DDD) 原则：

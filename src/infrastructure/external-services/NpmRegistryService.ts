@@ -10,6 +10,7 @@ import pacote from 'pacote';
 import semver from 'semver';
 
 import { Version, VersionRange } from '../../domain/value-objects/Version.js';
+import { AdvancedConfig } from '../../common/config/PackageFilterConfig.js';
 
 export interface PackageInfo {
   name: string;
@@ -49,12 +50,57 @@ export interface SecurityReport {
 
 export class NpmRegistryService {
   private readonly cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private readonly cacheTimeout: number = 5 * 60 * 1000; // 5 minutes
+  private readonly cacheTimeout: number;
+
+  // Advanced configuration with defaults
+  private readonly concurrency: number;
+  private readonly timeout: number;
+  private readonly retries: number;
+  private readonly cachingEnabled: boolean;
 
   constructor(
     private readonly registryUrl: string = 'https://registry.npmjs.org/',
-    private readonly timeout: number = 30000
-  ) {}
+    options: AdvancedConfig = {}
+  ) {
+    this.concurrency = options.concurrency ?? 5;
+    this.timeout = options.timeout ?? 30000;
+    this.retries = options.retries ?? 3;
+    this.cacheTimeout = (options.cacheValidityMinutes ?? 60) * 60 * 1000; // Convert minutes to milliseconds
+    this.cachingEnabled = true; // Always enable caching, use cacheValidityMinutes: 0 to disable
+  }
+
+  /**
+   * Execute a function with retry logic
+   */
+  private async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    context: string = 'operation'
+  ): Promise<T> {
+    let lastError: Error;
+
+    for (let attempt = 1; attempt <= this.retries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error as Error;
+
+        if (attempt === this.retries) {
+          throw new Error(`${context} failed after ${this.retries} attempts: ${lastError.message}`);
+        }
+
+        // Exponential backoff: wait 1s, 2s, 4s, etc.
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        console.warn(
+          `${context} attempt ${attempt} failed, retrying in ${delay}ms:`,
+          lastError.message
+        );
+      }
+    }
+
+    throw lastError!;
+  }
 
   /**
    * Get package information including all versions
@@ -62,13 +108,15 @@ export class NpmRegistryService {
   async getPackageInfo(packageName: string): Promise<PackageInfo> {
     const cacheKey = `package-info:${packageName}`;
 
-    // Check cache first
-    const cached = this.getFromCache(cacheKey);
-    if (cached) {
-      return cached;
+    // Check cache first if caching is enabled
+    if (this.cachingEnabled) {
+      const cached = this.getFromCache(cacheKey);
+      if (cached) {
+        return cached;
+      }
     }
 
-    try {
+    const packageInfo = await this.executeWithRetry(async () => {
       const packument = await pacote.packument(packageName, {
         registry: this.registryUrl,
         timeout: this.timeout,
@@ -78,7 +126,7 @@ export class NpmRegistryService {
       const versions = Object.keys(packument.versions || {}).sort(semver.rcompare);
       const latestVersion = packument['dist-tags']?.latest || versions[0];
 
-      const packageInfo: PackageInfo = {
+      return {
         name: packument.name,
         description: packument.description,
         homepage: packument.homepage,
@@ -92,14 +140,14 @@ export class NpmRegistryService {
         tags: packument['dist-tags'] || {},
         time: packument.time || {},
       };
+    }, `Fetching package info for ${packageName}`);
 
-      // Cache the result
+    // Cache the result if caching is enabled
+    if (this.cachingEnabled) {
       this.setCache(cacheKey, packageInfo);
-
-      return packageInfo;
-    } catch (error) {
-      throw new Error(`Failed to fetch package info for ${packageName}: ${error}`);
     }
+
+    return packageInfo;
   }
 
   /**
@@ -256,9 +304,8 @@ export class NpmRegistryService {
   async batchQueryVersions(packages: string[]): Promise<Map<string, PackageInfo>> {
     const results = new Map<string, PackageInfo>();
 
-    // Process packages in parallel with limited concurrency
-    const concurrency = 5;
-    const chunks = this.chunkArray(packages, concurrency);
+    // Process packages in parallel with configurable concurrency
+    const chunks = this.chunkArray(packages, this.concurrency);
 
     for (const chunk of chunks) {
       const promises = chunk.map(async (packageName) => {

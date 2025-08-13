@@ -323,6 +323,51 @@ Create a `.pcurc.json` file in your project root:
 }
 ```
 
+#### Package Filtering Configuration
+
+You can also configure package-specific update rules by creating a `.pcurc.json`
+with filtering options:
+
+```json
+{
+  // Exclude packages you never want to update
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+
+  // Only update specific packages (optional - if not specified, all packages are considered)
+  "include": ["lodash*", "chalk", "commander"],
+
+  // Package-specific update rules
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest", // Always update type definitions to latest
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "patch", // Only patch updates for React
+      "requireConfirmation": true // Always ask before updating
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor", // Minor updates for dev tools
+      "groupUpdate": true // Update related packages together
+    }
+  ],
+
+  // Override defaults
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  }
+}
+```
+
+**Configuration priority**: Package rules > CLI options > Default configuration
+
+**Pattern matching**: Supports glob patterns like `react*`, `@types/*`,
+`eslint*`
+
 ## 📁 Project Structure
 
 This project follows Domain-Driven Design (DDD) principles:
