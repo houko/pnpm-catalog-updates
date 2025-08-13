@@ -15,7 +15,7 @@ export interface ProgressBarOptions {
   total?: number;
 }
 
-export class EnhancedProgressBar {
+export class ProgressBar {
   private spinner: Ora | null = null;
   private current = 0;
   private total = 0;
@@ -234,17 +234,17 @@ export class PercentageProgressBar {
  * Progress manager for batch operations
  */
 export class BatchProgressManager {
-  private bars: Map<string, EnhancedProgressBar> = new Map();
+  private bars: Map<string, ProgressBar> = new Map();
   private totalOperations = 0;
   private completedOperations = 0;
 
-  createBar(id: string, options?: ProgressBarOptions): EnhancedProgressBar {
-    const bar = new EnhancedProgressBar(options);
+  createBar(id: string, options?: ProgressBarOptions): ProgressBar {
+    const bar = new ProgressBar(options);
     this.bars.set(id, bar);
     return bar;
   }
 
-  getBar(id: string): EnhancedProgressBar | undefined {
+  getBar(id: string): ProgressBar | undefined {
     return this.bars.get(id);
   }
 

@@ -362,10 +362,15 @@ export class NpmRegistryService {
   }
 
   /**
-   * Batch query multiple packages
+   * Batch query multiple packages with progress tracking
    */
-  async batchQueryVersions(packages: string[]): Promise<Map<string, PackageInfo>> {
+  async batchQueryVersions(
+    packages: string[],
+    progressCallback?: (completed: number, total: number, currentPackage: string) => void
+  ): Promise<Map<string, PackageInfo>> {
     const results = new Map<string, PackageInfo>();
+    let completed = 0;
+    const total = packages.length;
 
     // Process packages in parallel with configurable concurrency
     const chunks = this.chunkArray(packages, this.concurrency);
@@ -375,7 +380,18 @@ export class NpmRegistryService {
         try {
           const info = await this.getPackageInfo(packageName);
           results.set(packageName, info);
+
+          // Update progress
+          completed++;
+          if (progressCallback) {
+            progressCallback(completed, total, packageName);
+          }
         } catch (error) {
+          // Still count failed packages in progress
+          completed++;
+          if (progressCallback) {
+            progressCallback(completed, total, packageName);
+          }
           UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error);
         }
       });

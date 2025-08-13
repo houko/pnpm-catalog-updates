@@ -12,7 +12,7 @@ import {
   UpdateTarget,
 } from '../../application/services/CatalogUpdateService.js';
 import { OutputFormat, OutputFormatter } from '../formatters/OutputFormatter.js';
-import { EnhancedProgressBar, MultiStepProgress } from '../formatters/ProgressBar.js';
+import { ProgressBar, MultiStepProgress } from '../formatters/ProgressBar.js';
 import { InteractivePrompts } from '../interactive/InteractivePrompts.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
@@ -51,7 +51,7 @@ export class UpdateCommand {
       'Applying updates',
     ]);
 
-    let progressBar: EnhancedProgressBar | undefined;
+    let progressBar: ProgressBar | undefined;
 
     try {
       // Initialize theme
@@ -87,7 +87,7 @@ export class UpdateCommand {
       multiStep.start();
 
       // Step 1: Loading workspace
-      progressBar = new EnhancedProgressBar({
+      progressBar = new ProgressBar({
         text: 'Loading workspace configuration...',
         color: 'cyan',
         spinner: 'dots',
@@ -129,7 +129,7 @@ export class UpdateCommand {
       if (!options.dryRun) {
         multiStep.next('Applying updates');
 
-        progressBar = new EnhancedProgressBar({
+        progressBar = new ProgressBar({
           text: 'Applying updates...',
           color: 'green',
           total: finalPlan.updates.length,

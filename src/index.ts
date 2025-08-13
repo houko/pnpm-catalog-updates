@@ -20,7 +20,7 @@ export { WorkspacePath } from './domain/value-objects/WorkspacePath';
 
 // CLI Components
 export { OutputFormatter } from './cli/formatters/OutputFormatter';
-export { EnhancedProgressBar } from './cli/formatters/ProgressBar';
+export { ProgressBar } from './cli/formatters/ProgressBar';
 export { InteractivePrompts } from './cli/interactive/InteractivePrompts';
 export { StyledText, ThemeManager } from './cli/themes/ColorTheme';
 

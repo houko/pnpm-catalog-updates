@@ -13,6 +13,7 @@ import { NpmRegistryService } from '../../infrastructure/external-services/NpmRe
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
 import { AdvancedConfig } from '../../common/config/PackageFilterConfig.js';
 import { UserFriendlyErrorHandler } from '../../common/error-handling/UserFriendlyErrorHandler.js';
+import { ProgressBar } from '../../cli/formatters/ProgressBar.js';
 
 export interface CheckOptions {
   workspacePath?: string | undefined;
@@ -622,7 +623,7 @@ export class CatalogUpdateService {
   }
 
   /**
-   * Process packages in parallel with concurrency control
+   * Process packages in parallel with concurrency control and progress tracking
    */
   private async processPackagesInParallel(
     packagesToCheck: Array<[string, any]>,
@@ -633,6 +634,20 @@ export class CatalogUpdateService {
   ): Promise<OutdatedDependencyInfo[]> {
     const concurrency = config.advanced?.concurrency || 8; // Increased from 5 to match NCU
     const outdatedDependencies: OutdatedDependencyInfo[] = [];
+    const total = packagesToCheck.length;
+    let completed = 0;
+
+    // Create progress bar for package checking
+    const progressBar = new ProgressBar({
+      text: '正在检查依赖包...',
+      color: 'cyan',
+      total: total,
+    });
+
+    // Only show progress bar if we have packages to check
+    if (total > 0) {
+      progressBar.start(`正在检查 ${total} 个依赖包...`);
+    }
 
     // Process packages in chunks with true parallelism within each chunk
     const chunks = this.chunkArray(packagesToCheck, concurrency);
@@ -641,7 +656,7 @@ export class CatalogUpdateService {
       const chunkResults = await Promise.all(
         chunk.map(async ([packageName, currentRange]) => {
           try {
-            return await this.processPackageCheck(
+            const result = await this.processPackageCheck(
               packageName,
               currentRange,
               catalog,
@@ -649,7 +664,21 @@ export class CatalogUpdateService {
               config,
               options
             );
+
+            // Update progress for successful package
+            completed++;
+            if (total > 0) {
+              progressBar.update(`正在检查依赖包: ${packageName}`, completed, total);
+            }
+
+            return result;
           } catch (error) {
+            // Update progress even for failed packages
+            completed++;
+            if (total > 0) {
+              progressBar.update(`跳过包 ${packageName} (检查失败)`, completed, total);
+            }
+
             UserFriendlyErrorHandler.handlePackageQueryFailure(packageName, error as Error, {
               operation: 'check',
             });
@@ -664,6 +693,15 @@ export class CatalogUpdateService {
           outdatedDependencies.push(result);
         }
       });
+    }
+
+    // Complete progress bar
+    if (total > 0) {
+      if (outdatedDependencies.length > 0) {
+        progressBar.succeed(`✅ 检查完成! 发现 ${outdatedDependencies.length} 个可更新的依赖包`);
+      } else {
+        progressBar.succeed('✅ 检查完成! 所有依赖包都是最新的');
+      }
     }
 
     return outdatedDependencies;

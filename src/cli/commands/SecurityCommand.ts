@@ -9,7 +9,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
-import { EnhancedProgressBar } from '../formatters/ProgressBar.js';
+import { ProgressBar } from '../formatters/ProgressBar.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 
 export interface SecurityCommandOptions {
@@ -72,14 +72,14 @@ export class SecurityCommand {
    * Execute the security command
    */
   async execute(options: SecurityCommandOptions = {}): Promise<void> {
-    let progressBar: EnhancedProgressBar | undefined;
+    let progressBar: ProgressBar | undefined;
 
     try {
       // Initialize theme
       ThemeManager.setTheme('default');
 
       // Show loading with progress bar
-      progressBar = new EnhancedProgressBar({
+      progressBar = new ProgressBar({
         text: 'Performing security analysis...',
         color: 'cyan',
         spinner: 'dots',

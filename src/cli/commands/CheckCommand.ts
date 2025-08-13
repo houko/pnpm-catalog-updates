@@ -10,7 +10,7 @@ import {
   CheckOptions,
 } from '../../application/services/CatalogUpdateService.js';
 import { OutputFormatter, OutputFormat } from '../formatters/OutputFormatter.js';
-import { EnhancedProgressBar } from '../formatters/ProgressBar.js';
+import { ProgressBar } from '../formatters/ProgressBar.js';
 import { StyledText, ThemeManager } from '../themes/ColorTheme.js';
 import { ConfigLoader } from '../../common/config/ConfigLoader.js';
 
@@ -33,14 +33,14 @@ export class CheckCommand {
    * Execute the check command
    */
   async execute(options: CheckCommandOptions = {}): Promise<void> {
-    let progressBar: EnhancedProgressBar | undefined;
+    let progressBar: ProgressBar | undefined;
 
     try {
       // Initialize theme
       ThemeManager.setTheme('default');
 
       // Show loading with progress bar
-      progressBar = new EnhancedProgressBar({
+      progressBar = new ProgressBar({
         text: 'Checking for outdated dependencies...',
         color: 'cyan',
         spinner: 'dots',
