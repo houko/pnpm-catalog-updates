@@ -21,6 +21,7 @@ export interface ProgressBarOptions {
 
 export class ProgressBar {
   private spinner: Ora | null = null;
+  private percentageBar: PercentageProgressBar | null = null;
   private current = 0;
   private total = 0;
   private text = '';
@@ -44,14 +45,23 @@ export class ProgressBar {
     this.text = text || this.text;
     this.startTime = Date.now();
 
-    // Get beautiful spinner based on style
-    const spinnerConfig = this.getSpinnerConfig();
+    // If we have a total count, use the percentage progress bar
+    if (this.total > 0) {
+      this.percentageBar = new PercentageProgressBar(40, {
+        style: this.style,
+        showStats: this.showSpeed,
+      });
+      this.percentageBar.start(this.total, this.text);
+    } else {
+      // Otherwise use spinner for indeterminate progress
+      const spinnerConfig = this.getSpinnerConfig();
 
-    this.spinner = ora({
-      text: this.getStyledText(),
-      color: (this.options.color as any) || spinnerConfig.color,
-      spinner: (this.options.spinner as any) || spinnerConfig.spinner,
-    }).start();
+      this.spinner = ora({
+        text: this.getStyledText(),
+        color: (this.options.color as any) || spinnerConfig.color,
+        spinner: (this.options.spinner as any) || spinnerConfig.spinner,
+      }).start();
+    }
   }
 
   /**
@@ -141,32 +151,43 @@ export class ProgressBar {
    * Update progress with text
    */
   update(text: string, current?: number, total?: number): void {
-    if (!this.spinner) return;
-
     this.text = text;
     if (current !== undefined) this.current = current;
     if (total !== undefined) this.total = total;
 
-    this.spinner.text = this.getStyledText();
+    if (this.percentageBar) {
+      // Update percentage progress bar
+      this.percentageBar.update(this.current, text);
+    } else if (this.spinner) {
+      // Update spinner
+      this.spinner.text = this.getStyledText();
+    }
   }
 
   /**
    * Increment progress
    */
   increment(amount = 1, text?: string): void {
-    if (!this.spinner) return;
-
     this.current += amount;
     if (text) this.text = text;
 
-    this.spinner.text = this.getStyledText();
+    if (this.percentageBar) {
+      this.percentageBar.update(this.current, text);
+    } else if (this.spinner) {
+      this.spinner.text = this.getStyledText();
+    }
   }
 
   /**
    * Mark as succeeded
    */
   succeed(text?: string): void {
-    if (this.spinner) {
+    if (this.percentageBar) {
+      const successText = text || this.getCompletionText();
+      this.percentageBar.complete(successText);
+      console.log(this.getSuccessMessage(successText));
+      this.percentageBar = null;
+    } else if (this.spinner) {
       const successText = text || this.getCompletionText();
       this.spinner.succeed(this.getSuccessMessage(successText));
       this.spinner = null;
@@ -177,7 +198,11 @@ export class ProgressBar {
    * Mark as failed
    */
   fail(text?: string): void {
-    if (this.spinner) {
+    if (this.percentageBar) {
+      const failText = text || this.getFailureText();
+      console.log(this.getFailureMessage(failText));
+      this.percentageBar = null;
+    } else if (this.spinner) {
       const failText = text || this.getFailureText();
       this.spinner.fail(this.getFailureMessage(failText));
       this.spinner = null;
@@ -266,7 +291,11 @@ export class ProgressBar {
    * Mark as warning
    */
   warn(text?: string): void {
-    if (this.spinner) {
+    if (this.percentageBar) {
+      const warnText = text || this.text;
+      console.log(this.getWarningMessage(warnText));
+      this.percentageBar = null;
+    } else if (this.spinner) {
       const warnText = text || this.text;
       this.spinner.warn(this.getWarningMessage(warnText));
       this.spinner = null;
@@ -277,7 +306,11 @@ export class ProgressBar {
    * Mark as info
    */
   info(text?: string): void {
-    if (this.spinner) {
+    if (this.percentageBar) {
+      const infoText = text || this.text;
+      console.log(this.getInfoMessage(infoText));
+      this.percentageBar = null;
+    } else if (this.spinner) {
       const infoText = text || this.text;
       this.spinner.info(this.getInfoMessage(infoText));
       this.spinner = null;
@@ -330,7 +363,10 @@ export class ProgressBar {
    * Stop the progress bar
    */
   stop(): void {
-    if (this.spinner) {
+    if (this.percentageBar) {
+      // For percentage bar, just clear the instance
+      this.percentageBar = null;
+    } else if (this.spinner) {
       this.spinner.stop();
       this.spinner = null;
     }

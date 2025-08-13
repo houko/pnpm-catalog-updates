@@ -24,11 +24,16 @@ inspired by
   updates
 - ⚡ **High Performance**: Parallel API queries and intelligent caching
 - 🛡️ **Security Aware**: Built-in security vulnerability scanning
-- 🎨 **Beautiful UI**: Enhanced progress bars, color themes, and interactive
-  prompts
+- 🎨 **Beautiful UI**: Enhanced progress bars with 6 visual styles, color
+  themes, and interactive prompts
+- 🌈 **Progress Bar Styles**: Choose from gradient, fancy, minimal, rainbow,
+  neon, or blocks styles
 - 🎭 **Customizable Themes**: Multiple color themes (default, modern, minimal,
   neon)
-- 📈 **Progress Tracking**: Real-time progress indicators for all operations
+- 📈 **Real-time Progress**: Live progress tracking with speed indicators and
+  time estimates
+- 🔄 **Smart Version Check**: Automatic update notifications with --version
+  command
 - 🔧 **Configurable**: Flexible configuration options and update strategies
 
 ## 🚀 Quick Start
