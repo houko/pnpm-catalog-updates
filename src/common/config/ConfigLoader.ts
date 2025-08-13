@@ -118,9 +118,31 @@ export class ConfigLoader {
       }
     }
 
-    // Package rules need special handling - user rules are added to default rules
+    // Package rules need special handling - user rules override default rules with same patterns
     if (userConfig.packageRules) {
-      merged.packageRules = [...(merged.packageRules || []), ...userConfig.packageRules];
+      const defaultRules = merged.packageRules || [];
+      const userRules = userConfig.packageRules;
+
+      // Start with default rules, but remove any that would be overridden by user rules
+      const filteredDefaultRules = defaultRules.filter(
+        (defaultRule) =>
+          !userRules.some((userRule) =>
+            // Check if any user rule pattern overlaps with this default rule
+            userRule.patterns.some((userPattern) =>
+              defaultRule.patterns.some(
+                (defaultPattern) =>
+                  userPattern === defaultPattern ||
+                  (userPattern.includes('*') &&
+                    this.patternsOverlap(userPattern, defaultPattern)) ||
+                  (defaultPattern.includes('*') &&
+                    this.patternsOverlap(defaultPattern, userPattern))
+              )
+            )
+          )
+      );
+
+      // Combine filtered default rules with user rules (user rules take priority)
+      merged.packageRules = [...filteredDefaultRules, ...userRules];
     }
 
     return merged;
@@ -207,5 +229,16 @@ export class ConfigLoader {
     const regexPattern = pattern.replace(/\*/g, '.*').replace(/\?/g, '.');
     const regex = new RegExp(`^${regexPattern}$`, 'i');
     return regex.test(packageName);
+  }
+
+  /**
+   * Check if two patterns overlap (one could match packages that the other matches)
+   */
+  private static patternsOverlap(pattern1: string, pattern2: string): boolean {
+    // Simple implementation: check if either pattern would match the other as a package name
+    return (
+      this.matchesPattern(pattern1.replace(/\*/g, 'x'), pattern2) ||
+      this.matchesPattern(pattern2.replace(/\*/g, 'x'), pattern1)
+    );
   }
 }
