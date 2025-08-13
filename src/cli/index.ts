@@ -104,7 +104,7 @@ export async function main(): Promise<void> {
   program
     .name('pcu')
     .description('A CLI tool to check and update pnpm workspace catalog dependencies')
-    .version(packageJson.version)
+    .option('--version', 'show version information')
     .option('-v, --verbose', 'enable verbose logging')
     .option('-w, --workspace <path>', 'workspace directory path')
     .option('--no-color', 'disable colored output')
@@ -468,6 +468,39 @@ export async function main(): Promise<void> {
   // Show help if no arguments provided
   if (args.length <= 2) {
     program.help();
+  }
+
+  // Handle custom --version with update checking
+  if (args.includes('--version')) {
+    console.log(packageJson.version);
+
+    // Check for updates if not in CI and enabled in config
+    if (VersionChecker.shouldCheckForUpdates() && config.advanced?.checkForUpdates !== false) {
+      try {
+        console.log(chalk.gray('Checking for updates...'));
+        const versionResult = await VersionChecker.checkVersion(packageJson.version, {
+          skipPrompt: false,
+          timeout: 5000, // Longer timeout for explicit version check
+        });
+
+        if (versionResult.shouldPrompt) {
+          const didUpdate = await VersionChecker.promptAndUpdate(versionResult);
+          if (didUpdate) {
+            console.log(chalk.blue('Please run your command again to use the updated version.'));
+            process.exit(0);
+          }
+        } else if (versionResult.isLatest) {
+          console.log(chalk.green('You are using the latest version!'));
+        }
+      } catch (error) {
+        // Silently fail update check for version command
+        if (args.includes('-v') || args.includes('--verbose')) {
+          console.warn(chalk.yellow('⚠️  Could not check for updates:'), error);
+        }
+      }
+    }
+
+    process.exit(0);
   }
 
   // Parse command line arguments
