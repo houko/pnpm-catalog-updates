@@ -24,6 +24,7 @@ import { FileWorkspaceRepository } from '../infrastructure/repositories/FileWork
 import { CheckCommand } from './commands/CheckCommand.js';
 import { UpdateCommand } from './commands/UpdateCommand.js';
 import { SecurityCommand } from './commands/SecurityCommand.js';
+import { InitCommand } from './commands/InitCommand.js';
 import { InteractivePrompts } from './interactive/InteractivePrompts.js';
 import { ThemeManager, StyledText } from './themes/ColorTheme.js';
 import { VersionChecker } from '../common/utils/VersionChecker.js';
@@ -399,6 +400,35 @@ export async function main(): Promise<void> {
       }
     });
 
+  // Init command
+  program
+    .command('init')
+    .alias('i')
+    .description('initialize PCU configuration and PNPM workspace')
+    .option('--force', 'overwrite existing configuration file')
+    .option('--full', 'generate full configuration with all options')
+    .option('--create-workspace', 'create PNPM workspace structure if missing (default: true)', true)
+    .option('--no-create-workspace', 'skip creating PNPM workspace structure')
+    .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
+    .action(async (options, command) => {
+      try {
+        const globalOptions = command.parent.opts();
+        const initCommand = new InitCommand();
+
+        await initCommand.execute({
+          workspace: globalOptions.workspace,
+          force: options.force,
+          full: options.full,
+          createWorkspace: options.createWorkspace,
+          verbose: globalOptions.verbose,
+          color: !globalOptions.noColor,
+        });
+      } catch (error) {
+        console.error(chalk.red('❌ Error:'), error);
+        process.exit(1);
+      }
+    });
+
   // Add help command
   program
     .command('help')
@@ -423,15 +453,15 @@ export async function main(): Promise<void> {
 
   // Handle shorthand options and single-letter commands by rewriting arguments
   const args = [...process.argv];
-  // Map single-letter command 'i' -> update -i
+  // Map single-letter command 'i' -> init (changed from interactive mode)
   if (
     args.includes('i') &&
     !args.some(
-      (a) => a === 'update' || a === '-u' || a === '--update' || a === '-i' || a === '--interactive'
+      (a) => a === 'init' || a === 'update' || a === '-u' || a === '--update' || a === '-i' || a === '--interactive'
     )
   ) {
     const index = args.findIndex((arg) => arg === 'i');
-    args.splice(index, 1, 'update', '-i');
+    args.splice(index, 1, 'init');
   }
 
   if (args.includes('-u') || args.includes('--update')) {

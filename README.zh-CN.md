@@ -12,6 +12,7 @@
 
 ## ✨ 特性
 
+- 🏗️ **一键初始化**: 使用 `pcu init` 命令初始化完整的 PNPM 工作区
 - 🔍 **智能检测**: 自动发现 pnpm 工作区和目录配置
 - 🎯 **目录专注**: 专门针对 pnpm 目录依赖管理
 - 🚀 **交互模式**: 通过直观的界面选择要更新的依赖
@@ -29,6 +30,10 @@
 ## 🚀 快速开始
 
 ```bash
+# 初始化新的 PNPM 工作区和 PCU 配置
+pcu init
+
+# 或者在现有工作区中检查更新
 pcu -c
 ```
 
@@ -54,6 +59,9 @@ pcu
 ### 基本用法
 
 ```bash
+# 初始化 PNPM 工作区和 PCU 配置
+pcu init
+
 # 快速检查更新
 pcu -c
 
@@ -69,14 +77,15 @@ pcu -s
 
 ### 常用命令
 
-| 命令     | 描述               | 示例                      |
-| -------- | ------------------ | ------------------------- |
-| `pcu -c` | 检查更新           | `pcu -c --catalog node18` |
-| `pcu -i` | 更新依赖（交互式） | `pcu -i -b`               |
-| `pcu -a` | 分析影响           | `pcu -a default react`    |
-| `pcu -s` | 工作区信息         | `pcu -s --validate`       |
-| `pcu -t` | 配置颜色主题       | `pcu -t --set modern`     |
-| `pcu -h` | 显示帮助           | `pcu -h update`           |
+| 命令       | 描述                     | 示例                      |
+| ---------- | ------------------------ | ------------------------- |
+| `pcu init` | 初始化工作区和配置       | `pcu init --verbose`      |
+| `pcu -c`   | 检查更新                 | `pcu -c --catalog node18` |
+| `pcu -i`   | 更新依赖（交互式）       | `pcu -i -b`               |
+| `pcu -a`   | 分析影响                 | `pcu -a default react`    |
+| `pcu -s`   | 工作区信息               | `pcu -s --validate`       |
+| `pcu -t`   | 配置颜色主题             | `pcu -t --set modern`     |
+| `pcu -h`   | 显示帮助                 | `pcu -h update`           |
 
 ## 📖 完整使用指南
 

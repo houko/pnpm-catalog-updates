@@ -13,6 +13,7 @@ inspired by
 
 ## ✨ Features
 
+- 🏗️ **One-Command Setup**: Initialize complete PNPM workspace with `pcu init`
 - 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog
   configurations
 - 🎯 **Catalog Focused**: Specialized for pnpm catalog dependency management
@@ -39,6 +40,10 @@ inspired by
 ## 🚀 Quick Start
 
 ```bash
+# Initialize a new PNPM workspace with PCU configuration
+pcu init
+
+# Or check for updates in existing workspace
 pcu -c
 ```
 
@@ -64,6 +69,9 @@ pcu
 ### Basic Usage
 
 ```bash
+# Initialize PNPM workspace and PCU configuration
+pcu init
+
 # Quick check for updates
 pcu -c
 
@@ -79,29 +87,70 @@ pcu -s
 
 ### Common Commands
 
-| Command  | Description                       | Example                   |
-| -------- | --------------------------------- | ------------------------- |
-| `pcu -c` | Check for updates                 | `pcu -c --catalog node18` |
-| `pcu -i` | Update dependencies (interactive) | `pcu -i -b`               |
-| `pcu -a` | Analyze impact                    | `pcu -a default react`    |
-| `pcu -s` | Workspace info                    | `pcu -s --validate`       |
-| `pcu -t` | Configure color theme             | `pcu -t --set modern`     |
-| `pcu -h` | Show help                         | `pcu -h update`           |
+| Command  | Description                             | Example                   |
+| -------- | --------------------------------------- | ------------------------- |
+| `pcu init` | Initialize workspace and configuration | `pcu init --verbose`      |
+| `pcu -c` | Check for updates                       | `pcu -c --catalog node18` |
+| `pcu -i` | Update dependencies (interactive)       | `pcu -i -b`               |
+| `pcu -a` | Analyze impact                          | `pcu -a default react`    |
+| `pcu -s` | Workspace info                          | `pcu -s --validate`       |
+| `pcu -t` | Configure color theme                   | `pcu -t --set modern`     |
+| `pcu -h` | Show help                               | `pcu -h update`           |
 
 ## 📖 Complete Usage Guide
 
 ### All Commands & Shortcuts
 
-| Full Command    | Shorthand | Description                               |
-| --------------- | --------- | ----------------------------------------- |
-| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies   |
-| `pcu update`    | `pcu -u`  | Update catalog dependencies               |
-| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates      |
-| `pcu workspace` | `pcu -s`  | Show workspace information and validation |
-| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings    |
-| `pcu help`      | `pcu -h`  | Display help information                  |
+| Full Command    | Shorthand | Description                                       |
+| --------------- | --------- | ------------------------------------------------- |
+| `pcu init`      | `pcu i`   | Initialize PNPM workspace and PCU configuration  |
+| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies          |
+| `pcu update`    | `pcu -u`  | Update catalog dependencies                       |
+| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates             |
+| `pcu workspace` | `pcu -s`  | Show workspace information and validation        |
+| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings           |
+| `pcu help`      | `pcu -h`  | Display help information                         |
 
 ### Commands
+
+#### `pcu init` / `pcu i`
+
+Initialize a complete PNPM workspace environment with PCU configuration.
+
+```bash
+pcu init [options]
+pcu i [options]
+
+Options:
+  --force                  Overwrite existing configuration file
+  --create-workspace       Create PNPM workspace structure if missing (default: true)
+  --no-create-workspace    Skip creating PNPM workspace structure
+  -w, --workspace <path>   Workspace directory (default: current directory)
+  -v, --verbose            Show detailed information
+  --no-color               Disable colored output
+
+Description:
+  Creates a complete PNPM workspace environment with:
+  - Basic .pcurc.json configuration file with sensible defaults
+  - package.json for workspace root (if missing)
+  - pnpm-workspace.yaml configuration (if missing)
+  - packages/ directory structure (if missing)
+  
+  The configuration includes package update rules for React, TypeScript,
+  ESLint, and other common dependencies with appropriate security settings.
+
+Examples:
+  pcu init                           # Initialize complete workspace in current directory
+  pcu init --workspace ./my-project  # Initialize in specific directory
+  pcu init --force                   # Overwrite existing configuration
+  pcu init --no-create-workspace     # Only create .pcurc.json configuration
+
+Files Created:
+  .pcurc.json           PCU configuration with package rules and settings
+  package.json          Workspace root package.json (if missing)
+  pnpm-workspace.yaml   PNPM workspace configuration (if missing)
+  packages/             Directory for workspace packages (if missing)
+```
 
 #### `pcu check` / `pcu -c` / `pcu chk`
 
@@ -258,6 +307,10 @@ These options work with all commands:
 ### Common Usage Patterns
 
 ```bash
+# Initialize new workspace
+pcu init                          # Create complete workspace structure
+pcu init --no-create-workspace    # Only create .pcurc.json configuration
+
 # Quick check for updates
 pcu -c
 
