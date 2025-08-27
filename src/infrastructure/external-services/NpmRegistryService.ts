@@ -12,6 +12,7 @@ import semver from 'semver';
 import { Version, VersionRange } from '../../domain/value-objects/Version.js';
 import { AdvancedConfig } from '../../common/config/PackageFilterConfig.js';
 import { UserFriendlyErrorHandler } from '../../common/error-handling/UserFriendlyErrorHandler.js';
+import { NpmrcParser, NpmrcConfig } from '../utils/NpmrcParser.js';
 
 export interface PackageInfo {
   name: string;
@@ -63,10 +64,26 @@ export class NpmRegistryService {
   private readonly retries: number;
   private readonly cachingEnabled: boolean;
 
+  // NPM configuration for handling multiple registries
+  private readonly npmrcConfig: NpmrcConfig;
+
   constructor(
-    private readonly registryUrl: string = 'https://registry.npmjs.org/',
-    options: AdvancedConfig = {}
+    registryUrl: string = 'https://registry.npmjs.org/',
+    options: AdvancedConfig = {},
+    workingDirectory: string = process.cwd()
   ) {
+    // Parse npmrc configuration for scoped registries
+    this.npmrcConfig = NpmrcParser.parse(workingDirectory);
+
+    // Override default registry if specified in npmrc
+    if (!registryUrl || registryUrl === 'https://registry.npmjs.org/') {
+      // Use npmrc registry as default if no specific registry is provided
+      const normalizedUrl = registryUrl.endsWith('/') ? registryUrl : registryUrl + '/';
+      this.npmrcConfig.registry = this.npmrcConfig.registry || normalizedUrl;
+    } else {
+      // Use the provided registry URL as override
+      this.npmrcConfig.registry = registryUrl.endsWith('/') ? registryUrl : registryUrl + '/';
+    }
     this.concurrency = options.concurrency ?? 8; // Increased from 5 to match NCU performance
     this.timeout = options.timeout ?? 15000; // Reduced from 30s to 15s for faster failure detection
     this.retries = options.retries ?? 2; // Reduced from 3 to 2 for faster overall performance
@@ -116,6 +133,27 @@ export class NpmRegistryService {
   }
 
   /**
+   * Get the appropriate registry URL for a package
+   */
+  private getRegistryForPackage(packageName: string): string {
+    return NpmrcParser.getRegistryForPackage(packageName, this.npmrcConfig);
+  }
+
+  /**
+   * Get auth configuration for a registry
+   */
+  private getAuthConfig(registryUrl: string): Record<string, any> {
+    const authToken = NpmrcParser.getAuthToken(registryUrl, this.npmrcConfig);
+    if (authToken) {
+      return {
+        '//registry.npmjs.org/:_authToken': authToken,
+        token: authToken,
+      };
+    }
+    return {};
+  }
+
+  /**
    * Get lightweight package version information (optimized for performance)
    */
   async getPackageVersions(packageName: string): Promise<{
@@ -125,7 +163,8 @@ export class NpmRegistryService {
     tags: Record<string, string>;
     time?: Record<string, string>;
   }> {
-    const cacheKey = `package-versions:${packageName}`;
+    const registryUrl = this.getRegistryForPackage(packageName);
+    const cacheKey = `package-versions:${registryUrl}:${packageName}`;
 
     // Check cache first if caching is enabled
     if (this.cachingEnabled) {
@@ -137,10 +176,12 @@ export class NpmRegistryService {
 
     const packageVersions = await this.executeWithRetry(async () => {
       // Use lightweight packument call without fullMetadata
+      const authConfig = this.getAuthConfig(registryUrl);
       const packument = await pacote.packument(packageName, {
-        registry: this.registryUrl,
+        registry: registryUrl,
         timeout: this.timeout,
         fullMetadata: false, // Key optimization: don't fetch full metadata
+        ...authConfig,
       });
 
       const versions = Object.keys(packument.versions || {}).sort(semver.rcompare);
@@ -168,7 +209,8 @@ export class NpmRegistryService {
    * @deprecated Use getPackageVersions() for better performance
    */
   async getPackageInfo(packageName: string): Promise<PackageInfo> {
-    const cacheKey = `package-info:${packageName}`;
+    const registryUrl = this.getRegistryForPackage(packageName);
+    const cacheKey = `package-info:${registryUrl}:${packageName}`;
 
     // Check cache first if caching is enabled
     if (this.cachingEnabled) {
@@ -183,10 +225,12 @@ export class NpmRegistryService {
 
     const packageInfo = await this.executeWithRetry(async () => {
       // Only fetch full metadata if we actually need the extended info
+      const authConfig = this.getAuthConfig(registryUrl);
       const packument = await pacote.packument(packageName, {
-        registry: this.registryUrl,
+        registry: registryUrl,
         timeout: this.timeout,
         fullMetadata: true,
+        ...authConfig,
       });
 
       return {
@@ -289,7 +333,8 @@ export class NpmRegistryService {
     packageName: string,
     version: string
   ): Promise<SecurityReport> {
-    const cacheKey = `security:${packageName}@${version}`;
+    const registryUrl = this.getRegistryForPackage(packageName);
+    const cacheKey = `security:${registryUrl}:${packageName}@${version}`;
 
     // Check cache first
     const cached = this.getFromCache(cacheKey);
@@ -306,14 +351,16 @@ export class NpmRegistryService {
         dependencies: {},
       };
 
+      const authConfig = this.getAuthConfig(registryUrl);
       const response = await npmRegistryFetch('/-/npm/v1/security/audits', {
         method: 'POST',
         body: JSON.stringify(auditData),
         headers: {
           'Content-Type': 'application/json',
         },
-        registry: this.registryUrl,
+        registry: registryUrl,
         timeout: this.timeout,
+        ...authConfig,
       });
 
       const auditResult = await response.json();
@@ -413,14 +460,19 @@ export class NpmRegistryService {
     try {
       // const packageInfo = await this.getPackageInfo(packageName);
 
+      const registryUrl = this.getRegistryForPackage(packageName);
+      const authConfig = this.getAuthConfig(registryUrl);
+
       const fromVersionData = await pacote.manifest(`${packageName}@${fromVersion}`, {
-        registry: this.registryUrl,
+        registry: registryUrl,
         timeout: this.timeout,
+        ...authConfig,
       });
 
       const toVersionData = await pacote.manifest(`${packageName}@${toVersion}`, {
-        registry: this.registryUrl,
+        registry: registryUrl,
         timeout: this.timeout,
+        ...authConfig,
       });
 
       // Compare authors/maintainers

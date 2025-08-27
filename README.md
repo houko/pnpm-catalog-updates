@@ -36,6 +36,10 @@ inspired by
 - 🔄 **Smart Version Check**: Automatic update notifications with --version
   command
 - 🔧 **Configurable**: Flexible configuration options and update strategies
+- 🔐 **Private Registry Support**: Automatically reads `.npmrc` and `.pnpmrc`
+  configurations for scoped registries and authentication
+- 📦 **Multi-Registry**: Supports different registries for different package
+  scopes (e.g., GitHub Packages, private npm registries)
 
 ## 🚀 Quick Start
 
@@ -87,29 +91,29 @@ pcu -s
 
 ### Common Commands
 
-| Command  | Description                             | Example                   |
-| -------- | --------------------------------------- | ------------------------- |
+| Command    | Description                            | Example                   |
+| ---------- | -------------------------------------- | ------------------------- |
 | `pcu init` | Initialize workspace and configuration | `pcu init --verbose`      |
-| `pcu -c` | Check for updates                       | `pcu -c --catalog node18` |
-| `pcu -i` | Update dependencies (interactive)       | `pcu -i -b`               |
-| `pcu -a` | Analyze impact                          | `pcu -a default react`    |
-| `pcu -s` | Workspace info                          | `pcu -s --validate`       |
-| `pcu -t` | Configure color theme                   | `pcu -t --set modern`     |
-| `pcu -h` | Show help                               | `pcu -h update`           |
+| `pcu -c`   | Check for updates                      | `pcu -c --catalog node18` |
+| `pcu -i`   | Update dependencies (interactive)      | `pcu -i -b`               |
+| `pcu -a`   | Analyze impact                         | `pcu -a default react`    |
+| `pcu -s`   | Workspace info                         | `pcu -s --validate`       |
+| `pcu -t`   | Configure color theme                  | `pcu -t --set modern`     |
+| `pcu -h`   | Show help                              | `pcu -h update`           |
 
 ## 📖 Complete Usage Guide
 
 ### All Commands & Shortcuts
 
-| Full Command    | Shorthand | Description                                       |
-| --------------- | --------- | ------------------------------------------------- |
-| `pcu init`      | `pcu i`   | Initialize PNPM workspace and PCU configuration  |
-| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies          |
-| `pcu update`    | `pcu -u`  | Update catalog dependencies                       |
-| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates             |
-| `pcu workspace` | `pcu -s`  | Show workspace information and validation        |
-| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings           |
-| `pcu help`      | `pcu -h`  | Display help information                         |
+| Full Command    | Shorthand | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| `pcu init`      | `pcu i`   | Initialize PNPM workspace and PCU configuration |
+| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies         |
+| `pcu update`    | `pcu -u`  | Update catalog dependencies                     |
+| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates            |
+| `pcu workspace` | `pcu -s`  | Show workspace information and validation       |
+| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings          |
+| `pcu help`      | `pcu -h`  | Display help information                        |
 
 ### Commands
 
@@ -135,7 +139,7 @@ Description:
   - package.json for workspace root (if missing)
   - pnpm-workspace.yaml configuration (if missing)
   - packages/ directory structure (if missing)
-  
+
   The configuration includes package update rules for React, TypeScript,
   ESLint, and other common dependencies with appropriate security settings.
 

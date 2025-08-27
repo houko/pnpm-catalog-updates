@@ -26,6 +26,10 @@
 - 📈 **实时进度**: 实时进度跟踪，带有速度指示器和时间估计
 - 🔄 **智能版本检查**: --version 命令自动更新通知
 - 🔧 **可配置**: 灵活的配置选项和更新策略
+- 🔐 **私有 Registry 支持**: 自动读取 `.npmrc` 和 `.pnpmrc`
+  配置文件，支持作用域 registry 和认证
+- 📦 **多 Registry 支持**: 为不同的包作用域使用不同的 registry（如 GitHub
+  Packages、私有 npm registry）
 
 ## 🚀 快速开始
 
@@ -77,15 +81,15 @@ pcu -s
 
 ### 常用命令
 
-| 命令       | 描述                     | 示例                      |
-| ---------- | ------------------------ | ------------------------- |
-| `pcu init` | 初始化工作区和配置       | `pcu init --verbose`      |
-| `pcu -c`   | 检查更新                 | `pcu -c --catalog node18` |
-| `pcu -i`   | 更新依赖（交互式）       | `pcu -i -b`               |
-| `pcu -a`   | 分析影响                 | `pcu -a default react`    |
-| `pcu -s`   | 工作区信息               | `pcu -s --validate`       |
-| `pcu -t`   | 配置颜色主题             | `pcu -t --set modern`     |
-| `pcu -h`   | 显示帮助                 | `pcu -h update`           |
+| 命令       | 描述               | 示例                      |
+| ---------- | ------------------ | ------------------------- |
+| `pcu init` | 初始化工作区和配置 | `pcu init --verbose`      |
+| `pcu -c`   | 检查更新           | `pcu -c --catalog node18` |
+| `pcu -i`   | 更新依赖（交互式） | `pcu -i -b`               |
+| `pcu -a`   | 分析影响           | `pcu -a default react`    |
+| `pcu -s`   | 工作区信息         | `pcu -s --validate`       |
+| `pcu -t`   | 配置颜色主题       | `pcu -t --set modern`     |
+| `pcu -h`   | 显示帮助           | `pcu -h update`           |
 
 ## 📖 完整使用指南
 
