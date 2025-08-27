@@ -407,7 +407,11 @@ export async function main(): Promise<void> {
     .description('initialize PCU configuration and PNPM workspace')
     .option('--force', 'overwrite existing configuration file')
     .option('--full', 'generate full configuration with all options')
-    .option('--create-workspace', 'create PNPM workspace structure if missing (default: true)', true)
+    .option(
+      '--create-workspace',
+      'create PNPM workspace structure if missing (default: true)',
+      true
+    )
     .option('--no-create-workspace', 'skip creating PNPM workspace structure')
     .option('-f, --format <type>', 'output format: table, json, yaml, minimal', 'table')
     .action(async (options, command) => {
@@ -457,7 +461,13 @@ export async function main(): Promise<void> {
   if (
     args.includes('i') &&
     !args.some(
-      (a) => a === 'init' || a === 'update' || a === '-u' || a === '--update' || a === '-i' || a === '--interactive'
+      (a) =>
+        a === 'init' ||
+        a === 'update' ||
+        a === '-u' ||
+        a === '--update' ||
+        a === '-i' ||
+        a === '--interactive'
     )
   ) {
     const index = args.findIndex((arg) => arg === 'i');

@@ -62,8 +62,13 @@ export class InitCommand {
           console.log(StyledText.iconInfo('Creating PNPM workspace structure...'));
         }
 
-        await this.createWorkspaceStructure(workspacePath, hasPackageJson, hasWorkspaceYaml, options);
-        
+        await this.createWorkspaceStructure(
+          workspacePath,
+          hasPackageJson,
+          hasWorkspaceYaml,
+          options
+        );
+
         if (options.verbose) {
           console.log(StyledText.iconSuccess('PNPM workspace structure created'));
           console.log('');
@@ -94,7 +99,7 @@ export class InitCommand {
       console.log(StyledText.iconSuccess('PCU configuration initialized successfully!'));
       console.log(StyledText.muted(`Created: ${configPath}`));
       console.log('');
-      
+
       // Show next steps
       this.showNextSteps(configPath);
 
@@ -126,7 +131,7 @@ export class InitCommand {
       const packageJsonPath = join(workspacePath, 'package.json');
       const packageJson = this.generateWorkspacePackageJson();
       writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
-      
+
       if (options.verbose) {
         console.log(StyledText.muted('Created: package.json'));
       }
@@ -137,7 +142,7 @@ export class InitCommand {
       const workspaceYamlPath = join(workspacePath, 'pnpm-workspace.yaml');
       const workspaceYaml = this.generateWorkspaceYaml();
       writeFileSync(workspaceYamlPath, workspaceYaml, 'utf-8');
-      
+
       if (options.verbose) {
         console.log(StyledText.muted('Created: pnpm-workspace.yaml'));
       }
@@ -147,7 +152,7 @@ export class InitCommand {
     const packagesDir = join(workspacePath, 'packages');
     if (!existsSync(packagesDir)) {
       mkdirSync(packagesDir, { recursive: true });
-      
+
       if (options.verbose) {
         console.log(StyledText.muted('Created: packages/ directory'));
       }
@@ -166,11 +171,11 @@ export class InitCommand {
       scripts: {
         'check-updates': 'pcu check',
         'update-deps': 'pcu update --interactive',
-        'security-audit': 'pcu security'
+        'security-audit': 'pcu security',
       },
       devDependencies: {
-        'pnpm-catalog-updates': 'latest'
-      }
+        'pnpm-catalog-updates': 'latest',
+      },
     };
   }
 
@@ -227,10 +232,10 @@ catalogs:
       defaults: {
         target: 'latest',
         createBackup: true,
-        format: 'table'
+        format: 'table',
       },
       exclude: [],
-      include: []
+      include: [],
     };
   }
 
@@ -245,7 +250,7 @@ catalogs:
         interactive: false,
         dryRun: false,
         createBackup: true,
-        format: 'table'
+        format: 'table',
       },
       packageRules: [
         {
@@ -254,41 +259,41 @@ catalogs:
           autoUpdate: false,
           requireConfirmation: true,
           groupUpdate: true,
-          relatedPackages: ['@types/react', '@types/react-dom']
+          relatedPackages: ['@types/react', '@types/react-dom'],
         },
         {
           patterns: ['@types/*'],
           target: 'latest',
           autoUpdate: true,
           requireConfirmation: false,
-          groupUpdate: false
+          groupUpdate: false,
         },
         {
           patterns: ['eslint*', 'prettier', '@typescript-eslint/*'],
           target: 'minor',
           autoUpdate: false,
           requireConfirmation: false,
-          groupUpdate: true
-        }
+          groupUpdate: true,
+        },
       ],
       security: {
         autoFixVulnerabilities: true,
         allowMajorForSecurity: true,
-        notifyOnSecurityUpdate: false
+        notifyOnSecurityUpdate: false,
       },
       advanced: {
         concurrency: 5,
         timeout: 30000,
         retries: 3,
         cacheValidityMinutes: 60,
-        checkForUpdates: true
+        checkForUpdates: true,
       },
       monorepo: {
         syncVersions: [],
-        catalogPriority: ['default']
+        catalogPriority: ['default'],
       },
       exclude: [],
-      include: []
+      include: [],
     };
   }
 
@@ -316,7 +321,9 @@ catalogs:
     lines.push('');
     lines.push(StyledText.muted('5. Learn more about PNPM workspace and PCU:'));
     lines.push(StyledText.muted('   https://pnpm.io/workspaces'));
-    lines.push(StyledText.muted('   https://github.com/your-repo/pnpm-catalog-updates#configuration'));
+    lines.push(
+      StyledText.muted('   https://github.com/your-repo/pnpm-catalog-updates#configuration')
+    );
 
     console.log(lines.join('\n'));
   }
