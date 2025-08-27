@@ -188,7 +188,11 @@ export class CatalogUpdateService {
       advancedConfig.cacheValidityMinutes = config.advanced.cacheValidityMinutes;
     }
 
-    const registryService = new NpmRegistryService('https://registry.npmjs.org/', advancedConfig);
+    // Use default registry for now, npmrc will handle scoped registries
+    const registryUrl = 'https://registry.npmjs.org/';
+    const workingDirectory = workspacePath || process.cwd();
+
+    const registryService = new NpmRegistryService(registryUrl, advancedConfig, workingDirectory);
 
     return new CatalogUpdateService(workspaceRepository, registryService);
   }
