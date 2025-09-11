@@ -1,9 +1,6 @@
 {
   "name": "pnpm-catalog-updates",
-  "version": "0.5.7",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "description": "A CLI tool to check and update pnpm workspace catalog dependencies",
   "keywords": [
     "pnpm",
@@ -32,56 +29,29 @@
   },
   "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "pcu": "./bin/pcu.js",
-    "pnpm-catalog-updates": "./bin/pcu.js"
-  },
-  "files": [
-    "dist",
-    "bin",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsc && pnpm run build:bin",
-    "build:bin": "node scripts/build-bin.js",
-    "build:watch": "tsc --watch",
-    "dev": "tsx src/cli/index.ts",
-    "start": "node dist/cli/index.js",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "test:e2e": "vitest --config vitest.e2e.config.ts",
-    "lint": "eslint src test --ext .ts,.js",
-    "lint:fix": "eslint src test --ext .ts,.js --fix",
-    "format": "prettier --write src test",
-    "format:check": "prettier --check src test",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist bin/*.js",
+    "build": "turbo build",
+    "build:watch": "turbo build:watch",
+    "dev": "turbo dev --filter=@pcu/cli",
+    "start": "pnpm --filter=@pcu/cli start",
+    "test": "turbo test",
+    "test:watch": "turbo test:watch",
+    "test:coverage": "turbo test:coverage",
+    "test:e2e": "turbo test:e2e",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "format": "turbo format",
+    "format:check": "turbo format:check",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean",
     "prepare": "husky install",
-    "prepack": "npm run build",
+    "prepack": "pnpm build",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "npm run build && changeset publish"
+    "release": "pnpm build && changeset publish"
   },
   "dependencies": {
-    "chalk": "catalog:",
-    "cli-table3": "catalog:",
-    "commander": "catalog:",
-    "fs-extra": "catalog:",
-    "glob": "catalog:",
-    "inquirer": "catalog:",
-    "lodash": "catalog:",
-    "npm-registry-fetch": "catalog:",
-    "ora": "catalog:",
-    "pacote": "catalog:",
-    "rxjs": "catalog:",
-    "semver": "catalog:",
-    "yaml": "catalog:",
-    "zod": "catalog:"
+    "pcu": "workspace:*"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
@@ -105,6 +75,7 @@
     "msw": "^2.10.3",
     "prettier": "catalog:",
     "rimraf": "^6.0.1",
+    "turbo": "catalog:",
     "tsx": "^4.20.3",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,18 +9,21 @@ const __dirname = path.dirname(__filename);
 
 async function buildBin() {
   const projectRoot = path.resolve(__dirname, '..');
-  const binDir = path.join(projectRoot, 'bin');
-  const distDir = path.join(projectRoot, 'dist');
-  
+  const cliRoot = path.join(projectRoot, 'apps', 'cli');
+  const binDir = path.join(cliRoot, 'bin');
+  const distDir = path.join(cliRoot, 'dist');
+
   // Ensure bin directory exists
-  await fs.ensureDir(binDir);
-  
+  if (!fs.existsSync(binDir)) {
+    fs.mkdirSync(binDir, { recursive: true });
+  }
+
   // Check if dist directory exists
-  if (!await fs.pathExists(distDir)) {
-    console.error('❌ Build the project first with "npm run build"');
+  if (!fs.existsSync(distDir)) {
+    console.error('❌ Build the CLI project first');
     process.exit(1);
   }
-  
+
   // Create the executable script
   const binScript = `#!/usr/bin/env node
 
@@ -31,20 +34,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Import and run the CLI
-const { main } = await import(path.join(__dirname, '..', 'dist', 'cli', 'index.js'));
+const { main } = await import(path.join(__dirname, '..', 'dist', 'index.js'));
 
 main().catch((error) => {
   console.error('❌ Error:', error.message);
   process.exit(1);
 });
 `;
-  
+
   const binPath = path.join(binDir, 'pcu.js');
-  await fs.writeFile(binPath, binScript);
-  
+  fs.writeFileSync(binPath, binScript);
+
   // Make it executable
-  await fs.chmod(binPath, '755');
-  
+  fs.chmodSync(binPath, '755');
+
   console.log('✅ Binary script created at:', binPath);
 }
 

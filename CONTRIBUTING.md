@@ -1,34 +1,39 @@
 # Contributing to pnpm-catalog-updates
 
-Thank you for your interest in contributing to pnpm-catalog-updates! This document provides guidelines and information about contributing to this project.
+Thank you for your interest in contributing to pnpm-catalog-updates! This
+document provides guidelines and information about contributing to this project.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm >= 8.15.0
+- Node.js >= 22.0.0
+- pnpm >= 10.0.0
 - Git
 
 ### Setup Development Environment
 
 1. **Fork and Clone**
+
    ```bash
    git clone https://github.com/houko/pnpm-catalog-updates.git
    cd pnpm-catalog-updates
    ```
 
 2. **Install Dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Build the Project**
+
    ```bash
    pnpm build
    ```
 
 4. **Run Tests**
+
    ```bash
    pnpm test
    ```
@@ -43,6 +48,7 @@ Thank you for your interest in contributing to pnpm-catalog-updates! This docume
 ### Branch Naming
 
 Use descriptive branch names with prefixes:
+
 - `feat/description` - New features
 - `fix/description` - Bug fixes
 - `docs/description` - Documentation changes
@@ -52,7 +58,8 @@ Use descriptive branch names with prefixes:
 
 ### Commit Messages
 
-We follow [Conventional Commits](https://conventionalcommits.org/) specification:
+We follow [Conventional Commits](https://conventionalcommits.org/)
+specification:
 
 ```
 type(scope): description
@@ -63,6 +70,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New features
 - `fix`: Bug fixes
 - `docs`: Documentation changes
@@ -75,6 +83,7 @@ type(scope): description
 - `build`: Build system changes
 
 **Examples:**
+
 ```bash
 feat(cli): add interactive update mode
 fix(parser): handle malformed yaml files
@@ -84,7 +93,8 @@ test(workspace): add catalog parsing tests
 
 ### Code Quality Standards
 
-1. **TypeScript**: All code must be written in TypeScript with proper type definitions
+1. **TypeScript**: All code must be written in TypeScript with proper type
+   definitions
 2. **ESLint**: Code must pass ESLint checks (`pnpm lint`)
 3. **Prettier**: Code must be formatted with Prettier (`pnpm format`)
 4. **Tests**: New features must include tests
@@ -132,7 +142,7 @@ pnpm lint && pnpm typecheck && pnpm format:check
 ```typescript
 // Unit test example
 import { describe, it, expect } from 'vitest';
-import { VersionParser } from '@/domain/value-objects/VersionParser';
+import { VersionParser } from '@pcu/core';
 
 describe('VersionParser', () => {
   it('should parse semantic version', () => {
@@ -180,31 +190,42 @@ pnpm test:coverage
 pnpm test:e2e
 
 # Run specific test file
-pnpm test src/domain/entities/Workspace.test.ts
+pnpm test packages/core/src/domain/entities/Workspace.test.ts
 ```
 
 ## 🏗️ Architecture Guidelines
 
+### Monorepo Structure
+
+This project is organized as a pnpm monorepo with clean architecture:
+
+1. **Apps** (`apps/`)
+   - `cli/` - CLI application with commands, formatters, and UI
+
+2. **Packages** (`packages/`)
+   - `core/` - Core business logic following DDD principles
+   - `utils/` - Shared utilities and configuration
+
 ### Domain-Driven Design (DDD)
 
-This project follows DDD principles:
+The core package follows DDD principles:
 
-1. **Domain Layer** (`src/domain/`)
+1. **Domain Layer** (`packages/core/src/domain/`)
    - Contains business logic
    - No dependencies on external frameworks
    - Pure TypeScript with minimal dependencies
 
-2. **Application Layer** (`src/application/`)
+2. **Application Layer** (`packages/core/src/application/`)
    - Orchestrates domain objects
    - Handles use cases
    - Coordinates with infrastructure
 
-3. **Infrastructure Layer** (`src/infrastructure/`)
+3. **Infrastructure Layer** (`packages/core/src/infrastructure/`)
    - Implements repository interfaces
    - Handles external services
    - File system operations
 
-4. **CLI Layer** (`src/cli/`)
+4. **CLI Layer** (`apps/cli/src/cli/`)
    - User interface
    - Command parsing
    - Output formatting
@@ -212,8 +233,9 @@ This project follows DDD principles:
 ### Adding New Features
 
 1. **Start with Domain Model**
+
    ```typescript
-   // src/domain/entities/NewEntity.ts
+   // packages/core/src/domain/entities/NewEntity.ts
    export class NewEntity {
      constructor(private id: EntityId) {}
 
@@ -222,8 +244,9 @@ This project follows DDD principles:
    ```
 
 2. **Add Repository Interface**
+
    ```typescript
-   // src/domain/repositories/NewEntityRepository.ts
+   // packages/core/src/domain/repositories/NewEntityRepository.ts
    export interface NewEntityRepository {
      save(entity: NewEntity): Promise<void>;
      findById(id: EntityId): Promise<NewEntity | null>;
@@ -231,16 +254,18 @@ This project follows DDD principles:
    ```
 
 3. **Implement Repository**
+
    ```typescript
-   // src/infrastructure/repositories/FileNewEntityRepository.ts
+   // packages/core/src/infrastructure/repositories/FileNewEntityRepository.ts
    export class FileNewEntityRepository implements NewEntityRepository {
      // Implementation
    }
    ```
 
 4. **Add Application Service**
+
    ```typescript
-   // src/application/services/NewEntityService.ts
+   // packages/core/src/application/services/NewEntityService.ts
    export class NewEntityService {
      constructor(private repository: NewEntityRepository) {}
 
@@ -250,7 +275,7 @@ This project follows DDD principles:
 
 5. **Add CLI Command**
    ```typescript
-   // src/cli/commands/NewCommand.ts
+   // apps/cli/src/cli/commands/NewCommand.ts
    export class NewCommand {
      // CLI handling
    }
@@ -280,26 +305,32 @@ When reporting bugs, please include:
 
 ```markdown
 ### Bug Description
+
 A clear description of the bug.
 
 ### Steps to Reproduce
+
 1. Step 1
 2. Step 2
 3. Step 3
 
 ### Expected Behavior
+
 What should happen.
 
 ### Actual Behavior
+
 What actually happens.
 
 ### Environment
+
 - Node.js version:
 - pnpm version:
 - OS:
 - Project type:
 
 ### Additional Context
+
 Any additional information.
 ```
 
@@ -333,7 +364,7 @@ For feature requests, please:
 
 ### Documentation Standards
 
-```typescript
+````typescript
 /**
  * Parses a version string into semantic version components.
  *
@@ -351,13 +382,14 @@ For feature requests, please:
 public parse(versionString: string): SemanticVersion {
   // Implementation
 }
-```
+````
 
 ## 🔧 Tools and Extensions
 
 ### Recommended VS Code Extensions
 
 The project includes recommended extensions in `.vscode/extensions.json`:
+
 - TypeScript and JavaScript support
 - ESLint and Prettier
 - Testing extensions
@@ -377,14 +409,17 @@ The project includes recommended extensions in `.vscode/extensions.json`:
 
 ### Version Management
 
-We use [Changesets](https://github.com/changesets/changesets) for version management:
+We use [Changesets](https://github.com/changesets/changesets) for version
+management:
 
 1. **Add Changeset**
+
    ```bash
    pnpm changeset
    ```
 
 2. **Version Packages**
+
    ```bash
    pnpm changeset version
    ```
@@ -422,7 +457,8 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 
 ### Enforcement
 
-Report unacceptable behavior to the project maintainers. All reports will be reviewed and investigated promptly.
+Report unacceptable behavior to the project maintainers. All reports will be
+reviewed and investigated promptly.
 
 ## 📞 Getting Help
 
@@ -434,6 +470,7 @@ Report unacceptable behavior to the project maintainers. All reports will be rev
 ## 🎉 Recognition
 
 Contributors will be recognized in:
+
 - README contributors section
 - Release notes
 - Hall of fame (for significant contributions)

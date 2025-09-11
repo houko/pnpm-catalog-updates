@@ -24,29 +24,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: $STORE_PATH
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Environment
+        uses: ./.github/actions/setup
 
       - name: Type check
         run: pnpm typecheck
@@ -71,29 +50,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: $STORE_PATH
-          key: ${{ runner.os }}-${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.node-version }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
@@ -125,29 +85,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: $STORE_PATH
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Environment
+        uses: ./.github/actions/setup
 
       - name: Build
         run: pnpm build
@@ -164,16 +103,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Environment
+        uses: ./.github/actions/setup
 
       - name: Run security audit
         run: pnpm audit --audit-level moderate
@@ -196,54 +127,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: $STORE_PATH
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Environment
+        uses: ./.github/actions/setup
 
       - name: Build
         run: pnpm build
 
       - name: Test CLI binary
         run: |
-          node bin/pcu.js --version
-          node bin/pcu.js --help
+          node apps/cli/bin/pcu.js --version
+          node apps/cli/bin/pcu.js --help
 
-      - name: Test npm compatibility
+      - name: Test CLI npm compatibility
         run: |
-          # Create a temporary package.json with resolved dependencies
-          cp package.json package.test.json
-          node scripts/resolve-catalog-deps.js
-
-          # Test if npm can install the package locally
+          # Test CLI package directly
+          cd apps/cli
           npm pack
 
           # Create a test directory
           mkdir -p test-npm-install
           cd test-npm-install
 
-          # Test installing the package with npm
+          # Test installing the CLI package with npm
           npm init -y
-          npm install ../pnpm-catalog-updates-*.tgz
+          npm install ../pcu-*.tgz
 
           # Verify the CLI is accessible
           npx pcu --version
@@ -251,18 +158,17 @@ jobs:
           # Cleanup
           cd ..
           rm -rf test-npm-install
-          rm pnpm-catalog-updates-*.tgz
-          mv package.test.json package.json
+          rm pcu-*.tgz
 
-      - name: Package for npm
-        run: pnpm pack
+      - name: Package CLI for npm
+        run: cd apps/cli && npm pack
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: package
           path: |
-            dist/
-            bin/
-            *.tgz
+            apps/cli/dist/
+            apps/cli/bin/
+            apps/cli/*.tgz
           retention-days: 7

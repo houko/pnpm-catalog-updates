@@ -1,0 +1,49 @@
+{
+  "name": "pnpm-catalog-updates-example",
+  "version": "1.0.0",
+  "description": "Example workspace demonstrating pnpm-catalog-updates usage",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean",
+    "pcu:check": "pnpm dlx pnpm-catalog-updates check",
+    "pcu:update": "pnpm dlx pnpm-catalog-updates update --interactive",
+    "pcu:update-minor": "pnpm dlx pnpm-catalog-updates update --target minor",
+    "pcu:analyze": "pnpm dlx pnpm-catalog-updates analyze",
+    "pcu:workspace": "pnpm dlx pnpm-catalog-updates workspace --stats",
+    "example:init": "echo 'Example: Initialize workspace with pcu init' && pnpm dlx pnpm-catalog-updates init --force",
+    "example:check": "echo 'Example: Check for updates' && pnpm dlx pnpm-catalog-updates check --format table",
+    "example:update-dry": "echo 'Example: Dry run update' && pnpm dlx pnpm-catalog-updates update --dry-run",
+    "example:react-analyze": "echo 'Example: Analyze React update impact' && pnpm dlx pnpm-catalog-updates analyze default react"
+  },
+  "devDependencies": {
+    "chalk": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "@types/node": "catalog:node20"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/houko/pnpm-catalog-updates.git",
+    "directory": "apps/example"
+  },
+  "keywords": [
+    "pnpm",
+    "catalog",
+    "workspace",
+    "example",
+    "monorepo"
+  ],
+  "author": "Evan Hu <evan@yldm.tech>",
+  "license": "MIT"
+}

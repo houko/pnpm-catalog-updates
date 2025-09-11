@@ -57,17 +57,10 @@
     "allowUmdGlobalAccess": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/cli/*": ["./src/cli/*"],
-      "@/application/*": ["./src/application/*"],
-      "@/domain/*": ["./src/domain/*"],
-      "@/infrastructure/*": ["./src/infrastructure/*"],
-      "@/adapters/*": ["./src/adapters/*"],
-      "@/common/*": ["./src/common/*"]
+      "@pcu/core": ["./packages/core/src"],
+      "@pcu/utils": ["./packages/utils/src"]
     },
-    "rootDir": "./src",
-    "rootDirs": ["./src"],
-    "typeRoots": ["./node_modules/@types", "./src/common/types"],
+    "typeRoots": ["./node_modules/@types"],
     "types": ["node"],
 
     // Interop Constraints
@@ -75,53 +68,19 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "preserveSymlinks": true,
-
-    // Backwards Compatibility
-    "keyofStringsOnly": false,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "out": "",
-    "suppressExcessPropertyErrors": false,
-    "suppressImplicitAnyIndexErrors": false,
-
-    // Language and Environment (decorators)
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "jsx": "preserve",
-    "jsxFactory": "",
-    "jsxFragmentFactory": "",
-    "jsxImportSource": "",
-    "reactNamespace": "",
-    "useDefineForClassFields": true,
-
-    // Compiler Diagnostics
-    "diagnostics": false,
-    "explainFiles": false,
-    "extendedDiagnostics": false,
-    "generateCpuProfile": "",
-    "listEmittedFiles": false,
-    "listFiles": false,
-    "traceResolution": false,
 
     // Projects
-    "composite": false,
-    "disableReferencedProjectLoad": false,
-    "disableSolutionSearching": false,
-    "disableSourceOfProjectReferenceRedirect": false,
+    "composite": true,
     "incremental": true,
-    "tsBuildInfoFile": "./.tsbuildinfo",
-
-    // Output Formatting
-    "noErrorTruncation": false,
-    "preserveWatchOutput": false,
-    "pretty": true,
 
     // Completeness
-    "skipDefaultLibCheck": false,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/utils" },
+    { "path": "./apps/cli" }
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*.test.ts", "**/*.spec.ts"],
   "ts-node": {
     "esm": true,

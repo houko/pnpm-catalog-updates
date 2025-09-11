@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import yaml from 'yaml';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,7 +20,8 @@ async function resolveCatalogDependencies() {
 
   // Read package.json
   const packageJsonPath = path.join(projectRoot, 'package.json');
-  const packageJson = await fs.readJSON(packageJsonPath);
+  const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+  const packageJson = JSON.parse(packageJsonContent);
 
   // Function to resolve catalog dependencies
   const resolveDeps = (deps) => {
@@ -66,7 +67,7 @@ async function resolveCatalogDependencies() {
   }
 
   // Write the resolved package.json
-  await fs.writeJSON(packageJsonPath, packageJson, { spaces: 2 });
+  await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
   console.log('\n✅ Successfully resolved all catalog dependencies');
 }
 

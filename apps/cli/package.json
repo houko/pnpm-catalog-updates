@@ -1,0 +1,83 @@
+{
+  "name": "pcu",
+  "version": "0.6.0",
+  "description": "CLI application for pnpm-catalog-updates",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "pcu": "./bin/pcu.js",
+    "pnpm-catalog-updates": "./bin/pcu.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup && pnpm run build:bin",
+    "build:bin": "node ../../scripts/build-bin.js",
+    "build:watch": "tsup --watch",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest --run --passWithNoTests",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "vitest --config ../../vitest.e2e.config.ts",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist bin/*.js"
+  },
+  "dependencies": {
+    "@pcu/core": "workspace:*",
+    "@pcu/utils": "workspace:*",
+    "@types/glob": "^9.0.0",
+    "chalk": "catalog:",
+    "cli-table3": "catalog:",
+    "commander": "catalog:",
+    "fs-extra": "catalog:",
+    "glob": "catalog:",
+    "inquirer": "catalog:",
+    "lodash": "catalog:",
+    "npm-registry-fetch": "catalog:",
+    "ora": "catalog:",
+    "pacote": "catalog:",
+    "rxjs": "catalog:",
+    "semver": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@types/inquirer": "catalog:",
+    "@types/node": "catalog:node20",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "eslint": "catalog:",
+    "fs-extra": "catalog:",
+    "msw": "catalog:",
+    "prettier": "catalog:",
+    "rimraf": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "keywords": [
+    "pnpm",
+    "catalog",
+    "cli"
+  ],
+  "author": {
+    "name": "Evan Hu",
+    "email": "evan@yldm.tech"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/houko/pnpm-catalog-updates.git",
+    "directory": "apps/cli"
+  }
+}

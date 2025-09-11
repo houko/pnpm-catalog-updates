@@ -1,0 +1,211 @@
+{
+  "$schema": "https://raw.githubusercontent.com/houko/pnpm-catalog-updates/main/schema.json",
+  "description": "Example PCU configuration demonstrating various features",
+
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5,
+    "createBackup": true,
+    "interactive": true
+  },
+
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict",
+    "exclude": ["node_modules", "dist", ".git", "coverage", ".turbo"]
+  },
+
+  "update": {
+    "dryRunFirst": true,
+    "skipPrereleases": false,
+    "requireConfirmation": false
+  },
+
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false,
+    "showProgress": true
+  },
+
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true,
+    "icons": true
+  },
+
+  "include": [],
+  "exclude": [],
+
+  "packageRules": [
+    {
+      "description": "React ecosystem - conservative updates with confirmation",
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": [
+        "@types/react",
+        "@types/react-dom",
+        "@testing-library/react"
+      ],
+      "groupUpdate": true
+    },
+    {
+      "description": "Vue ecosystem - minor updates",
+      "patterns": ["vue"],
+      "target": "minor",
+      "relatedPackages": [
+        "@vue/compiler-sfc",
+        "@vue/runtime-core",
+        "@vitejs/plugin-vue"
+      ]
+    },
+    {
+      "description": "Node.js types - conservative updates",
+      "patterns": ["@types/node"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "description": "TypeScript types - latest versions",
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": false,
+      "exclude": ["@types/node", "@types/react", "@types/react-dom"]
+    },
+    {
+      "description": "Development tools - minor updates",
+      "patterns": ["eslint*", "prettier", "husky", "lint-staged"],
+      "target": "minor",
+      "groupUpdate": true,
+      "autoUpdate": false
+    },
+    {
+      "description": "Build tools - latest versions",
+      "patterns": ["vite", "rollup", "webpack", "tsup"],
+      "target": "latest",
+      "requireConfirmation": false
+    },
+    {
+      "description": "Testing frameworks - latest versions",
+      "patterns": ["vitest", "jest", "@testing-library/*"],
+      "target": "latest",
+      "requireConfirmation": false,
+      "exclude": ["@testing-library/react"]
+    },
+    {
+      "description": "Material-UI ecosystem - group updates",
+      "patterns": ["@mui/*", "@emotion/*"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "description": "Server dependencies - conservative approach",
+      "patterns": ["express", "fastify", "helmet", "cors"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "description": "Utility libraries - latest versions",
+      "patterns": ["lodash", "axios", "chalk"],
+      "target": "latest",
+      "requireConfirmation": false
+    }
+  ],
+
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true,
+    "prioritizeSecurityUpdates": true
+  },
+
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true,
+    "respectNpmrc": true
+  },
+
+  "monorepo": {
+    "syncVersions": ["react", "react-dom", "@types/react", "@types/react-dom"],
+    "catalogPriority": [
+      "default",
+      "latest",
+      "react17",
+      "server",
+      "material-ui",
+      "devtools"
+    ]
+  },
+
+  "catalogs": {
+    "default": {
+      "description": "Main catalog with stable versions",
+      "target": "latest",
+      "requireConfirmation": false
+    },
+    "react17": {
+      "description": "Legacy React 17 catalog",
+      "target": "patch",
+      "requireConfirmation": true,
+      "autoUpdate": false
+    },
+    "latest": {
+      "description": "Bleeding edge versions",
+      "target": "greatest",
+      "requireConfirmation": true,
+      "autoUpdate": false
+    },
+    "server": {
+      "description": "Server-side dependencies",
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    "material-ui": {
+      "description": "Material-UI ecosystem",
+      "target": "minor",
+      "requireConfirmation": true,
+      "groupUpdate": true
+    },
+    "devtools": {
+      "description": "Development and build tools",
+      "target": "latest",
+      "requireConfirmation": false
+    },
+    "node18": {
+      "description": "Node.js 18 specific types",
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    "node20": {
+      "description": "Node.js 20 specific types",
+      "target": "minor",
+      "requireConfirmation": false
+    }
+  },
+
+  "notifications": {
+    "onUpdate": true,
+    "onError": true,
+    "onSecurityIssue": true,
+    "methods": ["console"]
+  },
+
+  "hooks": {
+    "preUpdate": [],
+    "postUpdate": ["pnpm install"],
+    "onError": []
+  },
+
+  "logging": {
+    "level": "info",
+    "file": null,
+    "enableDebug": false
+  }
+}

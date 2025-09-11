@@ -1,0 +1,44 @@
+{
+  "name": "@example/legacy-react-app",
+  "version": "1.0.0",
+  "description": "Example legacy React app using React 17 catalog",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint src --ext ts,tsx",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17",
+    "axios": "catalog:",
+    "lodash": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:react17",
+    "@types/react-dom": "catalog:react17",
+    "@types/lodash": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "eslint": "catalog:",
+    "@vitejs/plugin-react": "^4.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

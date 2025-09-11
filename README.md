@@ -482,47 +482,51 @@ options > default configuration
 
 ## 📁 Project Structure
 
-This project follows Domain-Driven Design (DDD) principles:
+This project is organized as a pnpm monorepo with clean architecture:
 
 ```text
-src/
-├── cli/                    # CLI interface layer
-│   ├── commands/           # Command handlers
-│   ├── options/            # Option parsers
-│   ├── formatters/         # Output formatters & progress bars
-│   ├── interactive/        # Interactive prompts & UI
-│   ├── themes/             # Color themes & styling
-│   └── validators/         # Input validation
-├── application/            # Application services
-│   ├── services/           # Application services
-│   ├── handlers/           # Command handlers
-│   └── mappers/            # Data mappers
-├── domain/                 # Domain model
-│   ├── entities/           # Domain entities
-│   ├── value-objects/      # Value objects
-│   ├── aggregates/         # Aggregate roots
-│   ├── services/           # Domain services
-│   └── repositories/       # Repository interfaces
-├── infrastructure/         # Infrastructure layer
-│   ├── repositories/       # Repository implementations
-│   ├── external-services/  # External service clients
-│   └── file-system/        # File system operations
-├── adapters/               # Adapter layer
-│   ├── registry/           # Package registry adapters
-│   └── package-managers/   # Package manager adapters
-└── common/                 # Common utilities
-    ├── types/              # Type definitions
-    ├── utils/              # Utility functions
-    ├── config/             # Configuration
-    └── logger/             # Logging
+├── apps/
+│   └── cli/                    # CLI application
+│       ├── src/                # CLI source code
+│       │   ├── cli/            # CLI interface layer
+│       │   │   ├── commands/   # Command handlers
+│       │   │   ├── formatters/ # Output formatters & progress bars
+│       │   │   ├── interactive/# Interactive prompts & UI
+│       │   │   ├── themes/     # Color themes & styling
+│       │   │   └── validators/ # Input validation
+│       │   └── index.ts        # CLI entry point
+│       ├── bin/                # Executable binaries
+│       └── scripts/            # Build scripts
+├── packages/
+│   ├── core/                   # Core business logic
+│   │   ├── src/                # Core source code
+│   │   │   ├── application/    # Application services
+│   │   │   ├── domain/         # Domain model (DDD)
+│   │   │   │   ├── entities/   # Domain entities
+│   │   │   │   ├── value-objects/ # Value objects
+│   │   │   │   └── repositories/  # Repository interfaces
+│   │   │   └── infrastructure/ # Infrastructure layer
+│   │   │       ├── repositories/ # Repository implementations
+│   │   │       ├── external-services/ # External API clients
+│   │   │       └── file-system/ # File system operations
+│   │   └── dist/               # Built core package
+│   └── utils/                  # Shared utilities
+│       ├── src/                # Utils source code
+│       │   ├── config/         # Configuration management
+│       │   ├── error-handling/ # Error handling utilities
+│       │   ├── logger/         # Logging utilities
+│       │   ├── types/          # Type definitions
+│       │   └── utils/          # Common utilities
+│       └── dist/               # Built utils package
+└── scripts/                    # Build and deployment scripts
 ```
 
 ## 🧪 Development
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm >= 8.15.0
+- Node.js >= 22.0.0
+- pnpm >= 10.0.0
 
 ### Setup
 
