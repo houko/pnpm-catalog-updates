@@ -28,7 +28,12 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Type check
-        run: pnpm typecheck
+        run: |
+          # Run typecheck for each package to ensure correct working directory
+          pnpm -F @pcu/utils typecheck
+          pnpm -F @pcu/core typecheck
+          pnpm -F pcu typecheck
+          pnpm -F @pcu/docs typecheck
 
       - name: Lint
         run: pnpm lint
