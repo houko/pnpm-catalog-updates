@@ -36,6 +36,9 @@ module.exports = {
   // Single attribute per line
   singleAttributePerLine: false,
   
+  // Plugins
+  plugins: ['prettier-plugin-organize-imports'],
+  
   overrides: [
     {
       files: '*.json',
@@ -58,6 +61,14 @@ module.exports = {
         printWidth: 80,
         proseWrap: 'always',
         tabWidth: 2,
+      },
+    },
+    {
+      files: 'apps/docs/**/*.{ts,tsx,js,jsx}',
+      options: {
+        singleQuote: true,
+        semi: false,
+        plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss'],
       },
     },
   ],
