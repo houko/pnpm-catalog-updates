@@ -59,11 +59,11 @@ jobs:
         run: pnpm build
 
       - name: Unit tests with coverage
-        run: pnpm test:coverage --reporter=verbose
+        run: pnpm test:coverage
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.19.0'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
@@ -110,12 +110,12 @@ jobs:
         run: pnpm audit --audit-level moderate
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
 
       - name: Run CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   build:
     name: Build & Package

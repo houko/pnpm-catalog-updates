@@ -22,7 +22,7 @@
     "dev": "tsup --watch",
     "test": "vitest --run --passWithNoTests",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest --run --coverage --passWithNoTests",
     "test:e2e": "vitest --config ../../vitest.e2e.config.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
