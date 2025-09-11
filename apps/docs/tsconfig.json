@@ -14,17 +14,17 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["src/*"],
-      "@/lib/*": ["src/lib/*"],
-      "@/images/*": ["src/images/*"],
-      "@/components/*": ["src/components/*"]
+      "@/*": ["./*"],
+      "@/lib/*": ["lib/*"],
+      "@/images/*": ["images/*"],
+      "@/components/*": ["components/*"]
     }
   },
   "include": [

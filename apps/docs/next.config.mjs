@@ -1,5 +1,6 @@
 import nextMDX from '@next/mdx'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -38,18 +39,26 @@ const nextConfig = {
     '/**/*': ['./src/app/**/*.mdx'],
   },
   webpack: (config) => {
-    // Use __dirname which is always relative to this config file
-    const srcPath = path.resolve(__dirname, 'src')
+    // Use process.cwd() for CI environments, fallback to __dirname for local
+    const projectRoot = process.env.CI 
+      ? path.join(process.cwd(), 'apps/docs') 
+      : __dirname
+    const srcPath = path.resolve(projectRoot, 'src')
     
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': srcPath,
     }
     
-    // Debug output
-    if (process.env.NODE_ENV !== 'production') {
+    // Always output in production for debugging CI issues
+    if (process.env.NODE_ENV === 'production') {
+      console.log('CI environment:', !!process.env.CI)
+      console.log('Process CWD:', process.cwd())
+      console.log('Project root:', projectRoot)
       console.log('Webpack alias @ ->', srcPath)
-      console.log('__dirname ->', __dirname)
+      console.log('File exists check:', {
+        remToPx: fs.existsSync(path.join(srcPath, 'lib/remToPx.ts'))
+      })
     }
     
     return config
