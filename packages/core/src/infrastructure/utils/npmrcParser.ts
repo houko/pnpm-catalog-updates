@@ -6,8 +6,8 @@
  */
 
 import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
 import { homedir } from 'os';
+import { join } from 'path';
 
 export interface NpmrcConfig {
   // Default registry

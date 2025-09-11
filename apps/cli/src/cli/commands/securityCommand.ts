@@ -8,7 +8,7 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { OutputFormatter, OutputFormat } from '../formatters/outputFormatter.js';
+import { OutputFormat, OutputFormatter } from '../formatters/outputFormatter.js';
 import { ProgressBar } from '../formatters/progressBar.js';
 import { StyledText, ThemeManager } from '../themes/colorTheme.js';
 

@@ -13,23 +13,23 @@ import { OutputFormat, OutputFormatter } from './formatters/outputFormatter.js';
 // Services and Dependencies
 import {
   CatalogUpdateService,
-  WorkspaceService,
-  NpmRegistryService,
   FileSystemService,
   FileWorkspaceRepository,
+  NpmRegistryService,
+  WorkspaceService,
 } from '@pcu/core';
 // CLI Commands
+import { ConfigLoader, VersionChecker } from '@pcu/utils';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { CheckCommand } from './commands/checkCommand.js';
-import { UpdateCommand } from './commands/updateCommand.js';
-import { SecurityCommand } from './commands/securityCommand.js';
 import { InitCommand } from './commands/initCommand.js';
+import { SecurityCommand } from './commands/securityCommand.js';
+import { UpdateCommand } from './commands/updateCommand.js';
 import { InteractivePrompts } from './interactive/interactivePrompts.js';
-import { ThemeManager, StyledText } from './themes/colorTheme.js';
-import { VersionChecker, ConfigLoader } from '@pcu/utils';
+import { StyledText, ThemeManager } from './themes/colorTheme.js';
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);

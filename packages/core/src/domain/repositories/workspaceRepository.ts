@@ -6,9 +6,9 @@
  */
 
 import { Workspace } from '../entities/workspace.js';
+import { WorkspaceConfig } from '../value-objects/workspaceConfig.js';
 import { WorkspaceId } from '../value-objects/workspaceId.js';
 import { WorkspacePath } from '../value-objects/workspacePath.js';
-import { WorkspaceConfig } from '../value-objects/workspaceConfig.js';
 
 export interface WorkspaceRepository {
   /**

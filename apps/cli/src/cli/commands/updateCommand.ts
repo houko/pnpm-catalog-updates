@@ -6,11 +6,11 @@
  */
 
 import { CatalogUpdateService, UpdateOptions, UpdatePlan, UpdateTarget } from '@pcu/core';
+import { ConfigLoader } from '@pcu/utils';
 import { OutputFormat, OutputFormatter } from '../formatters/outputFormatter.js';
 import { ProgressBar } from '../formatters/progressBar.js';
 import { InteractivePrompts } from '../interactive/interactivePrompts.js';
 import { StyledText, ThemeManager } from '../themes/colorTheme.js';
-import { ConfigLoader } from '@pcu/utils';
 
 export interface UpdateCommandOptions {
   workspace?: string;

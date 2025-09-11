@@ -6,9 +6,9 @@
  */
 
 import { CatalogUpdateService, CheckOptions } from '@pcu/core';
-import { OutputFormatter, OutputFormat } from '../formatters/outputFormatter.js';
-import { StyledText, ThemeManager } from '../themes/colorTheme.js';
 import { ConfigLoader } from '@pcu/utils';
+import { OutputFormat, OutputFormatter } from '../formatters/outputFormatter.js';
+import { StyledText, ThemeManager } from '../themes/colorTheme.js';
 
 export interface CheckCommandOptions {
   workspace?: string;

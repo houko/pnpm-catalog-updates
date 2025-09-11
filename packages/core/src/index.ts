@@ -7,12 +7,12 @@ export { WorkspaceService } from './application/services/workspaceService';
 // Application Service Types
 export type {
   CheckOptions,
+  ImpactAnalysis,
+  OutdatedReport,
   UpdateOptions,
   UpdatePlan,
-  UpdateTarget,
-  OutdatedReport,
   UpdateResult,
-  ImpactAnalysis,
+  UpdateTarget,
 } from './application/services/catalogUpdateService';
 
 export type {

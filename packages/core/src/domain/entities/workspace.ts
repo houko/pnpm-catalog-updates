@@ -5,11 +5,11 @@
  * This is a core domain entity that encapsulates workspace business logic.
  */
 
-import { WorkspaceId } from '../value-objects/workspaceId.js';
-import { WorkspacePath } from '../value-objects/workspacePath.js';
 import { CatalogCollection } from '../value-objects/catalogCollection.js';
 import { PackageCollection } from '../value-objects/packageCollection.js';
 import { WorkspaceConfig } from '../value-objects/workspaceConfig.js';
+import { WorkspaceId } from '../value-objects/workspaceId.js';
+import { WorkspacePath } from '../value-objects/workspacePath.js';
 
 export class Workspace {
   private constructor(

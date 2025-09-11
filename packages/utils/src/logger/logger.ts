@@ -5,7 +5,7 @@
  * Integrates with the configuration system for runtime control.
  */
 
-import { writeFileSync, existsSync, mkdirSync, statSync } from 'fs';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { getConfig } from '../config/config.js';
 

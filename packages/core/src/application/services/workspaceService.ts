@@ -5,8 +5,8 @@
  * Provides high-level operations for working with pnpm workspaces.
  */
 
-import { WorkspaceRepository } from '../../domain/repositories/workspaceRepository.js';
 import { Workspace } from '../../domain/entities/workspace.js';
+import { WorkspaceRepository } from '../../domain/repositories/workspaceRepository.js';
 import { WorkspacePath } from '../../domain/value-objects/workspacePath.js';
 
 export interface WorkspaceInfo {
