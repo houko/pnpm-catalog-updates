@@ -37,13 +37,42 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Build
-        run: pnpm build
+        run: |
+          # Build workspace packages first
+          pnpm --filter @pcu/utils build
+          pnpm --filter @pcu/core build
+          # Then build all packages
+          pnpm build
+
+      - name: Generate automatic changeset
+        run: |
+          # Get latest commit messages since last release
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges -n 10)
+          else
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges)
+          fi
+
+          # Create automatic changeset if none exists
+          if [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
+            mkdir -p .changeset
+            cat > .changeset/auto-release.md << EOF
+          ---
+          "pcu": patch
+          ---
+
+          Automated release
+
+          $COMMITS
+          EOF
+          fi
 
       - name: Create Release Pull Request or Publish CLI
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: node scripts/publish-dual-packages.js
+          publish: pnpm release
           commit: "chore: release CLI package"
           title: "chore: release CLI package"
           setupGitUser: true
@@ -136,6 +165,12 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup
 
+      - name: Build Dependencies
+        run: |
+          # Build workspace dependencies first
+          pnpm --filter @pcu/utils build
+          pnpm --filter @pcu/core build
+
       - name: Configure Next.js for GitHub Pages
         run: |
           cd apps/docs
@@ -189,6 +224,7 @@ jobs:
       - name: Build Documentation
         run: |
           cd apps/docs
+          # Build documentation using pnpm
           NODE_ENV=production pnpm build
 
       - name: Setup Pages
