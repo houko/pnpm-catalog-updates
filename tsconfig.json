@@ -70,17 +70,11 @@
     "isolatedModules": true,
 
     // Projects
-    "composite": true,
     "incremental": true,
 
     // Completeness
     "skipLibCheck": true
   },
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/utils" },
-    { "path": "./apps/cli" }
-  ],
   "exclude": ["node_modules", "dist", "test", "**/*.test.ts", "**/*.spec.ts"],
   "ts-node": {
     "esm": true,

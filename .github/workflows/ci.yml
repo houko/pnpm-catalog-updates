@@ -65,7 +65,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.19.0'
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage/lcov.info
+          files: ./apps/cli/coverage/lcov.info
           fail_ci_if_error: false
 
       # Upload coverage to Coveralls for badge
@@ -74,7 +74,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./coverage/lcov.info
+          path-to-lcov: ./apps/cli/coverage/lcov.info
 
   e2e:
     name: E2E Tests

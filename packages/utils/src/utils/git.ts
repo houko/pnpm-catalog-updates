@@ -2,7 +2,7 @@
  * Git Utilities
  */
 
-import { execSync, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
@@ -22,11 +22,15 @@ export function isGitRepository(path: string = process.cwd()): boolean {
  */
 export function getCurrentBranch(cwd: string = process.cwd()): string | null {
   try {
-    const branch = execSync('git branch --show-current', {
+    const result = spawnSync('git', ['branch', '--show-current'], {
       cwd,
       encoding: 'utf8',
       stdio: 'pipe',
-    }).trim();
+    });
+    if (result.error || result.status !== 0) {
+      return null;
+    }
+    const branch = result.stdout.trim();
     return branch || null;
   } catch {
     return null;
@@ -38,11 +42,15 @@ export function getCurrentBranch(cwd: string = process.cwd()): string | null {
  */
 export function isWorkingDirectoryClean(cwd: string = process.cwd()): boolean {
   try {
-    const status = execSync('git status --porcelain', {
+    const result = spawnSync('git', ['status', '--porcelain'], {
       cwd,
       encoding: 'utf8',
       stdio: 'pipe',
-    }).trim();
+    });
+    if (result.error || result.status !== 0) {
+      return false;
+    }
+    const status = result.stdout.trim();
     return status === '';
   } catch {
     return false;
@@ -54,11 +62,15 @@ export function isWorkingDirectoryClean(cwd: string = process.cwd()): boolean {
  */
 export function getLastCommitHash(cwd: string = process.cwd()): string | null {
   try {
-    const hash = execSync('git rev-parse HEAD', {
+    const result = spawnSync('git', ['rev-parse', 'HEAD'], {
       cwd,
       encoding: 'utf8',
       stdio: 'pipe',
-    }).trim();
+    });
+    if (result.error || result.status !== 0) {
+      return null;
+    }
+    const hash = result.stdout.trim();
     return hash || null;
   } catch {
     return null;
@@ -70,11 +82,15 @@ export function getLastCommitHash(cwd: string = process.cwd()): string | null {
  */
 export function getRepositoryUrl(cwd: string = process.cwd()): string | null {
   try {
-    const url = execSync('git config --get remote.origin.url', {
+    const result = spawnSync('git', ['config', '--get', 'remote.origin.url'], {
       cwd,
       encoding: 'utf8',
       stdio: 'pipe',
-    }).trim();
+    });
+    if (result.error || result.status !== 0) {
+      return null;
+    }
+    const url = result.stdout.trim();
     return url || null;
   } catch {
     return null;
@@ -86,10 +102,10 @@ export function getRepositoryUrl(cwd: string = process.cwd()): string | null {
  */
 export function createTag(tag: string, message?: string, cwd: string = process.cwd()): boolean {
   try {
-    const cmd = message ? `git tag -a "${tag}" -m "${message}"` : `git tag "${tag}"`;
+    const args = message ? ['tag', '-a', tag, '-m', message] : ['tag', tag];
 
-    execSync(cmd, { cwd, stdio: 'pipe' });
-    return true;
+    const result = spawnSync('git', args, { cwd, stdio: 'pipe' });
+    return result.status === 0;
   } catch {
     return false;
   }
@@ -107,12 +123,17 @@ export function hasUncommittedChanges(cwd: string = process.cwd()): boolean {
  */
 export function getModifiedFiles(cwd: string = process.cwd()): string[] {
   try {
-    const output = execSync('git status --porcelain', {
+    const result = spawnSync('git', ['status', '--porcelain'], {
       cwd,
       encoding: 'utf8',
       stdio: 'pipe',
-    }).trim();
+    });
 
+    if (result.error || result.status !== 0) {
+      return [];
+    }
+
+    const output = result.stdout.trim();
     if (!output) return [];
 
     return output
