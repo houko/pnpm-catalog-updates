@@ -39,11 +39,25 @@ const nextConfig = {
     '/**/*': ['./src/app/**/*.mdx'],
   },
   webpack: (config) => {
-    // Use process.cwd() for CI environments, fallback to __dirname for local
-    const projectRoot = process.env.CI 
-      ? path.join(process.cwd(), 'apps/docs') 
-      : __dirname
+    // More robust path resolution for both local and CI environments
+    let projectRoot = __dirname
+    
+    // Check if we're running from the workspace root (turbo scenario)
+    if (process.cwd().endsWith('pnpm-catalog-updates') && 
+        !process.cwd().endsWith('apps/docs')) {
+      projectRoot = path.join(process.cwd(), 'apps/docs')
+    }
+    
     const srcPath = path.resolve(projectRoot, 'src')
+    
+    // Debug logging for CI
+    if (process.env.CI) {
+      console.log('Next.js webpack config debug:')
+      console.log('process.cwd():', process.cwd())
+      console.log('__dirname:', __dirname)
+      console.log('projectRoot:', projectRoot)
+      console.log('srcPath:', srcPath)
+    }
     
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -52,6 +66,16 @@ const nextConfig = {
       '@/images': path.resolve(srcPath, 'images'),
       '@/components': path.resolve(srcPath, 'components'),
       '@/mdx': path.resolve(srcPath, 'mdx'),
+    }
+    
+    // Debug alias paths in CI
+    if (process.env.CI) {
+      console.log('Webpack aliases:')
+      Object.entries(config.resolve.alias).forEach(([key, value]) => {
+        if (key.startsWith('@')) {
+          console.log(`${key}: ${value}`)
+        }
+      })
     }
     
     return config
