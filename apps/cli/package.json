@@ -1,6 +1,6 @@
 {
   "name": "pcu",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "CLI application for pnpm-catalog-updates",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,8 +32,6 @@
     "clean": "rimraf dist bin/*.js"
   },
   "dependencies": {
-    "@pcu/core": "workspace:*",
-    "@pcu/utils": "workspace:*",
     "chalk": "catalog:",
     "cli-table3": "catalog:",
     "commander": "catalog:",
