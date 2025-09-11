@@ -18,8 +18,8 @@ export default defineConfig({
   bundle: true,
   esbuildOptions: (options) => {
     options.alias = {
-      '@pcu/core': path.resolve(__dirname, '../../packages/core/dist/index.js'),
-      '@pcu/utils': path.resolve(__dirname, '../../packages/utils/dist/index.js'),
+      '@pcu/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
+      '@pcu/utils': path.resolve(__dirname, '../../packages/utils/src/index.ts'),
     };
     return options;
   },
