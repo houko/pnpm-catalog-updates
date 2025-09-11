@@ -6,6 +6,7 @@ on:
     paths:
       - ".changeset/**"
       - "package.json"
+      - "apps/cli/package.json"
 
 concurrency:
   group: release
