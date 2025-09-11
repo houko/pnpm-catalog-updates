@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ["18.19.1", "20.10.0", "22.10.0", "24.3.0"]
+        node-version: ["20.19.0", "22.19.0", "24.3.0"]
 
     steps:
       - name: Checkout
@@ -62,7 +62,7 @@ jobs:
         run: pnpm test:coverage --reporter=verbose
 
       - name: Upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '18.19.1'
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.19.0'
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage/lcov.info
@@ -70,7 +70,7 @@ jobs:
 
       # Upload coverage to Coveralls for badge
       - name: Upload coverage to Coveralls
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '18.19.1'
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.19.0'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

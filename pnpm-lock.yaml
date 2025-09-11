@@ -186,6 +186,12 @@ importers:
 
   apps/cli:
     dependencies:
+      "@pcu/core":
+        specifier: workspace:*
+        version: link:../../packages/core
+      "@pcu/utils":
+        specifier: workspace:*
+        version: link:../../packages/utils
       "@types/glob":
         specifier: ^9.0.0
         version: 9.0.0

@@ -17,7 +17,7 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.node-version || 'file:.nvmrc' }}
+        node-version: ${{ inputs.node-version || '' }}
         node-version-file: ${{ inputs.node-version == '' && '.nvmrc' || '' }}
         registry-url: ${{ inputs.registry-url }}
 
