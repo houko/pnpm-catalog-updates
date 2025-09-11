@@ -14,8 +14,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
-    "rootDir": ".",
+    "baseUrl": "./",
+    "rootDir": "./",
     "plugins": [
       {
         "name": "next"

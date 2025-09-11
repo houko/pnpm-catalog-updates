@@ -35,7 +35,7 @@ jobs:
           pnpm -F @pcu/utils typecheck
           pnpm -F @pcu/core typecheck
           pnpm -F pcu typecheck
-          cd apps/docs && pnpm run typecheck
+          pnpm exec tsc --project apps/docs/tsconfig.json --noEmit
 
       - name: Lint
         run: pnpm lint
