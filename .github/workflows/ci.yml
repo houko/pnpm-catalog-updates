@@ -29,7 +29,9 @@ jobs:
 
       - name: Type check
         run: |
-          # Run typecheck for each package to ensure correct working directory
+          # Build dependencies first (required for cross-package imports)
+          pnpm -F @pcu/utils build
+          # Now run typecheck for each package
           pnpm -F @pcu/utils typecheck
           pnpm -F @pcu/core typecheck
           pnpm -F pcu typecheck
