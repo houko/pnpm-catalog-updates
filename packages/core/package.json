@@ -1,0 +1,74 @@
+{
+  "name": "@pcu/core",
+  "private": true,
+  "description": "Core domain logic and services for pnpm-catalog-updates",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "test": "vitest --run --passWithNoTests",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --run --coverage --passWithNoTests",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@pcu/utils": "workspace:*",
+    "fs-extra": "catalog:",
+    "glob": "catalog:",
+    "lodash": "catalog:",
+    "npm-registry-fetch": "catalog:",
+    "pacote": "catalog:",
+    "semver": "catalog:",
+    "yaml": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "catalog:",
+    "@types/lodash": "catalog:",
+    "@types/node": "catalog:node20",
+    "@types/npm-registry-fetch": "^8.0.8",
+    "@types/pacote": "^11.1.8",
+    "@types/semver": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "rimraf": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "keywords": [
+    "pnpm",
+    "catalog",
+    "core",
+    "domain"
+  ],
+  "author": {
+    "name": "Evan Hu",
+    "email": "evan@yldm.tech"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/houko/pnpm-catalog-updates.git",
+    "directory": "packages/core"
+  }
+}

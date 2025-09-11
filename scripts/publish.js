@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,7 +19,8 @@ async function publish() {
     // Backup original package.json
     const packageJsonPath = path.join(projectRoot, 'package.json');
     const backupPath = path.join(projectRoot, 'package.original.json');
-    await fs.copy(packageJsonPath, backupPath);
+    const originalContent = await fs.readFile(packageJsonPath);
+    await fs.writeFile(backupPath, originalContent);
 
     try {
       // Resolve catalog dependencies
@@ -40,7 +41,9 @@ async function publish() {
     } finally {
       // Always restore original package.json
       console.log('Restoring original package.json...');
-      await fs.move(backupPath, packageJsonPath, { overwrite: true });
+      const backupContent = await fs.readFile(backupPath);
+      await fs.writeFile(packageJsonPath, backupContent);
+      await fs.unlink(backupPath);
     }
   } catch (error) {
     console.error('❌ Publish failed:', error.message);

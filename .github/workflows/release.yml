@@ -2,10 +2,11 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - ".changeset/**"
       - "package.json"
+      - "apps/cli/package.json"
 
 concurrency:
   group: release
@@ -28,106 +29,25 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        id: pnpm-store
-        shell: bash
-        run: |
-          echo "path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
 
-      - name: Create Release Pull Request or Publish
+      - name: Create Release Pull Request or Publish CLI
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: node scripts/publish.js
-          commit: "chore: release package"
-          title: "chore: release package"
+          publish: pnpm changeset publish
+          commit: "chore: release CLI package"
+          title: "chore: release CLI package"
           setupGitUser: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # Publish alias package "pcu" pointing to the same code
-      - name: Publish alias package pcu
-        if: steps.changesets.outputs.published == 'true'
-        run: |
-          # Backup original package.json
-          cp package.json package.original.json
-
-          # Resolve catalog dependencies and rename package
-          node - <<'NODE'
-          const fs = require('fs');
-          const yaml = require('yaml');
-
-          // Read workspace catalog
-          const workspaceYaml = fs.readFileSync('pnpm-workspace.yaml', 'utf8');
-          const workspace = yaml.parse(workspaceYaml);
-          const catalog = workspace.catalog || {};
-
-          // Read and modify package.json
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-
-          // Rename package
-          pkg.name = 'pcu';
-
-          // Resolve catalog: dependencies
-          const resolveDeps = (deps) => {
-            if (!deps) return deps;
-            const resolved = {};
-            for (const [name, version] of Object.entries(deps)) {
-              if (version === 'catalog:') {
-                resolved[name] = catalog[name] || version;
-              } else {
-                resolved[name] = version;
-              }
-            }
-            return resolved;
-          };
-
-          // Resolve all dependency types
-          if (pkg.dependencies) {
-            pkg.dependencies = resolveDeps(pkg.dependencies);
-          }
-          if (pkg.devDependencies) {
-            pkg.devDependencies = resolveDeps(pkg.devDependencies);
-          }
-          if (pkg.peerDependencies) {
-            pkg.peerDependencies = resolveDeps(pkg.peerDependencies);
-          }
-
-          // Write the modified package.json
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          NODE
-
-          # Publish the alias package
-          npm publish --access public
-
-          # Restore original package.json
-          mv package.original.json package.json
-        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
@@ -144,9 +64,7 @@ jobs:
             ## Installation
 
             ```bash
-            npm install -g pnpm-catalog-updates@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-            # or
-            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            npm install -g @pcu/cli@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
             ```
 
             ## Usage

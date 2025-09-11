@@ -1,0 +1,44 @@
+{
+  "name": "@example/utils",
+  "version": "1.0.0",
+  "description": "Example utility library package",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src --ext ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "lodash": "catalog:",
+    "chalk": "catalog:"
+  },
+  "devDependencies": {
+    "@types/lodash": "catalog:",
+    "typescript": "catalog:",
+    "rollup": "catalog:",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.0",
+    "vitest": "catalog:",
+    "eslint": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.9.0"
+  }
+}
