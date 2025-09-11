@@ -13,6 +13,7 @@ inspired by
 
 ## ✨ Features
 
+- 🏗️ **One-Command Setup**: Initialize complete PNPM workspace with `pcu init`
 - 🔍 **Smart Detection**: Automatically discovers pnpm workspaces and catalog
   configurations
 - 🎯 **Catalog Focused**: Specialized for pnpm catalog dependency management
@@ -24,16 +25,29 @@ inspired by
   updates
 - ⚡ **High Performance**: Parallel API queries and intelligent caching
 - 🛡️ **Security Aware**: Built-in security vulnerability scanning
-- 🎨 **Beautiful UI**: Enhanced progress bars, color themes, and interactive
-  prompts
+- 🎨 **Beautiful UI**: Enhanced progress bars with 6 visual styles, color
+  themes, and interactive prompts
+- 🌈 **Progress Bar Styles**: Choose from gradient, fancy, minimal, rainbow,
+  neon, or blocks styles
 - 🎭 **Customizable Themes**: Multiple color themes (default, modern, minimal,
   neon)
-- 📈 **Progress Tracking**: Real-time progress indicators for all operations
+- 📈 **Real-time Progress**: Live progress tracking with speed indicators and
+  time estimates
+- 🔄 **Smart Version Check**: Automatic update notifications with --version
+  command
 - 🔧 **Configurable**: Flexible configuration options and update strategies
+- 🔐 **Private Registry Support**: Automatically reads `.npmrc` and `.pnpmrc`
+  configurations for scoped registries and authentication
+- 📦 **Multi-Registry**: Supports different registries for different package
+  scopes (e.g., GitHub Packages, private npm registries)
 
 ## 🚀 Quick Start
 
 ```bash
+# Initialize a new PNPM workspace with PCU configuration
+pcu init
+
+# Or check for updates in existing workspace
 pcu -c
 ```
 
@@ -59,6 +73,9 @@ pcu
 ### Basic Usage
 
 ```bash
+# Initialize PNPM workspace and PCU configuration
+pcu init
+
 # Quick check for updates
 pcu -c
 
@@ -74,29 +91,70 @@ pcu -s
 
 ### Common Commands
 
-| Command  | Description                       | Example                   |
-| -------- | --------------------------------- | ------------------------- |
-| `pcu -c` | Check for updates                 | `pcu -c --catalog node18` |
-| `pcu -i` | Update dependencies (interactive) | `pcu -i -b`               |
-| `pcu -a` | Analyze impact                    | `pcu -a default react`    |
-| `pcu -s` | Workspace info                    | `pcu -s --validate`       |
-| `pcu -t` | Configure color theme             | `pcu -t --set modern`     |
-| `pcu -h` | Show help                         | `pcu -h update`           |
+| Command    | Description                            | Example                   |
+| ---------- | -------------------------------------- | ------------------------- |
+| `pcu init` | Initialize workspace and configuration | `pcu init --verbose`      |
+| `pcu -c`   | Check for updates                      | `pcu -c --catalog node18` |
+| `pcu -i`   | Update dependencies (interactive)      | `pcu -i -b`               |
+| `pcu -a`   | Analyze impact                         | `pcu -a default react`    |
+| `pcu -s`   | Workspace info                         | `pcu -s --validate`       |
+| `pcu -t`   | Configure color theme                  | `pcu -t --set modern`     |
+| `pcu -h`   | Show help                              | `pcu -h update`           |
 
 ## 📖 Complete Usage Guide
 
 ### All Commands & Shortcuts
 
-| Full Command    | Shorthand | Description                               |
-| --------------- | --------- | ----------------------------------------- |
-| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies   |
-| `pcu update`    | `pcu -u`  | Update catalog dependencies               |
-| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates      |
-| `pcu workspace` | `pcu -s`  | Show workspace information and validation |
-| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings    |
-| `pcu help`      | `pcu -h`  | Display help information                  |
+| Full Command    | Shorthand | Description                                     |
+| --------------- | --------- | ----------------------------------------------- |
+| `pcu init`      | `pcu i`   | Initialize PNPM workspace and PCU configuration |
+| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies         |
+| `pcu update`    | `pcu -u`  | Update catalog dependencies                     |
+| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates            |
+| `pcu workspace` | `pcu -s`  | Show workspace information and validation       |
+| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings          |
+| `pcu help`      | `pcu -h`  | Display help information                        |
 
 ### Commands
+
+#### `pcu init` / `pcu i`
+
+Initialize a complete PNPM workspace environment with PCU configuration.
+
+```bash
+pcu init [options]
+pcu i [options]
+
+Options:
+  --force                  Overwrite existing configuration file
+  --create-workspace       Create PNPM workspace structure if missing (default: true)
+  --no-create-workspace    Skip creating PNPM workspace structure
+  -w, --workspace <path>   Workspace directory (default: current directory)
+  -v, --verbose            Show detailed information
+  --no-color               Disable colored output
+
+Description:
+  Creates a complete PNPM workspace environment with:
+  - Basic .pcurc.json configuration file with sensible defaults
+  - package.json for workspace root (if missing)
+  - pnpm-workspace.yaml configuration (if missing)
+  - packages/ directory structure (if missing)
+
+  The configuration includes package update rules for React, TypeScript,
+  ESLint, and other common dependencies with appropriate security settings.
+
+Examples:
+  pcu init                           # Initialize complete workspace in current directory
+  pcu init --workspace ./my-project  # Initialize in specific directory
+  pcu init --force                   # Overwrite existing configuration
+  pcu init --no-create-workspace     # Only create .pcurc.json configuration
+
+Files Created:
+  .pcurc.json           PCU configuration with package rules and settings
+  package.json          Workspace root package.json (if missing)
+  pnpm-workspace.yaml   PNPM workspace configuration (if missing)
+  packages/             Directory for workspace packages (if missing)
+```
 
 #### `pcu check` / `pcu -c` / `pcu chk`
 
@@ -253,6 +311,10 @@ These options work with all commands:
 ### Common Usage Patterns
 
 ```bash
+# Initialize new workspace
+pcu init                          # Create complete workspace structure
+pcu init --no-create-workspace    # Only create .pcurc.json configuration
+
 # Quick check for updates
 pcu -c
 
@@ -292,7 +354,7 @@ pcu -t --interactive        # Interactive theme setup
 
 ### Configuration
 
-Create a `.pcurc.json` file in your project root:
+Create a `.pcurc.json` file (PCU configuration file) in your project root:
 
 ```json
 {
@@ -323,49 +385,148 @@ Create a `.pcurc.json` file in your project root:
 }
 ```
 
+#### Package Filtering Configuration
+
+You can also configure package-specific update rules by creating a `.pcurc.json`
+(PCU configuration file) with filtering options:
+
+```json
+{
+  // Exclude packages you never want to update
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+
+  // Only update specific packages (optional - if not specified, all packages are considered)
+  "include": ["lodash*", "chalk", "commander"],
+
+  // Package-specific update rules
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor", // Only minor updates for React
+      "requireConfirmation": true, // Always ask before updating
+      "relatedPackages": ["@types/react", "@types/react-dom"] // Related packages automatically follow same strategy
+    },
+    {
+      "patterns": ["vue"],
+      "target": "minor",
+      "relatedPackages": ["@vue/compiler-sfc", "@vue/runtime-core"] // Vue ecosystem packages
+    },
+    {
+      "patterns": ["@types/node"],
+      "target": "minor", // Conservative updates for Node.js type definitions
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest", // Other type definitions can update more freely
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor", // Minor updates for dev tools
+      "groupUpdate": true // Update related packages together
+    }
+  ],
+
+  // Security configuration
+  "security": {
+    "autoFixVulnerabilities": true, // Automatically check and fix security vulnerabilities
+    "allowMajorForSecurity": true, // Allow major version upgrades for security fixes
+    "notifyOnSecurityUpdate": true // Show notifications on security updates
+  },
+
+  // Advanced configuration
+  "advanced": {
+    "concurrency": 5, // Number of concurrent network requests (default: 5)
+    "timeout": 30000, // Network request timeout in ms (default: 30000)
+    "retries": 3, // Number of retries on failure (default: 3)
+    "cacheValidityMinutes": 60, // Cache validity period in minutes (default: 60, set to 0 to disable caching)
+    "checkForUpdates": true // Check for tool updates on startup (default: true)
+  },
+
+  // Monorepo configuration
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"], // Packages that need version sync across multiple catalogs
+    "catalogPriority": ["default", "latest", "react17"] // Catalog priority order
+  },
+
+  // Override defaults
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  }
+}
+```
+
+**Related Packages Feature**: `relatedPackages` allows related packages to
+automatically follow the same version strategy
+
+- When you configure `react` with `target: "minor"`, `@types/react` will
+  automatically apply the same strategy
+- Avoid manually duplicating update rules for related packages
+- Ensures version consistency across ecosystem packages
+
+**Configuration priority**: relatedPackages > direct pattern matching > CLI
+options > default configuration
+
+**Priority Examples**:
+
+```bash
+@types/react → matches react rule's relatedPackages → uses "minor" strategy
+@types/node → matches @types/node specific rule → uses "minor" strategy
+@types/lodash → matches @types/* general rule → uses "latest" strategy
+```
+
+**Pattern matching**: Supports glob patterns like `react*`, `@types/*`,
+`eslint*`
+
 ## 📁 Project Structure
 
-This project follows Domain-Driven Design (DDD) principles:
+This project is organized as a pnpm monorepo with clean architecture:
 
 ```text
-src/
-├── cli/                    # CLI interface layer
-│   ├── commands/           # Command handlers
-│   ├── options/            # Option parsers
-│   ├── formatters/         # Output formatters & progress bars
-│   ├── interactive/        # Interactive prompts & UI
-│   ├── themes/             # Color themes & styling
-│   └── validators/         # Input validation
-├── application/            # Application services
-│   ├── services/           # Application services
-│   ├── handlers/           # Command handlers
-│   └── mappers/            # Data mappers
-├── domain/                 # Domain model
-│   ├── entities/           # Domain entities
-│   ├── value-objects/      # Value objects
-│   ├── aggregates/         # Aggregate roots
-│   ├── services/           # Domain services
-│   └── repositories/       # Repository interfaces
-├── infrastructure/         # Infrastructure layer
-│   ├── repositories/       # Repository implementations
-│   ├── external-services/  # External service clients
-│   └── file-system/        # File system operations
-├── adapters/               # Adapter layer
-│   ├── registry/           # Package registry adapters
-│   └── package-managers/   # Package manager adapters
-└── common/                 # Common utilities
-    ├── types/              # Type definitions
-    ├── utils/              # Utility functions
-    ├── config/             # Configuration
-    └── logger/             # Logging
+├── apps/
+│   └── cli/                    # CLI application
+│       ├── src/                # CLI source code
+│       │   ├── cli/            # CLI interface layer
+│       │   │   ├── commands/   # Command handlers
+│       │   │   ├── formatters/ # Output formatters & progress bars
+│       │   │   ├── interactive/# Interactive prompts & UI
+│       │   │   ├── themes/     # Color themes & styling
+│       │   │   └── validators/ # Input validation
+│       │   └── index.ts        # CLI entry point
+│       ├── bin/                # Executable binaries
+│       └── scripts/            # Build scripts
+├── packages/
+│   ├── core/                   # Core business logic
+│   │   ├── src/                # Core source code
+│   │   │   ├── application/    # Application services
+│   │   │   ├── domain/         # Domain model (DDD)
+│   │   │   │   ├── entities/   # Domain entities
+│   │   │   │   ├── value-objects/ # Value objects
+│   │   │   │   └── repositories/  # Repository interfaces
+│   │   │   └── infrastructure/ # Infrastructure layer
+│   │   │       ├── repositories/ # Repository implementations
+│   │   │       ├── external-services/ # External API clients
+│   │   │       └── file-system/ # File system operations
+│   │   └── dist/               # Built core package
+│   └── utils/                  # Shared utilities
+│       ├── src/                # Utils source code
+│       │   ├── config/         # Configuration management
+│       │   ├── error-handling/ # Error handling utilities
+│       │   ├── logger/         # Logging utilities
+│       │   ├── types/          # Type definitions
+│       │   └── utils/          # Common utilities
+│       └── dist/               # Built utils package
+└── scripts/                    # Build and deployment scripts
 ```
 
 ## 🧪 Development
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm >= 8.15.0
+- Node.js >= 22.0.0
+- pnpm >= 10.0.0
 
 ### Setup
 

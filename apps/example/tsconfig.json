@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@example/*": ["packages/*/src", "apps/*/src"]
+    }
+  },
+  "include": ["apps/*/src/**/*", "packages/*/src/**/*", "*.ts", "*.tsx"],
+  "exclude": ["node_modules", "dist", "coverage", ".turbo"],
+  "references": [
+    { "path": "./apps/react-app" },
+    { "path": "./apps/legacy-react-app" },
+    { "path": "./apps/mui-app" },
+    { "path": "./apps/api-server" },
+    { "path": "./packages/utils" }
+  ]
+}

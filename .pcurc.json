@@ -1,0 +1,40 @@
+{
+  "exclude": ["typescript"],
+  "defaults": {
+    "createBackup": true,
+    "target": "minor"
+  },
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/node"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  },
+  "monorepo": {
+    "syncVersions": [],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}

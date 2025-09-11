@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - ".changeset/**"
       - "package.json"
@@ -28,62 +28,25 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Get pnpm store directory
-        id: pnpm-store
-        shell: bash
-        run: |
-          echo "path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm store
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
 
-      - name: Create Release Pull Request or Publish
+      - name: Create Release Pull Request or Publish CLI
         id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
-          commit: "chore: release package"
-          title: "chore: release package"
+          commit: "chore: release CLI package"
+          title: "chore: release CLI package"
           setupGitUser: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # Publish alias package "pcu" pointing to the same code
-      - name: Publish alias package pcu
-        if: steps.changesets.outputs.published == 'true'
-        run: |
-          cp package.json package.original.json
-          node - <<'NODE'
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.name = 'pcu';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          NODE
-          npm publish --access public
-          mv package.original.json package.json
-        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
@@ -100,9 +63,7 @@ jobs:
             ## Installation
 
             ```bash
-            npm install -g pnpm-catalog-updates@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-            # or
-            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            npm install -g @pcu/cli@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
             ```
 
             ## Usage

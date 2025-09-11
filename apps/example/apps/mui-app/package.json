@@ -1,0 +1,33 @@
+{
+  "name": "@example/mui-app",
+  "version": "1.0.0",
+  "description": "Example Material-UI React app using material-ui catalog",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint src --ext ts,tsx",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@mui/material": "catalog:material-ui",
+    "@mui/icons-material": "catalog:material-ui",
+    "@emotion/react": "catalog:material-ui",
+    "@emotion/styled": "catalog:material-ui",
+    "axios": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "eslint": "catalog:",
+    "@vitejs/plugin-react": "^4.2.0"
+  }
+}
