@@ -23,10 +23,12 @@
     "example:react-analyze": "echo 'Example: Analyze React update impact' && pnpm dlx pnpm-catalog-updates analyze default react"
   },
   "devDependencies": {
-    "chalk": "catalog:",
-    "prettier": "catalog:",
-    "typescript": "catalog:",
-    "@types/node": "catalog:node20"
+    "chalk": "^5.4.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "@types/node": "^20.17.14",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=18.0.0",
