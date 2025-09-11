@@ -1,6 +1,7 @@
 {
   "name": "@pcu/docs",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +10,7 @@
     "lint": "next lint",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --project . --noEmit"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
