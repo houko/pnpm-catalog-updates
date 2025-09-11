@@ -1,8 +1,13 @@
 # pcu
 
+[![npm version](https://img.shields.io/npm/v/pcu.svg)](https://www.npmjs.com/package/pcu)
+[![npm downloads](https://img.shields.io/npm/dm/pcu.svg)](https://www.npmjs.com/package/pcu)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
+
 A powerful CLI tool for managing pnpm workspace catalog dependencies with ease.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -46,7 +51,9 @@ pcu workspace
 pcu -s
 ```
 
-## 📋 Commands
+![PCU Showcase](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
+
+## Commands
 
 | Command         | Shorthand | Description                                     |
 | --------------- | --------- | ----------------------------------------------- |
@@ -57,7 +64,7 @@ pcu -s
 | `pcu init`      |           | Initialize workspace with catalog configuration |
 | `pcu help`      | `pcu -h`  | Display help information                        |
 
-## 🎯 Common Examples
+## Common Examples
 
 ```bash
 # Interactive update with backup
@@ -79,7 +86,7 @@ pcu workspace --validate
 pcu update --dry-run
 ```
 
-## ⚙️ Options
+## Options
 
 ### Global Options
 
@@ -96,7 +103,7 @@ pcu update --dry-run
 - `--target <level>`: Update target (patch|minor|major|latest)
 - `--catalog <name>`: Target specific catalog
 
-## 📁 Configuration
+## Configuration
 
 Create a `.pcurc.json` file in your project root:
 
@@ -109,22 +116,22 @@ Create a `.pcurc.json` file in your project root:
 }
 ```
 
-## 🔧 Requirements
+## Requirements
 
 - Node.js >= 22.0.0
 - pnpm workspace with catalog configuration
 - pnpm-workspace.yaml with catalog entries
 
-## 📚 Documentation
+## Documentation
 
 For complete documentation, visit:
 [pnpm-catalog-updates](https://github.com/houko/pnpm-catalog-updates#readme)
 
-## 🤝 Contributing
+## Contributing
 
 Found a bug or want to contribute? Visit our
 [GitHub repository](https://github.com/houko/pnpm-catalog-updates).
 
-## 📄 License
+## License
 
 MIT © [Evan Hu](https://github.com/houko)

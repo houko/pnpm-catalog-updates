@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "bin/**"],
+      "outputs": ["dist/**", "bin/**", ".next/**", "out/**"],
       "env": ["NODE_ENV"]
     },
     "build:watch": {
