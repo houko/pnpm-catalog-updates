@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react'
 import { createStore, useStore, type StoreApi } from 'zustand'
 
 import { remToPx } from '@/lib/remToPx'
@@ -40,9 +34,7 @@ function createSectionStore(sections: Array<Section>) {
     visibleSections: [],
     setVisibleSections: (visibleSections) =>
       set((state) =>
-        state.visibleSections.join() === visibleSections.join()
-          ? {}
-          : { visibleSections },
+        state.visibleSections.join() === visibleSections.join() ? {} : { visibleSections }
       ),
     registerHeading: ({ id, ref, offsetRem }) =>
       set((state) => {
@@ -71,11 +63,7 @@ function useVisibleSections(sectionStore: StoreApi<SectionState>) {
       let { innerHeight, scrollY } = window
       let newVisibleSections = []
 
-      for (
-        let sectionIndex = 0;
-        sectionIndex < sections.length;
-        sectionIndex++
-      ) {
+      for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
         let { id, headingRef, offsetRem = 0 } = sections[sectionIndex]
 
         if (!headingRef?.current) {
@@ -91,8 +79,7 @@ function useVisibleSections(sectionStore: StoreApi<SectionState>) {
 
         let nextSection = sections[sectionIndex + 1]
         let bottom =
-          (nextSection?.headingRef?.current?.getBoundingClientRect().top ??
-            Infinity) +
+          (nextSection?.headingRef?.current?.getBoundingClientRect().top ?? Infinity) +
           scrollY -
           remToPx(nextSection?.offsetRem ?? 0)
 
@@ -122,8 +109,7 @@ function useVisibleSections(sectionStore: StoreApi<SectionState>) {
 
 const SectionStoreContext = createContext<StoreApi<SectionState> | null>(null)
 
-const useIsomorphicLayoutEffect =
-  typeof window === 'undefined' ? useEffect : useLayoutEffect
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export function SectionProvider({
   sections,
@@ -141,9 +127,7 @@ export function SectionProvider({
   }, [sectionStore, sections])
 
   return (
-    <SectionStoreContext.Provider value={sectionStore}>
-      {children}
-    </SectionStoreContext.Provider>
+    <SectionStoreContext.Provider value={sectionStore}>{children}</SectionStoreContext.Provider>
   )
 }
 

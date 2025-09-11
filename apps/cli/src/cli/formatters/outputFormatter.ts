@@ -5,8 +5,13 @@
  * Supports table, JSON, YAML, and minimal output formats.
  */
 
-import { ImpactAnalysis, OutdatedReport, UpdateResult } from '@pcu/core';
-import { WorkspaceStats, WorkspaceValidationReport } from '@pcu/core';
+import {
+  ImpactAnalysis,
+  OutdatedReport,
+  UpdateResult,
+  WorkspaceStats,
+  WorkspaceValidationReport,
+} from '@pcu/core';
 import { SecurityReport } from '../commands/securityCommand.js';
 
 import chalk from 'chalk';

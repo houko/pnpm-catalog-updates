@@ -4,9 +4,9 @@
  * Provides smart prompts and auto-completion for CLI commands
  */
 
+import { FileSystemService } from '@pcu/core';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { FileSystemService } from '@pcu/core';
 import { StyledText } from '../themes/colorTheme.js';
 
 export interface AutoCompleteOption {

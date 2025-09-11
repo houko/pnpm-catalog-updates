@@ -37,9 +37,9 @@ type Autocomplete = AutocompleteApi<
 function useAutocomplete({ onNavigate }: { onNavigate: () => void }) {
   let id = useId()
   let router = useRouter()
-  let [autocompleteState, setAutocompleteState] = useState<
-    AutocompleteState<Result> | EmptyObject
-  >({})
+  let [autocompleteState, setAutocompleteState] = useState<AutocompleteState<Result> | EmptyObject>(
+    {}
+  )
 
   function navigate({ itemUrl }: { itemUrl?: string }) {
     if (itemUrl) {
@@ -50,12 +50,7 @@ function useAutocomplete({ onNavigate }: { onNavigate: () => void }) {
   }
 
   let [autocomplete] = useState<Autocomplete>(() =>
-    createAutocomplete<
-      Result,
-      React.SyntheticEvent,
-      React.MouseEvent,
-      React.KeyboardEvent
-    >({
+    createAutocomplete<Result, React.SyntheticEvent, React.MouseEvent, React.KeyboardEvent>({
       id,
       placeholder: 'Find something...',
       defaultActiveItemId: 0,
@@ -84,7 +79,7 @@ function useAutocomplete({ onNavigate }: { onNavigate: () => void }) {
           ]
         })
       },
-    }),
+    })
   )
 
   return { autocomplete, autocompleteState }
@@ -127,14 +122,7 @@ function LoadingIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
         d="M15.5 10a5.5 5.5 0 1 0-5.5 5.5"
       />
       <defs>
-        <linearGradient
-          id={id}
-          x1="13"
-          x2="9.5"
-          y1="9"
-          y2="15"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={id} x1="13" x2="9.5" y1="9" y2="15" gradientUnits="userSpaceOnUse">
           <stop stopColor="currentColor" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
@@ -170,17 +158,15 @@ function SearchResult({
   let id = useId()
 
   let sectionTitle = navigation.find((section) =>
-    section.links.find((link) => link.href === result.url.split('#')[0]),
+    section.links.find((link) => link.href === result.url.split('#')[0])
   )?.title
-  let hierarchy = [sectionTitle, result.pageTitle].filter(
-    (x): x is string => typeof x === 'string',
-  )
+  let hierarchy = [sectionTitle, result.pageTitle].filter((x): x is string => typeof x === 'string')
 
   return (
     <li
       className={clsx(
         'group block cursor-default px-4 py-3 aria-selected:bg-zinc-50 dark:aria-selected:bg-zinc-800/50',
-        resultIndex > 0 && 'border-t border-zinc-100 dark:border-zinc-800',
+        resultIndex > 0 && 'border-t border-zinc-100 dark:border-zinc-800'
       )}
       aria-labelledby={`${id}-hierarchy ${id}-title`}
       {...autocomplete.getItemProps({
@@ -199,7 +185,7 @@ function SearchResult({
         <div
           id={`${id}-hierarchy`}
           aria-hidden="true"
-          className="mt-1 truncate text-2xs whitespace-nowrap text-zinc-500"
+          className="text-2xs mt-1 truncate whitespace-nowrap text-zinc-500"
         >
           {hierarchy.map((item, itemIndex, items) => (
             <Fragment key={itemIndex}>
@@ -236,7 +222,7 @@ function SearchResults({
         <NoResultsIcon className="mx-auto h-5 w-5 stroke-zinc-900 dark:stroke-zinc-600" />
         <p className="mt-2 text-xs text-zinc-700 dark:text-zinc-400">
           Nothing found for{' '}
-          <strong className="font-semibold break-words text-zinc-900 dark:text-white">
+          <strong className="break-words font-semibold text-zinc-900 dark:text-white">
             &lsquo;{query}&rsquo;
           </strong>
           . Please try again.
@@ -273,13 +259,13 @@ const SearchInput = forwardRef<
 
   return (
     <div className="group relative flex h-12">
-      <SearchIcon className="pointer-events-none absolute top-0 left-3 h-full w-5 stroke-zinc-500" />
+      <SearchIcon className="pointer-events-none absolute left-3 top-0 h-full w-5 stroke-zinc-500" />
       <input
         ref={inputRef}
         data-autofocus
         className={clsx(
-          'flex-auto appearance-none bg-transparent pl-10 text-zinc-900 outline-hidden placeholder:text-zinc-500 focus:w-full focus:flex-none sm:text-sm dark:text-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden',
-          autocompleteState.status === 'stalled' ? 'pr-11' : 'pr-4',
+          'outline-hidden flex-auto appearance-none bg-transparent pl-10 text-zinc-900 placeholder:text-zinc-500 focus:w-full focus:flex-none sm:text-sm dark:text-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden',
+          autocompleteState.status === 'stalled' ? 'pr-11' : 'pr-4'
         )}
         {...inputProps}
         onKeyDown={(event) => {
@@ -366,13 +352,13 @@ function SearchDialog({
     >
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-zinc-400/25 backdrop-blur-xs data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-black/40"
+        className="backdrop-blur-xs data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in fixed inset-0 bg-zinc-400/25 dark:bg-black/40"
       />
 
       <div className="fixed inset-0 overflow-y-auto px-4 py-4 sm:px-6 sm:py-20 md:py-32 lg:px-8 lg:py-[15vh]">
         <DialogPanel
           transition
-          className="mx-auto transform-gpu overflow-hidden rounded-lg bg-zinc-50 shadow-xl ring-1 ring-zinc-900/7.5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:max-w-xl dark:bg-zinc-900 dark:ring-zinc-800"
+          className="ring-zinc-900/7.5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in mx-auto transform-gpu overflow-hidden rounded-lg bg-zinc-50 shadow-xl ring-1 sm:max-w-xl dark:bg-zinc-900 dark:ring-zinc-800"
         >
           <div {...autocomplete.getRootProps({})}>
             <form
@@ -389,7 +375,7 @@ function SearchDialog({
               />
               <div
                 ref={panelRef}
-                className="border-t border-zinc-200 bg-white empty:hidden dark:border-zinc-100/5 dark:bg-white/2.5"
+                className="dark:bg-white/2.5 border-t border-zinc-200 bg-white empty:hidden dark:border-zinc-100/5"
                 {...autocomplete.getPanelProps({})}
               >
                 {autocompleteState.isOpen && (
@@ -423,13 +409,12 @@ function useSearchProps() {
       open,
       setOpen: useCallback(
         (open: boolean) => {
-          let { width = 0, height = 0 } =
-            buttonRef.current?.getBoundingClientRect() ?? {}
+          let { width = 0, height = 0 } = buttonRef.current?.getBoundingClientRect() ?? {}
           if (!open || (width !== 0 && height !== 0)) {
             setOpen(open)
           }
         },
-        [setOpen],
+        [setOpen]
       ),
     },
   }
@@ -440,21 +425,19 @@ export function Search() {
   let { buttonProps, dialogProps } = useSearchProps()
 
   useEffect(() => {
-    setModifierKey(
-      /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? '⌘' : 'Ctrl ',
-    )
+    setModifierKey(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? '⌘' : 'Ctrl ')
   }, [])
 
   return (
     <div className="hidden lg:block lg:max-w-md lg:flex-auto">
       <button
         type="button"
-        className="hidden h-8 w-full items-center gap-2 rounded-full bg-white pr-3 pl-2 text-sm text-zinc-500 ring-1 ring-zinc-900/10 transition hover:ring-zinc-900/20 lg:flex dark:bg-white/5 dark:text-zinc-400 dark:ring-white/10 dark:ring-inset dark:hover:ring-white/20"
+        className="hidden h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-zinc-500 ring-1 ring-zinc-900/10 transition hover:ring-zinc-900/20 lg:flex dark:bg-white/5 dark:text-zinc-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20"
         {...buttonProps}
       >
         <SearchIcon className="h-5 w-5 stroke-current" />
         Find something...
-        <kbd className="ml-auto text-2xs text-zinc-400 dark:text-zinc-500">
+        <kbd className="text-2xs ml-auto text-zinc-400 dark:text-zinc-500">
           <kbd className="font-sans">{modifierKey}</kbd>
           <kbd className="font-sans">K</kbd>
         </kbd>
@@ -478,15 +461,11 @@ export function MobileSearch() {
         aria-label="Find something..."
         {...buttonProps}
       >
-        <span className="absolute size-12 pointer-fine:hidden" />
+        <span className="pointer-fine:hidden absolute size-12" />
         <SearchIcon className="h-5 w-5 stroke-zinc-900 dark:stroke-white" />
       </button>
       <Suspense fallback={null}>
-        <SearchDialog
-          className="lg:hidden"
-          onNavigate={close}
-          {...dialogProps}
-        />
+        <SearchDialog className="lg:hidden" onNavigate={close} {...dialogProps} />
       </Suspense>
     </div>
   )

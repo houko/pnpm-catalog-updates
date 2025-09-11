@@ -6,13 +6,11 @@
  * high-level use cases for checking and updating catalog dependencies.
  */
 
+import { AdvancedConfig, ConfigLoader, UserFriendlyErrorHandler } from '@pcu/utils';
 import { WorkspaceRepository } from '../../domain/repositories/workspaceRepository.js';
-import { WorkspacePath } from '../../domain/value-objects/workspacePath.js';
 import { Version, VersionRange } from '../../domain/value-objects/version.js';
+import { WorkspacePath } from '../../domain/value-objects/workspacePath.js';
 import { NpmRegistryService } from '../../infrastructure/external-services/npmRegistryService.js';
-import { ConfigLoader } from '@pcu/utils';
-import { AdvancedConfig } from '@pcu/utils';
-import { UserFriendlyErrorHandler } from '@pcu/utils';
 import { ProgressReporter } from '../interfaces/progressReporter.js';
 
 export interface CheckOptions {

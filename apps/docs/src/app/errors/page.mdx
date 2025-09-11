@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Errors',
   description:
     'In this guide, we will talk about what happens when something goes wrong while you work with the API.',
-}
+};
 
 # Errors
 
@@ -11,9 +11,9 @@ In this guide, we will talk about what happens when something goes wrong while y
 You can tell if your request was successful by checking the status code when receiving an API response. If a response comes back unsuccessful, you can use the error type and error message to figure out what has gone wrong and do some rudimentary debugging (before contacting support).
 
 <Note>
-  Before reaching out to support with an error, please be aware that 99% of all
-  reported errors are, in fact, user errors. Therefore, please carefully check
-  your code before contacting Protocol support.
+  Before reaching out to support with an error, please be aware that 99% of all reported errors are,
+  in fact, user errors. Therefore, please carefully check your code before contacting Protocol
+  support.
 </Note>
 
 ---
@@ -23,12 +23,9 @@ You can tell if your request was successful by checking the status code when rec
 Here is a list of the different categories of status codes returned by the Protocol API. Use these to understand if a request was successful.
 
 <Properties>
-  <Property name="2xx">
-    A 2xx status code indicates a successful response.
-  </Property>
+  <Property name="2xx">A 2xx status code indicates a successful response.</Property>
   <Property name="4xx">
-    A 4xx status code indicates a client error — this means it's a _you_
-    problem.
+    A 4xx status code indicates a client error — this means it's a _you_ problem.
   </Property>
   <Property name="5xx">
     A 5xx status code indicates a server error — you won't be seeing these.

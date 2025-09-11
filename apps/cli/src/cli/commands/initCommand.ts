@@ -5,10 +5,10 @@
  * Creates a basic .pcurc.json configuration file with sensible defaults.
  */
 
-import { existsSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { StyledText, ThemeManager } from '../themes/colorTheme.js';
 import { PackageFilterConfig } from '@pcu/utils';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { StyledText, ThemeManager } from '../themes/colorTheme.js';
 
 export interface InitCommandOptions {
   workspace?: string;

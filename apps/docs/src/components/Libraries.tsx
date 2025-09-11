@@ -26,8 +26,7 @@ const libraries = [
   {
     href: '#',
     name: 'Node.js',
-    description:
-      'Node.js® is an open-source, cross-platform JavaScript runtime environment.',
+    description: 'Node.js® is an open-source, cross-platform JavaScript runtime environment.',
     logo: logoNode,
   },
   {
@@ -59,21 +58,14 @@ export function Libraries() {
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
                 {library.name}
               </h3>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {library.description}
-              </p>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{library.description}</p>
               <p className="mt-4">
                 <Button href={library.href} variant="text" arrow="right">
                   Read more
                 </Button>
               </p>
             </div>
-            <Image
-              src={library.logo}
-              alt=""
-              className="h-12 w-12"
-              unoptimized
-            />
+            <Image src={library.logo} alt="" className="h-12 w-12" unoptimized />
           </div>
         ))}
       </div>

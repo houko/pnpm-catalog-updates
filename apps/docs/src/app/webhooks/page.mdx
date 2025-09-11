@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Webhooks',
   description:
     'In this guide, we will look at how to register and consume webhooks to integrate your app with Protocol.',
-}
+};
 
 # Webhooks
 
@@ -132,8 +132,8 @@ To know for sure that a webhook was, in fact, sent by Protocol instead of a mali
 <CodeGroup title="Verifying a request">
 
 ```js
-const signature = req.headers['x-protocol-signature']
-const hash = crypto.createHmac('sha256', secret).update(payload).digest('hex')
+const signature = req.headers['x-protocol-signature'];
+const hash = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
 if (hash === signature) {
   // Request is verified
