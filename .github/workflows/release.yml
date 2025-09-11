@@ -224,8 +224,8 @@ jobs:
       - name: Build Documentation
         run: |
           cd apps/docs
-          # Build without typecheck in CI (typecheck passes locally but fails in CI)
-          NODE_ENV=production next build
+          # Build documentation using pnpm
+          NODE_ENV=production pnpm build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
