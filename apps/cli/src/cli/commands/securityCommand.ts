@@ -5,7 +5,7 @@
  * Integrates with npm audit and snyk for comprehensive security analysis.
  */
 
-import { execSync, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { OutputFormatter, OutputFormat } from '../formatters/outputFormatter.js';
@@ -230,7 +230,10 @@ export class SecurityCommand {
   ): Promise<Vulnerability[]> {
     try {
       // Check if snyk is installed
-      execSync('snyk --version', { stdio: 'pipe' });
+      const versionResult = spawnSync('snyk', ['--version'], { stdio: 'pipe' });
+      if (versionResult.error) {
+        throw versionResult.error;
+      }
 
       const snykArgs = ['test', '--json'];
 
@@ -238,13 +241,21 @@ export class SecurityCommand {
         snykArgs.push('--dev');
       }
 
-      const snykOutput = execSync(`snyk ${snykArgs.join(' ')}`, {
+      const result = spawnSync('snyk', snykArgs, {
         cwd: workspacePath,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       });
 
-      const snykData = JSON.parse(snykOutput);
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.status !== 0 && result.status !== 1) {
+        throw new Error(`Snyk scan failed with status ${result.status}: ${result.stderr}`);
+      }
+
+      const snykData = JSON.parse(result.stdout);
       return this.parseSnykResults(snykData);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
@@ -465,11 +476,19 @@ export class SecurityCommand {
         fixArgs.push('--omit=dev');
       }
 
-      execSync(`npm ${fixArgs.join(' ')}`, {
+      const result = spawnSync('npm', fixArgs, {
         cwd: workspacePath,
         encoding: 'utf8',
         stdio: 'inherit',
       });
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.status !== 0) {
+        throw new Error(`npm audit fix failed with status ${result.status}`);
+      }
 
       console.log(StyledText.iconSuccess('Security fixes applied successfully'));
 
