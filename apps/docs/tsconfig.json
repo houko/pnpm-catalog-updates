@@ -21,10 +21,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/images/*": ["./src/images/*"],
-      "@/components/*": ["./src/components/*"]
+      "@/*": ["src/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/images/*": ["src/images/*"],
+      "@/components/*": ["src/components/*"]
     }
   },
   "include": [
