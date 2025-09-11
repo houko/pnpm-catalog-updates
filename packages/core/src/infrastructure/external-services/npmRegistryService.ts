@@ -9,10 +9,9 @@ import npmRegistryFetch from 'npm-registry-fetch';
 import pacote from 'pacote';
 import semver from 'semver';
 
+import { AdvancedConfig, UserFriendlyErrorHandler } from '@pcu/utils';
 import { Version, VersionRange } from '../../domain/value-objects/version.js';
-import { AdvancedConfig } from '@pcu/utils';
-import { UserFriendlyErrorHandler } from '@pcu/utils';
-import { NpmrcParser, NpmrcConfig } from '../utils/npmrcParser.js';
+import { NpmrcConfig, NpmrcParser } from '../utils/npmrcParser.js';
 
 export interface PackageInfo {
   name: string;

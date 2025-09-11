@@ -7,15 +7,15 @@
 
 import path from 'path';
 
-import { WorkspaceRepository } from '../../domain/repositories/workspaceRepository.js';
-import { Workspace } from '../../domain/entities/workspace.js';
-import { Package } from '../../domain/entities/package.js';
 import { Catalog } from '../../domain/entities/catalog.js';
-import { WorkspaceId } from '../../domain/value-objects/workspaceId.js';
-import { WorkspacePath } from '../../domain/value-objects/workspacePath.js';
-import { WorkspaceConfig } from '../../domain/value-objects/workspaceConfig.js';
+import { Package } from '../../domain/entities/package.js';
+import { Workspace } from '../../domain/entities/workspace.js';
+import { WorkspaceRepository } from '../../domain/repositories/workspaceRepository.js';
 import { CatalogCollection } from '../../domain/value-objects/catalogCollection.js';
 import { PackageCollection } from '../../domain/value-objects/packageCollection.js';
+import { WorkspaceConfig } from '../../domain/value-objects/workspaceConfig.js';
+import { WorkspaceId } from '../../domain/value-objects/workspaceId.js';
+import { WorkspacePath } from '../../domain/value-objects/workspacePath.js';
 import { FileSystemService } from '../file-system/fileSystemService.js';
 
 export class FileWorkspaceRepository implements WorkspaceRepository {

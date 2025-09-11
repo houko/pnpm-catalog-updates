@@ -5,7 +5,7 @@
  * and error tracking/statistics.
  */
 
-export { UserFriendlyErrorHandler } from './userFriendlyErrorHandler.js';
 export { ErrorTracker } from './errorTracker.js';
-export type { ErrorContext, PackageSuggestion } from './userFriendlyErrorHandler.js';
 export type { SkippedPackage } from './errorTracker.js';
+export { UserFriendlyErrorHandler } from './userFriendlyErrorHandler.js';
+export type { ErrorContext, PackageSuggestion } from './userFriendlyErrorHandler.js';

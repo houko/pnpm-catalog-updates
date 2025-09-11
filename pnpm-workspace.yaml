@@ -34,6 +34,18 @@ catalog:
   msw: ^2.10.3
   tsx: ^4.20.3
   turbo: ^2.5.6
+  # Frontend dependencies
+  react: ^19
+  "react-dom": ^19
+  next: ^15
+  tailwindcss: ^4.1.11
+  "@types/react": ^19
+  "@types/react-dom": ^19
+  "eslint-config-next": ^15
+  sharp: 0.34.3
+  clsx: ^2.1.1
+  "prettier-plugin-organize-imports": ^4.2.0
+  "prettier-plugin-tailwindcss": ^0.6.14
 
 catalogs:
   node18:
