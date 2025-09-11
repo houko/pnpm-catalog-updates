@@ -192,9 +192,6 @@ importers:
       "@pcu/utils":
         specifier: workspace:*
         version: link:../../packages/utils
-      "@types/glob":
-        specifier: ^9.0.0
-        version: 9.0.0
       chalk:
         specifier: "catalog:"
         version: 5.4.1
@@ -1576,13 +1573,6 @@ packages:
       {
         integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==,
       }
-
-  "@types/glob@9.0.0":
-    resolution:
-      {
-        integrity: sha512-00UxlRaIUvYm4R4W9WYkN8/J+kV8fmOQ7okeH6YFtGWFMt3odD45tpG5yA5wnL7HE6lLgjaTW5n14ju2hl2NNA==,
-      }
-    deprecated: This is a stub types definition. glob provides its own type definitions, so you do not need this installed.
 
   "@types/inquirer@9.0.8":
     resolution:
@@ -6366,10 +6356,6 @@ snapshots:
     dependencies:
       "@types/jsonfile": 6.1.4
       "@types/node": 24.0.10
-
-  "@types/glob@9.0.0":
-    dependencies:
-      glob: 11.0.3
 
   "@types/inquirer@9.0.8":
     dependencies:

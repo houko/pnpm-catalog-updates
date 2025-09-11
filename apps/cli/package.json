@@ -35,7 +35,6 @@
   "dependencies": {
     "@pcu/core": "workspace:*",
     "@pcu/utils": "workspace:*",
-    "@types/glob": "^9.0.0",
     "chalk": "catalog:",
     "cli-table3": "catalog:",
     "commander": "catalog:",
