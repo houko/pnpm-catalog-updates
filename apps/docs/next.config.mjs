@@ -18,6 +18,8 @@ const withMDX = nextMDX({
   },
 })
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // GitHub Pages compatible static export
@@ -26,6 +28,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  
+  // GitHub Pages deployment paths
+  basePath: isProduction ? '/pnpm-catalog-updates' : '',
+  assetPrefix: isProduction ? '/pnpm-catalog-updates/' : '',
   
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
   outputFileTracingIncludes: {
