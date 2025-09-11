@@ -1,6 +1,6 @@
 {
   "name": "pcu",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "CLI application for pnpm-catalog-updates",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,9 +14,7 @@
     "dist",
     "bin",
     "src",
-    "../../README.md",
-    "../../README.ja.md",
-    "../../README.zh-CN.md"
+    "README.md"
   ],
   "scripts": {
     "build": "tsup && pnpm run build:bin",
