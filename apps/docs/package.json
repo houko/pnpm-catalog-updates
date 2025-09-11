@@ -58,13 +58,5 @@
     "prettier-plugin-organize-imports": "catalog:",
     "prettier-plugin-tailwindcss": "catalog:",
     "sharp": "catalog:"
-  },
-  "turbo": {
-    "tasks": {
-      "typecheck": {
-        "cache": false,
-        "outputs": []
-      }
-    }
   }
 }
