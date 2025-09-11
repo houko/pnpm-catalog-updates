@@ -64,7 +64,7 @@ jobs:
             ## Installation
 
             ```bash
-            npm install -g @pcu/cli@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
             ```
 
             ## Usage
