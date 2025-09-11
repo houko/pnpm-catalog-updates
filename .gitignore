@@ -124,6 +124,9 @@ build/
 lib/
 out/
 
+# Exception: docs source lib directory should be tracked
+!apps/docs/src/lib/
+
 # IDE and editor files
 .vscode/settings.json
 .idea/
