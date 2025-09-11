@@ -1,4 +1,5 @@
 import nextMDX from '@next/mdx'
+import path from 'path'
 
 import { recmaPlugins } from './src/mdx/recma.mjs'
 import { rehypePlugins } from './src/mdx/rehype.mjs'
@@ -18,6 +19,13 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
   outputFileTracingIncludes: {
     '/**/*': ['./src/app/**/*.mdx'],
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve('./src'),
+    }
+    return config
   },
 }
 
