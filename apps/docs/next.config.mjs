@@ -76,6 +76,34 @@ const nextConfig = {
           console.log(`${key}: ${value}`)
         }
       })
+      
+      // Check if files actually exist
+      console.log('File existence check:')
+      const checkFiles = [
+        path.resolve(srcPath, 'lib', 'remToPx.ts'),
+        path.resolve(srcPath, 'lib', 'remToPx.js'),
+        path.resolve(srcPath, 'lib/remToPx.ts'),
+        path.resolve(srcPath, 'lib/remToPx.js'),
+      ]
+      checkFiles.forEach(filePath => {
+        try {
+          console.log(`${filePath}: ${fs.existsSync(filePath) ? 'EXISTS' : 'NOT FOUND'}`)
+        } catch (e) {
+          console.log(`${filePath}: ERROR - ${e.message}`)
+        }
+      })
+      
+      // List contents of lib directory
+      try {
+        const libDir = path.resolve(srcPath, 'lib')
+        console.log(`Contents of ${libDir}:`)
+        const files = fs.readdirSync(libDir)
+        files.forEach(file => {
+          console.log(`  - ${file}`)
+        })
+      } catch (e) {
+        console.log(`Error reading lib directory: ${e.message}`)
+      }
     }
     
     return config
