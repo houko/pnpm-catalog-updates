@@ -41,7 +41,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish
+          publish: node scripts/publish-dual-packages.js
           commit: "chore: release CLI package"
           title: "chore: release CLI package"
           setupGitUser: true
