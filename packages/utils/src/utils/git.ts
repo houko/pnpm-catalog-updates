@@ -2,7 +2,7 @@
  * Git Utilities
  */
 
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
@@ -129,9 +129,11 @@ export function getModifiedFiles(cwd: string = process.cwd()): string[] {
  */
 export function stageFiles(files: string[], cwd: string = process.cwd()): boolean {
   try {
-    const fileList = files.map((f) => `"${f}"`).join(' ');
-    execSync(`git add ${fileList}`, { cwd, stdio: 'pipe' });
-    return true;
+    const result = spawnSync('git', ['add', ...files], {
+      cwd,
+      stdio: 'pipe',
+    });
+    return result.status === 0;
   } catch {
     return false;
   }
@@ -142,8 +144,11 @@ export function stageFiles(files: string[], cwd: string = process.cwd()): boolea
  */
 export function commit(message: string, cwd: string = process.cwd()): boolean {
   try {
-    execSync(`git commit -m "${message}"`, { cwd, stdio: 'pipe' });
-    return true;
+    const result = spawnSync('git', ['commit', '-m', message], {
+      cwd,
+      stdio: 'pipe',
+    });
+    return result.status === 0;
   } catch {
     return false;
   }

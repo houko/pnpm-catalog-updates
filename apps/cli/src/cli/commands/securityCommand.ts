@@ -5,7 +5,7 @@
  * Integrates with npm audit and snyk for comprehensive security analysis.
  */
 
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { OutputFormatter, OutputFormat } from '../formatters/outputFormatter.js';
@@ -185,33 +185,39 @@ export class SecurityCommand {
     workspacePath: string,
     options: SecurityCommandOptions
   ): Promise<Vulnerability[]> {
-    try {
-      const auditArgs = ['audit', '--json'];
+    const auditArgs = ['audit', '--json'];
 
-      if (!options.includeDev) {
-        auditArgs.push('--omit=dev');
+    if (!options.includeDev) {
+      auditArgs.push('--omit=dev');
+    }
+
+    const result = spawnSync('npm', auditArgs, {
+      cwd: workspacePath,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    if (result.error) {
+      throw new Error(`npm audit failed: ${result.error.message}`);
+    }
+
+    if (result.status === 1) {
+      // npm audit returns 1 when vulnerabilities are found
+      try {
+        const auditData = JSON.parse(result.stdout);
+        return this.parseNpmAuditResults(auditData);
+      } catch (parseError) {
+        throw new Error(`Failed to parse npm audit output: ${parseError}`);
       }
-
-      const auditOutput = execSync(`npm ${auditArgs.join(' ')}`, {
-        cwd: workspacePath,
-        encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-
-      const auditData = JSON.parse(auditOutput);
-      return this.parseNpmAuditResults(auditData);
-    } catch (error: any) {
-      if (error.status === 1) {
-        // npm audit returns 1 when vulnerabilities are found
-        try {
-          const auditData = JSON.parse(error.stdout);
-          return this.parseNpmAuditResults(auditData);
-        } catch (parseError) {
-          throw new Error(`Failed to parse npm audit output: ${error.message}`);
-        }
-      } else {
-        throw new Error(`npm audit failed: ${error.message}`);
+    } else if (result.status === 0) {
+      try {
+        const auditData = JSON.parse(result.stdout);
+        return this.parseNpmAuditResults(auditData);
+      } catch (parseError) {
+        throw new Error(`Failed to parse npm audit output: ${parseError}`);
       }
+    } else {
+      throw new Error(`npm audit failed with status ${result.status}: ${result.stderr}`);
     }
   }
 
