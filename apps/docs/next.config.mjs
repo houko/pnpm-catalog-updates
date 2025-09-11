@@ -50,17 +50,6 @@ const nextConfig = {
       '@': srcPath,
     }
     
-    // Always output in production for debugging CI issues
-    if (process.env.NODE_ENV === 'production') {
-      console.log('CI environment:', !!process.env.CI)
-      console.log('Process CWD:', process.cwd())
-      console.log('Project root:', projectRoot)
-      console.log('Webpack alias @ ->', srcPath)
-      console.log('File exists check:', {
-        remToPx: fs.existsSync(path.join(srcPath, 'lib/remToPx.ts'))
-      })
-    }
-    
     return config
   },
 }
