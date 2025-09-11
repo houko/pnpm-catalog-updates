@@ -186,12 +186,6 @@ importers:
 
   apps/cli:
     dependencies:
-      "@pcu/core":
-        specifier: workspace:*
-        version: link:../../packages/core
-      "@pcu/utils":
-        specifier: workspace:*
-        version: link:../../packages/utils
       chalk:
         specifier: "catalog:"
         version: 5.4.1
