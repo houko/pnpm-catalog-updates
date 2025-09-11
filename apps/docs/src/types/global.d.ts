@@ -1,11 +1,5 @@
 // Global type declarations for docs app
 
-// SVG file declarations
-declare module '*.svg' {
-  const content: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
-  export default content
-}
-
 declare module '@/mdx/search.mjs' {
   export interface Result {
     url: string
