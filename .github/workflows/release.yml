@@ -23,6 +23,8 @@ jobs:
       pull-requests: write
       id-token: write
       pages: write
+      actions: write
+      checks: write
 
     steps:
       - name: Checkout
@@ -76,6 +78,8 @@ jobs:
           commit: "chore: release CLI package"
           title: "chore: release CLI package"
           setupGitUser: true
+          skipCI: true
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
