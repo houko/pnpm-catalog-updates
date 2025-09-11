@@ -124,15 +124,10 @@ jobs:
     name: Deploy Documentation
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: contains(github.event.head_commit.modified, 'apps/docs/package.json') || contains(github.event.head_commit.added, 'apps/docs/package.json')
     permissions:
       contents: read
       pages: write
       id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
