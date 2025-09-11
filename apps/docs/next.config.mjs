@@ -38,10 +38,19 @@ const nextConfig = {
     '/**/*': ['./src/app/**/*.mdx'],
   },
   webpack: (config) => {
+    // Use process.cwd() which is more reliable in CI environments
+    const srcPath = path.resolve(process.cwd(), 'apps/docs/src')
+    
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
+      '@': srcPath,
     }
+    
+    // Debug output in development/CI
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Webpack alias @ ->', srcPath)
+    }
+    
     return config
   },
 }
