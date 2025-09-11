@@ -21,10 +21,7 @@
       }
     ],
     "paths": {
-      "@/*": ["src/*"],
-      "@/lib/*": ["src/lib/*"],
-      "@/images/*": ["src/images/*"],
-      "@/components/*": ["src/components/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": [
@@ -33,7 +30,6 @@
     "./next-env.d.ts",
     "./src/**/*.ts",
     "./src/**/*.tsx",
-    "./src/types/**/*.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
