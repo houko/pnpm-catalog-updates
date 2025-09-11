@@ -5,9 +5,7 @@ on:
     branches: [main]
     paths:
       - ".changeset/**"
-      - "package.json"
-      - "apps/cli/package.json"
-      - "apps/docs/package.json"
+  workflow_dispatch:
 
 concurrency:
   group: release
@@ -48,16 +46,22 @@ jobs:
 
       - name: Generate automatic changeset
         run: |
+          # Skip if this is a release commit (to prevent loops)
+          if git log -1 --pretty=format:"%s" | grep -q "chore: release\|Version Packages"; then
+            echo "Skipping automatic changeset for release commit"
+            exit 0
+          fi
+
           # Get latest commit messages since last release
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s" --no-merges -n 10)
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges -n 10 | grep -v "chore: release\|Version Packages")
           else
-            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges)
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges | grep -v "chore: release\|Version Packages")
           fi
 
-          # Create automatic changeset if none exists
-          if [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
+          # Only create changeset if there are meaningful commits
+          if [ -n "$COMMITS" ] && [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
             mkdir -p .changeset
             cat > .changeset/auto-release.md << EOF
           ---
@@ -68,6 +72,9 @@ jobs:
 
           $COMMITS
           EOF
+            echo "Created automatic changeset"
+          else
+            echo "No meaningful changes found or changeset already exists"
           fi
 
       - name: Create Release Pull Request or Publish CLI
