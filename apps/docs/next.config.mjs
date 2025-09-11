@@ -48,6 +48,10 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': srcPath,
+      '@/lib': path.resolve(srcPath, 'lib'),
+      '@/images': path.resolve(srcPath, 'images'),
+      '@/components': path.resolve(srcPath, 'components'),
+      '@/mdx': path.resolve(srcPath, 'mdx'),
     }
     
     return config

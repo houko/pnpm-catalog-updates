@@ -28,12 +28,13 @@
     }
   },
   "include": [
+    "./.next/types/**/*.ts",
+    "./mdx-components.tsx",
     "./next-env.d.ts",
     "./src/**/*.ts",
     "./src/**/*.tsx",
     "./src/types/**/*.d.ts",
-    "./mdx-components.tsx",
-    "./.next/types/**/*.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
