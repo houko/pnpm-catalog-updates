@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { Button } from '@/components/Button'
-import { navigation } from '@/components/Navigation'
+import { useNavigation } from '@/components/Navigation'
+import { isValidRoute } from '@/utils/routing'
 
 function PageLink({
   label,
@@ -16,16 +17,24 @@ function PageLink({
   page: { href: string; title: string }
   previous?: boolean
 }) {
+  const validHref = isValidRoute(page.href) ? page.href : undefined
+
   return (
     <>
-      <Button
-        href={page.href}
-        aria-label={`${label}: ${page.title}`}
-        variant="secondary"
-        arrow={previous ? 'left' : 'right'}
-      >
-        {label}
-      </Button>
+      {validHref ? (
+        <Button
+          href={validHref}
+          aria-label={`${label}: ${page.title}`}
+          variant="secondary"
+          arrow={previous ? 'left' : 'right'}
+        >
+          {label}
+        </Button>
+      ) : (
+        <span className="inline-flex justify-center gap-0.5 overflow-hidden rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-900 transition hover:bg-zinc-200 dark:bg-zinc-800/40 dark:text-zinc-400 dark:ring-1 dark:ring-inset dark:ring-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-300">
+          {label}
+        </span>
+      )}
       <Link
         href={page.href}
         tabIndex={-1}
@@ -40,6 +49,7 @@ function PageLink({
 
 function PageNavigation() {
   let pathname = usePathname()
+  const navigation = useNavigation()
   let allPages = navigation.flatMap((group) => group.links)
   let currentPageIndex = allPages.findIndex((page) => page.href === pathname)
   const t = useTranslations('Footer')
@@ -68,14 +78,6 @@ function PageNavigation() {
         </div>
       )}
     </div>
-  )
-}
-
-function XIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true" {...props}>
-      <path d="M11.1527 8.92804L16.2525 3H15.044L10.6159 8.14724L7.07919 3H3L8.34821 10.7835L3 17H4.20855L8.88474 11.5643L12.6198 17H16.699L11.1524 8.92804H11.1527ZM9.49748 10.8521L8.95559 10.077L4.644 3.90978H6.50026L9.97976 8.88696L10.5216 9.66202L15.0446 16.1316H13.1883L9.49748 10.8524V10.8521Z" />
-    </svg>
   )
 }
 
@@ -109,7 +111,7 @@ function SocialLink({
   children: React.ReactNode
 }) {
   return (
-    <Link href={href} className="group">
+    <Link href={href} className="group" target="_blank" rel="noopener noreferrer">
       <span className="sr-only">{children}</span>
       <Icon className="h-5 w-5 fill-zinc-700 transition group-hover:fill-zinc-900 dark:group-hover:fill-zinc-500" />
     </Link>
@@ -125,13 +127,13 @@ function SmallPrint() {
         &copy; {t('copyright', { year: new Date().getFullYear() })}
       </p>
       <div className="flex gap-4">
-        <SocialLink href="#" icon={XIcon}>
-          {t('followX')}
-        </SocialLink>
-        <SocialLink href="#" icon={GitHubIcon}>
+        <SocialLink href="https://github.com/houko/pnpm-catalog-updates" icon={GitHubIcon}>
           {t('followGitHub')}
         </SocialLink>
-        <SocialLink href="#" icon={DiscordIcon}>
+        <SocialLink
+          href="https://discord.com/channels/1416074474280714373/1416074475115643002"
+          icon={DiscordIcon}
+        >
           {t('joinDiscord')}
         </SocialLink>
       </div>

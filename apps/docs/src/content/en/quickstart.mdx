@@ -1,98 +1,146 @@
 export const metadata = {
-  title: 'Quickstart',
+  title: 'Quick Start',
   description:
-    'This guide will get you all set up and ready to use the Protocol API. We’ll cover how to get started an API client and how to make your first API request.',
+    'Get started with pnpm-catalog-updates in minutes. Learn how to install, initialize, and update your pnpm workspace catalog dependencies.',
 };
 
-# Quickstart
+# Quick Start
 
-This guide will get you all set up and ready to use the Protocol API. We'll cover how to get started using one of our API clients and how to make your first API request. We'll also look at where to go next to find all the information you need to take full advantage of our powerful REST API. {{ className: 'lead' }}
+Get started with pnpm-catalog-updates in minutes. This guide will walk you through installation, initialization, and your first dependency update. {{ className: 'lead' }}
 
 <Note>
-  Before you can make requests to the Protocol API, you will need to grab your API key from your
-  dashboard. You find it under [Settings &raquo; API](#).
+  pnpm-catalog-updates is specifically designed for pnpm workspaces using catalog dependencies. Make
+  sure you have a pnpm workspace before getting started.
 </Note>
 
-## Choose your client
+## Installation
 
-Before making your first API request, you need to pick which API client you will use. In addition to good ol' cURL HTTP requests, Protocol offers clients for JavaScript, Python, and PHP. In the following example, you can see how to install each client.
+Choose your preferred installation method:
 
 <CodeGroup>
 
-```bash {{ title: 'cURL' }}
-# cURL is most likely already installed on your machine
-curl --version
+```bash {{ title: 'Global Installation' }}
+npm install -g pnpm-catalog-updates
+# or
+npm install -g pcu
 ```
 
-```js {{ title: 'JavaScript' }}
-// Install the Protocol JavaScript SDK
-npm install @example/protocol-api --save
+```bash {{ title: 'npx (No Installation)' }}
+npx pnpm-catalog-updates
+# or
+npx pcu
 ```
 
-```python {{ title: 'Python' }}
-# Install the Protocol Python SDK
-pip install protocol_api
-```
-
-```php {{ title: 'PHP' }}
-# Install the Protocol PHP SDK
-composer require protocol/sdk
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
 ```
 
 </CodeGroup>
 
-<div className="not-prose">
-  <Button href="/sdks" variant="text" arrow="right">
-    <>Check out our list of first-party SDKs</>
-  </Button>
-</div>
+## Initialize Your Workspace
 
-## Making your first API request
+If you don't have a pnpm workspace yet, PCU can create one for you:
 
-After picking your preferred client, you are ready to make your first call to the Protocol API. Below, you can see how to send a GET request to the Conversations endpoint to get a list of all your conversations. In the cURL example, results are limited to ten conversations, the default page length for each client.
-
-<CodeGroup tag="GET" label="/v1/conversations">
-
-```bash {{ title: 'cURL' }}
-curl -G https://api.protocol.chat/v1/conversations \
-  -H "Authorization: Bearer {token}" \
-  -d limit=10
+```bash
+pcu init
 ```
 
-```js
-import ApiClient from '@example/protocol-api';
+This command creates:
 
-const client = new ApiClient(token);
+- `.pcurc.json` - PCU configuration file
+- `package.json` - Workspace root package.json (if missing)
+- `pnpm-workspace.yaml` - PNPM workspace configuration (if missing)
+- `packages/` - Directory for workspace packages (if missing)
 
-await client.conversations.list();
+## Your First Update Check
+
+Check for outdated catalog dependencies:
+
+```bash
+pcu -c
 ```
 
-```python
-from protocol_api import ApiClient
+This will show you a beautiful table with:
 
-client = ApiClient(token)
+- Current versions in your catalogs
+- Latest available versions
+- Package names and update types
+- Color-coded urgency indicators
 
-client.conversations.list()
+## Interactive Updates
+
+Update dependencies with an interactive interface:
+
+```bash
+pcu -i
 ```
 
-```php
-$client = new \Protocol\ApiClient($token);
+This lets you:
 
-$client->conversations->list();
-```
+- ✅ Choose which dependencies to update
+- 🎯 Select specific versions
+- 📊 See impact analysis
+- 🔒 Create backups automatically
 
-</CodeGroup>
+## Common Commands
 
-<div className="not-prose">
-  <Button href="/conversations" variant="text" arrow="right">
-    <>Read the docs for the Conversations endpoint</>
-  </Button>
-</div>
+Here are the most frequently used commands:
 
-## What's next?
+| Command    | Description          | Example                    |
+| ---------- | -------------------- | -------------------------- |
+| `pcu init` | Initialize workspace | `pcu init --verbose`       |
+| `pcu -c`   | Check for updates    | `pcu -c --catalog default` |
+| `pcu -i`   | Interactive updates  | `pcu -i -b`                |
+| `pcu -u`   | Update dependencies  | `pcu -u --target minor`    |
+| `pcu -a`   | Analyze impact       | `pcu -a default react`     |
 
-Great, you're now set up with an API client and have made your first request to the API. Here are a few links that might be handy as you venture further into the Protocol API:
+## What's Next?
 
-- [Grab your API key from the Protocol dashboard](#)
-- [Check out the Conversations endpoint](/conversations)
-- [Learn about the different error messages in Protocol](/errors)
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="Command Reference"
+    description="Complete guide to all PCU commands and options."
+  />
+  <Resource
+    href="/configuration"
+    title="Configuration"
+    description="Learn how to configure PCU for your workflow."
+  />
+  <Resource href="/examples" title="Examples" description="Real-world examples and use cases." />
+  <Resource
+    href="/development"
+    title="Development"
+    description="Set up PCU for development and contributing."
+  />
+</Resources>
+
+## Getting Started Checklist
+
+Follow this checklist to get PCU running in your project:
+
+- [ ] **Install PCU** - Choose global installation or use npx
+- [ ] **Initialize workspace** - Run `pcu init` for first-time setup
+- [ ] **Check for updates** - Use `pcu -c` to see available updates
+- [ ] **Configure settings** - Customize `.pcurc.json` for your needs
+- [ ] **Update dependencies** - Use interactive mode `pcu -i` for safe updates
+- [ ] **Set up automation** - Consider CI/CD integration for regular checks
+
+## Essential Commands Quick Reference
+
+| Command        | Purpose            | When to Use                     |
+| -------------- | ------------------ | ------------------------------- |
+| `pcu init`     | Setup workspace    | First time setup, new projects  |
+| `pcu -c`       | Check updates      | Daily development, CI checks    |
+| `pcu -i`       | Interactive update | Safe manual updates             |
+| `pcu -u`       | Batch update       | Automated updates, CI/CD        |
+| `pcu security` | Security scan      | Before releases, regular audits |
+
+## Next Steps
+
+Once you have PCU set up, explore these advanced features:
+
+- **[Configuration](/configuration)** - Customize PCU for your specific workflow
+- **[Security Scanning](/command-reference#pcu-security)** - Integrate vulnerability scanning
+- **[Monorepo Management](/configuration#monorepo-configuration)** - Advanced workspace features
+- **[CI/CD Integration](/examples)** - Automate dependency updates in your pipeline

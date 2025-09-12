@@ -1,43 +1,31 @@
 'use client'
 
-import { Link } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
+import { routing } from '@/i18n/routing'
 import clsx from 'clsx'
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion'
 import { useTranslations } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import { useRef } from 'react'
 
 import { useIsInsideMobileNavigation } from '@/components/MobileNavigation'
 import { useSectionStore } from '@/components/SectionProvider'
 import { Tag } from '@/components/Tag'
-import { remToPx } from '@/lib/remToPx'
+import { remToPx } from '@/utils/remToPx'
 import { CloseButton } from '@headlessui/react'
+
+type ValidHref = keyof typeof routing.pathnames
 
 interface NavGroup {
   title: string
   links: Array<{
     title: string
-    href: string
+    href: string // Keep as string to allow anchor links for internal use
   }>
 }
 
 function useInitialValue<T>(value: T, condition = true) {
   let initialValue = useRef(value).current
   return condition ? initialValue : value
-}
-
-function TopLevelNavItem({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <li className="md:hidden">
-      <CloseButton
-        as={Link}
-        href={href}
-        className="block py-1 text-sm text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-      >
-        {children}
-      </CloseButton>
-    </li>
-  )
 }
 
 function NavLink({
@@ -56,7 +44,7 @@ function NavLink({
   return (
     <CloseButton
       as={Link}
-      href={href}
+      href={href as ValidHref}
       aria-current={active ? 'page' : undefined}
       className={clsx(
         'flex justify-between gap-2 py-1 pr-3 text-sm transition',
@@ -195,42 +183,48 @@ export function useNavigation(): Array<NavGroup> {
   const tCommon = useTranslations('Common')
 
   // Define which pages go in which sections
-  const guidePages = ['quickstart', 'sdks', 'authentication', 'pagination', 'errors', 'webhooks']
+  const gettingStartedPages = ['quickstart', 'command-reference', 'configuration']
+  const guidesPages = [
+    'examples',
+    'development',
+    'best-practices',
+    'performance',
+    'migration',
+    'cicd',
+    'faq',
+    'troubleshooting',
+  ]
   const writingPages = [
     'writing-basics',
-    'writing-components',
     'writing-code',
+    'writing-components',
     'writing-layout',
     'writing-api',
     'writing-advanced',
   ]
-  const resourcePages = ['contacts', 'conversations', 'messages', 'groups', 'attachments']
 
   const createNavLink = (page: string) => ({
     title: t(page),
     href: `/${page}`,
   })
 
-  const isProduction = process.env.NODE_ENV === 'production'
-
   const navGroups = [
     {
-      title: tCommon('guides'),
-      links: [{ title: tCommon('introduction'), href: '/' }, ...guidePages.map(createNavLink)],
+      title: tCommon('gettingStarted'),
+      links: [
+        { title: tCommon('introduction'), href: '/' },
+        ...gettingStartedPages.map(createNavLink),
+      ],
     },
     {
-      title: tCommon('resources'),
-      links: resourcePages.map(createNavLink),
+      title: tCommon('guidesAndExamples'),
+      links: guidesPages.map(createNavLink),
+    },
+    {
+      title: tCommon('writingDocumentation'),
+      links: writingPages.map(createNavLink),
     },
   ]
-
-  // Only show Writing Docs in development
-  if (!isProduction) {
-    navGroups.splice(1, 0, {
-      title: tCommon('writing'),
-      links: writingPages.map(createNavLink),
-    })
-  }
 
   return navGroups
 }
@@ -241,25 +235,25 @@ const createStaticNavigation = (): Array<NavGroup> => {
 
   const staticNavGroups = [
     {
-      title: 'Guides',
+      title: 'Getting Started',
       links: [
         { title: 'Introduction', href: '/' },
-        { title: 'Quickstart', href: '/quickstart' },
-        { title: 'SDKs', href: '/sdks' },
-        { title: 'Authentication', href: '/authentication' },
-        { title: 'Pagination', href: '/pagination' },
-        { title: 'Errors', href: '/errors' },
-        { title: 'Webhooks', href: '/webhooks' },
+        { title: 'Quick Start', href: '/quickstart' },
+        { title: 'Command Reference', href: '/command-reference' },
+        { title: 'Configuration', href: '/configuration' },
       ],
     },
     {
-      title: 'Resources',
+      title: 'Guides & Examples',
       links: [
-        { title: 'Contacts', href: '/contacts' },
-        { title: 'Conversations', href: '/conversations' },
-        { title: 'Messages', href: '/messages' },
-        { title: 'Groups', href: '/groups' },
-        { title: 'Attachments', href: '/attachments' },
+        { title: 'Examples', href: '/examples' },
+        { title: 'Development', href: '/development' },
+        { title: 'Best Practices', href: '/best-practices' },
+        { title: 'Performance', href: '/performance' },
+        { title: 'Migration Guide', href: '/migration' },
+        { title: 'CI/CD Integration', href: '/cicd' },
+        { title: 'FAQ', href: '/faq' },
+        { title: 'Troubleshooting', href: '/troubleshooting' },
       ],
     },
   ]
@@ -270,8 +264,8 @@ const createStaticNavigation = (): Array<NavGroup> => {
       title: 'Writing Docs',
       links: [
         { title: 'Writing Basics', href: '/writing-basics' },
-        { title: 'Writing Components', href: '/writing-components' },
         { title: 'Writing Code', href: '/writing-code' },
+        { title: 'Writing Components', href: '/writing-components' },
         { title: 'Writing Layout', href: '/writing-layout' },
         { title: 'Writing API', href: '/writing-api' },
         { title: 'Writing Advanced', href: '/writing-advanced' },
@@ -285,15 +279,11 @@ const createStaticNavigation = (): Array<NavGroup> => {
 export const navigation: Array<NavGroup> = createStaticNavigation()
 
 export function Navigation(props: React.ComponentPropsWithoutRef<'nav'>) {
-  const tCommon = useTranslations('Common')
   const navigation = useNavigation()
 
   return (
     <nav {...props}>
       <ul role="list">
-        <TopLevelNavItem href="/">{tCommon('api')}</TopLevelNavItem>
-        <TopLevelNavItem href="#">{tCommon('documentation')}</TopLevelNavItem>
-        <TopLevelNavItem href="#">{tCommon('support')}</TopLevelNavItem>
         {navigation.map((group, groupIndex) => (
           <NavigationGroup
             key={group.title}

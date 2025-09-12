@@ -20,10 +20,10 @@ interface Resource {
 
 const resources: Array<Resource> = [
   {
-    href: '/contacts',
-    name: 'Contacts',
+    href: '/configuration',
+    name: 'Configuration',
     description:
-      'Learn about the contact model and how to create, retrieve, update, delete, and list contacts.',
+      'Learn about PCU configuration options and how to customize your setup for different workflows.',
     icon: UserIcon,
     pattern: {
       y: 16,
@@ -34,10 +34,10 @@ const resources: Array<Resource> = [
     },
   },
   {
-    href: '/conversations',
-    name: 'Conversations',
+    href: '/examples',
+    name: 'Examples',
     description:
-      'Learn about the conversation model and how to create, retrieve, update, delete, and list conversations.',
+      'Explore practical examples and common use cases for managing dependencies with PCU.',
     icon: ChatBubbleIcon,
     pattern: {
       y: -6,
@@ -48,10 +48,10 @@ const resources: Array<Resource> = [
     },
   },
   {
-    href: '/messages',
-    name: 'Messages',
+    href: '/troubleshooting',
+    name: 'Troubleshooting',
     description:
-      'Learn about the message model and how to create, retrieve, update, delete, and list messages.',
+      'Common issues and solutions when using PCU. Error messages, debugging tips, and troubleshooting guides.',
     icon: EnvelopeIcon,
     pattern: {
       y: 32,
@@ -62,10 +62,10 @@ const resources: Array<Resource> = [
     },
   },
   {
-    href: '/groups',
-    name: 'Groups',
+    href: '/development',
+    name: 'Development',
     description:
-      'Learn about the group model and how to create, retrieve, update, delete, and list groups.',
+      'Learn about development workflows, contributing guidelines, and advanced PCU usage patterns.',
     icon: UsersIcon,
     pattern: {
       y: 22,

@@ -1,9 +1,10 @@
+import { Link } from '@/i18n/navigation'
 import clsx from 'clsx'
-import Link from 'next/link'
 
 import { Feedback } from '@/components/Feedback'
 import { Heading } from '@/components/Heading'
 import { Prose } from '@/components/Prose'
+import { isValidRoute } from '@/utils/routing'
 
 export const a = Link
 export { Button } from '@/components/Button'
@@ -32,6 +33,38 @@ export function wrapper({ children }: { children: React.ReactNode }) {
         <Feedback />
       </footer>
     </article>
+  )
+}
+
+// Resource component for use in MDX
+export function Resource({
+  href,
+  title,
+  description,
+}: {
+  href: string
+  title: string
+  description: string
+}) {
+  const validHref = isValidRoute(href) ? href : undefined
+
+  return (
+    <div className="relative flex flex-col rounded-2xl border border-zinc-200 p-6 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600">
+      <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+        {validHref ? (
+          <Link href={validHref}>
+            <span className="absolute inset-0 rounded-2xl" />
+            {title}
+          </Link>
+        ) : (
+          <span>
+            <span className="absolute inset-0 cursor-not-allowed rounded-2xl" />
+            {title}
+          </span>
+        )}
+      </h3>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
+    </div>
   )
 }
 

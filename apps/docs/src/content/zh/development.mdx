@@ -1,0 +1,416 @@
+export const metadata = {
+  title: '开发',
+  description: '设置 pnpm-catalog-updates 进行开发。了解项目结构、开发工作流程以及如何贡献。',
+};
+
+# 开发
+
+设置 PCU 进行开发并学习如何为项目做出贡献。本指南涵盖项目设置、架构和开发工作流程。{{ className: 'lead' }}
+
+## 先决条件
+
+在开始开发 PCU 之前，请确保您拥有所需的工具：
+
+<Note>开发需要 Node.js >= 22.0.0 和 pnpm >= 10.0.0。</Note>
+
+<CodeGroup>
+
+```bash {{ title: '检查版本' }}
+node --version  # 应该是 >= 22.0.0
+pnpm --version  # 应该是 >= 10.0.0
+```
+
+```bash {{ title: '安装工具' }}
+# 通过 nvm 安装 Node.js（推荐）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# 安装 pnpm
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## 项目设置
+
+克隆并设置开发环境：
+
+<CodeGroup>
+
+```bash {{ title: '克隆和设置' }}
+# 克隆仓库
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# 安装依赖
+pnpm install
+
+# 构建项目
+pnpm build
+
+# 运行测试验证设置
+pnpm test
+```
+
+```bash {{ title: '开发模式' }}
+# 以开发模式运行
+pnpm dev --help
+
+# 监视模式构建
+pnpm build:watch
+
+# 监视模式运行测试
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## 项目架构
+
+PCU 遵循清洁架构原则，关注点清晰分离：
+
+```text
+├── apps/
+│   ├── cli/                    # CLI 应用层
+│   │   ├── src/cli/           # CLI 接口
+│   │   │   ├── commands/      # 命令处理器
+│   │   │   ├── formatters/    # 输出格式化器
+│   │   │   ├── interactive/   # 交互式提示
+│   │   │   ├── themes/        # 颜色主题
+│   │   │   └── validators/    # 输入验证
+│   │   └── bin/               # 可执行二进制文件
+│   └── docs/                  # 文档站点
+├── packages/
+│   ├── core/                  # 核心业务逻辑
+│   │   └── src/
+│   │       ├── application/   # 应用服务
+│   │       ├── domain/        # 领域模型 (DDD)
+│   │       └── infrastructure/# 基础设施层
+│   └── utils/                 # 共享工具
+└── scripts/                   # 构建和部署
+```
+
+### 架构层
+
+<Properties>
+  <Property name="CLI 层" type="apps/cli">
+    用户界面、命令解析、输出格式化
+  </Property>
+  <Property name="应用层" type="packages/core/application">
+    业务逻辑编排、用例
+  </Property>
+  <Property name="领域层" type="packages/core/domain">
+    核心业务实体、值对象、仓库接口
+  </Property>
+  <Property name="基础设施层" type="packages/core/infrastructure">
+    外部 API 客户端、文件系统访问、仓库实现
+  </Property>
+  <Property name="工具层" type="packages/utils">
+    共享工具、配置、日志记录、错误处理
+  </Property>
+</Properties>
+
+## 开发工作流程
+
+### 进行更改
+
+1. **创建功能分支**：
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. **按照编码标准进行更改**
+
+3. **为您的更改添加测试**：
+
+   ```bash
+   pnpm test:watch  # 以监视模式运行测试
+   ```
+
+4. **确保质量检查通过**：
+
+   ```bash
+   pnpm lint        # 检查代码风格
+   pnpm typecheck   # 类型检查
+   pnpm test        # 运行所有测试
+   ```
+
+5. **提交更改**：
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+
+### 测试策略
+
+PCU 使用综合测试方法：
+
+<CodeGroup>
+
+```bash {{ title: '单元测试' }}
+# 运行单元测试
+pnpm test
+
+# 运行覆盖率测试
+pnpm test:coverage
+
+# 测试特定包
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: '端到端测试' }}
+# 运行端到端测试
+pnpm test:e2e
+
+# 针对真实项目测试
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: '集成测试' }}
+# 测试 CLI 命令
+pnpm test:cli
+
+# 使用不同 Node 版本测试
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### 代码质量
+
+PCU 保持高代码质量标准：
+
+<CodeGroup>
+
+```bash {{ title: '代码检查和格式化' }}
+# 检查代码风格
+pnpm lint
+
+# 修复代码检查问题
+pnpm lint:fix
+
+# 格式化代码
+pnpm format
+
+# 检查 TypeScript 类型
+pnpm typecheck
+```
+
+```json {{ title: '质量标准' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "带 TypeScript 规则的 ESLint",
+  "format": "带自定义配置的 Prettier",
+  "types": "严格的 TypeScript 配置"
+}
+```
+
+</CodeGroup>
+
+## 添加功能
+
+### 创建新命令
+
+1. **在 `apps/cli/src/cli/commands/` 创建命令处理器**：
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('新命令描述')
+    .option('-f, --format <type>', '输出格式', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // 命令实现
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: '注册命令' }}
+// 在 apps/cli/src/cli/index.ts 中
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **在 `packages/core/src/application/services/` 添加业务逻辑**
+
+3. **为 CLI 和核心逻辑创建测试**
+
+4. **更新文档**
+
+### 添加新输出格式
+
+1. **在 `apps/cli/src/cli/formatters/` 创建格式化器**：
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // XML 格式化逻辑
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **在主格式化器注册表中注册格式化器**
+
+3. **添加测试**和**更新文档**
+
+## 贡献指南
+
+### 提交消息约定
+
+PCU 使用[约定式提交](https://conventionalcommits.org/)：
+
+<CodeGroup>
+
+```bash {{ title: '提交类型' }}
+feat: 新功能
+fix: 错误修复
+docs: 仅文档更改
+style: 代码风格更改（格式化等）
+refactor: 既不修复错误也不添加功能的代码更改
+test: 添加缺失测试或更正现有测试
+chore: 构建过程或辅助工具的更改
+```
+
+```bash {{ title: '示例' }}
+feat: 添加对自定义注册表的支持
+fix: 优雅处理网络超时
+docs: 更新配置示例
+test: 添加包过滤测试
+```
+
+</CodeGroup>
+
+### 拉取请求流程
+
+1. **Fork 仓库**并创建功能分支
+2. **按照开发工作流程进行更改**
+3. **确保所有测试通过**和代码质量检查成功
+4. **如需要更新文档**
+5. **提交拉取请求**包含：
+   - 更改的清楚描述
+   - 相关问题的链接
+   - UI 更改的屏幕截图
+   - 如适用的破坏性更改说明
+
+### 代码审查检查清单
+
+- [ ] 所有测试通过
+- [ ] 代码覆盖率保持（>85%）
+- [ ] TypeScript 类型正确
+- [ ] 代码风格遵循项目标准
+- [ ] 文档已更新
+- [ ] 破坏性更改已记录
+- [ ] 考虑性能影响
+
+## 调试
+
+### 开发调试
+
+<CodeGroup>
+
+```bash {{ title: '调试 CLI 命令' }}
+# 使用 Node.js 检查器调试
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# 使用 VS Code 调试
+# 使用 .vscode/launch.json 中的启动配置
+```
+
+```bash {{ title: '详细日志' }}
+# 启用调试日志
+DEBUG=pcu:* pnpm dev --verbose
+
+# 调试特定模块
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### 测试调试
+
+```bash
+# 调试特定测试
+npm test -- --grep "specific test name"
+
+# 使用 Node 检查器调试
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## 构建和发布
+
+### 本地测试
+
+<CodeGroup>
+
+```bash {{ title: '测试本地构建' }}
+# 构建并本地测试
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# 测试安装
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: '在示例项目中测试' }}
+# 使用示例工作空间
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### 发布流程
+
+1. **使用 changesets 更新版本**：
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **构建和测试**：
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **发布**（仅维护者）：
+   ```bash
+   pnpm publish -r
+   ```
+
+## 获取帮助
+
+- 📖 **文档**：查看此文档获取详细指南
+- 🐛 **问题**：通过 [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues) 报告错误
+- 💬 **讨论**：在 [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions) 中提问
+- 🔧 **开发**：加入 Issues 和 PRs 中的开发讨论

@@ -1,0 +1,699 @@
+export const metadata = {
+  title: '性能优化',
+  description: '为大型单体仓库优化 PCU 性能，提高执行速度，减少资源消耗。',
+};
+
+# 性能优化
+
+为大型单体仓库、复杂工作区和资源受限环境最大化 PCU 性能。 {{ className: 'lead' }}
+
+## 理解 PCU 性能
+
+PCU 性能取决于几个因素：
+
+- **网络延迟**：仓库响应时间和带宽
+- **工作区大小**：包和依赖的数量
+- **缓存效率**：命中率和存储优化
+- **系统资源**：CPU、内存和磁盘 I/O
+- **配置**：并发设置和超时值
+
+### 性能分析
+
+启用详细性能监控：
+
+```bash
+# 启用性能分析
+export PCU_PROFILE=true
+export DEBUG=pcu:performance,pcu:network,pcu:cache
+
+# 运行并显示时间信息
+time pcu check --verbose
+```
+
+**输出分析示例：**
+
+```
+依赖分析: 2.3s
+网络请求: 4.1s (45 个请求)
+缓存操作: 0.8s (12 次命中, 33 次未命中)
+文件 I/O: 1.2s
+总执行时间: 8.4s
+```
+
+## 配置优化
+
+### 并发设置
+
+为您的环境优化并发操作：
+
+```json
+{
+  "concurrency": 3,
+  "timeout": 45000,
+  "advanced": {
+    "batchSize": 8,
+    "maxRetries": 2,
+    "retryDelay": 1000
+  }
+}
+```
+
+**并发指南：**
+
+- **小项目（< 20 个包）**：`concurrency: 5-8`
+- **中型项目（20-100 个包）**：`concurrency: 3-5`
+- **大型项目（100+ 个包）**：`concurrency: 1-3`
+- **CI/CD 环境**：`concurrency: 2-3`
+
+### 内存管理
+
+**Node.js 内存优化：**
+
+```bash
+# 为大型单体仓库增加堆大小
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# 启用垃圾回收优化
+export NODE_OPTIONS="--max-old-space-size=4096 --optimize-for-size"
+
+# 对于极大的工作区
+export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=128"
+```
+
+**PCU 内存配置：**
+
+```json
+{
+  "advanced": {
+    "memoryOptimization": true,
+    "maxConcurrentAnalysis": 10,
+    "streamProcessing": true,
+    "gcInterval": 1000
+  }
+}
+```
+
+## 缓存策略
+
+### 本地缓存优化
+
+**缓存配置：**
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 500,
+    "compression": true,
+    "strategy": "lru"
+  }
+}
+```
+
+**环境变量：**
+
+```bash
+# 启用持久缓存
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_DIR="~/.pcu-cache"
+export PCU_CACHE_TTL=7200  # 两小时
+export PCU_CACHE_MAX_SIZE=1000  # 1GB
+```
+
+### 缓存管理命令
+
+```bash
+# 检查缓存统计
+pcu cache --stats
+
+# 清理过期缓存条目
+pcu cache --clean
+
+# 预热缓存以加快后续运行
+pcu cache --warm
+
+# 完全重置缓存
+pcu cache --reset
+```
+
+### CI/CD 缓存集成
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+- name: 缓存 PCU 数据
+  uses: actions/cache@v4
+  with:
+    path: |
+      ~/.pcu-cache
+      node_modules/.cache/pcu
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml', 'packages/*/package.json') }}
+    restore-keys: |
+      pcu-cache-${{ runner.os }}-
+      pcu-cache-
+
+- name: 优化的 PCU 检查
+  run: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CONCURRENCY=3
+    pcu check --timeout 60000
+```
+
+```yaml {{ title: 'GitLab CI' }}
+cache:
+  key:
+    files:
+      - pnpm-workspace.yaml
+      - packages/*/package.json
+  paths:
+    - .pcu-cache/
+    - node_modules/.cache/pcu/
+
+performance_check:
+  script:
+    - export PCU_CACHE_ENABLED=true
+    - export PCU_CACHE_DIR="./.pcu-cache"
+    - pcu check --concurrency 2 --timeout 45000
+```
+
+```yaml {{ title: 'Azure DevOps' }}
+- task: Cache@2
+  inputs:
+    key: 'pcu | "$(Agent.OS)" | pnpm-workspace.yaml | packages/*/package.json'
+    restoreKeys: |
+      pcu | "$(Agent.OS)"
+      pcu
+    path: $(Pipeline.Workspace)/.pcu-cache
+
+- script: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CACHE_DIR="$(Pipeline.Workspace)/.pcu-cache"
+    pcu check --concurrency 2
+```
+
+</CodeGroup>
+
+## 网络优化
+
+### 仓库配置
+
+**优化仓库选择：**
+
+```bash
+# 使用地理位置接近的仓库
+export PCU_REGISTRY="https://registry-asia.npmjs.org/"  # 亚洲
+export PCU_REGISTRY="https://registry-eu.npmjs.org/"   # 欧洲
+
+# 企业代理配置
+export HTTP_PROXY="http://proxy.company.com:8080"
+export HTTPS_PROXY="http://proxy.company.com:8080"
+export NO_PROXY="localhost,127.0.0.1,*.company.com"
+```
+
+**连接优化：**
+
+```json
+{
+  "network": {
+    "timeout": 30000,
+    "retries": 3,
+    "retryDelay": 2000,
+    "keepAlive": true,
+    "maxSockets": 15,
+    "maxFreeSockets": 10
+  }
+}
+```
+
+### 带宽管理
+
+```bash
+# 为慢连接减少并行网络请求
+pcu check --concurrency 1 --timeout 90000
+
+# 启用请求压缩
+export PCU_COMPRESS_REQUESTS=true
+
+# 批处理较小的请求
+export PCU_BATCH_REQUESTS=true
+export PCU_BATCH_SIZE=5
+```
+
+## 大型单体仓库策略
+
+### 工作区分割
+
+**组织大型工作区：**
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/frontend/*'
+  - 'apps/backend/*'
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'tools/*'
+
+catalog:
+  # 核心依赖
+  react: ^18.2.0
+  typescript: ^5.0.0
+
+catalogs:
+  # 前端特定目录
+  frontend:
+    next: ^13.4.0
+    tailwindcss: ^3.3.0
+
+  # 后端特定目录
+  backend:
+    express: ^4.18.0
+    prisma: ^5.0.0
+```
+
+**选择性处理：**
+
+```bash
+# 按类别限制处理
+pcu check --include "@company/ui-*" --limit 10
+pcu check --include "@company/api-*" --limit 15
+pcu check --include "@company/tools-*" --limit 5
+
+# 渐进式更新
+pcu update --include "@types/*" --target latest
+pcu update --include "eslint*" --target minor
+pcu update --include "react*" --target patch --require-confirmation
+```
+
+### 增量处理
+
+**分阶段更新：**
+
+```json
+{
+  "strategies": {
+    "incremental": {
+      "enabled": true,
+      "batchSize": 20,
+      "delayBetweenBatches": 5000,
+      "pauseOnErrors": true
+    }
+  }
+}
+```
+
+**处理工作流：**
+
+<CodeGroup>
+
+```bash {{ title: '开发依赖' }}
+# 阶段 1：开发工具（安全更新）
+pcu update --include "@types/*,eslint*,prettier*" --target latest
+
+# 阶段 2：构建工具（仅小版本更新）
+pcu update --include "webpack*,babel*,rollup*" --target minor
+
+# 阶段 3：测试框架（补丁更新）
+pcu update --include "jest*,vitest*,playwright*" --target patch
+```
+
+```bash {{ title: '生产依赖' }}
+# 阶段 1：补丁安全更新
+pcu security --auto-fix --severity high
+
+# 阶段 2：需确认的小版本功能更新
+pcu update --target minor --require-confirmation --exclude "react*,vue*"
+
+# 阶段 3：主版本更新（交互式）
+pcu update --target latest --interactive --limit 5
+```
+
+</CodeGroup>
+
+## 内存和资源管理
+
+### 内存分析
+
+**监控内存使用：**
+
+```bash
+# 启用内存监控
+export NODE_OPTIONS="--inspect --max-old-space-size=4096"
+export PCU_MEMORY_PROFILING=true
+
+# 运行并跟踪内存
+pcu check --profile-memory
+```
+
+**内存优化技术：**
+
+```json
+{
+  "advanced": {
+    "streamProcessing": true,
+    "lazyLoading": true,
+    "memoryThreshold": 0.8,
+    "gcIntensity": "high",
+    "objectPooling": true
+  }
+}
+```
+
+### 磁盘 I/O 优化
+
+**SSD vs HDD 配置：**
+
+```bash
+# SSD 优化（更快的随机访问）
+export PCU_IO_STRATEGY="random"
+export PCU_CACHE_STRATEGY="frequent"
+
+# HDD 优化（顺序访问）
+export PCU_IO_STRATEGY="sequential"
+export PCU_CACHE_STRATEGY="batch"
+```
+
+**文件系统缓存：**
+
+```json
+{
+  "fileSystem": {
+    "watchFiles": false,
+    "bufferSize": 65536,
+    "asyncIO": true,
+    "preloadMetadata": true
+  }
+}
+```
+
+## 性能监控
+
+### 指标收集
+
+**内置指标：**
+
+```bash
+# 生成性能报告
+pcu check --metrics --output metrics.json
+
+# 性能仪表板
+pcu dashboard --metrics
+```
+
+**自定义监控：**
+
+```bash
+# 与监控系统集成
+export PCU_METRICS_ENDPOINT="https://metrics.company.com/pcu"
+export PCU_METRICS_INTERVAL=30000
+
+pcu check --send-metrics
+```
+
+### 基准测试
+
+**性能基准：**
+
+<CodeGroup>
+
+```bash {{ title: '基线测量' }}
+#!/bin/bash
+# benchmark-pcu.sh
+
+echo "=== PCU 性能基准测试 ==="
+echo "工作区: $(pwd)"
+echo "包数量: $(find packages -name package.json | wc -l)"
+echo "Node 版本: $(node --version)"
+echo
+
+# 清除缓存以进行公平比较
+pcu cache --reset
+
+# 热运行
+echo "热运行..."
+time pcu check > /dev/null
+
+# 冷运行
+pcu cache --reset
+echo "冷运行..."
+time pcu check --verbose | tee benchmark-results.txt
+```
+
+```javascript {{ title: '性能分析' }}
+// analyze-performance.js
+const fs = require('fs');
+const metrics = JSON.parse(fs.readFileSync('metrics.json', 'utf8'));
+
+const analysis = {
+  totalTime: metrics.endTime - metrics.startTime,
+  networkTime: metrics.network.totalTime,
+  cacheHitRate: metrics.cache.hits / (metrics.cache.hits + metrics.cache.misses),
+  packagesPerSecond: metrics.packages.total / (metrics.totalTime / 1000),
+  memoryPeak: metrics.memory.peak,
+  recommendations: [],
+};
+
+// 生成建议
+if (analysis.cacheHitRate < 0.7) {
+  analysis.recommendations.push('考虑增加缓存 TTL');
+}
+
+if (analysis.networkTime > analysis.totalTime * 0.5) {
+  analysis.recommendations.push('检测到网络延迟，考虑优化仓库配置');
+}
+
+console.log(JSON.stringify(analysis, null, 2));
+```
+
+</CodeGroup>
+
+### 性能调优指南
+
+**逐步优化：**
+
+1. **基线测量**
+
+   ```bash
+   pcu check --metrics --profile > baseline.txt
+   ```
+
+2. **启用缓存**
+
+   ```bash
+   export PCU_CACHE_ENABLED=true
+   pcu check --metrics --profile > cached.txt
+   ```
+
+3. **优化并发**
+
+   ```bash
+   # 测试不同的并发级别
+   for c in 1 2 3 5 8; do
+     echo "测试并发: $c"
+     time pcu check --concurrency $c > /dev/null 2>&1
+   done
+   ```
+
+4. **网络优化**
+
+   ```bash
+   export PCU_REGISTRY="https://registry-eu.npmjs.org/"
+   pcu check --metrics --profile > optimized.txt
+   ```
+
+5. **内存调优**
+   ```bash
+   export NODE_OPTIONS="--max-old-space-size=2048"
+   pcu check --metrics --profile > memory-tuned.txt
+   ```
+
+## 性能问题故障排除
+
+### 常见性能问题
+
+**慢网络请求：**
+
+```bash
+# 诊断网络问题
+export DEBUG=pcu:network
+pcu check --verbose
+
+# 测试仓库连接性
+curl -w "@curl-format.txt" -o /dev/null -s "https://registry.npmjs.org/react"
+
+# 备用仓库
+export PCU_REGISTRY="https://registry.yarnpkg.com/"
+```
+
+**内存问题：**
+
+```bash
+# 监控内存使用
+export NODE_OPTIONS="--inspect --max-old-space-size=8192"
+pcu check --profile-memory
+
+# 减少内存占用
+export PCU_STREAM_PROCESSING=true
+export PCU_LAZY_LOADING=true
+```
+
+**缓存问题：**
+
+```bash
+# 验证缓存健康状态
+pcu cache --verify
+
+# 重建损坏的缓存
+pcu cache --rebuild
+
+# 缓存统计
+pcu cache --stats --verbose
+```
+
+### 性能回归检测
+
+**自动化性能测试：**
+
+```yaml
+# .github/workflows/performance.yml
+name: 性能回归测试
+
+on:
+  pull_request:
+    paths: ['packages/**', 'pnpm-workspace.yaml']
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 基线性能测试
+        run: |
+          git checkout main
+          pcu cache --reset
+          time pcu check --metrics > baseline.json
+
+      - name: PR 性能测试
+        run: |
+          git checkout ${{ github.head_ref }}
+          pcu cache --reset
+          time pcu check --metrics > pr.json
+
+      - name: 比较性能
+        run: |
+          node scripts/compare-performance.js baseline.json pr.json
+```
+
+## 环境特定优化
+
+### 本地开发
+
+**开发机器设置：**
+
+```bash
+# ~/.bashrc 或 ~/.zshrc
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# 项目特定优化
+alias pcu-fast="pcu check --concurrency 5 --limit 20"
+alias pcu-full="pcu check --concurrency 2"
+```
+
+### CI/CD 环境
+
+**不同 CI 提供商的优化：**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+# 针对双核运行器优化
+env:
+  PCU_CONCURRENCY: 2
+  PCU_TIMEOUT: 60000
+  PCU_CACHE_ENABLED: true
+  NODE_OPTIONS: '--max-old-space-size=3072'
+
+steps:
+  - name: 优化 PCU
+    run: |
+      # 预热 DNS 解析
+      nslookup registry.npmjs.org
+
+      # 为 GitHub 网络配置
+      export PCU_REGISTRY="https://registry.npmjs.org/"
+      pcu check --timeout 45000
+```
+
+```yaml {{ title: 'GitLab CI (Docker)' }}
+variables:
+  PCU_CONCURRENCY: '1'
+  PCU_CACHE_ENABLED: 'true'
+  NODE_OPTIONS: '--max-old-space-size=2048'
+
+before_script:
+  # Docker 容器优化
+  - export PCU_CACHE_DIR="/cache/.pcu"
+  - mkdir -p /cache/.pcu
+
+performance_check:
+  cache:
+    - key: pcu-cache
+    - paths: ['/cache/.pcu/']
+  script:
+    - pcu check --concurrency 1 --timeout 120000
+```
+
+</CodeGroup>
+
+### 生产部署
+
+**生产级配置：**
+
+```json
+{
+  "production": true,
+  "concurrency": 1,
+  "timeout": 300000,
+  "retries": 5,
+  "cache": {
+    "enabled": true,
+    "ttl": 86400,
+    "persistent": true
+  },
+  "security": {
+    "strictMode": true,
+    "verifyChecksums": true
+  }
+}
+```
+
+---
+
+## 性能检查清单
+
+### 快速改进
+
+- [ ] 启用持久缓存：`export PCU_CACHE_ENABLED=true`
+- [ ] 为您的环境优化并发
+- [ ] 使用地理位置接近的仓库
+- [ ] 为大型项目增加 Node.js 堆大小
+- [ ] 启用请求压缩和保持活动
+
+### 高级优化
+
+- [ ] 实施 CI/CD 缓存策略
+- [ ] 为大型单体仓库配置工作区分割
+- [ ] 设置性能监控和告警
+- [ ] 优化持续操作的内存管理
+- [ ] 实施增量处理工作流
+
+### 监控与维护
+
+- [ ] 定期性能基准测试
+- [ ] 缓存健康监控
+- [ ] 网络延迟测量
+- [ ] 内存使用分析
+- [ ] 性能回归检测

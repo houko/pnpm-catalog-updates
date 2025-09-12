@@ -1,7 +1,6 @@
+import { Link } from '@/i18n/navigation'
 import clsx from 'clsx'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { forwardRef } from 'react'
 
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -15,26 +14,12 @@ import { MobileSearch, Search } from '@/components/Search'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { CloseButton } from '@headlessui/react'
 
-function TopLevelNavItem({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <li>
-      <Link
-        href={href}
-        className="text-sm/5 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-      >
-        {children}
-      </Link>
-    </li>
-  )
-}
-
 export const Header = forwardRef<
   React.ComponentRef<'div'>,
   React.ComponentPropsWithoutRef<typeof motion.div>
 >(function Header({ className, ...props }, ref) {
   let { isOpen: mobileNavIsOpen } = useMobileNavigationStore()
   let isInsideMobileNavigation = useIsInsideMobileNavigation()
-  let t = useTranslations('Common')
 
   let { scrollY } = useScroll()
   let bgOpacityLight = useTransform(scrollY, [0, 72], ['50%', '90%'])
@@ -72,20 +57,10 @@ export const Header = forwardRef<
           <Logo className="h-6" />
         </CloseButton>
       </div>
-      <div className="flex items-center gap-5">
-        <nav className="hidden md:block">
-          <ul role="list" className="flex items-center gap-8">
-            <TopLevelNavItem href="/">{t('api')}</TopLevelNavItem>
-            <TopLevelNavItem href="#">{t('documentation')}</TopLevelNavItem>
-            <TopLevelNavItem href="#">{t('support')}</TopLevelNavItem>
-          </ul>
-        </nav>
-        <div className="hidden md:block md:h-5 md:w-px md:bg-zinc-900/10 md:dark:bg-white/15" />
-        <div className="flex gap-4">
-          <MobileSearch />
-          <ThemeToggle />
-          <LanguageSwitcher />
-        </div>
+      <div className="flex items-center gap-4">
+        <MobileSearch />
+        <ThemeToggle />
+        <LanguageSwitcher />
       </div>
     </motion.div>
   )
