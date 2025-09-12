@@ -1,5 +1,14 @@
 # pcu
 
+## 0.7.5
+
+### Patch Changes
+
+- 144a9b2: Verify no infinite loop in Release workflow
+
+  Test that the Release workflow runs once and completes without triggering
+  itself again after consuming this changeset file.
+
 ## 0.7.4
 
 ### Patch Changes
