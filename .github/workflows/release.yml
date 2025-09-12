@@ -53,11 +53,77 @@ jobs:
           title: "chore: release CLI package"
           setupGitUser: true
           skipCI: true
-          createGithubReleases: true
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Enhanced GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          release_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          body: |
+            ## Installation
+
+            ```bash
+            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            ```
+
+            ## Usage
+
+            ### Quick Commands
+
+            ```bash
+            # Check for updates
+            pcu -c
+
+            # Update interactively
+            pcu -i
+
+            # Update with dry run
+            pcu -u -d
+
+            # Get workspace info
+            pcu -s
+            ```
+
+            ### All Commands & Shortcuts
+
+            | Command | Shorthand | Description |
+            |---------|-----------|-------------|
+            | `pcu check` | `pcu -c` | Check for outdated catalog dependencies |
+            | `pcu update` | `pcu -u` | Update catalog dependencies |
+            | `pcu analyze` | `pcu -a` | Analyze impact of dependency updates |
+            | `pcu workspace` | `pcu -s` | Show workspace information and validation |
+            | `pcu help` | `pcu -h` | Display help information |
+
+            ### Common Examples
+
+            ```bash
+            # Interactive update with backup
+            pcu -i -b
+
+            # Update only minor versions
+            pcu -u --target minor
+
+            # Check specific catalog
+            pcu -c --catalog node18
+
+            # Analyze before updating
+            pcu -a default react
+
+            # Validate workspace
+            pcu -s --validate
+            ```
+
+            For complete documentation, visit: https://github.com/houko/pnpm-catalog-updates#readme
+          draft: false
+          prerelease: false
 
   deploy-docs:
     name: Deploy Documentation
