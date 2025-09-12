@@ -1,5 +1,13 @@
 # pcu
 
+## 0.7.14
+
+### Patch Changes
+
+- 620d185: fix: add docs i18n
+
+  add next-intl i18n and translation
+
 ## 0.7.13
 
 ### Patch Changes
