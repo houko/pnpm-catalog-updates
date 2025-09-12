@@ -1,0 +1,67 @@
+export const metadata = {
+  title: '安装与配置',
+  description: '了解如何安装和配置 PCU 以适应您的开发工作流程。',
+};
+
+# 安装与配置
+
+了解如何安装和配置 PCU 以适应您的开发工作流程。我们将介绍不同的安装方式、配置选项以及如何将 PCU 集成到您的项目中。{{ className: 'lead' }}
+
+## 全局安装
+
+推荐使用全局安装方式，这样您可以在任何 pnpm 工作区中使用 PCU。除非您有特殊需求，否则应该使用全局安装：
+
+```bash
+# 使用 npm 全局安装
+npm install -g pnpm-catalog-updates
+
+# 使用 pnpm 全局安装
+pnpm add -g pnpm-catalog-updates
+
+# 使用 yarn 全局安装
+yarn global add pnpm-catalog-updates
+```
+
+请不要将 PCU 作为项目依赖添加到 package.json 中！
+
+## 本地运行方式
+
+如果您不想全局安装，也可以使用 npx 临时运行 PCU。每次运行时会下载最新版本：
+
+```bash
+# 使用 npx 运行（推荐）
+npx pnpm-catalog-updates check --outdated
+
+# 查看帮助信息
+npx pnpm-catalog-updates --help
+```
+
+始终保持工具为最新版本，如果您怀疑版本过旧可以重新安装。
+
+## 配置文件
+
+PCU 支持通过配置文件自定义行为。在项目根目录创建 `.pcurc.json` 文件：
+
+```json
+{
+  "registries": {
+    "npm": "https://registry.npmjs.org/",
+    "taobao": "https://registry.npmmirror.com/"
+  },
+  "ignore": ["@types/*", "eslint-*"],
+  "outputFormat": "table",
+  "checkInterval": "weekly"
+}
+```
+
+配置文件是可选的，PCU 可以在没有配置的情况下正常工作。
+
+## 工作区配置
+
+确保您的项目已正确配置 pnpm 工作区。PCU 依赖于工作区配置来发现和管理依赖项。
+
+<div className="not-prose">
+  <Button href="/conversations" variant="text" arrow="right">
+    <>学习工作区配置最佳实践</>
+  </Button>
+</div>

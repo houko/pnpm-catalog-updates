@@ -1,0 +1,72 @@
+{
+  "Navigation": {
+    "quickstart": "Quick start",
+    "authentication": "Authentication",
+    "contacts": "Contacts",
+    "conversations": "Conversations",
+    "messages": "Messages",
+    "attachments": "Attachments",
+    "groups": "Groups",
+    "webhooks": "Webhooks",
+    "errors": "Errors",
+    "pagination": "Pagination",
+    "sdks": "SDKs",
+    "writing-basics": "Writing Basics",
+    "writing-components": "Writing Components",
+    "writing-code": "Writing Code",
+    "writing-layout": "Writing Layout",
+    "writing-api": "Writing API",
+    "writing-advanced": "Writing Advanced"
+  },
+  "Common": {
+    "language": "Language",
+    "english": "English",
+    "chinese": "中文",
+    "documentation": "Documentation",
+    "getStarted": "Get Started",
+    "api": "API",
+    "support": "Support",
+    "guides": "Guides",
+    "writing": "Writing Docs",
+    "resources": "Resources",
+    "introduction": "Introduction"
+  },
+  "Home": {
+    "title": "PCU Documentation",
+    "description": "A powerful CLI tool for managing pnpm workspace catalog dependencies",
+    "heroTitle": "Manage your pnpm catalogs with ease",
+    "heroDescription": "PCU helps you check, update, and analyze dependencies in your pnpm workspace catalogs efficiently.",
+    "exploreSdks": "Explore SDKs",
+    "gettingStartedTitle": "Getting started",
+    "gettingStartedDesc": "To get started, create a new application in your developer settings, then read about how to make requests for the resources you need to access using our HTTP APIs or dedicated client SDKs.",
+    "getApiKey": "Get your API key"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "Sorry, we couldn't find the page you're looking for.",
+    "backButton": "Back to docs"
+  },
+  "WritingGuide": {
+    "title": "Documentation Writing Guide",
+    "description": "Complete guide to writing documentation using all supported MDX components and features."
+  },
+  "Feedback": {
+    "question": "Was this page helpful?",
+    "yes": "Yes",
+    "no": "No",
+    "thanks": "Thanks for your feedback!"
+  },
+  "Search": {
+    "placeholder": "Find something...",
+    "noResults": "Nothing found for",
+    "tryAgain": "Please try again."
+  },
+  "Footer": {
+    "previous": "Previous",
+    "next": "Next",
+    "copyright": "Copyright {year}. All rights reserved.",
+    "followX": "Follow us on X",
+    "followGitHub": "Follow us on GitHub",
+    "joinDiscord": "Join our Discord server"
+  }
+}

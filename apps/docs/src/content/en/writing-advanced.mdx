@@ -1,0 +1,79 @@
+export const metadata = {
+  title: 'Advanced Writing Features',
+  description:
+    'Master metadata, lead paragraphs, styling contexts, and documentation best practices.',
+};
+
+# Advanced Writing Features
+
+Master the advanced features that make your documentation professional and effective. Learn about metadata, lead paragraphs, styling contexts, and the best practices that separate great docs from good ones. {{ className: 'lead' }}
+
+## Metadata and SEO
+
+Every page should include metadata at the top:
+
+```mdx
+export const metadata = {
+  title: 'Your Page Title',
+  description: 'Brief description for SEO and navigation.',
+};
+
+;
+```
+
+## Lead Paragraphs
+
+Make introductory paragraphs stand out with `{{ className: 'lead' }}`:
+
+```mdx
+This is a lead paragraph that introduces the topic with larger, more prominent text. {{ className: 'lead' }}
+```
+
+## Styling Context
+
+### The not-prose Class
+
+Use `<div className="not-prose">` for components that need to escape prose styling:
+
+```mdx
+<div className="not-prose">
+  <Button href="/somewhere">Click Me</Button>
+</div>
+```
+
+## Documentation Best Practices
+
+### Content Structure
+
+1. Start with metadata and clear titles
+2. Use lead paragraphs for introductions
+3. Organize with proper heading hierarchy
+4. Add Notes for important information
+5. Include practical code examples
+6. End with clear next steps
+
+### Writing Style
+
+- Use active voice
+- Be concise but complete
+- Include examples for every concept
+- Test all code snippets
+- Maintain consistent terminology
+
+### Organization
+
+- Group related topics together
+- Use cross-references liberally
+- Provide multiple entry points
+- Consider the user's journey
+- Include search-friendly headings
+
+## Complete Documentation Workflow
+
+1. **Plan**: Outline your content structure
+2. **Write**: Use appropriate components for each section
+3. **Review**: Check for completeness and accuracy
+4. **Test**: Verify all examples work
+5. **Iterate**: Improve based on feedback
+
+You now have all the tools needed to create world-class documentation!

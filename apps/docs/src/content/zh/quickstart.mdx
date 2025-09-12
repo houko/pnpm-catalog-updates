@@ -1,0 +1,94 @@
+export const metadata = {
+  title: '快速开始',
+  description: '本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog 依赖项。',
+};
+
+# 快速开始
+
+本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog 依赖项。我们将介绍如何安装工具、配置工作区，以及执行第一次依赖项检查。
+
+<div className="lead">
+  本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog
+  依赖项。我们将介绍如何安装工具、配置工作区，以及执行第一次依赖项检查。
+</div>
+
+<Note>
+  在开始使用 PCU 之前，请确保您的项目使用 pnpm 作为包管理器，并且已经配置了工作区。
+  您可以在项目根目录的 [pnpm-workspace.yaml](#) 文件中找到工作区配置。
+</Note>
+
+## 选择安装方式
+
+在开始第一次检查之前，您需要选择如何安装 PCU。除了传统的 npm 全局安装，PCU 还支持通过 pnpm、yarn 和 npx 临时运行。以下示例展示了如何安装 PCU：
+
+<CodeGroup>
+
+```bash {{ title: 'npm' }}
+# 使用 npm 全局安装 PCU
+npm install -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'pnpm' }}
+# 使用 pnpm 全局安装 PCU
+pnpm add -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'yarn' }}
+# 使用 yarn 全局安装 PCU
+yarn global add pnpm-catalog-updates
+```
+
+```bash {{ title: 'npx' }}
+# 使用 npx 临时运行（无需安装）
+npx pnpm-catalog-updates --help
+```
+
+</CodeGroup>
+
+<div className="not-prose">
+  <Button href="/sdks" variant="text" arrow="right">
+    <>查看所有可用命令</>
+  </Button>
+</div>
+
+## 执行第一次检查
+
+选择安装方式后，您就可以在 pnpm 工作区中执行第一次依赖项检查了。以下示例展示了如何运行 PCU 来检查过时的依赖项，默认显示前10个结果：
+
+<CodeGroup tag="RUN" label="pcu check">
+
+```bash {{ title: 'npm' }}
+# 检查过时的依赖项
+pcu check --outdated
+```
+
+```bash {{ title: 'pnpm' }}
+# 检查特定包的更新
+pcu check react --latest
+```
+
+```bash {{ title: 'yarn' }}
+# 检查整个工作区
+pcu check --workspace --verbose
+```
+
+```bash {{ title: 'npx' }}
+# 更新 catalog 配置
+npx pnpm-catalog-updates update --interactive
+```
+
+</CodeGroup>
+
+<div className="not-prose">
+  <Button href="/contacts" variant="text" arrow="right">
+    <>阅读依赖管理文档</>
+  </Button>
+</div>
+
+## 接下来做什么？
+
+太好了！您现在已经安装了 PCU 并执行了第一次依赖项检查。以下是一些有用的链接，帮助您进一步探索 PCU 的功能：
+
+- [从 pnpm 工作区获取 catalog 配置](#)
+- [查看依赖管理文档](/contacts)
+- [了解 PCU 的错误处理](/errors)

@@ -1,0 +1,70 @@
+export const metadata = {
+  title: 'API文档写作',
+  description: '使用Properties、Tags和专门的组件创建全面的API文档。',
+};
+
+# API文档写作
+
+创建开发者喜爱的全面API文档。学习使用Properties记录参数、Tags标记HTTP方法，以及使API参考清晰可操作的专门组件。 {{ className: 'lead' }}
+
+## 属性列表
+
+使用`<Properties>`和`<Property>`记录API参数：
+
+<Properties>
+  <Property name="id" type="string">
+    资源的唯一标识符。创建资源时自动生成。
+  </Property>
+
+  <Property name="name" type="string">
+    资源的显示名称。必须在1到100个字符之间。
+  </Property>
+
+  <Property name="email" type="string">
+    有效的电子邮件地址。在所有用户中必须唯一。
+  </Property>
+
+  <Property name="created_at" type="timestamp">
+    ISO 8601时间戳，表示资源的创建时间。
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    参数的描述和用法。
+  </Property>
+</Properties>
+```
+
+## HTTP方法标签
+
+标签根据HTTP方法自动着色：
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">自定义</Tag>
+  <Tag color="emerald">成功</Tag>
+  <Tag color="rose">错误</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">成功</Tag>
+```
+
+## API最佳实践
+
+- 始终记录所有参数
+- 包含示例请求和响应
+- 使用适当的HTTP状态码
+- 提供清晰的错误消息
+- 包含身份验证要求
+
+## 下一步
+
+使用[高级功能](/writing-advanced)完成您的文档之旅。

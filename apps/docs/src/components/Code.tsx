@@ -132,25 +132,49 @@ function CodePanel({
   label?: string
   code?: string
 }) {
-  let child = Children.only(children)
+  let extractedCode = code
+  let extractedTag = tag
+  let extractedLabel = label
 
-  if (isValidElement(child)) {
-    const props = child.props as { tag?: string; label?: string; code?: string }
-    tag = props.tag ?? tag
-    label = props.label ?? label
-    code = props.code ?? code
+  // Try to extract from single child first (original behavior)
+  try {
+    let child = Children.only(children)
+    if (isValidElement(child)) {
+      const props = child.props as { tag?: string; label?: string; code?: string }
+      extractedTag = props.tag ?? extractedTag
+      extractedLabel = props.label ?? extractedLabel
+      extractedCode = props.code ?? extractedCode
+    }
+  } catch {
+    // If Children.only fails, try to extract code from text content
+    const extractTextFromChildren = (node: React.ReactNode): string => {
+      if (typeof node === 'string') {
+        return node
+      }
+      if (Array.isArray(node)) {
+        return node.map(extractTextFromChildren).join('')
+      }
+      if (isValidElement(node) && node.props.children) {
+        return extractTextFromChildren(node.props.children)
+      }
+      return ''
+    }
+
+    if (!extractedCode) {
+      extractedCode = extractTextFromChildren(children)
+    }
   }
 
-  if (!code) {
+  if (!extractedCode) {
     throw new Error('`CodePanel` requires a `code` prop, or a child with a `code` prop.')
   }
 
   return (
     <div className="dark:bg-white/2.5 group">
-      <CodePanelHeader tag={tag} label={label} />
+      <CodePanelHeader tag={extractedTag} label={extractedLabel} />
       <div className="relative">
         <pre className="overflow-x-auto p-4 text-xs text-white">{children}</pre>
-        <CopyButton code={code} />
+        <CopyButton code={extractedCode} />
       </div>
     </div>
   )

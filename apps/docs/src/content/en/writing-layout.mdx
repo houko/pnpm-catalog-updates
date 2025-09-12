@@ -1,0 +1,92 @@
+export const metadata = {
+  title: 'Writing Layout',
+  description:
+    'Create sophisticated multi-column layouts and organize content with Row, Col, and sticky positioning.',
+};
+
+# Writing Layout
+
+Create sophisticated layouts that enhance readability and user experience. Learn to use Row and Col components for multi-column designs, sticky positioning, and effective content organization. {{ className: 'lead' }}
+
+## Two-Column Layout
+
+Use `<Row>` and `<Col>` for side-by-side content:
+
+<Row>
+  <Col>
+    **Left Column**
+    
+    This content appears in the left column. Perfect for explanations, descriptions, or complementary information.
+    
+    - Key point one
+    - Important detail
+    - Additional context
+  </Col>
+  
+  <Col>
+    **Right Column**
+    
+    ```javascript
+    // Right column with code
+    const example = {
+      feature: "multi-column",
+      benefit: "better organization"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Left column content with explanations.</Col>
+
+  <Col>Right column content with examples.</Col>
+</Row>
+```
+
+## Sticky Column Layout
+
+Make content stick while scrolling:
+
+<Row>
+  <Col>
+    **Scrolling Content**
+    
+    This is regular content that scrolls normally. You can put long explanations here that users will scroll through to read completely.
+    
+    This column contains the main narrative or detailed information that requires scrolling to consume fully.
+  </Col>
+  
+  <Col sticky>
+    **Sticky Reference**
+    
+    ```json
+    {
+      "status": "sticky",
+      "position": "fixed",
+      "scroll": "independent"
+    }
+    ```
+    
+    This stays visible as you scroll.
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Regular scrolling content here.</Col>
+
+  <Col sticky>This column stays fixed while scrolling.</Col>
+</Row>
+```
+
+## Layout Best Practices
+
+- Use two-column layouts for complementary content
+- Sticky columns work best for reference material
+- Keep columns balanced in content length
+- Ensure mobile responsiveness (columns stack on small screens)
+
+## Next Steps
+
+Continue with [API Documentation](/writing-api) for specialized components.

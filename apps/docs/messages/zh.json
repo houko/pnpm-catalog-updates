@@ -1,0 +1,152 @@
+{
+  "Navigation": {
+    "quickstart": "快速开始",
+    "authentication": "安装与配置",
+    "contacts": "依赖管理",
+    "conversations": "工作区配置",
+    "messages": "更新策略",
+    "attachments": "插件与扩展",
+    "groups": "团队协作",
+    "webhooks": "CI/CD 集成",
+    "errors": "故障排除",
+    "pagination": "批量操作",
+    "sdks": "命令参考",
+    "writing-basics": "写作基础",
+    "writing-components": "组件写作",
+    "writing-code": "代码写作",
+    "writing-layout": "布局写作",
+    "writing-api": "API写作",
+    "writing-advanced": "高级写作"
+  },
+  "Common": {
+    "language": "语言",
+    "english": "English",
+    "chinese": "中文",
+    "documentation": "文档",
+    "getStarted": "开始使用",
+    "api": "API",
+    "support": "支持",
+    "guides": "指南",
+    "writing": "文档写作",
+    "resources": "资源",
+    "introduction": "介绍"
+  },
+  "Home": {
+    "title": "PCU 文档",
+    "description": "强大的 pnpm 工作区目录依赖管理 CLI 工具",
+    "heroTitle": "轻松管理你的 pnpm catalogs",
+    "heroDescription": "PCU 帮助你高效地检查、更新和分析 pnpm 工作区目录中的依赖项。",
+    "exploreSdks": "查看命令参考",
+    "gettingStartedTitle": "快速开始",
+    "gettingStartedDesc": "PCU 是一个专为 pnpm 工作区设计的依赖管理工具。它可以帮助你检查过时的依赖项，批量更新版本，并优化你的 catalog 配置。",
+    "getApiKey": "开始安装"
+  },
+  "NotFound": {
+    "title": "页面未找到",
+    "description": "抱歉，我们找不到您要查找的页面。",
+    "backButton": "返回文档"
+  },
+  "Quickstart": {
+    "title": "快速开始",
+    "description": "本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog 依赖项。",
+    "installTitle": "安装 PCU",
+    "installDesc": "PCU 可以通过 npm、yarn 或 pnpm 进行全局安装。推荐使用 pnpm 安装以保持一致性。",
+    "configTitle": "配置工作区",
+    "configDesc": "在您的 pnpm 工作区根目录中，确保您有正确的 catalog 配置。",
+    "firstRunTitle": "第一次运行",
+    "firstRunDesc": "运行 PCU 来检查您工作区中的依赖项状态。",
+    "nextStepsTitle": "接下来做什么？",
+    "nextStepsDesc": "现在您已经安装了 PCU 并进行了首次检查。以下是一些有用的下一步操作：",
+    "checkDeps": "检查过时的依赖项",
+    "updateCatalogs": "更新 catalog 配置",
+    "learnCommands": "了解所有可用命令"
+  },
+  "Authentication": {
+    "title": "安装与配置",
+    "description": "了解如何安装和配置 PCU 以适应您的开发工作流程。"
+  },
+  "Contacts": {
+    "title": "依赖管理",
+    "description": "学习如何使用 PCU 管理和更新您的项目依赖项。"
+  },
+  "Conversations": {
+    "title": "工作区配置",
+    "description": "配置 pnpm 工作区以充分利用 PCU 的功能。"
+  },
+  "Messages": {
+    "title": "更新策略",
+    "description": "了解不同的依赖项更新策略和最佳实践。"
+  },
+  "Attachments": {
+    "title": "插件与扩展",
+    "description": "探索 PCU 的插件系统和可用的扩展。"
+  },
+  "Groups": {
+    "title": "团队协作",
+    "description": "在团队环境中使用 PCU 的最佳实践。"
+  },
+  "Webhooks": {
+    "title": "CI/CD 集成",
+    "description": "将 PCU 集成到您的持续集成和部署流水线中。"
+  },
+  "Errors": {
+    "title": "故障排除",
+    "description": "常见问题和错误的解决方案。"
+  },
+  "Pagination": {
+    "title": "批量操作",
+    "description": "处理大型工作区和批量依赖项更新。"
+  },
+  "Sdks": {
+    "title": "命令参考",
+    "description": "PCU 所有命令的完整参考文档。"
+  },
+  "WritingGuide": {
+    "title": "文档写作指南",
+    "description": "使用所有支持的MDX组件和功能编写文档的完整指南。"
+  },
+  "QuickstartPage": {
+    "title": "快速开始",
+    "description": "本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog 依赖项。",
+    "intro": "本指南将帮助您快速安装和配置 PCU，开始管理您的 pnpm catalog 依赖项。我们将介绍如何安装工具、配置工作区，以及执行第一次依赖项检查。",
+    "noteText": "在开始使用 PCU 之前，请确保您的项目使用 pnpm 作为包管理器，并且已经配置了工作区。您可以在项目根目录的 pnpm-workspace.yaml 文件中找到工作区配置。",
+    "chooseInstallTitle": "选择安装方式",
+    "chooseInstallDesc": "在开始第一次检查之前，您需要选择如何安装 PCU。除了传统的 npm 全局安装，PCU 还支持通过 pnpm、yarn 和 npx 临时运行。以下示例展示了如何安装 PCU：",
+    "installGlobal": "# 全局安装 PCU",
+    "installPnpm": "# 使用 pnpm 安装 PCU",
+    "installYarn": "# 使用 yarn 安装 PCU",
+    "installNpx": "# 使用 npx 临时运行",
+    "checkCommandsLink": "查看所有可用命令",
+    "firstCheckTitle": "执行第一次检查",
+    "firstCheckDesc": "选择安装方式后，您就可以在 pnpm 工作区中执行第一次依赖项检查了。以下示例展示了如何运行 PCU 来检查过时的依赖项，默认显示前10个结果：",
+    "checkOutdated": "检查过时的依赖项",
+    "checkSpecific": "检查特定包的更新",
+    "checkWorkspace": "检查整个工作区",
+    "updateCatalog": "更新 catalog 配置",
+    "readDocsLink": "阅读依赖管理文档",
+    "nextStepsTitle": "接下来做什么？",
+    "nextStepsDesc": "太好了！您现在已经安装了 PCU 并执行了第一次依赖项检查。以下是一些有用的链接，帮助您进一步探索 PCU 的功能：",
+    "getCatalogLink": "从 pnpm 工作区获取 catalog 配置",
+    "checkDependenciesLink": "查看依赖管理文档",
+    "learnErrorsLink": "了解 PCU 的错误处理"
+  },
+  "Feedback": {
+    "question": "此页面对您有帮助吗？",
+    "yes": "是",
+    "no": "否",
+    "thanks": "感谢您的反馈！"
+  },
+  "Search": {
+    "placeholder": "搜索内容...",
+    "noResults": "未找到",
+    "tryAgain": "请重试。"
+  },
+  "Footer": {
+    "previous": "上一页",
+    "next": "下一页",
+    "copyright": "版权所有 {year}。保留所有权利。",
+    "followX": "关注我们的 X",
+    "followGitHub": "关注我们的 GitHub",
+    "joinDiscord": "加入我们的 Discord 服务器"
+  }
+}

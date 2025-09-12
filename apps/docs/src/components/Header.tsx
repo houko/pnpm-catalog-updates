@@ -1,9 +1,10 @@
 import clsx from 'clsx'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { forwardRef } from 'react'
 
-import { Button } from '@/components/Button'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { Logo } from '@/components/Logo'
 import {
   MobileNavigation,
@@ -33,6 +34,7 @@ export const Header = forwardRef<
 >(function Header({ className, ...props }, ref) {
   let { isOpen: mobileNavIsOpen } = useMobileNavigationStore()
   let isInsideMobileNavigation = useIsInsideMobileNavigation()
+  let t = useTranslations('Common')
 
   let { scrollY } = useScroll()
   let bgOpacityLight = useTransform(scrollY, [0, 72], ['50%', '90%'])
@@ -73,18 +75,16 @@ export const Header = forwardRef<
       <div className="flex items-center gap-5">
         <nav className="hidden md:block">
           <ul role="list" className="flex items-center gap-8">
-            <TopLevelNavItem href="/">API</TopLevelNavItem>
-            <TopLevelNavItem href="#">Documentation</TopLevelNavItem>
-            <TopLevelNavItem href="#">Support</TopLevelNavItem>
+            <TopLevelNavItem href="/">{t('api')}</TopLevelNavItem>
+            <TopLevelNavItem href="#">{t('documentation')}</TopLevelNavItem>
+            <TopLevelNavItem href="#">{t('support')}</TopLevelNavItem>
           </ul>
         </nav>
         <div className="hidden md:block md:h-5 md:w-px md:bg-zinc-900/10 md:dark:bg-white/15" />
         <div className="flex gap-4">
           <MobileSearch />
           <ThemeToggle />
-        </div>
-        <div className="hidden min-[416px]:contents">
-          <Button href="#">Sign in</Button>
+          <LanguageSwitcher />
         </div>
       </div>
     </motion.div>

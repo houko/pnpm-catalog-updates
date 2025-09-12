@@ -12,6 +12,37 @@ function rehypeParseCodeBlocks() {
         parentNode.properties.language = node.properties.className
           ? node.properties?.className[0]?.replace(/^language-/, '')
           : 'txt';
+
+        // Extract title from annotations
+        let title = null;
+
+        // Check parent node data (fallback)
+        if (parentNode.data?.meta) {
+          const titleMatch = parentNode.data.meta.match(/title:\s*['"]([^'"]*)['"]/);
+          if (titleMatch) title = titleMatch[1];
+        }
+
+        // Check annotation property directly
+        if (parentNode.properties?.annotation) {
+          try {
+            // The annotation string uses single quotes, so we need to replace them
+            let annotationStr = parentNode.properties.annotation;
+            if (typeof annotationStr === 'string') {
+              // Replace single quotes with double quotes for proper JSON parsing
+              annotationStr = annotationStr.replace(/'/g, '"');
+              const annotation = JSON.parse(annotationStr);
+              if (annotation.title) title = annotation.title;
+            }
+          } catch (e) {
+            // If JSON parsing fails, try regex extraction
+            const titleMatch = parentNode.properties.annotation.match(/title:\s*['"]([^'"]*)['"]/);
+            if (titleMatch) title = titleMatch[1];
+          }
+        }
+
+        if (title) {
+          parentNode.properties.title = title;
+        }
       }
     });
   };
@@ -40,6 +71,19 @@ function rehypeShiki() {
               line: ({ children }) => `<span>${children}</span>`,
             },
           });
+
+          // Special handling for diff highlighting
+          if (node.properties.language === 'diff') {
+            textNode.value = textNode.value
+              .replace(
+                /<span><span style="color: var\(--shiki-color-text\)">-([^<]*)<\/span><\/span>/g,
+                '<span><span style="color: var(--color-red-300); background-color: rgb(254 202 202 / 0.1);">-$1</span></span>'
+              )
+              .replace(
+                /<span><span style="color: var\(--shiki-color-text\)">\+([^<]*)<\/span><\/span>/g,
+                '<span><span style="color: var(--color-green-300); background-color: rgb(187 247 208 / 0.1);">+$1</span></span>'
+              );
+          }
         }
       }
     });

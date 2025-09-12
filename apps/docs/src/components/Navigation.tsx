@@ -1,12 +1,12 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import clsx from 'clsx'
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { useRef } from 'react'
 
-import { Button } from '@/components/Button'
 import { useIsInsideMobileNavigation } from '@/components/MobileNavigation'
 import { useSectionStore } from '@/components/SectionProvider'
 import { Tag } from '@/components/Tag'
@@ -189,6 +189,45 @@ function NavigationGroup({ group, className }: { group: NavGroup; className?: st
   )
 }
 
+// Hook to get translated navigation
+export function useNavigation(): Array<NavGroup> {
+  const t = useTranslations('Navigation')
+  const tCommon = useTranslations('Common')
+
+  // Define which pages go in which sections
+  const guidePages = ['quickstart', 'sdks', 'authentication', 'pagination', 'errors', 'webhooks']
+  const writingPages = [
+    'writing-basics',
+    'writing-components',
+    'writing-code',
+    'writing-layout',
+    'writing-api',
+    'writing-advanced',
+  ]
+  const resourcePages = ['contacts', 'conversations', 'messages', 'groups', 'attachments']
+
+  const createNavLink = (page: string) => ({
+    title: t(page),
+    href: `/${page}`,
+  })
+
+  return [
+    {
+      title: tCommon('guides'),
+      links: [{ title: tCommon('introduction'), href: '/' }, ...guidePages.map(createNavLink)],
+    },
+    {
+      title: tCommon('writing'),
+      links: writingPages.map(createNavLink),
+    },
+    {
+      title: tCommon('resources'),
+      links: resourcePages.map(createNavLink),
+    },
+  ]
+}
+
+// For backward compatibility - static navigation without translation
 export const navigation: Array<NavGroup> = [
   {
     title: 'Guides',
@@ -200,6 +239,17 @@ export const navigation: Array<NavGroup> = [
       { title: 'Pagination', href: '/pagination' },
       { title: 'Errors', href: '/errors' },
       { title: 'Webhooks', href: '/webhooks' },
+    ],
+  },
+  {
+    title: 'Writing Docs',
+    links: [
+      { title: 'Writing Basics', href: '/writing-basics' },
+      { title: 'Writing Components', href: '/writing-components' },
+      { title: 'Writing Code', href: '/writing-code' },
+      { title: 'Writing Layout', href: '/writing-layout' },
+      { title: 'Writing API', href: '/writing-api' },
+      { title: 'Writing Advanced', href: '/writing-advanced' },
     ],
   },
   {
@@ -215,12 +265,15 @@ export const navigation: Array<NavGroup> = [
 ]
 
 export function Navigation(props: React.ComponentPropsWithoutRef<'nav'>) {
+  const tCommon = useTranslations('Common')
+  const navigation = useNavigation()
+
   return (
     <nav {...props}>
       <ul role="list">
-        <TopLevelNavItem href="/">API</TopLevelNavItem>
-        <TopLevelNavItem href="#">Documentation</TopLevelNavItem>
-        <TopLevelNavItem href="#">Support</TopLevelNavItem>
+        <TopLevelNavItem href="/">{tCommon('api')}</TopLevelNavItem>
+        <TopLevelNavItem href="#">{tCommon('documentation')}</TopLevelNavItem>
+        <TopLevelNavItem href="#">{tCommon('support')}</TopLevelNavItem>
         {navigation.map((group, groupIndex) => (
           <NavigationGroup
             key={group.title}
@@ -228,11 +281,6 @@ export function Navigation(props: React.ComponentPropsWithoutRef<'nav'>) {
             className={groupIndex === 0 ? 'md:mt-0' : ''}
           />
         ))}
-        <li className="sticky bottom-0 z-10 mt-6 min-[416px]:hidden">
-          <Button href="#" variant="filled" className="w-full">
-            Sign in
-          </Button>
-        </li>
       </ul>
     </nav>
   )

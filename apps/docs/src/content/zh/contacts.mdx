@@ -1,0 +1,55 @@
+export const metadata = {
+  title: '依赖管理',
+  description: '学习如何使用 PCU 管理和更新您的项目依赖项。',
+};
+
+# 依赖管理
+
+学习如何使用 PCU 管理和更新您的项目依赖项。PCU 提供强大的依赖项分析和更新功能，帮助您保持项目依赖的最新状态。{{ className: 'lead' }}
+
+## 检查过时依赖
+
+使用 PCU 检查工作区中的过时依赖项：
+
+```bash
+# 检查所有过时的依赖项
+pcu check --outdated
+
+# 检查特定包的更新
+pcu check react vue --latest
+
+# 详细模式显示更多信息
+pcu check --verbose
+```
+
+## 更新依赖项
+
+PCU 提供多种依赖项更新策略：
+
+```bash
+# 交互式更新
+pcu update --interactive
+
+# 批量更新所有依赖
+pcu update --all
+
+# 只更新补丁版本
+pcu update --patch-only
+```
+
+## Catalog 管理
+
+PCU 专为 pnpm catalog 设计，提供 catalog 特定的管理功能：
+
+```bash
+# 检查 catalog 配置
+pcu catalog check
+
+# 更新 catalog 条目
+pcu catalog update
+
+# 同步工作区依赖到 catalog
+pcu catalog sync
+```
+
+了解更多关于依赖管理的最佳实践和高级用法。
