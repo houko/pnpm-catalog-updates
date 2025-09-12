@@ -8,10 +8,10 @@ import { notFound } from 'next/navigation'
 import path from 'path'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: string
     slug: string[]
-  }
+  }>
 }
 
 // Automatically discover pages from content directory

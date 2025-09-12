@@ -80,12 +80,74 @@ Make content stick while scrolling:
 </Row>
 ```
 
+## Guides Component
+
+Display a grid of guide links using the `<Guides>` component:
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+The Guides component shows a predefined set of documentation guides with links and descriptions. Perfect for overview pages and getting started sections.
+
+## Resources Component
+
+Showcase main resource categories with animated cards:
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+The Resources component displays animated resource cards with icons and descriptions. Great for main landing pages and API overview sections.
+
+## Icons
+
+Use individual icons for inline decoration or custom layouts:
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### Available Icons
+
+- `<UserIcon />` - Single user
+- `<UsersIcon />` - Multiple users
+- `<EnvelopeIcon />` - Messages/email
+- `<ChatBubbleIcon />` - Conversations
+- `<BookIcon />` - Documentation
+- `<CheckIcon />` - Success/completion
+- `<BellIcon />` - Notifications
+- `<CogIcon />` - Settings/configuration
+
 ## Layout Best Practices
 
 - Use two-column layouts for complementary content
 - Sticky columns work best for reference material
 - Keep columns balanced in content length
 - Ensure mobile responsiveness (columns stack on small screens)
+- Use Guides for documentation overview pages
+- Use Resources for API category showcases
+- Icons work well with custom Tailwind classes for colors and sizing
 
 ## Next Steps
 

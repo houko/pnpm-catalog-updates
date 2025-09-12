@@ -51,8 +51,3 @@ export default function HomePage() {
     </>
   )
 }
-
-export const sections = [
-  { title: 'Guides', id: 'guides' },
-  { title: 'Resources', id: 'resources' },
-]

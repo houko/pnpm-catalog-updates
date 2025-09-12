@@ -154,8 +154,14 @@ function CodePanel({
       if (Array.isArray(node)) {
         return node.map(extractTextFromChildren).join('')
       }
-      if (isValidElement(node) && node.props.children) {
-        return extractTextFromChildren(node.props.children)
+      if (
+        isValidElement(node) &&
+        node.props &&
+        typeof node.props === 'object' &&
+        'children' in node.props
+      ) {
+        const props = node.props as { children?: React.ReactNode }
+        return extractTextFromChildren(props.children)
       }
       return ''
     }

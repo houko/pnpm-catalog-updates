@@ -8,8 +8,20 @@ import { Prose } from '@/components/Prose'
 export const a = Link
 export { Button } from '@/components/Button'
 export { Code as code, CodeGroup, Pre as pre } from '@/components/Code'
+export { Guides } from '@/components/Guides'
 export { Libraries } from '@/components/Libraries'
+export { Resources } from '@/components/Resources'
 export { Tag } from '@/components/Tag'
+
+// Common icons
+export { BellIcon } from '@/components/icons/BellIcon'
+export { BookIcon } from '@/components/icons/BookIcon'
+export { ChatBubbleIcon } from '@/components/icons/ChatBubbleIcon'
+export { CheckIcon } from '@/components/icons/CheckIcon'
+export { CogIcon } from '@/components/icons/CogIcon'
+export { EnvelopeIcon } from '@/components/icons/EnvelopeIcon'
+export { UserIcon } from '@/components/icons/UserIcon'
+export { UsersIcon } from '@/components/icons/UsersIcon'
 
 export function wrapper({ children }: { children: React.ReactNode }) {
   return (

@@ -5,7 +5,7 @@ export const metadata = {
 
 # API文档写作
 
-创建开发者喜爱的全面API文档。学习使用Properties记录参数、Tags标记HTTP方法，以及使API参考清晰可操作的专门组件。 {{ className: 'lead' }}
+创建开发者喜爱的全面API文档。学习使用Properties记录参数、Tags标记HTTP方法、Libraries展示SDK，以及使API参考清晰可操作的专门组件。 {{ className: 'lead' }}
 
 ## 属性列表
 
@@ -16,13 +16,13 @@ export const metadata = {
     资源的唯一标识符。创建资源时自动生成。
   </Property>
 
-  <Property name="name" type="string">
-    资源的显示名称。必须在1到100个字符之间。
-  </Property>
+<Property name="name" type="string">
+  资源的显示名称。必须在1到100个字符之间。
+</Property>
 
-  <Property name="email" type="string">
-    有效的电子邮件地址。在所有用户中必须唯一。
-  </Property>
+<Property name="email" type="string">
+  有效的电子邮件地址。在所有用户中必须唯一。
+</Property>
 
   <Property name="created_at" type="timestamp">
     ISO 8601时间戳，表示资源的创建时间。
@@ -57,13 +57,36 @@ export const metadata = {
 <Tag color="emerald">成功</Tag>
 ```
 
+## Libraries组件
+
+使用`<Libraries>`组件展示官方SDK和库：
+
+<Libraries />
+
+Libraries组件显示预定义的官方库网格。MDX语法很简单：
+
+```mdx
+<Libraries />
+```
+
+**注意**：Libraries组件显示固定的编程语言集（PHP、Ruby、Node.js、Python、Go）。实际库和链接在组件文件中配置。
+
+### Libraries使用场景
+
+- SDK文档页面
+- 入门指南
+- 特定语言集成指南
+- 官方库展示
+
 ## API最佳实践
 
-- 始终记录所有参数
+- 始终使用Properties组件记录所有参数
 - 包含示例请求和响应
-- 使用适当的HTTP状态码
+- 使用Tags标记适当的HTTP状态码
 - 提供清晰的错误消息
 - 包含身份验证要求
+- SDK页面使用Libraries组件
+- 保持Properties列表专注且组织良好
 
 ## 下一步
 
