@@ -211,58 +211,78 @@ export function useNavigation(): Array<NavGroup> {
     href: `/${page}`,
   })
 
-  return [
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  const navGroups = [
     {
       title: tCommon('guides'),
       links: [{ title: tCommon('introduction'), href: '/' }, ...guidePages.map(createNavLink)],
-    },
-    {
-      title: tCommon('writing'),
-      links: writingPages.map(createNavLink),
     },
     {
       title: tCommon('resources'),
       links: resourcePages.map(createNavLink),
     },
   ]
+
+  // Only show Writing Docs in development
+  if (!isProduction) {
+    navGroups.splice(1, 0, {
+      title: tCommon('writing'),
+      links: writingPages.map(createNavLink),
+    })
+  }
+
+  return navGroups
 }
 
 // For backward compatibility - static navigation without translation
-export const navigation: Array<NavGroup> = [
-  {
-    title: 'Guides',
-    links: [
-      { title: 'Introduction', href: '/' },
-      { title: 'Quickstart', href: '/quickstart' },
-      { title: 'SDKs', href: '/sdks' },
-      { title: 'Authentication', href: '/authentication' },
-      { title: 'Pagination', href: '/pagination' },
-      { title: 'Errors', href: '/errors' },
-      { title: 'Webhooks', href: '/webhooks' },
-    ],
-  },
-  {
-    title: 'Writing Docs',
-    links: [
-      { title: 'Writing Basics', href: '/writing-basics' },
-      { title: 'Writing Components', href: '/writing-components' },
-      { title: 'Writing Code', href: '/writing-code' },
-      { title: 'Writing Layout', href: '/writing-layout' },
-      { title: 'Writing API', href: '/writing-api' },
-      { title: 'Writing Advanced', href: '/writing-advanced' },
-    ],
-  },
-  {
-    title: 'Resources',
-    links: [
-      { title: 'Contacts', href: '/contacts' },
-      { title: 'Conversations', href: '/conversations' },
-      { title: 'Messages', href: '/messages' },
-      { title: 'Groups', href: '/groups' },
-      { title: 'Attachments', href: '/attachments' },
-    ],
-  },
-]
+const createStaticNavigation = (): Array<NavGroup> => {
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  const staticNavGroups = [
+    {
+      title: 'Guides',
+      links: [
+        { title: 'Introduction', href: '/' },
+        { title: 'Quickstart', href: '/quickstart' },
+        { title: 'SDKs', href: '/sdks' },
+        { title: 'Authentication', href: '/authentication' },
+        { title: 'Pagination', href: '/pagination' },
+        { title: 'Errors', href: '/errors' },
+        { title: 'Webhooks', href: '/webhooks' },
+      ],
+    },
+    {
+      title: 'Resources',
+      links: [
+        { title: 'Contacts', href: '/contacts' },
+        { title: 'Conversations', href: '/conversations' },
+        { title: 'Messages', href: '/messages' },
+        { title: 'Groups', href: '/groups' },
+        { title: 'Attachments', href: '/attachments' },
+      ],
+    },
+  ]
+
+  // Only show Writing Docs in development
+  if (!isProduction) {
+    staticNavGroups.splice(1, 0, {
+      title: 'Writing Docs',
+      links: [
+        { title: 'Writing Basics', href: '/writing-basics' },
+        { title: 'Writing Components', href: '/writing-components' },
+        { title: 'Writing Code', href: '/writing-code' },
+        { title: 'Writing Layout', href: '/writing-layout' },
+        { title: 'Writing API', href: '/writing-api' },
+        { title: 'Writing Advanced', href: '/writing-advanced' },
+      ],
+    })
+  }
+
+  return staticNavGroups
+}
+
+export const navigation: Array<NavGroup> = createStaticNavigation()
 
 export function Navigation(props: React.ComponentPropsWithoutRef<'nav'>) {
   const tCommon = useTranslations('Common')
