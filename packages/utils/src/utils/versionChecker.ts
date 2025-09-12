@@ -26,7 +26,7 @@ export interface VersionCheckOptions {
 
 export class VersionChecker {
   private static readonly DEFAULT_TIMEOUT = 5000; // 5 seconds
-  private static readonly DEFAULT_PACKAGE = 'pnpm-catalog-updates';
+  private static readonly DEFAULT_PACKAGE = 'pcu';
 
   /**
    * Check if current version is the latest
@@ -109,16 +109,14 @@ export class VersionChecker {
    * Perform update without prompting
    */
   static async performUpdateAction(): Promise<boolean> {
-    console.log(chalk.blue('🔄 Updating pnpm-catalog-updates...'));
+    console.log(chalk.blue('🔄 Updating pcu...'));
     try {
       await this.performUpdate();
       console.log(chalk.green('✅ Successfully updated! Please restart the command.'));
       return true;
     } catch (error) {
       console.error(chalk.red('❌ Update failed:'), error);
-      console.log(
-        chalk.gray('You can manually update with: npm install -g pnpm-catalog-updates@latest')
-      );
+      console.log(chalk.gray('You can manually update with: npm install -g pcu@latest'));
       return false;
     }
   }
@@ -152,10 +150,10 @@ export class VersionChecker {
   private static async performUpdate(): Promise<void> {
     // Try global update first, then fallback to different methods
     const commands = [
-      'npm install -g pnpm-catalog-updates@latest',
-      'npm update -g pnpm-catalog-updates',
-      'pnpm add -g pnpm-catalog-updates@latest',
-      'yarn global add pnpm-catalog-updates@latest',
+      'npm install -g pcu@latest',
+      'npm update -g pcu',
+      'pnpm add -g pcu@latest',
+      'yarn global add pcu@latest',
     ];
 
     for (const command of commands) {
