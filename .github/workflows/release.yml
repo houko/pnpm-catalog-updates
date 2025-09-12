@@ -46,7 +46,15 @@ jobs:
 
       - name: Check for changeset files
         run: |
-          if [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
+          echo "Debug: Checking changeset directory contents..."
+          ls -la .changeset/
+          echo "Debug: Checking for .md files..."
+          find .changeset -name "*.md" || echo "No .md files found"
+          echo "Debug: Using ls command..."
+          ls .changeset/*.md 2>/dev/null || echo "ls command found no .md files"
+
+          # Use more reliable check
+          if ! find .changeset -name "*.md" | grep -q .; then
             echo "No changeset files found. Please run 'pnpm changeset' to create a changeset file."
             echo "Example:"
             echo "  pnpm changeset"
@@ -56,7 +64,7 @@ jobs:
             exit 1
           fi
           echo "Found changeset files:"
-          ls .changeset/*.md 2>/dev/null || true
+          find .changeset -name "*.md"
 
       - name: Create Release Pull Request or Publish CLI
         id: changesets
