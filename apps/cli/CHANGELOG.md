@@ -1,5 +1,15 @@
 # pcu
 
+## 0.7.8
+
+### Patch Changes
+
+- d667680: Test dual package publication system
+
+  Verify that both pcu and pnpm-catalog-updates packages are published
+  simultaneously with the same version number using the new dual publication
+  script.
+
 ## 0.7.7
 
 ### Patch Changes
