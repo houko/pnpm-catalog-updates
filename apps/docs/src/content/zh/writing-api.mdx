@@ -59,24 +59,73 @@ export const metadata = {
 
 ## Libraries组件
 
-使用`<Libraries>`组件展示官方SDK和库：
+### 完整库网格
+
+使用`<Libraries>`组件展示所有官方SDK：
 
 <Libraries />
-
-Libraries组件显示预定义的官方库网格。MDX语法很简单：
 
 ```mdx
 <Libraries />
 ```
 
-**注意**：Libraries组件显示固定的编程语言集（PHP、Ruby、Node.js、Python、Go）。实际库和链接在组件文件中配置。
+### 单个库
+
+使用`<Library>`组件显示单个库：
+
+<Library language="node" />
+
+### 紧凑库展示
+
+在较小空间中，使用带描述的紧凑模式：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+或者无描述的更紧凑展示：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- 带描述的紧凑库 -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- 无描述的紧凑库 -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Library组件选项
+
+- **language**: 可选择 `php`, `ruby`, `node`, `python`, `go` (默认: `node`)
+- **compact**: 使用紧凑样式 (默认: `false`)
+- **showDescription**: 显示/隐藏描述文本 (默认: `true`)
 
 ### Libraries使用场景
 
-- SDK文档页面
-- 入门指南
-- 特定语言集成指南
-- 官方库展示
+- **`<Libraries />`**: 完整SDK概览页面，入门部分
+- **`<Library />`**: 内联文档，特定语言指南
+- **`<Library compact />`**: 侧边栏参考，紧凑列表
 
 ## API最佳实践
 

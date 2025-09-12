@@ -10,6 +10,7 @@ export { Button } from '@/components/Button'
 export { Code as code, CodeGroup, Pre as pre } from '@/components/Code'
 export { Guides } from '@/components/Guides'
 export { Libraries } from '@/components/Libraries'
+export { Library } from '@/components/Library'
 export { Resources } from '@/components/Resources'
 export { Tag } from '@/components/Tag'
 
