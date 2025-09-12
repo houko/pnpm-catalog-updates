@@ -1,5 +1,13 @@
 # pcu
 
+## 0.7.15
+
+### Patch Changes
+
+- a5b6083: feat: hide write docs
+
+  because write docs category is not necessray for end users hide it.
+
 ## 0.7.14
 
 ### Patch Changes
