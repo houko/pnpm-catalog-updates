@@ -44,28 +44,6 @@ jobs:
           # Then build all packages
           pnpm build
 
-      - name: Check for changeset files
-        run: |
-          echo "Debug: Checking changeset directory contents..."
-          ls -la .changeset/
-          echo "Debug: Checking for .md files..."
-          find .changeset -name "*.md" || echo "No .md files found"
-          echo "Debug: Using ls command..."
-          ls .changeset/*.md 2>/dev/null || echo "ls command found no .md files"
-
-          # Use more reliable check
-          if ! find .changeset -name "*.md" | grep -q .; then
-            echo "No changeset files found. Please run 'pnpm changeset' to create a changeset file."
-            echo "Example:"
-            echo "  pnpm changeset"
-            echo "  git add .changeset/"
-            echo "  git commit -m 'feat: add new feature'"
-            echo "  git push"
-            exit 1
-          fi
-          echo "Found changeset files:"
-          find .changeset -name "*.md"
-
       - name: Create Release Pull Request or Publish CLI
         id: changesets
         uses: changesets/action@v1
