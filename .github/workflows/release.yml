@@ -171,6 +171,7 @@ jobs:
           })
 
           const isProd = process.env.NODE_ENV === 'production'
+          const useCustomDomain = process.env.USE_CUSTOM_DOMAIN === 'true'
 
           /** @type {import('next').NextConfig} */
           const nextConfig = {
@@ -179,8 +180,8 @@ jobs:
             images: {
               unoptimized: true,
             },
-            basePath: isProd ? '/pnpm-catalog-updates' : '',
-            assetPrefix: isProd ? '/pnpm-catalog-updates/' : '',
+            basePath: isProd && !useCustomDomain ? '/pnpm-catalog-updates' : '',
+            assetPrefix: isProd && !useCustomDomain ? '/pnpm-catalog-updates/' : '',
             pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
             outputFileTracingIncludes: {
               '/**/*': ['./src/app/**/*.mdx'],
