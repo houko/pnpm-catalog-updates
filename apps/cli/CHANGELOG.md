@@ -1,5 +1,15 @@
 # pcu
 
+## 0.7.7
+
+### Patch Changes
+
+- 5d5eb5e: Enhanced GitHub Release format with complete documentation
+  - Add full Installation and Usage sections to GitHub Releases
+  - Include all commands, shortcuts, and common examples
+  - Provide comprehensive documentation in release notes
+  - Maintain consistent formatting across all releases
+
 ## 0.7.6
 
 ### Patch Changes
