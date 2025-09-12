@@ -9,12 +9,12 @@ const isDryRun = process.argv.includes('--dry-run');
 
 function runCommand(command, options = {}) {
   console.log(`${isDryRun ? '[DRY RUN] ' : ''}Running: ${command}`);
-  
+
   if (isDryRun && !options.alwaysRun) {
     console.log('[DRY RUN] Command skipped');
     return;
   }
-  
+
   try {
     execSync(command, { stdio: 'inherit' });
   } catch (error) {

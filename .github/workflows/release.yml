@@ -52,7 +52,6 @@ jobs:
           commit: "chore: release CLI package"
           title: "chore: release CLI package"
           setupGitUser: true
-          skipCI: true
           createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -203,8 +202,8 @@ jobs:
       - name: Build Documentation
         run: |
           cd apps/docs
-          # Build documentation using pnpm
-          NODE_ENV=production pnpm build
+          # Build documentation using pnpm with custom domain
+          NODE_ENV=production USE_CUSTOM_DOMAIN=true pnpm build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
