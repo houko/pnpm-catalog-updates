@@ -1,5 +1,14 @@
 # pcu
 
+## 0.7.6
+
+### Patch Changes
+
+- aa0bd56: Test GitHub Release creation
+
+  Verify that GitHub Releases are properly created when packages are published
+  to NPM through the Release workflow.
+
 ## 0.7.5
 
 ### Patch Changes
