@@ -44,49 +44,70 @@ jobs:
           # Then build all packages
           pnpm build
 
-      - name: Check for changesets
-        id: check-changesets
+      - name: Check for changesets or version updates
+        id: check-changes
         run: |
+          # Check for changeset files (for new changesets)
           if [ -n "$(ls .changeset/*.md 2>/dev/null | head -1)" ]; then
             echo "has-changesets=true" >> $GITHUB_OUTPUT
+            echo "should-publish=false" >> $GITHUB_OUTPUT
           else
             echo "has-changesets=false" >> $GITHUB_OUTPUT
+            # Check if this commit has version updates (merged changeset PR)
+            if git show --name-only HEAD | grep -q "apps/cli/package.json"; then
+              echo "should-publish=true" >> $GITHUB_OUTPUT
+            else
+              echo "should-publish=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
-      - name: Create Release Pull Request or Publish CLI
-        if: steps.check-changesets.outputs.has-changesets == 'true'
-        id: changesets
+      - name: Create Release Pull Request
+        if: steps.check-changes.outputs.has-changesets == 'true'
+        id: changesets-pr
         uses: changesets/action@v1
         with:
-          publish: pnpm release
           commit: "chore: release CLI package"
           title: "chore: release CLI package"
           setupGitUser: true
-          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish CLI packages
+        if: steps.check-changes.outputs.should-publish == 'true'
+        id: publish
+        run: |
+          echo "🚀 Publishing CLI packages..."
+          pnpm release
+        env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: No changesets to publish
-        if: steps.check-changesets.outputs.has-changesets == 'false'
+      - name: No changes to publish
+        if: steps.check-changes.outputs.has-changesets == 'false' && steps.check-changes.outputs.should-publish == 'false'
         run: |
-          echo "ℹ️ No changesets found - skipping package publication"
+          echo "ℹ️ No changesets or version updates found"
           echo "📝 To publish a new version, create a changeset with: pnpm changeset"
 
+      - name: Get published version
+        if: steps.publish.conclusion == 'success'
+        id: version
+        run: |
+          VERSION=$(node -p "require('./apps/cli/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Create Enhanced GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.publish.conclusion == 'success'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          release_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: pcu@${{ steps.version.outputs.version }}
+          release_name: v${{ steps.version.outputs.version }}
           body: |
             ## Installation
 
             ```bash
-            npm install -g pcu@${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+            npm install -g pcu@${{ steps.version.outputs.version }}
             ```
 
             ## Usage
