@@ -3,7 +3,6 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const yaml = require('yaml');
 
 const CLI_PACKAGE_PATH = path.join(__dirname, '../apps/cli/package.json');
 const WORKSPACE_PATH = path.join(__dirname, '../pnpm-workspace.yaml');
@@ -36,23 +35,74 @@ function updatePackageName(newName) {
 function resolveCatalogDependencies() {
   console.log('\n🔄 Resolving catalog dependencies...');
   
-  // Read workspace catalog
-  const workspaceContent = fs.readFileSync(WORKSPACE_PATH, 'utf8');
-  const workspace = yaml.parse(workspaceContent);
-  const catalog = workspace.catalog || {};
-  
   // Read package.json
   const packageJson = JSON.parse(fs.readFileSync(CLI_PACKAGE_PATH, 'utf8'));
+  
+  // Get actual installed versions using pnpm list
+  let pnpmList;
+  try {
+    const output = execSync('pnpm list --json --filter=pcu', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    pnpmList = JSON.parse(output);
+  } catch (error) {
+    console.warn('⚠️ Could not get pnpm list, falling back to manual resolution');
+    // Fallback to basic catalog resolution
+    const catalog = {
+      'chalk': '5.4.1',
+      'cli-table3': '0.6.5', 
+      'commander': '14.0.0',
+      'fs-extra': '11.3.0',
+      'glob': '11.0.3',
+      'inquirer': '12.7.0',
+      'lodash': '^4.17.21',
+      'npm-registry-fetch': '18.0.2',
+      'ora': '8.2.0',
+      'pacote': '21.0.0',
+      'rxjs': '7.8.2',
+      'semver': '7.7.2',
+      'yaml': '2.8.0'
+    };
+    
+    // Resolve dependencies
+    const resolvedDependencies = {};
+    for (const [dep, version] of Object.entries(packageJson.dependencies || {})) {
+      if (version === 'catalog:') {
+        if (catalog[dep]) {
+          resolvedDependencies[dep] = catalog[dep];
+          console.log(`  ${dep}: catalog: → ${catalog[dep]}`);
+        } else {
+          console.warn(`  ⚠️ ${dep}: catalog entry not found, keeping original`);
+          resolvedDependencies[dep] = version;
+        }
+      } else {
+        resolvedDependencies[dep] = version;
+      }
+    }
+    
+    // Keep devDependencies as is for publishing (they won't be installed anyway)
+    packageJson.dependencies = resolvedDependencies;
+    
+    fs.writeFileSync(CLI_PACKAGE_PATH, JSON.stringify(packageJson, null, 2) + '\n');
+    console.log('✅ Catalog dependencies resolved using fallback');
+    return packageJson;
+  }
+  
+  // Extract versions from pnpm list output
+  const installedDeps = {};
+  if (pnpmList && pnpmList[0] && pnpmList[0].dependencies) {
+    for (const [dep, info] of Object.entries(pnpmList[0].dependencies)) {
+      installedDeps[dep] = info.version;
+    }
+  }
   
   // Resolve dependencies
   const resolvedDependencies = {};
   for (const [dep, version] of Object.entries(packageJson.dependencies || {})) {
     if (version === 'catalog:') {
-      if (catalog[dep]) {
-        resolvedDependencies[dep] = catalog[dep];
-        console.log(`  ${dep}: catalog: → ${catalog[dep]}`);
+      if (installedDeps[dep]) {
+        resolvedDependencies[dep] = `^${installedDeps[dep]}`;
+        console.log(`  ${dep}: catalog: → ^${installedDeps[dep]}`);
       } else {
-        console.warn(`  ⚠️ ${dep}: catalog entry not found, keeping original`);
+        console.warn(`  ⚠️ ${dep}: not found in installed deps, keeping original`);
         resolvedDependencies[dep] = version;
       }
     } else {
@@ -60,25 +110,8 @@ function resolveCatalogDependencies() {
     }
   }
   
-  // Resolve devDependencies
-  const resolvedDevDependencies = {};
-  for (const [dep, version] of Object.entries(packageJson.devDependencies || {})) {
-    if (version === 'catalog:') {
-      if (catalog[dep]) {
-        resolvedDevDependencies[dep] = catalog[dep];
-        console.log(`  ${dep}: catalog: → ${catalog[dep]} (dev)`);
-      } else {
-        console.warn(`  ⚠️ ${dep}: catalog entry not found, keeping original`);
-        resolvedDevDependencies[dep] = version;
-      }
-    } else {
-      resolvedDevDependencies[dep] = version;
-    }
-  }
-  
-  // Update package.json
+  // Keep devDependencies as is for publishing (they won't be installed anyway)
   packageJson.dependencies = resolvedDependencies;
-  packageJson.devDependencies = resolvedDevDependencies;
   
   fs.writeFileSync(CLI_PACKAGE_PATH, JSON.stringify(packageJson, null, 2) + '\n');
   console.log('✅ Catalog dependencies resolved');
