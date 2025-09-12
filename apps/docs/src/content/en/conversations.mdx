@@ -1,406 +1,819 @@
 export const metadata = {
-  title: 'Conversations',
+  title: 'Examples',
   description:
-    'On this page, we’ll dive into the different conversation endpoints you can use to manage conversations programmatically.',
+    'Real-world examples and use cases for pnpm-catalog-updates. Learn from practical scenarios and common workflows.',
 };
 
-# Conversations
+# Examples
 
-Conversations are an essential part of Protocol — they are the containers for the messages between you, your contacts, and groups. On this page, we’ll dive into the different conversation endpoints you can use to manage conversations programmatically. We'll look at how to query, create, update, and delete conversations. {{ className: 'lead' }}
+Real-world examples and use cases to help you get the most out of PCU. From simple updates to complex monorepo management. {{ className: 'lead' }}
 
-## The conversation model
+## Basic Workflows
 
-The conversation model contains all the information about the conversations between you and your contacts. In addition, conversations can also be group-based with more than one contact, they can have a pinned message, and they can be muted.
+### Daily Dependency Check
 
-### Properties
+Check for updates as part of your daily development routine:
 
-<Properties>
-  <Property name="id" type="string">
-    Unique identifier for the conversation.
-  </Property>
-  <Property name="contact_id" type="string">
-    Unique identifier for the other contact in the conversation.
-  </Property>
-  <Property name="group_id" type="string">
-    Unique identifier for the group that the conversation belongs to.
-  </Property>
-  <Property name="pinned_message_id" type="string">
-    Unique identifier for the pinned message.
-  </Property>
-  <Property name="is_pinned" type="boolean">
-    Whether or not the conversation has been pinned.
-  </Property>
-  <Property name="is_muted" type="boolean">
-    Whether or not the conversation has been muted.
-  </Property>
-  <Property name="last_active_at" type="timestamp">
-    Timestamp of when the conversation was last active.
-  </Property>
-  <Property name="last_opened_at" type="timestamp">
-    Timestamp of when the conversation was last opened by the authenticated user.
-  </Property>
-  <Property name="created_at" type="timestamp">
-    Timestamp of when the conversation was created.
-  </Property>
-  <Property name="archived_at" type="timestamp">
-    Timestamp of when the conversation was archived.
-  </Property>
-</Properties>
+<CodeGroup>
 
----
+```bash {{ title: 'Quick Check' }}
+# Check for updates with simple output
+pcu -c --format minimal
 
-## List all conversations {{ tag: 'GET', label: '/v1/conversations' }}
+# Example output:
+# react           ^18.2.0  →  ^18.3.0
+# typescript      ^5.0.0   →  ^5.2.0
+# @types/node     ^18.0.0  →  ^20.0.0
+```
 
-<Row>
-  <Col>
+```bash {{ title: 'Detailed Check' }}
+# Check with full table format
+pcu -c
 
-    This endpoint allows you to retrieve a paginated list of all your conversations. By default, a maximum of ten conversations are shown per page.
+# Shows colored table with:
+# - Package names
+# - Current versions
+# - Available versions
+# - Update types (major/minor/patch)
+# - Security indicators
+```
 
-    ### Optional attributes
+</CodeGroup>
 
-    <Properties>
-      <Property name="limit" type="integer">
-        Limit the number of conversations returned.
-      </Property>
-      <Property name="muted" type="boolean">
-        Only show conversations that are muted when set to `true`.
-      </Property>
-      <Property name="archived" type="boolean">
-        Only show conversations that are archived when set to `true`.
-      </Property>
-      <Property name="pinned" type="boolean">
-        Only show conversations that are pinned when set to `true`.
-      </Property>
-      <Property name="group_id" type="string">
-        Only show conversations for the specified group.
-      </Property>
-    </Properties>
+### Safe Updates with Backup
 
-  </Col>
-  <Col sticky>
+Update dependencies safely with automatic backups:
 
-    <CodeGroup title="Request" tag="GET" label="/v1/conversations">
+```bash
+# Interactive updates with backup
+pcu -i -b
 
-    ```bash {{ title: 'cURL' }}
-    curl -G https://api.protocol.chat/v1/conversations \
-      -H "Authorization: Bearer {token}" \
-      -d limit=10
-    ```
+# Or automated minor updates with backup
+pcu -u --target minor --create-backup
+```
 
-    ```js
-    import ApiClient from '@example/protocol-api'
+### Target-Specific Updates
 
-    const client = new ApiClient(token)
+Update only specific types of changes:
 
-    await client.conversations.list()
-    ```
+<CodeGroup>
 
-    ```python
-    from protocol_api import ApiClient
+```bash {{ title: 'Conservative Updates' }}
+# Only patch updates (bug fixes)
+pcu -u --target patch
 
-    client = ApiClient(token)
+# Only minor updates (new features, no breaking changes)
+pcu -u --target minor
+```
 
-    client.conversations.list()
-    ```
+```bash {{ title: 'Latest Everything' }}
+# Update to latest versions (including major)
+pcu -u --target latest
 
-    ```php
-    $client = new \Protocol\ApiClient($token);
+# Include prerelease versions
+pcu -u --prerelease
+```
 
-    $client->conversations->list();
-    ```
+</CodeGroup>
 
-    </CodeGroup>
+## Multi-Catalog Workspaces
 
-    ```json {{ title: 'Response' }}
+### Legacy Support Scenario
+
+Managing multiple React versions in one workspace:
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml' }}
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  # Default catalog - latest versions
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  @types/react: ^18.2.0
+
+catalogs:
+  # Legacy support
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    @types/react: ^17.0.62
+
+  # Beta testing
+  react-next:
+    react: ^19.0.0-beta
+    react-dom: ^19.0.0-beta
+```
+
+```bash {{ title: 'Catalog-Specific Updates' }}
+# Update only the default catalog
+pcu -u --catalog default
+
+# Update legacy React versions
+pcu -u --catalog react17 --target minor
+
+# Check beta versions
+pcu -c --catalog react-next --prerelease
+```
+
+</CodeGroup>
+
+### Package Usage
+
+```json {{ title: 'package.json' }}
+{
+  "name": "@myorg/modern-app",
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
+```
+
+```json {{ title: 'Legacy package.json' }}
+{
+  "name": "@myorg/legacy-app",
+  "dependencies": {
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
+  }
+}
+```
+
+## Configuration Examples
+
+### React Ecosystem Management
+
+Coordinated updates for React and related packages:
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
     {
-      "has_more": false,
-      "data": [
-        {
-          "id": "xgQQXg3hrtjh7AvZ",
-          "contact_id": "WAz8eIbvDR60rouK",
-          "group_id": null,
-          "pinned_message_id": null,
-          "is_pinned": false,
-          "is_muted": false,
-          "last_active_at": 705103200,
-          "last_opened_at": 705103200,
-          "created_at": 692233200,
-          "archived_at": null
-        },
-        {
-          "id": "hSIhXBhNe8X1d8Et"
-          // ...
-        }
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": [
+        "@types/react",
+        "@types/react-dom",
+        "react-router-dom",
+        "@testing-library/react"
       ]
     }
-    ```
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  }
+}
+```
 
-  </Col>
-</Row>
+### TypeScript Project Configuration
 
----
+Conservative TypeScript updates with automatic type definitions:
 
-## Create a conversation {{ tag: 'POST', label: '/v1/conversations' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to add a new conversation between you and a contact or group. A contact or group id is required to create a conversation.
-
-    ### Required attributes
-
-    <Properties>
-      <Property name="contact_id" type="string">
-        Unique identifier for the other contact in the conversation.
-      </Property>
-      <Property name="group_id" type="string">
-        Unique identifier for the group that the conversation belongs to.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="POST" label="/v1/conversations">
-
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/conversations \
-      -H "Authorization: Bearer {token}" \
-      -d 'contact_id'="WAz8eIbvDR60rouK"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.conversations.create({
-      contact_id: 'WAz8eIbvDR60rouK',
-    })
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.conversations.create(contact_id="WAz8eIbvDR60rouK")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->conversations->create([
-      'contact_id' => 'WAz8eIbvDR60rouK',
-    ]);
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
     {
-      "id": "xgQQXg3hrtjh7AvZ",
-      "contact_id": "WAz8eIbvDR60rouK",
-      "group_id": null,
-      "pinned_message_id": null,
-      "is_pinned": false,
-      "is_muted": false,
-      "last_active_at": null,
-      "last_opened_at": null,
-      "created_at": 692233200,
-      "archived_at": null
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Retrieve a conversation {{ tag: 'GET', label: '/v1/conversations/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to retrieve a conversation by providing the conversation id. Refer to [the list](#the-conversation-model) at the top of this page to see which properties are included with conversation objects.
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="GET" label="/v1/conversations/xgQQXg3hrtjh7AvZ">
-
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/conversations/xgQQXg3hrtjh7AvZ \
-      -H "Authorization: Bearer {token}"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.conversations.get('xgQQXg3hrtjh7AvZ')
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.conversations.get("xgQQXg3hrtjh7AvZ")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->conversations->get('xgQQXg3hrtjh7AvZ');
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
     {
-      "id": "xgQQXg3hrtjh7AvZ",
-      "contact_id": "WAz8eIbvDR60rouK",
-      "group_id": null,
-      "pinned_message_id": null,
-      "is_pinned": false,
-      "is_muted": false,
-      "last_active_at": 705103200,
-      "last_opened_at": 705103200,
-      "created_at": 692233200,
-      "archived_at": null
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Update a conversation {{ tag: 'PUT', label: '/v1/conversations/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to perform an update on a conversation. Examples of updates are pinning a message, muting or archiving the conversation, or pinning the conversation itself.
-
-    ### Optional attributes
-
-    <Properties>
-      <Property name="pinned_message_id" type="string">
-        Unique identifier for the pinned message.
-      </Property>
-      <Property name="is_pinned" type="boolean">
-        Whether or not the conversation has been pinned.
-      </Property>
-      <Property name="is_muted" type="boolean">
-        Whether or not the conversation has been muted.
-      </Property>
-      <Property name="archived_at" type="timestamp">
-        Timestamp of when the conversation was archived.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="PUT" label="/v1/conversations/xgQQXg3hrtjh7AvZ">
-
-    ```bash {{ title: 'cURL' }}
-    curl -X PUT https://api.protocol.chat/v1/conversations/xgQQXg3hrtjh7AvZ \
-      -H "Authorization: Bearer {token}" \
-      -d 'is_muted'=true
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.conversations.update('xgQQXg3hrtjh7AvZ', {
-        is_muted: true,
-    })
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.conversations.update("xgQQXg3hrtjh7AvZ", is_muted=True)
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->conversations->update('xgQQXg3hrtjh7AvZ', [
-      'is_muted' => true,
-    ]);
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
     {
-      "id": "xgQQXg3hrtjh7AvZ",
-      "contact_id": "WAz8eIbvDR60rouK",
-      "group_id": null,
-      "pinned_message_id": null,
-      "is_pinned": false,
-      "is_muted": true,
-      "last_active_at": 705103200,
-      "last_opened_at": 705103200,
-      "created_at": 692233200,
-      "archived_at": null
+      "patterns": ["eslint*", "@typescript-eslint/*"],
+      "target": "minor",
+      "groupUpdate": true
     }
-    ```
+  ]
+}
+```
 
-  </Col>
-</Row>
+### Enterprise Configuration
 
----
+Enterprise-ready configuration with strict controls:
 
-## Delete a conversation {{ tag: 'DELETE', label: '/v1/conversations/:id' }}
+```json {{ title: '.pcurc.json' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000,
+    "retries": 5
+  },
+  "ui": {
+    "theme": "minimal",
+    "animations": false
+  }
+}
+```
 
-<Row>
-  <Col>
+## CI/CD Integration
 
-    This endpoint allows you to delete your conversations in Protocol. Note: This will permanently delete the conversation and all its messages — archive it instead if you want to be able to restore it later.
+### GitHub Actions
 
-  </Col>
-  <Col sticky>
+Automate dependency checking in your CI pipeline:
 
-    <CodeGroup title="Request" tag="DELETE" label="/v1/conversations/xgQQXg3hrtjh7AvZ">
+<CodeGroup>
 
-    ```bash {{ title: 'cURL' }}
-    curl -X DELETE https://api.protocol.chat/v1/conversations/xgQQXg3hrtjh7AvZ \
-      -H "Authorization: Bearer {token}"
-    ```
+```yaml {{ title: '.github/workflows/dependencies.yml' }}
+name: Check Dependencies
 
-    ```js
-    import ApiClient from '@example/protocol-api'
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # Every Monday at 9 AM
+  workflow_dispatch:
 
-    const client = new ApiClient(token)
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    await client.conversations.delete('xgQQXg3hrtjh7AvZ')
-    ```
+      - name: Install PCU
+        run: npm install -g pnpm-catalog-updates
 
-    ```python
-    from protocol_api import ApiClient
+      - name: Check for updates
+        run: pcu -c --format json > updates.json
 
-    client = ApiClient(token)
+      - name: Create Issue if Updates Available
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const updates = JSON.parse(fs.readFileSync('updates.json', 'utf8'));
+            if (updates.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Dependencies Update Available',
+                body: `Found ${updates.length} packages that can be updated:
 
-    client.conversations.delete("xgQQXg3hrtjh7AvZ")
-    ```
+` +
+                      updates.map(u => `- ${u.package}: ${u.current} → ${u.available}`).join('
+')
+              });
+            }
+```
 
-    ```php
-    $client = new \Protocol\ApiClient($token);
+```bash {{ title: 'Package.json Scripts' }}
+# Add to your package.json
+{
+  "scripts": {
+    "deps:check": "pcu -c",
+    "deps:update": "pcu -i -b",
+    "deps:update-minor": "pcu -u --target minor --create-backup",
+    "deps:analyze": "pcu -a default"
+  }
+}
+```
 
-    $client->conversations->delete('xgQQXg3hrtjh7AvZ');
-    ```
+</CodeGroup>
 
-    </CodeGroup>
+## Error Handling and Troubleshooting
 
-  </Col>
-</Row>
+### Network Issues
+
+Handle network problems and registry access:
+
+```bash
+# Increase timeout for slow connections
+pcu -c --timeout 60000
+
+# Reduce concurrency for unstable networks
+pcu -u --concurrency 2
+```
+
+### Workspace Validation
+
+Validate your workspace setup:
+
+```bash
+# Check workspace configuration
+pcu -s --validate
+
+# Get detailed workspace information
+pcu -s --stats --verbose
+```
+
+### Private Registries
+
+PCU automatically reads `.npmrc` and `.pnpmrc` configurations:
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+registry=https://registry.npmjs.org/
+```
+
+```bash {{ title: 'Usage' }}
+# PCU will automatically use your registry settings
+pcu -c
+
+# Check packages from private registry
+pcu -c --include "@myorg/*"
+```
+
+</CodeGroup>
+
+## Advanced Use Cases
+
+### Impact Analysis
+
+Analyze the impact of updating specific packages:
+
+```bash
+# Analyze React update impact
+pcu -a default react
+
+# Analyze with specific version
+pcu -a default react 18.3.0
+
+# Check impact across all catalogs
+pcu -a react17 react 17.0.3
+```
+
+### Selective Updates
+
+Update only specific packages or patterns:
+
+```bash
+# Update only React-related packages
+pcu -u --include "react*"
+
+# Update everything except core frameworks
+pcu -u --exclude "react*,vue*,angular*"
+
+# Update only type definitions
+pcu -u --include "@types/*" --target latest
+```
+
+### Dry Run Analysis
+
+Preview changes before applying them:
+
+```bash
+# See what would be updated
+pcu -u --dry-run --verbose
+
+# Preview with specific targets
+pcu -u --dry-run --target minor --include "@types/*"
+```
+
+## Best Practices
+
+### Daily Workflow
+
+1. **Morning Check**: `pcu -c` to see available updates
+2. **Review Impact**: Use `pcu -a` for significant updates
+3. **Safe Update**: `pcu -i -b` for interactive updates with backup
+4. **Test**: Run your test suite after updates
+5. **Commit**: Commit dependency updates separately
+
+### Team Workflow
+
+1. **Shared Configuration**: Commit `.pcurc.json` to version control
+2. **Regular Reviews**: Schedule weekly dependency review meetings
+3. **Security Priority**: Always prioritize security updates
+4. **Documentation**: Document major dependency decisions
+5. **Rollback Plan**: Keep backups for easy rollback
+
+### Release Workflow
+
+1. **Pre-release Check**: `pcu -c --target patch` before releases
+2. **Security Scan**: Enable `autoFixVulnerabilities` in CI
+3. **Version Pinning**: Use exact versions for production releases
+4. **Update Schedule**: Plan dependency updates between releasesexport const metadata = {
+   title: 'Examples',
+   description:
+   'Real-world examples and use cases for pnpm-catalog-updates. Learn from practical scenarios and common workflows.',
+   };
+
+# Examples
+
+Real-world examples and use cases to help you get the most out of PCU. From simple updates to complex monorepo management. {{ className: 'lead' }}
+
+## Basic Workflows
+
+### Daily Dependency Check
+
+Check for updates as part of your daily development routine:
+
+<CodeGroup>
+
+```bash {{ title: 'Quick Check' }}
+# Check for updates with simple output
+pcu -c --format minimal
+
+# Example output:
+# react           ^18.2.0  →  ^18.3.0
+# typescript      ^5.0.0   →  ^5.2.0
+# @types/node     ^18.0.0  →  ^20.0.0
+```
+
+```bash {{ title: 'Detailed Check' }}
+# Check with full table format
+pcu -c
+
+# Shows colored table with:
+# - Package names
+# - Current versions
+# - Available versions
+# - Update types (major/minor/patch)
+# - Security indicators
+```
+
+</CodeGroup>
+
+### Safe Updates with Backup
+
+Update dependencies safely with automatic backups:
+
+```bash
+# Interactive updates with backup
+pcu -i -b
+
+# Or automated minor updates with backup
+pcu -u --target minor --create-backup
+```
+
+### Target-Specific Updates
+
+Update only specific types of changes:
+
+<CodeGroup>
+
+```bash {{ title: 'Conservative Updates' }}
+# Only patch updates (bug fixes)
+pcu -u --target patch
+
+# Only minor updates (new features, no breaking changes)
+pcu -u --target minor
+```
+
+```bash {{ title: 'Latest Everything' }}
+# Update to latest versions (including major)
+pcu -u --target latest
+
+# Include prerelease versions
+pcu -u --prerelease
+```
+
+</CodeGroup>
+
+## Multi-Catalog Workspaces
+
+### Legacy Support Scenario
+
+Managing multiple React versions in one workspace:
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml' }}
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  # Default catalog - latest versions
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  @types/react: ^18.2.0
+
+catalogs:
+  # Legacy support
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    @types/react: ^17.0.62
+
+  # Beta testing
+  react-next:
+    react: ^19.0.0-beta
+    react-dom: ^19.0.0-beta
+```
+
+```bash {{ title: 'Catalog-Specific Updates' }}
+# Update only the default catalog
+pcu -u --catalog default
+
+# Update legacy React versions
+pcu -u --catalog react17 --target minor
+
+# Check beta versions
+pcu -c --catalog react-next --prerelease
+```
+
+</CodeGroup>
+
+### Package Usage
+
+```json {{ title: 'package.json' }}
+{
+  "name": "@myorg/modern-app",
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
+```
+
+```json {{ title: 'Legacy package.json' }}
+{
+  "name": "@myorg/legacy-app",
+  "dependencies": {
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
+  }
+}
+```
+
+## Configuration Examples
+
+### React Ecosystem Management
+
+Coordinated updates for React and related packages:
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": [
+        "@types/react",
+        "@types/react-dom",
+        "react-router-dom",
+        "@testing-library/react"
+      ]
+    }
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  }
+}
+```
+
+### TypeScript Project Configuration
+
+Conservative TypeScript updates with automatic type definitions:
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "@typescript-eslint/*"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+### Enterprise Configuration
+
+Enterprise-ready configuration with strict controls:
+
+```json {{ title: '.pcurc.json' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000,
+    "retries": 5
+  },
+  "ui": {
+    "theme": "minimal",
+    "animations": false
+  }
+}
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+Automate dependency checking in your CI pipeline:
+
+<CodeGroup>
+
+```yaml {{ title: '.github/workflows/dependencies.yml' }}
+name: Check Dependencies
+
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # Every Monday at 9 AM
+  workflow_dispatch:
+
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pnpm-catalog-updates
+
+      - name: Check for updates
+        run: pcu -c --format json > updates.json
+
+      - name: Create Issue if Updates Available
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const updates = JSON.parse(fs.readFileSync('updates.json', 'utf8'));
+            if (updates.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Dependencies Update Available',
+                body: `Found ${updates.length} packages that can be updated:
+
+` +
+                      updates.map(u => `- ${u.package}: ${u.current} → ${u.available}`).join('
+')
+              });
+            }
+```
+
+```bash {{ title: 'Package.json Scripts' }}
+# Add to your package.json
+{
+  "scripts": {
+    "deps:check": "pcu -c",
+    "deps:update": "pcu -i -b",
+    "deps:update-minor": "pcu -u --target minor --create-backup",
+    "deps:analyze": "pcu -a default"
+  }
+}
+```
+
+</CodeGroup>
+
+## Error Handling and Troubleshooting
+
+### Network Issues
+
+Handle network problems and registry access:
+
+```bash
+# Increase timeout for slow connections
+pcu -c --timeout 60000
+
+# Reduce concurrency for unstable networks
+pcu -u --concurrency 2
+```
+
+### Workspace Validation
+
+Validate your workspace setup:
+
+```bash
+# Check workspace configuration
+pcu -s --validate
+
+# Get detailed workspace information
+pcu -s --stats --verbose
+```
+
+### Private Registries
+
+PCU automatically reads `.npmrc` and `.pnpmrc` configurations:
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+registry=https://registry.npmjs.org/
+```
+
+```bash {{ title: 'Usage' }}
+# PCU will automatically use your registry settings
+pcu -c
+
+# Check packages from private registry
+pcu -c --include "@myorg/*"
+```
+
+</CodeGroup>
+
+## Advanced Use Cases
+
+### Impact Analysis
+
+Analyze the impact of updating specific packages:
+
+```bash
+# Analyze React update impact
+pcu -a default react
+
+# Analyze with specific version
+pcu -a default react 18.3.0
+
+# Check impact across all catalogs
+pcu -a react17 react 17.0.3
+```
+
+### Selective Updates
+
+Update only specific packages or patterns:
+
+```bash
+# Update only React-related packages
+pcu -u --include "react*"
+
+# Update everything except core frameworks
+pcu -u --exclude "react*,vue*,angular*"
+
+# Update only type definitions
+pcu -u --include "@types/*" --target latest
+```
+
+### Dry Run Analysis
+
+Preview changes before applying them:
+
+```bash
+# See what would be updated
+pcu -u --dry-run --verbose
+
+# Preview with specific targets
+pcu -u --dry-run --target minor --include "@types/*"
+```
+
+## Best Practices
+
+### Daily Workflow
+
+1. **Morning Check**: `pcu -c` to see available updates
+2. **Review Impact**: Use `pcu -a` for significant updates
+3. **Safe Update**: `pcu -i -b` for interactive updates with backup
+4. **Test**: Run your test suite after updates
+5. **Commit**: Commit dependency updates separately
+
+### Team Workflow
+
+1. **Shared Configuration**: Commit `.pcurc.json` to version control
+2. **Regular Reviews**: Schedule weekly dependency review meetings
+3. **Security Priority**: Always prioritize security updates
+4. **Documentation**: Document major dependency decisions
+5. **Rollback Plan**: Keep backups for easy rollback
+
+### Release Workflow
+
+1. **Pre-release Check**: `pcu -c --target patch` before releases
+2. **Security Scan**: Enable `autoFixVulnerabilities` in CI
+3. **Version Pinning**: Use exact versions for production releases
+4. **Update Schedule**: Plan dependency updates between releases

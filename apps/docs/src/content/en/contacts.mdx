@@ -1,393 +1,339 @@
 export const metadata = {
-  title: 'Contacts',
+  title: 'Configuration',
   description:
-    'On this page, we’ll dive into the different contact endpoints you can use to manage contacts programmatically.',
+    'Learn how to configure pnpm-catalog-updates for your workflow with .pcurc.json settings, package rules, and advanced options.',
 };
 
-# Contacts
+# Configuration
 
-As the name suggests, contacts are a core part of Protocol — the very reason Protocol exists is so you can have secure conversations with your contacts. On this page, we'll dive into the different contact endpoints you can use to manage contacts programmatically. We'll look at how to query, create, update, and delete contacts. {{ className: 'lead' }}
+Configure PCU to match your workflow and project needs. Learn about configuration files, package-specific rules, and advanced settings. {{ className: 'lead' }}
 
-## The contact model
+## Configuration File
 
-The contact model contains all the information about your contacts, such as their username, avatar, and phone number. It also contains a reference to the conversation between you and the contact and information about when they were last active on Protocol.
+PCU uses a `.pcurc.json` file in your project root for configuration. Create one manually or use `pcu init` to generate a default configuration.
 
-### Properties
+<CodeGroup>
+
+```json {{ title: 'Basic Configuration' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+```json {{ title: 'Advanced Configuration' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "update": {
+    "interactive": true,
+    "dryRunFirst": true,
+    "skipPrereleases": false
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  }
+}
+```
+
+</CodeGroup>
+
+## Package Filtering
+
+Control which packages to update with include/exclude patterns and package-specific rules.
+
+<CodeGroup>
+
+```json {{ title: 'Simple Filtering' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: 'Package Rules' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Package Rule Properties
 
 <Properties>
-  <Property name="id" type="string">
-    Unique identifier for the contact.
+  <Property name="patterns" type="string[]" required>
+    Glob patterns to match package names
   </Property>
-  <Property name="username" type="string">
-    The username for the contact.
+  <Property name="target" type="enum">
+    Update target: latest, greatest, minor, patch, newest
   </Property>
-  <Property name="phone_number" type="string">
-    The phone number for the contact.
+  <Property name="requireConfirmation" type="boolean">
+    Always ask before updating these packages
   </Property>
-  <Property name="avatar_url" type="string">
-    The avatar image URL for the contact.
+  <Property name="autoUpdate" type="boolean">
+    Update automatically without confirmation
   </Property>
-  <Property name="display_name" type="string">
-    The contact display name in the contact list. By default, this is just the username.
+  <Property name="relatedPackages" type="string[]">
+    Packages that follow the same update strategy
   </Property>
-  <Property name="conversation_id" type="string">
-    Unique identifier for the conversation associated with the contact.
-  </Property>
-  <Property name="last_active_at" type="timestamp">
-    Timestamp of when the contact was last active on the platform.
-  </Property>
-  <Property name="created_at" type="timestamp">
-    Timestamp of when the contact was created.
+  <Property name="groupUpdate" type="boolean">
+    Update related packages together
   </Property>
 </Properties>
 
----
+## Security Configuration
 
-## List all contacts {{ tag: 'GET', label: '/v1/contacts' }}
+Configure security vulnerability scanning and automatic fixes.
 
-<Row>
-  <Col>
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
 
-    This endpoint allows you to retrieve a paginated list of all your contacts. By default, a maximum of ten contacts are shown per page.
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    Automatically check and fix security vulnerabilities
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    Allow major version upgrades for security fixes
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    Show notifications on security updates
+  </Property>
+</Properties>
 
-    ### Optional attributes
+## Monorepo Configuration
 
-    <Properties>
-      <Property name="limit" type="integer">
-        Limit the number of contacts returned.
-      </Property>
-    </Properties>
+Special settings for complex monorepo setups with multiple catalogs.
 
-  </Col>
-  <Col sticky>
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
 
-    <CodeGroup title="Request" tag="GET" label="/v1/contacts">
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    Packages that need version sync across multiple catalogs
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    Catalog priority order for conflict resolution
+  </Property>
+</Properties>
 
-    ```bash {{ title: 'cURL' }}
-    curl -G https://api.protocol.chat/v1/contacts \
-      -H "Authorization: Bearer {token}" \
-      -d active=true \
-      -d limit=10
-    ```
+## Advanced Settings
 
-    ```js
-    import ApiClient from '@example/protocol-api'
+Fine-tune performance and behavior with advanced configuration options.
 
-    const client = new ApiClient(token)
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
 
-    await client.contacts.list()
-    ```
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    Number of concurrent network requests
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Network request timeout in milliseconds
+  </Property>
+  <Property name="retries" type="number" default="3">
+    Number of retries on failure
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    Cache validity period (0 to disable caching)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    Automatically check for PCU tool updates on startup. Skipped in CI environments. Shows update
+    notifications and installation instructions when newer versions are available.
+  </Property>
+</Properties>
 
-    ```python
-    from protocol_api import ApiClient
+## UI Configuration
 
-    client = ApiClient(token)
+Customize the visual appearance and user interface settings.
 
-    client.contacts.list()
-    ```
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
 
-    ```php
-    $client = new \Protocol\ApiClient($token);
+### Available Themes
 
-    $client->contacts->list();
-    ```
+- `default` - Balanced colors for general use
+- `modern` - Vibrant colors for development environments
+- `minimal` - Clean and simple for production environments
+- `neon` - High contrast colors for presentations
 
-    </CodeGroup>
+### Progress Bar Styles
 
-    ```json {{ title: 'Response' }}
+PCU supports 6 different progress bar styles for enhanced visual feedback during operations:
+
+- `default` - Standard progress bar with basic styling
+- `gradient` - Gradient-colored progress bar for modern appearance
+- `fancy` - Enhanced progress bar with decorative elements
+- `minimal` - Clean and simple progress indicator
+- `rainbow` - Multi-colored progress bar for vibrant displays
+- `neon` - High-contrast progress bar matching neon theme
+
+**Configuration Example:**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**Command Line Usage:**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## Configuration Priority
+
+Configuration settings are applied in this priority order:
+
+1. **Command line flags** (highest priority)
+2. **Package-specific rules** in `.pcurc.json`
+3. **General settings** in `.pcurc.json`
+4. **Default values** (lowest priority)
+
+<Note>
+  Related packages automatically inherit settings from their parent package rules, ensuring version
+  consistency across ecosystem packages.
+</Note>
+
+## Examples
+
+### React Ecosystem
+
+```json
+{
+  "packageRules": [
     {
-      "has_more": false,
-      "data": [
-        {
-          "id": "WAz8eIbvDR60rouK",
-          "username": "FrankMcCallister",
-          "phone_number": "1-800-759-3000",
-          "avatar_url": "https://assets.protocol.chat/avatars/frank.jpg",
-          "display_name": null,
-          "conversation_id": "xgQQXg3hrtjh7AvZ",
-          "last_active_at": 705103200,
-          "created_at": 692233200
-        },
-        {
-          "id": "hSIhXBhNe8X1d8Et"
-          // ...
-        }
-      ]
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
     }
-    ```
+  ]
+}
+```
 
-  </Col>
-</Row>
+### TypeScript Project
 
----
-
-## Create a contact {{ tag: 'POST', label: '/v1/contacts' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to add a new contact to your contact list in Protocol. To add a contact, you must provide their Protocol username and phone number.
-
-    ### Required attributes
-
-    <Properties>
-      <Property name="username" type="string">
-        The username for the contact.
-      </Property>
-      <Property name="phone_number" type="string">
-        The phone number for the contact.
-      </Property>
-    </Properties>
-
-    ### Optional attributes
-
-    <Properties>
-      <Property name="avatar_url" type="string">
-        The avatar image URL for the contact.
-      </Property>
-      <Property name="display_name" type="string">
-        The contact display name in the contact list. By default, this is just the username.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="POST" label="/v1/contacts">
-
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/contacts \
-      -H "Authorization: Bearer {token}" \
-      -d username="FrankMcCallister" \
-      -d phone_number="1-800-759-3000" \
-      -d avatar_url="https://assets.protocol.chat/avatars/frank.jpg"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.contacts.create({
-      username: 'FrankMcCallister',
-      phone_number: '1-800-759-3000',
-      avatar_url: 'https://assets.protocol.chat/avatars/frank.jpg',
-    })
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.contacts.create(
-      username="FrankMcCallister",
-      phone_number="1-800-759-3000",
-      avatar_url="https://assets.protocol.chat/avatars/frank.jpg",
-    )
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->contacts->create([
-      'username' => 'FrankMcCallister',
-      'phone_number' => '1-800-759-3000',
-      'avatar_url' => 'https://assets.protocol.chat/avatars/frank.jpg',
-    ]);
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
+```json
+{
+  "packageRules": [
     {
-      "id": "WAz8eIbvDR60rouK",
-      "username": "FrankMcCallister",
-      "phone_number": "1-800-759-3000",
-      "avatar_url": "https://assets.protocol.chat/avatars/frank.jpg",
-      "display_name": null,
-      "conversation_id": "xgQQXg3hrtjh7AvZ",
-      "last_active_at": null,
-      "created_at": 692233200
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Retrieve a contact {{ tag: 'GET', label: '/v1/contacts/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to retrieve a contact by providing their Protocol id. Refer to [the list](#the-contact-model) at the top of this page to see which properties are included with contact objects.
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="GET" label="/v1/contacts/WAz8eIbvDR60rouK">
-
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/contacts/WAz8eIbvDR60rouK \
-      -H "Authorization: Bearer {token}"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.contacts.get('WAz8eIbvDR60rouK')
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.contacts.get("WAz8eIbvDR60rouK")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->contacts->get('WAz8eIbvDR60rouK');
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
     {
-      "id": "WAz8eIbvDR60rouK",
-      "username": "FrankMcCallister",
-      "phone_number": "1-800-759-3000",
-      "avatar_url": "https://assets.protocol.chat/avatars/frank.jpg",
-      "display_name": null,
-      "conversation_id": "xgQQXg3hrtjh7AvZ",
-      "last_active_at": 705103200,
-      "created_at": 692233200
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
     }
-    ```
+  ]
+}
+```
 
-  </Col>
-</Row>
+### Enterprise Setup
 
----
-
-## Update a contact {{ tag: 'PUT', label: '/v1/contacts/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to perform an update on a contact. Currently, the only attribute that can be updated on contacts is the `display_name` attribute which controls how a contact appears in your contact list in Protocol.
-
-    ### Optional attributes
-
-    <Properties>
-      <Property name="display_name" type="string">
-        The contact display name in the contact list. By default, this is just the username.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="PUT" label="/v1/contacts/WAz8eIbvDR60rouK">
-
-    ```bash {{ title: 'cURL' }}
-    curl -X PUT https://api.protocol.chat/v1/contacts/WAz8eIbvDR60rouK \
-      -H "Authorization: Bearer {token}" \
-      -d display_name="UncleFrank"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.contacts.update('WAz8eIbvDR60rouK', {
-        display_name: 'UncleFrank',
-    })
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.contacts.update("WAz8eIbvDR60rouK", display_name="UncleFrank")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->contacts->update('WAz8eIbvDR60rouK', [
-      'display_name' => 'UncleFrank',
-    ]);
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
-    {
-      "id": "WAz8eIbvDR60rouK",
-      "username": "FrankMcCallister",
-      "phone_number": "1-800-759-3000",
-      "avatar_url": "https://assets.protocol.chat/avatars/frank.jpg",
-      "display_name": "UncleFrank",
-      "conversation_id": "xgQQXg3hrtjh7AvZ",
-      "last_active_at": 705103200,
-      "created_at": 692233200
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Delete a contact {{ tag: 'DELETE', label: '/v1/contacts/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to delete contacts from your contact list in Protocol. Note: This will also delete your conversation with the given contact.
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="DELETE" label="/v1/contacts/WAz8eIbvDR60rouK">
-
-    ```bash {{ title: 'cURL' }}
-    curl -X DELETE https://api.protocol.chat/v1/contacts/WAz8eIbvDR60rouK \
-      -H "Authorization: Bearer {token}"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.contacts.delete('WAz8eIbvDR60rouK')
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.contacts.delete("WAz8eIbvDR60rouK")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->contacts->delete('WAz8eIbvDR60rouK');
-    ```
-
-    </CodeGroup>
-
-  </Col>
-</Row>
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```

@@ -1,448 +1,833 @@
 export const metadata = {
-  title: 'Groups',
+  title: 'Development',
   description:
-    'On this page, we’ll dive into the different group endpoints you can use to manage groups programmatically.',
+    'Set up pnpm-catalog-updates for development. Learn about the project structure, development workflow, and how to contribute.',
 };
 
-# Groups
+# Development
 
-Groups are where communities live in Protocol — they are a collection of contacts you're talking to all at once. On this page, we'll dive into the different group endpoints you can use to manage groups programmatically. We'll look at how to query, create, update, and delete groups. {{ className: 'lead' }}
+Set up PCU for development and learn how to contribute to the project. This guide covers project setup, architecture, and development workflows. {{ className: 'lead' }}
 
-## The group model
+## Prerequisites
 
-The group model contains all the information about your groups, including what contacts are in the group and the group's name, description, and avatar.
+Before you start developing PCU, make sure you have the required tools:
 
-### Properties
+<Note>Node.js >= 22.0.0 and pnpm >= 10.0.0 are required for development.</Note>
+
+<CodeGroup>
+
+```bash {{ title: 'Check Versions' }}
+node --version  # Should be >= 22.0.0
+pnpm --version  # Should be >= 10.0.0
+```
+
+```bash {{ title: 'Install Tools' }}
+# Install Node.js via nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# Install pnpm
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## Project Setup
+
+Clone and set up the development environment:
+
+<CodeGroup>
+
+```bash {{ title: 'Clone and Setup' }}
+# Clone the repository
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# Install dependencies
+pnpm install
+
+# Build the project
+pnpm build
+
+# Run tests to verify setup
+pnpm test
+```
+
+```bash {{ title: 'Development Mode' }}
+# Run in development mode
+pnpm dev --help
+
+# Build in watch mode
+pnpm build:watch
+
+# Run tests in watch mode
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## Project Architecture
+
+PCU follows clean architecture principles with clear separation of concerns:
+
+```text
+├── apps/
+│   ├── cli/                    # CLI application layer
+│   │   ├── src/cli/           # CLI interface
+│   │   │   ├── commands/      # Command handlers
+│   │   │   ├── formatters/    # Output formatters
+│   │   │   ├── interactive/   # Interactive prompts
+│   │   │   ├── themes/        # Color themes
+│   │   │   └── validators/    # Input validation
+│   │   └── bin/               # Executable binaries
+│   └── docs/                  # Documentation site
+├── packages/
+│   ├── core/                  # Core business logic
+│   │   └── src/
+│   │       ├── application/   # Application services
+│   │       ├── domain/        # Domain model (DDD)
+│   │       └── infrastructure/# Infrastructure layer
+│   └── utils/                 # Shared utilities
+└── scripts/                   # Build and deployment
+```
+
+### Architecture Layers
 
 <Properties>
-  <Property name="id" type="string">
-    Unique identifier for the group.
+  <Property name="CLI Layer" type="apps/cli">
+    User interface, command parsing, output formatting
   </Property>
-  <Property name="name" type="string">
-    The name for the group.
+  <Property name="Application Layer" type="packages/core/application">
+    Business logic orchestration, use cases
   </Property>
-  <Property name="description" type="string">
-    The description for the group.
+  <Property name="Domain Layer" type="packages/core/domain">
+    Core business entities, value objects, repository interfaces
   </Property>
-  <Property name="avatar_url" type="string">
-    The avatar image URL for the group.
+  <Property name="Infrastructure Layer" type="packages/core/infrastructure">
+    External API clients, file system access, repository implementations
   </Property>
-  <Property name="conversation_id" type="string">
-    Unique identifier for the conversation that belongs to the group.
-  </Property>
-  <Property name="contacts" type="array">
-    An array of contact objects that are members of the group.
-  </Property>
-  <Property name="created_at" type="timestamp">
-    Timestamp of when the group was created.
-  </Property>
-  <Property name="archived_at" type="timestamp">
-    Timestamp of when the group was archived.
+  <Property name="Utils Layer" type="packages/utils">
+    Shared utilities, configuration, logging, error handling
   </Property>
 </Properties>
 
----
-
-## List all groups {{ tag: 'GET', label: '/v1/groups' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to retrieve a paginated list of all your groups. By default, a maximum of ten groups are shown per page.
-
-    ### Optional attributes
-
-    <Properties>
-      <Property name="limit" type="integer">
-        Limit the number of groups returned.
-      </Property>
-      <Property name="archived" type="boolean">
-        Only show groups that are archived when set to `true`.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="GET" label="/v1/groups">
-
-    ```bash {{ title: 'cURL' }}
-    curl -G https://api.protocol.chat/v1/groups \
-      -H "Authorization: Bearer {token}" \
-      -d limit=10
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.groups.list()
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.groups.list()
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->groups->list();
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
-    {
-      "has_more": false,
-      "data": [
-        {
-          "id": "l7cGNIBKZiNJ6wqF",
-          "name": "Plaza Hotel",
-          "description": "World-renowned.",
-          "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-          "conversation_id": "ZYjVAbCE9g5XRlra",
-          "contacts": [
-            {
-              "username": "Hector"
-              // ...
-            },
-            {
-              "username": "Cedric"
-              // ...
-            },
-            {
-              "username": "Hester"
-              // ...
-            },
-            {
-              "username": "Cliff"
-              // ...
-            }
-          ],
-          "created_at": 692233200,
-          "archived_at": null
-        },
-        {
-          "id": "hSIhXBhNe8X1d8Et"
-          // ...
-        }
-      ]
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Create a group {{ tag: 'POST', label: '/v1/groups' }}
-
-<Row>
-  <Col>
+## Development Workflow
 
-    This endpoint allows you to create a new group conversation between you and a group of your Protocol contacts.
+### Making Changes
 
-    ### Required attributes
+1. **Create a feature branch**:
 
-    <Properties>
-      <Property name="name" type="string">
-        The name for the group.
-      </Property>
-    </Properties>
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
 
-    ### Optional attributes
+2. **Make your changes** following the coding standards
 
-    <Properties>
-      <Property name="description" type="string">
-        The description for the group.
-      </Property>
-      <Property name="avatar_url" type="string">
-        The avatar image URL for the group.
-      </Property>
-      <Property name="contacts" type="array">
-        An array of contact objects that are members of the group.
-      </Property>
-    </Properties>
+3. **Add tests** for your changes:
 
-  </Col>
-  <Col sticky>
+   ```bash
+   pnpm test:watch  # Run tests in watch mode
+   ```
 
-    <CodeGroup title="Request" tag="POST" label="/v1/groups">
+4. **Ensure quality checks pass**:
 
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/groups \
-      -H "Authorization: Bearer {token}" \
-      -d name="Plaza Hotel"
-    ```
+   ```bash
+   pnpm lint        # Check code style
+   pnpm typecheck   # Type checking
+   pnpm test        # Run all tests
+   ```
 
-    ```js
-    import ApiClient from '@example/protocol-api'
+5. **Commit your changes**:
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
 
-    const client = new ApiClient(token)
+### Testing Strategy
 
-    await client.groups.create({
-      name: 'Plaza Hotel',
-    })
-    ```
+PCU uses a comprehensive testing approach:
 
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.groups.create(name="Plaza Hotel")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->groups->create([
-      'name' => 'Plaza Hotel',
-    ]);
-    ```
+<CodeGroup>
 
-    </CodeGroup>
+```bash {{ title: 'Unit Tests' }}
+# Run unit tests
+pnpm test
 
-    ```json {{ title: 'Response' }}
-    {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": null,
-      "avatar_url": null,
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [],
-      "created_at": 692233200,
-      "archived_at": null
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Retrieve a group {{ tag: 'GET', label: '/v1/groups/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to retrieve a group by providing the group id. Refer to [the list](#the-group-model) at the top of this page to see which properties are included with group objects.
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="GET" label="/v1/groups/L7cGNIBKZiNJ6wqF">
-
-    ```bash {{ title: 'cURL' }}
-    curl https://api.protocol.chat/v1/groups/L7cGNIBKZiNJ6wqF \
-      -H "Authorization: Bearer {token}"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.groups.get('L7cGNIBKZiNJ6wqF')
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.groups.get("L7cGNIBKZiNJ6wqF")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
+# Run with coverage
+pnpm test:coverage
 
-    $client->groups->get('L7cGNIBKZiNJ6wqF');
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
-    {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": "World-renowned.",
-      "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [
-        {
-          "username": "Hector"
-          // ...
-        },
-        {
-          "username": "Cedric"
-          // ...
-        },
-        {
-          "username": "Hester"
-          // ...
-        },
-        {
-          "username": "Cliff"
-          // ...
-        }
-      ],
-      "created_at": 692233200,
-      "archived_at": null
-    }
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Update a group {{ tag: 'PUT', label: '/v1/groups/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to perform an update on a group. Examples of updates are changing the name, description, and avatar or adding and removing contacts from the group.
-
-    ### Optional attributes
-
-    <Properties>
-      <Property name="name" type="string">
-        The new name for the group.
-      </Property>
-      <Property name="description" type="string">
-        The new description for the group.
-      </Property>
-      <Property name="avatar_url" type="string">
-        The new avatar image URL for the group.
-      </Property>
-      <Property name="contacts" type="array">
-        An array of contact objects that are members of the group.
-      </Property>
-      <Property name="archived_at" type="timestamp">
-        Timestamp of when the group was archived.
-      </Property>
-    </Properties>
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="PUT" label="/v1/groups/L7cGNIBKZiNJ6wqF">
-
-    ```bash {{ title: 'cURL' }}
-    curl -X PUT https://api.protocol.chat/v1/groups/L7cGNIBKZiNJ6wqF \
-      -H "Authorization: Bearer {token}" \
-      -d description="The finest in New York."
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.groups.update('L7cGNIBKZiNJ6wqF', {
-        description: 'The finest in New York.',
-    })
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.groups.update("L7cGNIBKZiNJ6wqF", description="The finest in New York.")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->groups->update('L7cGNIBKZiNJ6wqF', [
-      'description' => 'The finest in New York.',
-    ]);
-    ```
-
-    </CodeGroup>
-
-    ```json {{ title: 'Response' }}
-    {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": "The finest in New York.",
-      "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [
-        {
-          "username": "Hector"
-          // ...
-        },
-        {
-          "username": "Cedric"
-          // ...
-        },
-        {
-          "username": "Hester"
-          // ...
-        },
-        {
-          "username": "Cliff"
-          // ...
-        }
-      ],
-      "created_at": 692233200,
-      "archived_at": null
-    },
-    ```
-
-  </Col>
-</Row>
-
----
-
-## Delete a group {{ tag: 'DELETE', label: '/v1/groups/:id' }}
-
-<Row>
-  <Col>
-
-    This endpoint allows you to delete groups. Note: This will permanently delete the group, including the messages — archive it instead if you want to be able to restore it later.
-
-  </Col>
-  <Col sticky>
-
-    <CodeGroup title="Request" tag="DELETE" label="/v1/groups/L7cGNIBKZiNJ6wqF">
-
-    ```bash {{ title: 'cURL' }}
-    curl -X DELETE https://api.protocol.chat/v1/groups/L7cGNIBKZiNJ6wqF \
-      -H "Authorization: Bearer {token}"
-    ```
-
-    ```js
-    import ApiClient from '@example/protocol-api'
-
-    const client = new ApiClient(token)
-
-    await client.groups.delete('L7cGNIBKZiNJ6wqF')
-    ```
-
-    ```python
-    from protocol_api import ApiClient
-
-    client = ApiClient(token)
-
-    client.groups.delete("L7cGNIBKZiNJ6wqF")
-    ```
-
-    ```php
-    $client = new \Protocol\ApiClient($token);
-
-    $client->groups->delete('L7cGNIBKZiNJ6wqF');
-    ```
-
-    </CodeGroup>
-
-  </Col>
-</Row>
+# Test specific package
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: 'E2E Tests' }}
+# Run end-to-end tests
+pnpm test:e2e
+
+# Test against real projects
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: 'Integration Tests' }}
+# Test CLI commands
+pnpm test:cli
+
+# Test with different Node versions
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### Code Quality
+
+PCU maintains high code quality standards:
+
+<CodeGroup>
+
+```bash {{ title: 'Linting and Formatting' }}
+# Check code style
+pnpm lint
+
+# Fix linting issues
+pnpm lint:fix
+
+# Format code
+pnpm format
+
+# Check TypeScript types
+pnpm typecheck
+```
+
+```json {{ title: 'Quality Standards' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "ESLint with TypeScript rules",
+  "format": "Prettier with custom config",
+  "types": "Strict TypeScript configuration"
+}
+```
+
+</CodeGroup>
+
+## Adding Features
+
+### Creating New Commands
+
+1. **Create command handler** in `apps/cli/src/cli/commands/`:
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('Description of new command')
+    .option('-f, --format <type>', 'Output format', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // Command implementation
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: 'Register Command' }}
+// In apps/cli/src/cli/index.ts
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **Add business logic** in `packages/core/src/application/services/`
+
+3. **Create tests** for both CLI and core logic
+
+4. **Update documentation**
+
+### Adding New Output Formats
+
+1. **Create formatter** in `apps/cli/src/cli/formatters/`:
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // XML formatting logic
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **Register formatter** in the main formatter registry
+
+3. **Add tests** and **update documentation**
+
+## Contributing Guidelines
+
+### Commit Message Convention
+
+PCU uses [Conventional Commits](https://conventionalcommits.org/):
+
+<CodeGroup>
+
+```bash {{ title: 'Commit Types' }}
+feat: A new feature
+fix: A bug fix
+docs: Documentation only changes
+style: Code style changes (formatting, etc)
+refactor: Code change that neither fixes a bug nor adds a feature
+test: Adding missing tests or correcting existing tests
+chore: Changes to build process or auxiliary tools
+```
+
+```bash {{ title: 'Examples' }}
+feat: add support for custom registries
+fix: handle network timeouts gracefully
+docs: update configuration examples
+test: add tests for package filtering
+```
+
+</CodeGroup>
+
+### Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** following the development workflow
+3. **Ensure all tests pass** and code quality checks succeed
+4. **Update documentation** if needed
+5. **Submit a pull request** with:
+   - Clear description of changes
+   - Link to related issues
+   - Screenshots for UI changes
+   - Breaking change notes if applicable
+
+### Code Review Checklist
+
+- [ ] All tests pass
+- [ ] Code coverage maintained (>85%)
+- [ ] TypeScript types are correct
+- [ ] Code style follows project standards
+- [ ] Documentation updated
+- [ ] Breaking changes documented
+- [ ] Performance impact considered
+
+## Debugging
+
+### Development Debugging
+
+<CodeGroup>
+
+```bash {{ title: 'Debug CLI Commands' }}
+# Debug with Node.js inspector
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# Debug with VS Code
+# Use the launch configuration in .vscode/launch.json
+```
+
+```bash {{ title: 'Verbose Logging' }}
+# Enable debug logging
+DEBUG=pcu:* pnpm dev --verbose
+
+# Debug specific modules
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### Testing Debugging
+
+```bash
+# Debug specific test
+npm test -- --grep "specific test name"
+
+# Debug with Node inspector
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## Building and Publishing
+
+### Local Testing
+
+<CodeGroup>
+
+```bash {{ title: 'Test Local Build' }}
+# Build and test locally
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# Test installation
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: 'Test in Example Project' }}
+# Use the example workspace
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### Release Process
+
+1. **Update version** using changesets:
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **Build and test**:
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **Publish** (maintainers only):
+   ```bash
+   pnpm publish -r
+   ```
+
+## Getting Help
+
+- 📖 **Documentation**: Check this documentation for detailed guides
+- 🐛 **Issues**: Report bugs via [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Discussions**: Ask questions in [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 🔧 **Development**: Join development discussions in issues and PRsexport const metadata = {
+  title: 'Development',
+  description:
+  'Set up pnpm-catalog-updates for development. Learn about the project structure, development workflow, and how to contribute.',
+  };
+
+# Development
+
+Set up PCU for development and learn how to contribute to the project. This guide covers project setup, architecture, and development workflows. {{ className: 'lead' }}
+
+## Prerequisites
+
+Before you start developing PCU, make sure you have the required tools:
+
+<Note>Node.js >= 22.0.0 and pnpm >= 10.0.0 are required for development.</Note>
+
+<CodeGroup>
+
+```bash {{ title: 'Check Versions' }}
+node --version  # Should be >= 22.0.0
+pnpm --version  # Should be >= 10.0.0
+```
+
+```bash {{ title: 'Install Tools' }}
+# Install Node.js via nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# Install pnpm
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## Project Setup
+
+Clone and set up the development environment:
+
+<CodeGroup>
+
+```bash {{ title: 'Clone and Setup' }}
+# Clone the repository
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# Install dependencies
+pnpm install
+
+# Build the project
+pnpm build
+
+# Run tests to verify setup
+pnpm test
+```
+
+```bash {{ title: 'Development Mode' }}
+# Run in development mode
+pnpm dev --help
+
+# Build in watch mode
+pnpm build:watch
+
+# Run tests in watch mode
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## Project Architecture
+
+PCU follows clean architecture principles with clear separation of concerns:
+
+```text
+├── apps/
+│   ├── cli/                    # CLI application layer
+│   │   ├── src/cli/           # CLI interface
+│   │   │   ├── commands/      # Command handlers
+│   │   │   ├── formatters/    # Output formatters
+│   │   │   ├── interactive/   # Interactive prompts
+│   │   │   ├── themes/        # Color themes
+│   │   │   └── validators/    # Input validation
+│   │   └── bin/               # Executable binaries
+│   └── docs/                  # Documentation site
+├── packages/
+│   ├── core/                  # Core business logic
+│   │   └── src/
+│   │       ├── application/   # Application services
+│   │       ├── domain/        # Domain model (DDD)
+│   │       └── infrastructure/# Infrastructure layer
+│   └── utils/                 # Shared utilities
+└── scripts/                   # Build and deployment
+```
+
+### Architecture Layers
+
+<Properties>
+  <Property name="CLI Layer" type="apps/cli">
+    User interface, command parsing, output formatting
+  </Property>
+  <Property name="Application Layer" type="packages/core/application">
+    Business logic orchestration, use cases
+  </Property>
+  <Property name="Domain Layer" type="packages/core/domain">
+    Core business entities, value objects, repository interfaces
+  </Property>
+  <Property name="Infrastructure Layer" type="packages/core/infrastructure">
+    External API clients, file system access, repository implementations
+  </Property>
+  <Property name="Utils Layer" type="packages/utils">
+    Shared utilities, configuration, logging, error handling
+  </Property>
+</Properties>
+
+## Development Workflow
+
+### Making Changes
+
+1. **Create a feature branch**:
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. **Make your changes** following the coding standards
+
+3. **Add tests** for your changes:
+
+   ```bash
+   pnpm test:watch  # Run tests in watch mode
+   ```
+
+4. **Ensure quality checks pass**:
+
+   ```bash
+   pnpm lint        # Check code style
+   pnpm typecheck   # Type checking
+   pnpm test        # Run all tests
+   ```
+
+5. **Commit your changes**:
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+
+### Testing Strategy
+
+PCU uses a comprehensive testing approach:
+
+<CodeGroup>
+
+```bash {{ title: 'Unit Tests' }}
+# Run unit tests
+pnpm test
+
+# Run with coverage
+pnpm test:coverage
+
+# Test specific package
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: 'E2E Tests' }}
+# Run end-to-end tests
+pnpm test:e2e
+
+# Test against real projects
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: 'Integration Tests' }}
+# Test CLI commands
+pnpm test:cli
+
+# Test with different Node versions
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### Code Quality
+
+PCU maintains high code quality standards:
+
+<CodeGroup>
+
+```bash {{ title: 'Linting and Formatting' }}
+# Check code style
+pnpm lint
+
+# Fix linting issues
+pnpm lint:fix
+
+# Format code
+pnpm format
+
+# Check TypeScript types
+pnpm typecheck
+```
+
+```json {{ title: 'Quality Standards' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "ESLint with TypeScript rules",
+  "format": "Prettier with custom config",
+  "types": "Strict TypeScript configuration"
+}
+```
+
+</CodeGroup>
+
+## Adding Features
+
+### Creating New Commands
+
+1. **Create command handler** in `apps/cli/src/cli/commands/`:
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('Description of new command')
+    .option('-f, --format <type>', 'Output format', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // Command implementation
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: 'Register Command' }}
+// In apps/cli/src/cli/index.ts
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **Add business logic** in `packages/core/src/application/services/`
+
+3. **Create tests** for both CLI and core logic
+
+4. **Update documentation**
+
+### Adding New Output Formats
+
+1. **Create formatter** in `apps/cli/src/cli/formatters/`:
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // XML formatting logic
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **Register formatter** in the main formatter registry
+
+3. **Add tests** and **update documentation**
+
+## Contributing Guidelines
+
+### Commit Message Convention
+
+PCU uses [Conventional Commits](https://conventionalcommits.org/):
+
+<CodeGroup>
+
+```bash {{ title: 'Commit Types' }}
+feat: A new feature
+fix: A bug fix
+docs: Documentation only changes
+style: Code style changes (formatting, etc)
+refactor: Code change that neither fixes a bug nor adds a feature
+test: Adding missing tests or correcting existing tests
+chore: Changes to build process or auxiliary tools
+```
+
+```bash {{ title: 'Examples' }}
+feat: add support for custom registries
+fix: handle network timeouts gracefully
+docs: update configuration examples
+test: add tests for package filtering
+```
+
+</CodeGroup>
+
+### Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** following the development workflow
+3. **Ensure all tests pass** and code quality checks succeed
+4. **Update documentation** if needed
+5. **Submit a pull request** with:
+   - Clear description of changes
+   - Link to related issues
+   - Screenshots for UI changes
+   - Breaking change notes if applicable
+
+### Code Review Checklist
+
+- [ ] All tests pass
+- [ ] Code coverage maintained (>85%)
+- [ ] TypeScript types are correct
+- [ ] Code style follows project standards
+- [ ] Documentation updated
+- [ ] Breaking changes documented
+- [ ] Performance impact considered
+
+## Debugging
+
+### Development Debugging
+
+<CodeGroup>
+
+```bash {{ title: 'Debug CLI Commands' }}
+# Debug with Node.js inspector
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# Debug with VS Code
+# Use the launch configuration in .vscode/launch.json
+```
+
+```bash {{ title: 'Verbose Logging' }}
+# Enable debug logging
+DEBUG=pcu:* pnpm dev --verbose
+
+# Debug specific modules
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### Testing Debugging
+
+```bash
+# Debug specific test
+npm test -- --grep "specific test name"
+
+# Debug with Node inspector
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## Building and Publishing
+
+### Local Testing
+
+<CodeGroup>
+
+```bash {{ title: 'Test Local Build' }}
+# Build and test locally
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# Test installation
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: 'Test in Example Project' }}
+# Use the example workspace
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### Release Process
+
+1. **Update version** using changesets:
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **Build and test**:
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **Publish** (maintainers only):
+   ```bash
+   pnpm publish -r
+   ```
+
+## Getting Help
+
+- 📖 **Documentation**: Check this documentation for detailed guides
+- 🐛 **Issues**: Report bugs via [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Discussions**: Ask questions in [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 🔧 **Development**: Join development discussions in issues and PRs

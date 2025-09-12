@@ -1,55 +1,589 @@
 export const metadata = {
-  title: '依赖管理',
-  description: '学习如何使用 PCU 管理和更新您的项目依赖项。',
+  title: '配置',
+  description:
+    '学习如何使用 .pcurc.json 设置、包规则和高级选项为您的工作流配置 pnpm-catalog-updates。',
 };
 
-# 依赖管理
+# 配置
 
-学习如何使用 PCU 管理和更新您的项目依赖项。PCU 提供强大的依赖项分析和更新功能，帮助您保持项目依赖的最新状态。{{ className: 'lead' }}
+配置 PCU 以匹配您的工作流和项目需求。了解配置文件、包特定规则和高级设置。{{ className: 'lead' }}
 
-## 检查过时依赖
+## 配置文件
 
-使用 PCU 检查工作区中的过时依赖项：
+PCU 在项目根目录使用 `.pcurc.json` 文件进行配置。手动创建一个或使用 `pcu init` 生成默认配置。
 
-```bash
-# 检查所有过时的依赖项
-pcu check --outdated
+<CodeGroup>
 
-# 检查特定包的更新
-pcu check react vue --latest
-
-# 详细模式显示更多信息
-pcu check --verbose
+```json {{ title: '基本配置' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
 ```
 
-## 更新依赖项
-
-PCU 提供多种依赖项更新策略：
-
-```bash
-# 交互式更新
-pcu update --interactive
-
-# 批量更新所有依赖
-pcu update --all
-
-# 只更新补丁版本
-pcu update --patch-only
+```json {{ title: '高级配置' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "update": {
+    "interactive": true,
+    "dryRunFirst": true,
+    "skipPrereleases": false
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  }
+}
 ```
 
-## Catalog 管理
+</CodeGroup>
 
-PCU 专为 pnpm catalog 设计，提供 catalog 特定的管理功能：
+## 包过滤
 
-```bash
-# 检查 catalog 配置
-pcu catalog check
+使用包含/排除模式和包特定规则控制要更新的包。
 
-# 更新 catalog 条目
-pcu catalog update
+<CodeGroup>
 
-# 同步工作区依赖到 catalog
-pcu catalog sync
+```json {{ title: '简单过滤' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
 ```
 
-了解更多关于依赖管理的最佳实践和高级用法。
+```json {{ title: '包规则' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 包规则属性
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    匹配包名称的通配符模式
+  </Property>
+  <Property name="target" type="enum">
+    更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    更新这些包前总是询问
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    无需确认自动更新
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    遵循相同更新策略的包
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    将相关包一起更新
+  </Property>
+</Properties>
+
+## 安全配置
+
+配置安全漏洞扫描和自动修复。
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    自动检查和修复安全漏洞
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    允许安全修复的主版本升级
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    安全更新时显示通知
+  </Property>
+</Properties>
+
+## Monorepo 配置
+
+复杂 monorepo 设置的特殊设置，包含多个目录。
+
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
+
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    需要在多个目录间版本同步的包
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    冲突解决的目录优先级顺序
+  </Property>
+</Properties>
+
+## 高级设置
+
+使用高级配置选项微调性能和行为。
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    并发网络请求数量
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    网络请求超时时间（毫秒）
+  </Property>
+  <Property name="retries" type="number" default="3">
+    失败时重试次数
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    缓存有效期（设为 0 禁用缓存）
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    启动时自动检查PCU工具更新。在CI环境中会跳过检查。有新版本时会显示更新通知和安装说明。
+  </Property>
+</Properties>
+
+## UI 配置
+
+自定义视觉外观和用户界面设置。
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### 可用主题
+
+- `default` - 通用使用的平衡颜色
+- `modern` - 开发环境的活泼颜色
+- `minimal` - 生产环境的简洁风格
+- `neon` - 演示的高对比度颜色
+
+## 配置优先级
+
+配置设置按以下优先级顺序应用：
+
+1. **命令行标志**（最高优先级）
+2. `.pcurc.json` 中的**包特定规则**
+3. `.pcurc.json` 中的**常规设置**
+4. **默认值**（最低优先级）
+
+<Note>相关包自动继承其父包规则的设置，确保生态系统包间的版本一致性。</Note>
+
+## 示例
+
+### React 生态系统
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScript 项目
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### 企业设置
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+# 配置
+
+配置 PCU 以匹配您的工作流和项目需求。了解配置文件、包特定规则和高级设置。{{ className: 'lead' }}
+
+## 配置文件
+
+PCU 在项目根目录使用 `.pcurc.json` 文件进行配置。手动创建一个或使用 `pcu init` 生成默认配置。
+
+<CodeGroup>
+
+```json {{ title: '基本配置' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+```json {{ title: '高级配置' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "update": {
+    "interactive": true,
+    "dryRunFirst": true,
+    "skipPrereleases": false
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  }
+}
+```
+
+</CodeGroup>
+
+## 包过滤
+
+使用包含/排除模式和包特定规则控制要更新的包。
+
+<CodeGroup>
+
+```json {{ title: '简单过滤' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: '包规则' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 包规则属性
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    匹配包名称的通配符模式
+  </Property>
+  <Property name="target" type="enum">
+    更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    更新这些包前总是询问
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    无需确认自动更新
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    遵循相同更新策略的包
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    将相关包一起更新
+  </Property>
+</Properties>
+
+## 安全配置
+
+配置安全漏洞扫描和自动修复。
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    自动检查和修复安全漏洞
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    允许安全修复的主版本升级
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    安全更新时显示通知
+  </Property>
+</Properties>
+
+## Monorepo 配置
+
+复杂 monorepo 设置的特殊设置，包含多个目录。
+
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
+
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    需要在多个目录间版本同步的包
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    冲突解决的目录优先级顺序
+  </Property>
+</Properties>
+
+## 高级设置
+
+使用高级配置选项微调性能和行为。
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    并发网络请求数量
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    网络请求超时时间（毫秒）
+  </Property>
+  <Property name="retries" type="number" default="3">
+    失败时重试次数
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    缓存有效期（设为 0 禁用缓存）
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    启动时自动检查PCU工具更新。在CI环境中会跳过检查。有新版本时会显示更新通知和安装说明。
+  </Property>
+</Properties>
+
+## UI 配置
+
+自定义视觉外观和用户界面设置。
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### 可用主题
+
+- `default` - 通用使用的平衡颜色
+- `modern` - 开发环境的活泼颜色
+- `minimal` - 生产环境的简洁风格
+- `neon` - 演示的高对比度颜色
+
+## 配置优先级
+
+配置设置按以下优先级顺序应用：
+
+1. **命令行标志**（最高优先级）
+2. `.pcurc.json` 中的**包特定规则**
+3. `.pcurc.json` 中的**常规设置**
+4. **默认值**（最低优先级）
+
+<Note>相关包自动继承其父包规则的设置，确保生态系统包间的版本一致性。</Note>
+
+## 示例
+
+### React 生态系统
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScript 项目
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### 企业设置
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```

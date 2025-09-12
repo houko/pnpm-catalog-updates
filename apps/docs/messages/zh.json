@@ -1,12 +1,12 @@
 {
   "Navigation": {
     "quickstart": "快速开始",
-    "authentication": "安装与配置",
-    "contacts": "依赖管理",
-    "conversations": "工作区配置",
+    "authentication": "命令参考",
+    "contacts": "配置",
+    "conversations": "示例",
     "messages": "更新策略",
     "attachments": "插件与扩展",
-    "groups": "团队协作",
+    "groups": "开发",
     "webhooks": "CI/CD 集成",
     "errors": "故障排除",
     "pagination": "批量操作",

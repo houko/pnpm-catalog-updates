@@ -195,42 +195,39 @@ export function useNavigation(): Array<NavGroup> {
   const tCommon = useTranslations('Common')
 
   // Define which pages go in which sections
-  const guidePages = ['quickstart', 'sdks', 'authentication', 'pagination', 'errors', 'webhooks']
+  const gettingStartedPages = ['quickstart', 'authentication', 'contacts']
+  const guidesPages = ['conversations', 'groups', 'errors']
   const writingPages = [
     'writing-basics',
-    'writing-components',
     'writing-code',
+    'writing-components',
     'writing-layout',
     'writing-api',
     'writing-advanced',
   ]
-  const resourcePages = ['contacts', 'conversations', 'messages', 'groups', 'attachments']
 
   const createNavLink = (page: string) => ({
     title: t(page),
     href: `/${page}`,
   })
 
-  const isProduction = process.env.NODE_ENV === 'production'
-
   const navGroups = [
     {
-      title: tCommon('guides'),
-      links: [{ title: tCommon('introduction'), href: '/' }, ...guidePages.map(createNavLink)],
+      title: 'Getting Started',
+      links: [
+        { title: tCommon('introduction'), href: '/' },
+        ...gettingStartedPages.map(createNavLink),
+      ],
     },
     {
-      title: tCommon('resources'),
-      links: resourcePages.map(createNavLink),
+      title: 'Guides & Examples',
+      links: guidesPages.map(createNavLink),
+    },
+    {
+      title: 'Writing Documentation',
+      links: writingPages.map(createNavLink),
     },
   ]
-
-  // Only show Writing Docs in development
-  if (!isProduction) {
-    navGroups.splice(1, 0, {
-      title: tCommon('writing'),
-      links: writingPages.map(createNavLink),
-    })
-  }
 
   return navGroups
 }
@@ -241,25 +238,20 @@ const createStaticNavigation = (): Array<NavGroup> => {
 
   const staticNavGroups = [
     {
-      title: 'Guides',
+      title: 'Getting Started',
       links: [
         { title: 'Introduction', href: '/' },
-        { title: 'Quickstart', href: '/quickstart' },
-        { title: 'SDKs', href: '/sdks' },
-        { title: 'Authentication', href: '/authentication' },
-        { title: 'Pagination', href: '/pagination' },
-        { title: 'Errors', href: '/errors' },
-        { title: 'Webhooks', href: '/webhooks' },
+        { title: 'Quick Start', href: '/quickstart' },
+        { title: 'Command Reference', href: '/authentication' },
+        { title: 'Configuration', href: '/contacts' },
       ],
     },
     {
-      title: 'Resources',
+      title: 'Guides & Examples',
       links: [
-        { title: 'Contacts', href: '/contacts' },
-        { title: 'Conversations', href: '/conversations' },
-        { title: 'Messages', href: '/messages' },
-        { title: 'Groups', href: '/groups' },
-        { title: 'Attachments', href: '/attachments' },
+        { title: 'Examples', href: '/conversations' },
+        { title: 'Development', href: '/groups' },
+        { title: 'Troubleshooting', href: '/errors' },
       ],
     },
   ]
@@ -270,8 +262,8 @@ const createStaticNavigation = (): Array<NavGroup> => {
       title: 'Writing Docs',
       links: [
         { title: 'Writing Basics', href: '/writing-basics' },
-        { title: 'Writing Components', href: '/writing-components' },
         { title: 'Writing Code', href: '/writing-code' },
+        { title: 'Writing Components', href: '/writing-components' },
         { title: 'Writing Layout', href: '/writing-layout' },
         { title: 'Writing API', href: '/writing-api' },
         { title: 'Writing Advanced', href: '/writing-advanced' },
