@@ -1,5 +1,14 @@
 # pcu
 
+## 0.7.10
+
+### Patch Changes
+
+- 989d0b6: fix: resolve pcu --update command functionality
+
+  Fix issues with the `pcu --update` command to ensure proper catalog dependency
+  updates work correctly.
+
 ## 0.7.9
 
 ### Patch Changes
