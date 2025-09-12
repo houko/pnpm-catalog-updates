@@ -3,6 +3,7 @@ import { rehypePlugins } from '@/mdx/rehype.mjs'
 import { remarkPlugins } from '@/mdx/remark.mjs'
 import fs from 'fs'
 import matter from 'gray-matter'
+import { setRequestLocale } from 'next-intl/server'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { notFound } from 'next/navigation'
 import path from 'path'
@@ -42,8 +43,35 @@ export async function generateStaticParams() {
       }
     }
   } catch (error) {
-    console.warn('Could not read content directory:', error)
-    // Fallback to empty params - pages will be generated dynamically
+    // Fallback to predefined params for critical pages
+    const fallbackPages = [
+      'quickstart',
+      'command-reference',
+      'configuration',
+      'examples',
+      'development',
+      'best-practices',
+      'performance',
+      'migration',
+      'cicd',
+      'faq',
+      'troubleshooting',
+      'writing-basics',
+      'writing-code',
+      'writing-components',
+      'writing-layout',
+      'writing-api',
+      'writing-advanced',
+    ]
+
+    for (const locale of locales) {
+      for (const page of fallbackPages) {
+        params.push({
+          locale,
+          slug: [page],
+        })
+      }
+    }
   }
 
   return params
@@ -54,6 +82,10 @@ const components = mdxComponents
 
 export default async function DynamicPage({ params }: PageProps) {
   const { locale, slug } = await params
+
+  // Enable static rendering
+  setRequestLocale(locale)
+
   const pageName = slug[0] // Get the first slug segment (e.g., 'quickstart')
 
   // Try to load the MDX file based on locale and slug
@@ -105,6 +137,10 @@ export default async function DynamicPage({ params }: PageProps) {
 // Generate metadata for the page
 export async function generateMetadata({ params }: PageProps) {
   const { locale, slug } = await params
+
+  // Enable static rendering
+  setRequestLocale(locale)
+
   const pageName = slug[0]
 
   const contentPath = path.join(process.cwd(), 'src', 'content', locale, `${pageName}.mdx`)

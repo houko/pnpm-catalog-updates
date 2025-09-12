@@ -1,0 +1,524 @@
+export const metadata = {
+  title: '最佳实践',
+  description: '在团队环境和企业工作流中有效使用 PCU 的最佳实践。',
+};
+
+# 最佳实践
+
+学习如何在团队环境、企业工作流和生产系统中有效使用 PCU。 {{ className: 'lead' }}
+
+## 团队协作
+
+### 共享配置
+
+通过将 `.pcurc.json` 提交到版本控制来保持团队成员之间的 PCU 配置一致性：
+
+```json
+{
+  "target": "minor",
+  "concurrency": 3,
+  "timeout": 60000,
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "exclude": ["legacy-*", "deprecated-*"]
+}
+```
+
+### 代码审查指南
+
+**审查前检查清单：**
+
+- [ ] 运行 `pcu check --dry-run` 预览更改
+- [ ] 验证主版本更新中没有破坏性变更
+- [ ] 依赖更新后测试关键功能
+- [ ] 审查更新包的 CHANGELOG 文件
+
+**审查流程：**
+
+1. **安全优先**：始终立即审查安全相关的依赖更新
+2. **批量相关更新**：在单个 PR 中组合相关包（如 React 生态系统）
+3. **记录原因**：包含版本锁定或排除的理由
+4. **测试覆盖**：在合并依赖更新前确保充分测试
+
+### 通信标准
+
+更新依赖时使用清晰的提交信息：
+
+```bash
+# 良好的提交信息
+feat(deps): 更新 React 到 v18.3.0 提升性能
+security(deps): 修补 lodash 漏洞 CVE-2021-23337
+chore(deps): 更新开发依赖到最新版本
+
+# 不好的提交信息
+update packages
+fix deps
+bump versions
+```
+
+## 企业级使用
+
+### 治理和合规
+
+**依赖批准流程：**
+
+1. **安全扫描**：所有更新必须通过安全审核
+2. **许可证合规**：验证许可证与内部政策的兼容性
+3. **稳定性要求**：在生产环境中优先选择 LTS 版本
+4. **变更管理**：遵循既定的变更批准流程
+
+**企业级配置：**
+
+```json
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "security": {
+    "autoFix": false,
+    "severityThreshold": "moderate",
+    "ignoredVulnerabilities": [],
+    "customAuditConfig": {
+      "low": "warn",
+      "moderate": "error",
+      "high": "error",
+      "critical": "error"
+    }
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "exclude": false,
+      "requireApproval": true,
+      "maxMajorUpdates": 0
+    }
+  ]
+}
+```
+
+### 私有仓库集成
+
+为使用私有仓库的企业环境配置 PCU：
+
+```ini
+# .npmrc (工作区根目录)
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+registry=https://npm.company.com/
+
+# 公共包回退
+@types:registry=https://registry.npmjs.org/
+```
+
+**环境变量：**
+
+```bash
+export NPM_TOKEN=your_company_token
+export PCU_CACHE_ENABLED=true
+export PCU_TIMEOUT=120000
+export PCU_CONCURRENCY=2
+```
+
+### 审计跟踪和报告
+
+维护依赖变更的全面记录：
+
+```bash
+# 生成依赖报告
+pcu check --format json > dependency-report.json
+pcu security --format json > security-report.json
+
+# 包含在 CI/CD 流水线中
+- name: 生成依赖报告
+  run: |
+    pcu check --format json > artifacts/deps-$(date +%Y%m%d).json
+    pcu security --format json > artifacts/security-$(date +%Y%m%d).json
+```
+
+## 发布工作流
+
+### 语义版本集成
+
+使依赖更新与发布周期保持一致：
+
+**预发布阶段：**
+
+```bash
+# 检查更新但不应用
+pcu check --target patch --dry-run
+
+# 冻结期间仅更新补丁版本
+pcu update --target patch --exclude "major-framework-*"
+```
+
+**发布准备：**
+
+```bash
+# 更新到最新稳定版本
+pcu update --target minor --exclude "experimental-*"
+
+# 生成包含依赖变更的发布说明
+pcu analyze default react 18.3.0 >> RELEASE_NOTES.md
+```
+
+**发布后：**
+
+```bash
+# 更新到包括主版本的最新版本
+pcu update --target latest --interactive
+```
+
+### 预发布环境测试
+
+**生产前验证：**
+
+<CodeGroup>
+
+```bash {{ title: '预发布流水线' }}
+# 在预发布环境更新依赖
+pcu update --target minor --create-backup
+
+# 运行全面测试
+npm run test:integration
+npm run test:e2e
+npm run test:performance
+
+# 如果发现问题则回滚
+pcu restore-backup
+```
+
+```yaml {{ title: 'GitHub Actions' }}
+name: 依赖测试
+on:
+  schedule:
+    - cron: '0 2 * * 1' # 每周一凌晨2点
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 更新依赖
+        run: pcu update --target minor --dry-run
+
+      - name: 测试更新的依赖
+        run: |
+          npm ci
+          npm run test:all
+          npm run build
+```
+
+</CodeGroup>
+
+## 安全最佳实践
+
+### 漏洞管理
+
+**即时响应PCU：**
+
+1. **严重/高严重性**：24小时内更新
+2. **中等严重性**：1周内更新
+3. **低严重性**：包含在下次定期更新周期中
+
+```bash
+# 优先处理安全修复
+pcu security --severity critical --auto-fix
+pcu security --severity high --fix-vulns --require-confirmation
+
+# 定期安全审核
+pcu security --format json --output security-audit.json
+```
+
+### 依赖验证
+
+**安全配置：**
+
+```json
+{
+  "security": {
+    "enableSnyk": true,
+    "autoFix": false,
+    "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+    "blockedPackages": ["colors", "faker"],
+    "trustedSources": ["@company/*", "@types/*"],
+    "customAuditConfig": {
+      "skipLevels": [],
+      "excludeDevDependencies": false
+    }
+  }
+}
+```
+
+**手动安全审查：**
+
+- 首次使用前审查所有新依赖
+- 审核包维护者和下载量
+- 验证包的真实性和签名
+- 检查依赖链中的已知安全问题
+
+### 访问控制
+
+**令牌管理：**
+
+```bash
+# 使用具有最小权限的范围令牌
+NPM_TOKEN=npm_[REDACTED]_readonly_access_only
+
+# 定期轮换令牌（季度）
+# 在安全凭证管理系统中存储令牌
+# 绝不将令牌提交到版本控制
+```
+
+## 性能优化
+
+### 缓存策略
+
+**本地开发：**
+
+```bash
+# 启用持久缓存
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600  # 1小时
+export PCU_CACHE_MAX_SIZE=100  # 100 MB
+```
+
+**CI/CD 优化：**
+
+```yaml
+- name: 缓存 PCU 数据
+  uses: actions/cache@v3
+  with:
+    path: ~/.pcu-cache
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml') }}
+
+- name: 优化的 PCU 运行
+  run: |
+    export PCU_CACHE_ENABLED=true
+    pcu check --concurrency 5 --timeout 30000
+```
+
+### 大型单体仓库处理
+
+**100+ 包的配置：**
+
+```json
+{
+  "concurrency": 2,
+  "timeout": 120000,
+  "batchSize": 10,
+  "advanced": {
+    "memoryOptimization": true,
+    "parallelCatalogs": false,
+    "incrementalUpdates": true
+  }
+}
+```
+
+**选择性处理：**
+
+```bash
+# 按类别处理
+pcu check --include "@company/ui-*" --limit 20
+pcu check --include "@company/api-*" --limit 20
+pcu check --include "@types/*" --target latest
+
+# 大型操作使用过滤
+pcu update --include "react*" --exclude "*-experimental"
+```
+
+### 网络优化
+
+**仓库配置：**
+
+```bash
+# 使用地理位置接近的更快仓库
+export PCU_REGISTRY=https://registry-asia.npmjs.org/
+export PCU_TIMEOUT=60000
+export PCU_MAX_RETRIES=3
+```
+
+## 错误处理和恢复
+
+### 常见错误解决
+
+**网络问题：**
+
+```bash
+# 为慢连接增加超时
+PCU_TIMEOUT=120000 pcu check
+
+# 使用备用仓库
+PCU_REGISTRY=https://registry.npmjs.org/ pcu check
+
+# 为网络问题启用调试
+DEBUG=pcu:network pcu check
+```
+
+**内存问题：**
+
+```bash
+# 增加 Node.js 内存限制
+NODE_OPTIONS="--max-old-space-size=8192" pcu check
+
+# 为内存受限环境减少并发
+pcu check --concurrency 1
+```
+
+### 备份和恢复
+
+**主要更新前创建备份：**
+
+```bash
+# 自动备份创建
+pcu update --create-backup --target minor
+
+# 手动备份
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+cp -r packages/*/package.json backups/
+
+# 从备份恢复
+pcu restore-backup --timestamp 2024-01-15T10:30:00Z
+```
+
+**版本回滚策略：**
+
+```bash
+# 回滚特定包
+pcu rollback react 18.2.0
+pcu rollback @types/node 20.5.0
+
+# 回滚整个目录
+git checkout HEAD~1 pnpm-workspace.yaml
+pnpm install
+```
+
+### 监控和告警
+
+**CI/CD 集成：**
+
+```yaml
+- name: 依赖健康检查
+  run: |
+    set -e
+    pcu check --format json > check-results.json
+
+    # 解析结果并设置告警
+    if grep -q "critical" check-results.json; then
+      echo "::error::发现严重依赖问题"
+      exit 1
+    fi
+
+- name: 安全监控
+  run: |
+    pcu security --format json > security-results.json
+
+    # 高/严重漏洞告警
+    CRITICAL_COUNT=$(jq '.vulnerabilities.critical // 0' security-results.json)
+    if [ "$CRITICAL_COUNT" -gt 0 ]; then
+      # 发送告警到监控系统
+      curl -X POST "$SLACK_WEBHOOK" -d '{"text":"🚨 发现严重安全漏洞"}'
+    fi
+```
+
+## 集成模式
+
+### IDE 和编辑器集成
+
+**VS Code 配置：**
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "PCU_CACHE_ENABLED": "true"
+  },
+  "tasks.json": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "PCU 检查",
+        "type": "shell",
+        "command": "pcu check --interactive",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}
+```
+
+### 自动化脚本
+
+**Package.json 脚本：**
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update:patch": "pcu update --target patch",
+    "deps:update:minor": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --fix-vulns",
+    "deps:analyze": "pcu analyze default",
+    "prerelease": "npm run deps:check && npm run deps:security"
+  }
+}
+```
+
+**Git 钩子集成：**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+
+# 提交前检查依赖问题
+if command -v pcu &> /dev/null; then
+  pcu check --format json > /dev/null || {
+    echo "⚠️  检测到依赖问题。运行 'pcu check' 查看详情。"
+    exit 1
+  }
+fi
+```
+
+---
+
+## 快速参考检查清单
+
+### 日常工作流
+
+- [ ] 检查安全更新：`pcu security`
+- [ ] 审查过时依赖：`pcu check --limit 10`
+- [ ] 更新补丁版本：`pcu update --target patch`
+
+### 每周工作流
+
+- [ ] 全面依赖检查：`pcu check`
+- [ ] 更新小版本：`pcu update --target minor --interactive`
+- [ ] 审查和更新排除规则
+- [ ] 为团队审查生成依赖报告
+
+### 每月工作流
+
+- [ ] 审查主版本更新：`pcu check --target latest`
+- [ ] 更新开发依赖：`pcu update --dev`
+- [ ] 审核依赖许可证和合规性
+- [ ] 审查和优化 PCU 配置
+- [ ] 清理未使用的依赖
+
+### 发布前
+
+- [ ] 运行完整依赖审核：`pcu security --comprehensive`
+- [ ] 创建备份：`pcu update --create-backup`
+- [ ] 在预发布环境测试
+- [ ] 生成包含依赖变更的发布说明

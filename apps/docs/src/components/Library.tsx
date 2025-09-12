@@ -6,37 +6,38 @@ import logoNode from '@/images/logos/node.svg'
 import logoPhp from '@/images/logos/php.svg'
 import logoPython from '@/images/logos/python.svg'
 import logoRuby from '@/images/logos/ruby.svg'
+import { isValidRoute } from '@/utils/routing'
 
 export const libraryData = {
   php: {
-    href: '#',
+    href: undefined as string | undefined,
     name: 'PHP',
     description:
       'A popular general-purpose scripting language that is especially suited to web development.',
     logo: logoPhp,
   },
   ruby: {
-    href: '#',
+    href: undefined as string | undefined,
     name: 'Ruby',
     description:
       'A dynamic, open source programming language with a focus on simplicity and productivity.',
     logo: logoRuby,
   },
   node: {
-    href: '#',
+    href: undefined as string | undefined,
     name: 'Node.js',
     description: 'Node.js® is an open-source, cross-platform JavaScript runtime environment.',
     logo: logoNode,
   },
   python: {
-    href: '#',
+    href: undefined as string | undefined,
     name: 'Python',
     description:
       'Python is a programming language that lets you work quickly and integrate systems more effectively.',
     logo: logoPython,
   },
   go: {
-    href: '#',
+    href: undefined as string | undefined,
     name: 'Go',
     description:
       'An open-source programming language supported by Google with built-in concurrency.',
@@ -102,11 +103,19 @@ export function Library({
               {description || library.description}
             </p>
           )}
-          <p className="mt-4">
-            <Button href={href || library.href} variant="text" arrow="right">
-              Read more
-            </Button>
-          </p>
+          {(href || library.href) &&
+            (() => {
+              const targetHref = href || library.href
+              const validHref = targetHref && isValidRoute(targetHref) ? targetHref : undefined
+
+              return validHref ? (
+                <p className="mt-4">
+                  <Button href={validHref} variant="text" arrow="right">
+                    Read more
+                  </Button>
+                </p>
+              ) : null
+            })()}
         </div>
         <Image src={logo || library.logo} alt="" className="h-12 w-12" unoptimized />
       </div>

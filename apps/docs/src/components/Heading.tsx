@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react'
 
 import { useSectionStore } from '@/components/SectionProvider'
 import { Tag } from '@/components/Tag'
-import { remToPx } from '@/lib/remToPx'
+import { remToPx } from '@/utils/remToPx'
 
 function AnchorIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

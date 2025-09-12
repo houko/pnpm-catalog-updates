@@ -3,24 +3,24 @@ import { Heading } from '@/components/Heading'
 
 const guides = [
   {
-    href: '/authentication',
-    name: 'Authentication',
-    description: 'Learn how to authenticate your API requests.',
+    href: '/command-reference' as const,
+    name: 'Command Reference',
+    description: 'Complete reference for all PCU commands and their options.',
   },
   {
-    href: '/pagination',
-    name: 'Pagination',
-    description: 'Understand how to work with paginated responses.',
+    href: '/configuration' as const,
+    name: 'Configuration',
+    description: 'Learn how to configure PCU for your workflow and project needs.',
   },
   {
-    href: '/errors',
-    name: 'Errors',
-    description: 'Read about the different types of errors returned by the API.',
+    href: '/troubleshooting' as const,
+    name: 'Troubleshooting',
+    description: 'Common issues and solutions when working with PCU and dependencies.',
   },
   {
-    href: '/webhooks',
-    name: 'Webhooks',
-    description: 'Learn how to programmatically configure webhooks for your app.',
+    href: '/examples' as const,
+    name: 'Examples',
+    description: 'Practical examples and use cases for managing catalog dependencies.',
   },
 ]
 

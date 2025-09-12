@@ -97,111 +97,8 @@ Here are the most frequently used commands:
 ## What's Next?
 
 <Resources>
-  <Resource href="/commands" title="Command Reference" description="Complete guide to all PCU commands and options." />
-  <Resource href="/configuration" title="Configuration" description="Learn how to configure PCU for your workflow." />
-  <Resource href="/examples" title="Examples" description="Real-world examples and use cases." />
-  <Resource href="/development" title="Development" description="Set up PCU for development and contributing." />
-</Resources>export const metadata = {
-  title: 'Quick Start',
-  description:
-    'Get started with pnpm-catalog-updates in minutes. Learn how to install, initialize, and update your pnpm workspace catalog dependencies.',
-};
-
-# Quick Start
-
-Get started with pnpm-catalog-updates in minutes. This guide will walk you through installation, initialization, and your first dependency update. {{ className: 'lead' }}
-
-<Note>
-  pnpm-catalog-updates is specifically designed for pnpm workspaces using catalog dependencies. Make
-  sure you have a pnpm workspace before getting started.
-</Note>
-
-## Installation
-
-Choose your preferred installation method:
-
-<CodeGroup>
-
-```bash {{ title: 'Global Installation' }}
-npm install -g pnpm-catalog-updates
-# or
-npm install -g pcu
-```
-
-```bash {{ title: 'npx (No Installation)' }}
-npx pnpm-catalog-updates
-# or
-npx pcu
-```
-
-```bash {{ title: 'pnpm' }}
-pnpm add -g pnpm-catalog-updates
-```
-
-</CodeGroup>
-
-## Initialize Your Workspace
-
-If you don't have a pnpm workspace yet, PCU can create one for you:
-
-```bash
-pcu init
-```
-
-This command creates:
-
-- `.pcurc.json` - PCU configuration file
-- `package.json` - Workspace root package.json (if missing)
-- `pnpm-workspace.yaml` - PNPM workspace configuration (if missing)
-- `packages/` - Directory for workspace packages (if missing)
-
-## Your First Update Check
-
-Check for outdated catalog dependencies:
-
-```bash
-pcu -c
-```
-
-This will show you a beautiful table with:
-
-- Current versions in your catalogs
-- Latest available versions
-- Package names and update types
-- Color-coded urgency indicators
-
-## Interactive Updates
-
-Update dependencies with an interactive interface:
-
-```bash
-pcu -i
-```
-
-This lets you:
-
-- ✅ Choose which dependencies to update
-- 🎯 Select specific versions
-- 📊 See impact analysis
-- 🔒 Create backups automatically
-
-## Common Commands
-
-Here are the most frequently used commands:
-
-| Command    | Description          | Example                    |
-| ---------- | -------------------- | -------------------------- |
-| `pcu init` | Initialize workspace | `pcu init --verbose`       |
-| `pcu -c`   | Check for updates    | `pcu -c --catalog default` |
-| `pcu -i`   | Interactive updates  | `pcu -i -b`                |
-| `pcu -u`   | Update dependencies  | `pcu -u --target minor`    |
-| `pcu -a`   | Analyze impact       | `pcu -a default react`     |
-
-## What's Next?
-
-<Resources>
   <Resource
-    href="/commands"
+    href="/command-reference"
     title="Command Reference"
     description="Complete guide to all PCU commands and options."
   />
@@ -217,3 +114,33 @@ Here are the most frequently used commands:
     description="Set up PCU for development and contributing."
   />
 </Resources>
+
+## Getting Started Checklist
+
+Follow this checklist to get PCU running in your project:
+
+- [ ] **Install PCU** - Choose global installation or use npx
+- [ ] **Initialize workspace** - Run `pcu init` for first-time setup
+- [ ] **Check for updates** - Use `pcu -c` to see available updates
+- [ ] **Configure settings** - Customize `.pcurc.json` for your needs
+- [ ] **Update dependencies** - Use interactive mode `pcu -i` for safe updates
+- [ ] **Set up automation** - Consider CI/CD integration for regular checks
+
+## Essential Commands Quick Reference
+
+| Command        | Purpose            | When to Use                     |
+| -------------- | ------------------ | ------------------------------- |
+| `pcu init`     | Setup workspace    | First time setup, new projects  |
+| `pcu -c`       | Check updates      | Daily development, CI checks    |
+| `pcu -i`       | Interactive update | Safe manual updates             |
+| `pcu -u`       | Batch update       | Automated updates, CI/CD        |
+| `pcu security` | Security scan      | Before releases, regular audits |
+
+## Next Steps
+
+Once you have PCU set up, explore these advanced features:
+
+- **[Configuration](/configuration)** - Customize PCU for your specific workflow
+- **[Security Scanning](/command-reference#pcu-security)** - Integrate vulnerability scanning
+- **[Monorepo Management](/configuration#monorepo-configuration)** - Advanced workspace features
+- **[CI/CD Integration](/examples)** - Automate dependency updates in your pipeline

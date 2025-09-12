@@ -1,0 +1,828 @@
+export const metadata = {
+  title: 'Migration Guide',
+  description:
+    'Migrate from other dependency management tools to PCU and transition your team to using pnpm catalogs effectively.',
+};
+
+# Migration Guide
+
+Learn how to migrate from existing dependency management solutions to PCU and transition your team to pnpm catalog dependencies. {{ className: 'lead' }}
+
+## Migration Overview
+
+PCU is specifically designed for pnpm workspaces using catalog dependencies. If you're currently using other tools or package managers, this guide will help you transition smoothly.
+
+### Before You Start
+
+**Prerequisites for PCU:**
+
+- pnpm as your package manager (version 8.0.0+)
+- Workspace configuration (`pnpm-workspace.yaml`)
+- Catalog dependencies in your workspace
+
+**Migration Decision Matrix:**
+
+| Current Tool             | Migration Complexity | Benefits                                    | Considerations                  |
+| ------------------------ | -------------------- | ------------------------------------------- | ------------------------------- |
+| npm-check-updates        | Low                  | Better pnpm integration, catalog support    | Requires pnpm workspace setup   |
+| Manual Updates           | Low                  | Automation, consistency, security scanning  | Initial configuration effort    |
+| Renovate                 | Medium               | Manual control, workspace-specific features | Loss of automation              |
+| Dependabot               | Medium               | Enhanced catalog management                 | GitHub-specific features        |
+| yarn upgrade-interactive | High                 | Catalog benefits, better performance        | Complete package manager change |
+
+## Migrating from npm-check-updates
+
+### Current Setup Analysis
+
+If you're currently using `npm-check-updates` (ncu), you likely have scripts like:
+
+```json
+{
+  "scripts": {
+    "deps:check": "ncu",
+    "deps:update": "ncu -u",
+    "deps:interactive": "ncu -i"
+  }
+}
+```
+
+### Migration Steps
+
+**1. Install pnpm and Setup Workspace**
+
+```bash
+# Install pnpm globally
+npm install -g pnpm
+
+# Initialize pnpm workspace
+echo 'packages:\n  - "packages/*"' > pnpm-workspace.yaml
+
+# Install dependencies with pnpm
+pnpm install
+```
+
+**2. Convert to Catalog Dependencies**
+
+Create catalog entries in `pnpm-workspace.yaml`:
+
+```yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  # Extract common dependencies
+  react: ^18.2.0
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+  prettier: ^3.0.0
+
+  # Development dependencies
+  '@types/node': ^20.5.0
+  '@types/react': ^18.2.0
+```
+
+**3. Update Package Files**
+
+Convert `package.json` files to use catalog references:
+
+<CodeGroup>
+
+```json {{ title: 'Before (traditional)' }}
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```json {{ title: 'After (catalog)' }}
+{
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+**4. Install PCU and Configure**
+
+```bash
+# Install PCU
+pnpm add -g pnpm-catalog-updates
+
+# Create initial configuration
+pcu init
+
+# Test PCU functionality
+pcu check
+```
+
+**5. Update Scripts**
+
+Replace ncu scripts with PCU equivalents:
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update": "pcu update --interactive",
+    "deps:security": "pcu security",
+    "deps:analyze": "pcu analyze default"
+  }
+}
+```
+
+### Configuration Migration
+
+**ncu Configuration → PCU Configuration:**
+
+<CodeGroup>
+
+```json {{ title: '.ncurc.json (before)' }}
+{
+  "upgrade": true,
+  "interactive": true,
+  "target": "minor",
+  "reject": ["react", "react-dom"],
+  "timeout": 60000
+}
+```
+
+```json {{ title: '.pcurc.json (after)' }}
+{
+  "target": "minor",
+  "timeout": 60000,
+  "requireConfirmation": true,
+  "exclude": ["react", "react-dom"],
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## Migrating from Renovate
+
+### Understanding the Differences
+
+**Renovate vs PCU:**
+
+- **Renovate**: Automated PR creation, multi-language support, extensive configuration
+- **PCU**: Manual control, pnpm-specific, catalog-focused, security-integrated
+
+### Migration Strategy
+
+**1. Export Renovate Configuration**
+
+Analyze your current `renovate.json`:
+
+```json
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "minor": {
+        "automerge": true
+      }
+    },
+    {
+      "matchPackageNames": ["react", "react-dom"],
+      "groupName": "React",
+      "schedule": ["before 10am on monday"]
+    }
+  ],
+  "timezone": "America/New_York",
+  "schedule": ["before 10am every weekday"]
+}
+```
+
+**2. Convert to PCU Configuration**
+
+Map Renovate rules to PCU equivalents:
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "groupUpdate": true
+    }
+  ],
+  "schedule": {
+    "enabled": false
+  }
+}
+```
+
+**3. Setup Manual Workflows**
+
+Replace automated PRs with scheduled manual reviews:
+
+```bash
+# Weekly dependency review
+pcu check --format json > weekly-deps-$(date +%Y%m%d).json
+
+# Security updates (immediate)
+pcu security --severity high --require-confirmation
+
+# Regular updates (bi-weekly)
+pcu update --target minor --interactive
+```
+
+**4. Team Transition**
+
+**Phase 1: Parallel Running (2 weeks)**
+
+- Keep Renovate enabled
+- Introduce PCU for manual checks
+- Train team on PCU commands
+
+**Phase 2: PCU Primary (2 weeks)**
+
+- Disable Renovate PR creation
+- Use PCU for all updates
+- Establish review processes
+
+**Phase 3: Complete Migration**
+
+- Remove Renovate configuration
+- Optimize PCU configuration
+- Document new workflows
+
+### Renovate Feature Mapping
+
+| Renovate Feature      | PCU Equivalent       | Notes                    |
+| --------------------- | -------------------- | ------------------------ |
+| Automated PRs         | Manual `pcu update`  | More control, less noise |
+| Scheduling            | Cron jobs + PCU      | Flexible timing          |
+| Group Updates         | `--include` patterns | Group related packages   |
+| Auto-merge            | `autoUpdate: true`   | Limited to safe packages |
+| Vulnerability Alerts  | `pcu security`       | Integrated scanning      |
+| Configuration Presets | Package rules        | Reusable patterns        |
+
+## Migrating from Dependabot
+
+### GitHub Integration Considerations
+
+**Dependabot Advantages to Replicate:**
+
+- Security vulnerability alerts
+- Automated security updates
+- GitHub integration
+- PR creation and management
+
+### Migration Approach
+
+**1. Audit Current Dependabot Configuration**
+
+Review `.github/dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'team-leads'
+    allow:
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-patch'
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-minor'
+```
+
+**2. Setup PCU with GitHub Actions**
+
+Create `.github/workflows/dependencies.yml`:
+
+```yaml
+name: Dependency Management
+
+on:
+  schedule:
+    - cron: '0 10 * * MON' # Monday 10 AM
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Check Dependencies
+        run: |
+          pcu check --format json > dep-check.json
+          pcu security --format json > security-check.json
+
+      - name: Create Issue for Updates
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const depCheck = JSON.parse(fs.readFileSync('dep-check.json', 'utf8'));
+
+            if (depCheck.updates.length > 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Weekly Dependency Updates Available`,
+                body: `Found ${depCheck.updates.length} packages with available updates.\n\nRun \`pcu update --interactive\` to review and apply updates.`
+              });
+            }
+```
+
+**3. Security Integration**
+
+Replace Dependabot security features:
+
+```bash
+# Daily security check
+pcu security --severity critical --auto-fix
+
+# Weekly comprehensive scan
+pcu security --comprehensive --format json > security-report.json
+```
+
+**4. Manual Review Process**
+
+Establish human-centric workflows:
+
+```bash
+# Weekly team review
+pcu check --limit 20 --require-confirmation
+
+# Monthly major updates
+pcu check --target latest --interactive
+
+# Immediate security response
+pcu security --fix-vulns --severity high
+```
+
+## Migrating from Manual Dependency Management
+
+### Assessment Phase
+
+**Current State Analysis:**
+
+1. **Frequency**: How often do you update dependencies?
+2. **Process**: What's your current update workflow?
+3. **Testing**: How do you validate updates?
+4. **Security**: How do you handle vulnerabilities?
+
+**Common Manual Patterns:**
+
+<CodeGroup>
+
+```bash {{ title: 'Ad-hoc Updates' }}
+# Typical manual process
+npm outdated
+npm update package-name
+npm audit
+npm audit fix
+```
+
+```bash {{ title: 'Batch Updates' }}
+# Monthly update sessions
+npm outdated > outdated.txt
+# Manual review and updates
+npm update
+npm test
+```
+
+</CodeGroup>
+
+### Structured Migration
+
+**Phase 1: Assessment (Week 1)**
+
+```bash
+# Install PCU for assessment
+pnpm add -g pnpm-catalog-updates
+
+# Analyze current state
+pcu check --dry-run > current-state.txt
+pcu security > security-state.txt
+
+# Document findings
+echo "Dependencies needing updates: $(grep -c 'outdated' current-state.txt)"
+echo "Security vulnerabilities: $(grep -c 'vulnerability' security-state.txt)"
+```
+
+**Phase 2: Catalog Conversion (Week 2)**
+
+```bash
+# Convert to pnpm workspace
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+
+# Extract common dependencies
+pcu analyze-workspace > catalog-suggestions.json
+
+# Create initial catalog
+pcu generate-catalog >> pnpm-workspace.yaml
+```
+
+**Phase 3: Process Integration (Week 3-4)**
+
+```json
+{
+  "scripts": {
+    "deps:daily": "pcu security --severity critical",
+    "deps:weekly": "pcu check --limit 10",
+    "deps:monthly": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --comprehensive"
+  }
+}
+```
+
+### Automation Strategy
+
+**Gradual Automation:**
+
+1. **Manual Start**: All updates require confirmation
+2. **Semi-Automated**: Auto-update dev dependencies and types
+3. **Smart Automation**: Auto-update patches, confirm minors
+4. **Full Automation**: Auto-update everything except majors
+
+**Configuration Evolution:**
+
+<CodeGroup>
+
+```json {{ title: 'Phase 1: Manual' }}
+{
+  "target": "patch",
+  "requireConfirmation": true,
+  "autoUpdate": false
+}
+```
+
+```json {{ title: 'Phase 2: Semi-Auto' }}
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "packageRules": [
+    {
+      "patterns": ["@types/*", "eslint*"],
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+```json {{ title: 'Phase 3: Smart Auto' }}
+{
+  "target": "minor",
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "target": "patch",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react*", "vue*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## Converting Non-pnpm Projects
+
+### From npm Projects
+
+**1. Dependency Analysis**
+
+```bash
+# Backup current state
+cp package.json package.json.backup
+cp package-lock.json package-lock.json.backup
+
+# Analyze dependencies
+npm ls --depth=0 > npm-deps.txt
+```
+
+**2. pnpm Migration**
+
+```bash
+# Install pnpm
+npm install -g pnpm
+
+# Remove npm artifacts
+rm -rf node_modules package-lock.json
+
+# Install with pnpm
+pnpm install
+
+# Create workspace structure
+mkdir -p packages apps
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+```
+
+**3. Catalog Extraction**
+
+```bash
+# Install PCU
+pnpm add -g pnpm-catalog-updates
+
+# Generate catalog from package.json
+pcu extract-catalog package.json >> pnpm-workspace.yaml
+
+# Convert package.json to use catalogs
+pcu convert-to-catalog package.json
+```
+
+### From Yarn Projects
+
+**1. Workspace Conversion**
+
+<CodeGroup>
+
+```json {{ title: 'yarn workspace (before)' }}
+{
+  "name": "my-monorepo",
+  "workspaces": ["packages/*", "apps/*"],
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```yaml {{ title: 'pnpm workspace (after)' }}
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+```
+
+</CodeGroup>
+
+**2. Migration Commands**
+
+```bash
+# Remove yarn artifacts
+rm -rf node_modules yarn.lock
+
+# Convert yarn.lock to pnpm-lock.yaml
+pnpm import
+
+# Install dependencies
+pnpm install
+
+# Setup PCU
+pnpm add -g pnpm-catalog-updates
+pcu init
+```
+
+### Monorepo Conversion
+
+**Large Monorepo Strategy:**
+
+```bash
+# Phase 1: Analyze structure
+find . -name "package.json" -not -path "./node_modules/*" | head -20
+
+# Phase 2: Create workspace
+cat > pnpm-workspace.yaml << EOF
+packages:
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'packages/services/*'
+  - 'apps/*'
+  - 'tools/*'
+EOF
+
+# Phase 3: Extract common dependencies
+pcu analyze-monorepo > common-deps.json
+
+# Phase 4: Generate catalogs
+pcu generate-multi-catalog common-deps.json >> pnpm-workspace.yaml
+```
+
+## Team Transition Strategies
+
+### Change Management
+
+**1. Communication Plan**
+
+- **Week -2**: Announce migration plan
+- **Week -1**: Training sessions and documentation
+- **Week 0**: Begin parallel running
+- **Week 2**: Full transition
+- **Week 4**: Process optimization
+
+**2. Training Program**
+
+**Developer Training Session (1 hour):**
+
+```bash
+# Basic PCU commands
+pcu check                    # Check for updates
+pcu update --interactive     # Interactive updates
+pcu security                # Security scan
+
+# Advanced features
+pcu analyze default react    # Impact analysis
+pcu --help                  # Full command reference
+```
+
+**Team Lead Training (2 hours):**
+
+- Configuration management
+- Security policy integration
+- Performance optimization
+- Monitoring and reporting
+
+### Rollout Strategy
+
+**Pilot Project Approach:**
+
+1. **Select Pilot Project**: Choose representative but non-critical project
+2. **Migration Pilot**: Complete migration with pilot team
+3. **Lessons Learned**: Document issues and solutions
+4. **Scaled Rollout**: Apply learnings to other projects
+
+**Risk Mitigation:**
+
+```bash
+# Backup strategy before migration
+git branch backup-pre-pcu-migration
+tar -czf dependencies-backup-$(date +%Y%m%d).tar.gz package.json pnpm-workspace.yaml
+
+# Rollback plan
+git checkout backup-pre-pcu-migration
+npm install  # or previous package manager
+```
+
+### Process Integration
+
+**Code Review Integration:**
+
+```yaml
+# .github/workflows/pr-check.yml
+name: PR Dependency Check
+
+on: pull_request
+
+jobs:
+  deps-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+      - name: Check Dependencies
+        run: |
+          pcu check --format json > pr-deps.json
+          if grep -q "outdated\|vulnerable" pr-deps.json; then
+            echo "::warning::Outdated or vulnerable dependencies detected"
+          fi
+```
+
+**Release Integration:**
+
+```bash
+# Pre-release dependency check
+pcu security --severity critical --exit-on-error
+pcu check --target latest --limit 5
+
+# Post-release dependency update
+pcu update --target patch --auto-update
+```
+
+## Validation and Testing
+
+### Migration Validation
+
+**1. Functional Testing**
+
+```bash
+# Test basic functionality
+pnpm install
+pnpm run build
+pnpm run test
+
+# Test PCU functionality
+pcu check --dry-run
+pcu security --dry-run
+```
+
+**2. Performance Comparison**
+
+```bash
+# Before migration benchmark
+time npm install
+time npm run build
+
+# After migration benchmark
+time pnpm install
+time pnpm run build
+time pcu check
+```
+
+**3. Dependency Integrity**
+
+```bash
+# Compare dependency trees
+npm ls --depth=1 > npm-tree.txt
+pnpm ls --depth=1 > pnpm-tree.txt
+diff npm-tree.txt pnpm-tree.txt
+```
+
+### Success Metrics
+
+**Key Performance Indicators:**
+
+- **Installation Speed**: pnpm install vs npm install
+- **Update Frequency**: Updates per month before/after
+- **Security Response**: Time to fix vulnerabilities
+- **Developer Satisfaction**: Team survey results
+- **Build Performance**: CI/CD execution time
+
+**Monitoring Dashboard:**
+
+```bash
+# Weekly metrics collection
+pcu metrics --output weekly-metrics-$(date +%Y%m%d).json
+```
+
+---
+
+## Migration Checklist
+
+### Pre-Migration
+
+- [ ] Assess current dependency management approach
+- [ ] Install and test pnpm in isolated environment
+- [ ] Plan workspace structure
+- [ ] Identify common dependencies for catalog
+- [ ] Backup current configuration
+- [ ] Train key team members
+
+### Migration Phase
+
+- [ ] Convert to pnpm workspace structure
+- [ ] Extract dependencies to catalog
+- [ ] Update package.json files to use catalog references
+- [ ] Install and configure PCU
+- [ ] Test functionality with pilot project
+- [ ] Update CI/CD pipelines
+- [ ] Document new processes
+
+### Post-Migration
+
+- [ ] Validate all functionality works
+- [ ] Train remaining team members
+- [ ] Optimize PCU configuration
+- [ ] Establish regular maintenance schedules
+- [ ] Monitor and measure success metrics
+- [ ] Gather feedback and iterate
+
+### Troubleshooting
+
+- [ ] Document common migration issues
+- [ ] Create rollback procedures
+- [ ] Establish support channels
+- [ ] Regular health checks and optimization

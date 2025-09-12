@@ -1,16 +1,16 @@
 {
   "Navigation": {
     "quickstart": "Quick Start",
-    "authentication": "Command Reference",
-    "contacts": "Configuration",
-    "conversations": "Examples",
-    "messages": "Messages",
-    "attachments": "Attachments",
-    "groups": "Development",
-    "webhooks": "Webhooks",
-    "errors": "Troubleshooting",
-    "pagination": "Pagination",
-    "sdks": "SDKs",
+    "command-reference": "Command Reference",
+    "configuration": "Configuration",
+    "examples": "Examples",
+    "development": "Development",
+    "cicd": "CI/CD Integration",
+    "faq": "FAQ",
+    "best-practices": "Best Practices",
+    "performance": "Performance",
+    "migration": "Migration Guide",
+    "troubleshooting": "Troubleshooting",
     "writing-basics": "Writing Basics",
     "writing-components": "Writing Components",
     "writing-code": "Writing Code",
@@ -24,8 +24,11 @@
     "chinese": "中文",
     "documentation": "Documentation",
     "getStarted": "Get Started",
-    "api": "API",
-    "support": "Support",
+    "gettingStarted": "Getting Started",
+    "guidesAndExamples": "Guides & Examples",
+    "writingDocumentation": "Writing Documentation",
+    "api": "Commands",
+    "support": "Help",
     "guides": "Guides",
     "writing": "Writing Docs",
     "resources": "Resources",
@@ -36,10 +39,10 @@
     "description": "A powerful CLI tool for managing pnpm workspace catalog dependencies",
     "heroTitle": "Manage your pnpm catalogs with ease",
     "heroDescription": "PCU helps you check, update, and analyze dependencies in your pnpm workspace catalogs efficiently.",
-    "exploreSdks": "Explore SDKs",
+    "exploreSdks": "View Command Reference",
     "gettingStartedTitle": "Getting started",
-    "gettingStartedDesc": "To get started, create a new application in your developer settings, then read about how to make requests for the resources you need to access using our HTTP APIs or dedicated client SDKs.",
-    "getApiKey": "Get your API key"
+    "gettingStartedDesc": "PCU is a dependency management tool designed specifically for pnpm workspaces. It helps you check for outdated dependencies, update versions in batch, and optimize your catalog configuration.",
+    "getApiKey": "Start Installation"
   },
   "NotFound": {
     "title": "Page not found",
@@ -61,11 +64,90 @@
     "noResults": "Nothing found for",
     "tryAgain": "Please try again."
   },
+  "Quickstart": {
+    "title": "Quick Start",
+    "description": "This guide will help you quickly install and configure PCU to start managing your pnpm catalog dependencies.",
+    "installTitle": "Install PCU",
+    "installDesc": "PCU can be installed globally via npm, yarn, or pnpm. We recommend using pnpm for consistency.",
+    "configTitle": "Configure Workspace",
+    "configDesc": "In your pnpm workspace root directory, ensure you have proper catalog configuration.",
+    "firstRunTitle": "First Run",
+    "firstRunDesc": "Run PCU to check the status of dependencies in your workspace.",
+    "nextStepsTitle": "What's Next?",
+    "nextStepsDesc": "Now that you have PCU installed and performed your first check. Here are some useful next steps:",
+    "checkDeps": "Check for outdated dependencies",
+    "updateCatalogs": "Update catalog configuration",
+    "learnCommands": "Learn all available commands"
+  },
+  "CommandReference": {
+    "title": "Command Reference",
+    "description": "Complete reference documentation for all PCU commands."
+  },
+  "Configuration": {
+    "title": "Configuration",
+    "description": "Learn how to configure PCU to fit your development workflow."
+  },
+  "Examples": {
+    "title": "Examples",
+    "description": "Learn how to use PCU to manage and update your project dependencies."
+  },
+  "Development": {
+    "title": "Development",
+    "description": "Best practices for using PCU in team environments."
+  },
+  "Troubleshooting": {
+    "title": "Troubleshooting",
+    "description": "Solutions to common problems and errors."
+  },
+  "CICD": {
+    "title": "CI/CD Integration",
+    "description": "Integrate PCU into your continuous integration and deployment pipelines."
+  },
+  "BestPractices": {
+    "title": "Best Practices",
+    "description": "Best practices for using PCU effectively in team environments and enterprise workflows."
+  },
+  "Performance": {
+    "title": "Performance Optimization",
+    "description": "Optimize PCU performance for large monorepos, improve execution speed, and reduce resource consumption."
+  },
+  "Migration": {
+    "title": "Migration Guide",
+    "description": "Migrate from other dependency management tools to PCU and transition your team to using pnpm catalogs effectively."
+  },
+  "FAQ": {
+    "title": "FAQ",
+    "description": "Frequently asked questions about PCU. Find quick answers to common questions and issues."
+  },
+  "QuickstartPage": {
+    "title": "Quick Start",
+    "description": "This guide will help you quickly install and configure PCU to start managing your pnpm catalog dependencies.",
+    "intro": "This guide will help you quickly install and configure PCU to start managing your pnpm catalog dependencies. We'll cover how to install the tool, configure your workspace, and perform your first dependency check.",
+    "noteText": "Before you start using PCU, make sure your project uses pnpm as the package manager and has workspaces configured. You can find the workspace configuration in the pnpm-workspace.yaml file at the root of your project.",
+    "chooseInstallTitle": "Choose Installation Method",
+    "chooseInstallDesc": "Before your first check, you need to choose how to install PCU. In addition to traditional npm global installation, PCU also supports installation via pnpm, yarn, and temporary execution via npx. The following examples show how to install PCU:",
+    "installGlobal": "# Install PCU globally",
+    "installPnpm": "# Install PCU using pnpm",
+    "installYarn": "# Install PCU using yarn",
+    "installNpx": "# Run temporarily with npx",
+    "checkCommandsLink": "View all available commands",
+    "firstCheckTitle": "Perform First Check",
+    "firstCheckDesc": "After choosing an installation method, you can perform your first dependency check in your pnpm workspace. The following examples show how to run PCU to check for outdated dependencies, displaying the first 10 results by default:",
+    "checkOutdated": "Check for outdated dependencies",
+    "checkSpecific": "Check updates for specific packages",
+    "checkWorkspace": "Check entire workspace",
+    "updateCatalog": "Update catalog configuration",
+    "readDocsLink": "Read dependency management documentation",
+    "nextStepsTitle": "What's Next?",
+    "nextStepsDesc": "Great! You now have PCU installed and have performed your first dependency check. Here are some useful links to help you explore more PCU features:",
+    "getCatalogLink": "Get catalog configuration from pnpm workspace",
+    "checkDependenciesLink": "View dependency management documentation",
+    "learnErrorsLink": "Learn about PCU error handling"
+  },
   "Footer": {
     "previous": "Previous",
     "next": "Next",
     "copyright": "Copyright {year}. All rights reserved.",
-    "followX": "Follow us on X",
     "followGitHub": "Follow us on GitHub",
     "joinDiscord": "Join our Discord server"
   }

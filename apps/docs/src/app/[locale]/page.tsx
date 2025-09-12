@@ -24,7 +24,7 @@ export default function HomePage() {
         <Button href="/quickstart" arrow="right">
           <>{tCommon('getStarted')}</>
         </Button>
-        <Button href="/sdks" variant="outline">
+        <Button href="/command-reference" variant="outline">
           <>{t('exploreSdks')}</>
         </Button>
       </div>
@@ -41,7 +41,7 @@ export default function HomePage() {
       </p>
 
       <div className="not-prose mb-16">
-        <Button href="/sdks" variant="text" arrow="right">
+        <Button href="/quickstart" variant="text" arrow="right">
           <>{t('getApiKey')}</>
         </Button>
       </div>
