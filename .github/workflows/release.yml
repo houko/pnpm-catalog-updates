@@ -53,11 +53,18 @@ jobs:
             echo "should-publish=false" >> $GITHUB_OUTPUT
           else
             echo "has-changesets=false" >> $GITHUB_OUTPUT
-            # Check if this commit has version updates (merged changeset PR)
-            if git show --name-only HEAD | grep -q "apps/cli/package.json"; then
+            # Check if local version is newer than NPM published version
+            LOCAL_VERSION=$(node -p "require('./apps/cli/package.json').version")
+            NPM_VERSION=$(npm view pcu@latest version 2>/dev/null || echo "0.0.0")
+            echo "Local version: $LOCAL_VERSION"
+            echo "NPM version: $NPM_VERSION"
+            
+            if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
               echo "should-publish=true" >> $GITHUB_OUTPUT
+              echo "Version mismatch detected - should publish"
             else
               echo "should-publish=false" >> $GITHUB_OUTPUT
+              echo "Versions match - no publishing needed"
             fi
           fi
 
