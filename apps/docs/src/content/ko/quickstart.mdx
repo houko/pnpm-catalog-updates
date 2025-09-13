@@ -1,0 +1,142 @@
+export const metadata = {
+  title: '빠른 시작',
+  description:
+    '몇 분 안에 pnpm-catalog-updates를 시작하세요. 설치, 초기화 및 pnpm 작업공간 카탈로그 종속성 업데이트 방법을 알아보세요.',
+};
+
+# 빠른 시작
+
+몇 분 안에 pnpm-catalog-updates를 시작하세요. 이 가이드는 설치, 초기화 및 첫 번째 종속성 업데이트를 안내합니다. {{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates는 카탈로그 종속성을 사용하는 pnpm 작업공간을 위해 특별히 설계되었습니다.
+  시작하기 전에 pnpm 작업공간이 있는지 확인하세요.
+</Note>
+
+## 설치
+
+선호하는 설치 방법을 선택하세요:
+
+<CodeGroup>
+
+```bash {{ title: '전역 설치' }}
+npm install -g pcu
+# 또는
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (설치 불필요)' }}
+npx pnpm-catalog-updates
+# 또는
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## 작업공간 초기화
+
+아직 pnpm 작업공간이 없다면, PCU가 생성해 드릴 수 있습니다:
+
+```bash
+pcu init
+```
+
+이 명령어는 다음을 생성합니다:
+
+- `.pcurc.json` - PCU 구성 파일
+- `package.json` - 작업공간 루트 package.json (없는 경우)
+- `pnpm-workspace.yaml` - PNPM 작업공간 구성 (없는 경우)
+- `packages/` - 작업공간 패키지 디렉토리 (없는 경우)
+
+## 첫 번째 업데이트 확인
+
+오래된 카탈로그 종속성을 확인하세요:
+
+```bash
+pcu -c
+```
+
+다음 정보가 포함된 아름다운 표가 표시됩니다:
+
+- 카탈로그의 현재 버전
+- 사용 가능한 최신 버전
+- 패키지 이름 및 업데이트 유형
+- 색상으로 구분된 긴급도 표시기
+
+## 대화형 업데이트
+
+대화형 인터페이스로 종속성을 업데이트하세요:
+
+```bash
+pcu -i
+```
+
+다음 기능을 사용할 수 있습니다:
+
+- ✅ 업데이트할 종속성 선택
+- 🎯 특정 버전 선택
+- 📊 영향 분석 확인
+- 🔒 자동 백업 생성
+
+## 일반적인 명령어
+
+가장 자주 사용되는 명령어들입니다:
+
+| 명령어     | 설명            | 예제                       |
+| ---------- | --------------- | -------------------------- |
+| `pcu init` | 작업공간 초기화 | `pcu init --verbose`       |
+| `pcu -c`   | 업데이트 확인   | `pcu -c --catalog default` |
+| `pcu -i`   | 대화형 업데이트 | `pcu -i -b`                |
+| `pcu -u`   | 종속성 업데이트 | `pcu -u --target minor`    |
+| `pcu -a`   | 영향 분석       | `pcu -a default react`     |
+
+## 다음 단계
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="명령어 참조"
+    description="모든 PCU 명령어와 옵션에 대한 완전한 가이드."
+  />
+  <Resource
+    href="/configuration"
+    title="구성"
+    description="워크플로우에 맞게 PCU를 구성하는 방법을 알아보세요."
+  />
+  <Resource href="/examples" title="예제" description="실제 예제와 사용 사례." />
+  <Resource href="/development" title="개발" description="개발 및 기여를 위한 PCU 설정." />
+</Resources>
+
+## 시작하기 체크리스트
+
+프로젝트에서 PCU를 실행하려면 이 체크리스트를 따르세요:
+
+1. **PCU 설치** - 전역 설치 또는 npx 사용 선택
+2. **작업공간 초기화** - 첫 설정을 위해 `pcu init` 실행
+3. **업데이트 확인** - `pcu -c`를 사용하여 사용 가능한 업데이트 확인
+4. **설정 구성** - 필요에 따라 `.pcurc.json` 사용자 정의
+5. **종속성 업데이트** - 안전한 업데이트를 위해 대화형 모드 `pcu -i` 사용
+6. **자동화 설정** - 정기적인 확인을 위한 CI/CD 통합 고려
+
+## 필수 명령어 빠른 참조
+
+| 명령어         | 목적            | 사용 시기            |
+| -------------- | --------------- | -------------------- |
+| `pcu init`     | 작업공간 설정   | 첫 설정, 새 프로젝트 |
+| `pcu -c`       | 업데이트 확인   | 일상 개발, CI 확인   |
+| `pcu -i`       | 대화형 업데이트 | 안전한 수동 업데이트 |
+| `pcu -u`       | 배치 업데이트   | 자동 업데이트, CI/CD |
+| `pcu security` | 보안 스캔       | 릴리스 전, 정기 감사 |
+
+## 다음 단계
+
+PCU를 설정한 후, 다음 고급 기능들을 탐색해보세요:
+
+- **[구성](/configuration)** - 특정 워크플로우에 맞게 PCU 사용자 정의
+- **[보안 스캔](/command-reference#pcu-security)** - 취약점 스캔 통합
+- **[모노레포 관리](/configuration#monorepo-configuration)** - 고급 작업공간 기능
+- **[CI/CD 통합](/examples)** - 파이프라인에서 종속성 업데이트 자동화

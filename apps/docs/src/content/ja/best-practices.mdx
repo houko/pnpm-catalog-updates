@@ -1,0 +1,525 @@
+export const metadata = {
+  title: 'ベストプラクティス',
+  description:
+    'チーム環境とエンタープライズワークフローでPCUを効果的に使用するためのベストプラクティス。',
+};
+
+# ベストプラクティス
+
+チーム環境、エンタープライズワークフロー、本番システムでPCUを効果的に使用する方法を学びます。 {{ className: 'lead' }}
+
+## チーム協働
+
+### 共有設定
+
+`.pcurc.json`をバージョン管理にコミットして、チームメンバー間でPCU設定の一貫性を保ちます：
+
+```json
+{
+  "target": "minor",
+  "concurrency": 3,
+  "timeout": 60000,
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "exclude": ["legacy-*", "deprecated-*"]
+}
+```
+
+### コードレビューガイドライン
+
+**レビュー前チェックリスト：**
+
+1. `pcu check --dry-run`を実行して変更をプレビュー
+2. メジャーバージョン更新で破壊的変更がないことを確認
+3. 依存関係更新後に重要な機能をテスト
+4. 更新されたパッケージのCHANGELOGファイルをレビュー
+
+**レビュープロセス：**
+
+1. **セキュリティ優先**：セキュリティ関連の依存関係更新は常に即座にレビュー
+2. **関連更新のバッチ処理**：関連パッケージ（Reactエコシステムなど）を単一のPRにまとめる
+3. **理由の文書化**：バージョンロックや除外の理由を含める
+4. **テストカバレッジ**：依存関係更新をマージする前に十分なテストを確保
+
+### コミュニケーション基準
+
+依存関係を更新する際は明確なコミットメッセージを使用します：
+
+```bash
+# 良いコミットメッセージ
+feat(deps): ReactをV18.3.0に更新してパフォーマンス向上
+security(deps): lodash脆弱性CVE-2021-23337を修正
+chore(deps): 開発依存関係を最新バージョンに更新
+
+# 悪いコミットメッセージ
+update packages
+fix deps
+bump versions
+```
+
+## エンタープライズ利用
+
+### ガバナンスとコンプライアンス
+
+**依存関係承認プロセス：**
+
+1. **セキュリティスキャン**：すべての更新はセキュリティ監査に合格する必要があります
+2. **ライセンスコンプライアンス**：ライセンスと内部ポリシーの互換性を検証
+3. **安定性要件**：本番環境ではLTSバージョンを優先
+4. **変更管理**：確立された変更承認プロセスに従う
+
+**エンタープライズ設定：**
+
+```json
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "security": {
+    "autoFix": false,
+    "severityThreshold": "moderate",
+    "ignoredVulnerabilities": [],
+    "customAuditConfig": {
+      "low": "warn",
+      "moderate": "error",
+      "high": "error",
+      "critical": "error"
+    }
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "exclude": false,
+      "requireApproval": true,
+      "maxMajorUpdates": 0
+    }
+  ]
+}
+```
+
+### プライベートリポジトリ統合
+
+プライベートリポジトリを使用するエンタープライズ環境でPCUを設定します：
+
+```ini
+# .npmrc (ワークスペースルート)
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+registry=https://npm.company.com/
+
+# パブリックパッケージフォールバック
+@types:registry=https://registry.npmjs.org/
+```
+
+**環境変数：**
+
+```bash
+export NPM_TOKEN=your_company_token
+export PCU_CACHE_ENABLED=true
+export PCU_TIMEOUT=120000
+export PCU_CONCURRENCY=2
+```
+
+### 監査証跡とレポート
+
+依存関係変更の包括的な記録を維持します：
+
+```bash
+# 依存関係レポート生成
+pcu check --format json > dependency-report.json
+pcu security --format json > security-report.json
+
+# CI/CDパイプラインに含める
+- name: 依存関係レポート生成
+  run: |
+    pcu check --format json > artifacts/deps-$(date +%Y%m%d).json
+    pcu security --format json > artifacts/security-$(date +%Y%m%d).json
+```
+
+## リリースワークフロー
+
+### セマンティックバージョン統合
+
+依存関係更新をリリースサイクルと整合させます：
+
+**プレリリース段階：**
+
+```bash
+# 更新をチェックするが適用はしない
+pcu check --target patch --dry-run
+
+# フリーズ期間中はパッチバージョンのみ更新
+pcu update --target patch --exclude "major-framework-*"
+```
+
+**リリース準備：**
+
+```bash
+# 最新安定版に更新
+pcu update --target minor --exclude "experimental-*"
+
+# 依存関係変更を含むリリースノート生成
+pcu analyze default react 18.3.0 >> RELEASE_NOTES.md
+```
+
+**リリース後：**
+
+```bash
+# メジャーバージョンを含む最新版に更新
+pcu update --target latest --interactive
+```
+
+### プレリリース環境テスト
+
+**本番前検証：**
+
+<CodeGroup>
+
+```bash {{ title: 'プレリリースパイプライン' }}
+# プレリリース環境で依存関係を更新
+pcu update --target minor --create-backup
+
+# 包括的テストを実行
+npm run test:integration
+npm run test:e2e
+npm run test:performance
+
+# 問題が見つかった場合はロールバック
+pcu restore-backup
+```
+
+```yaml {{ title: 'GitHub Actions' }}
+name: 依存関係テスト
+on:
+  schedule:
+    - cron: '0 2 * * 1' # 毎週月曜日午前2時
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 依存関係更新
+        run: pcu update --target minor --dry-run
+
+      - name: 更新された依存関係のテスト
+        run: |
+          npm ci
+          npm run test:all
+          npm run build
+```
+
+</CodeGroup>
+
+## セキュリティベストプラクティス
+
+### 脆弱性管理
+
+**PCUの即時対応：**
+
+1. **クリティカル/高深刻度**：24時間以内に更新
+2. **中程度の深刻度**：1週間以内に更新
+3. **低深刻度**：次回定期更新サイクルに含める
+
+```bash
+# セキュリティ修正を優先処理
+pcu security --severity critical --auto-fix
+pcu security --severity high --fix-vulns --require-confirmation
+
+# 定期セキュリティ監査
+pcu security --format json --output security-audit.json
+```
+
+### 依存関係検証
+
+**セキュリティ設定：**
+
+```json
+{
+  "security": {
+    "enableSnyk": true,
+    "autoFix": false,
+    "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+    "blockedPackages": ["colors", "faker"],
+    "trustedSources": ["@company/*", "@types/*"],
+    "customAuditConfig": {
+      "skipLevels": [],
+      "excludeDevDependencies": false
+    }
+  }
+}
+```
+
+**手動セキュリティレビュー：**
+
+- 初回使用前にすべての新しい依存関係をレビュー
+- パッケージメンテナーとダウンロード数を監査
+- パッケージの真正性と署名を検証
+- 依存関係チェーン内の既知のセキュリティ問題をチェック
+
+### アクセス制御
+
+**トークン管理：**
+
+```bash
+# 最小権限のスコープトークンを使用
+NPM_TOKEN=npm_[REDACTED]_readonly_access_only
+
+# トークンを定期的にローテーション（四半期）
+# セキュア認証情報管理システムでトークンを保存
+# トークンをバージョン管理にコミットしない
+```
+
+## パフォーマンス最適化
+
+### キャッシュ戦略
+
+**ローカル開発：**
+
+```bash
+# 永続キャッシュを有効化
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600  # 1時間
+export PCU_CACHE_MAX_SIZE=100  # 100 MB
+```
+
+**CI/CD最適化：**
+
+```yaml
+- name: PCUデータキャッシュ
+  uses: actions/cache@v3
+  with:
+    path: ~/.pcu-cache
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml') }}
+
+- name: 最適化されたPCU実行
+  run: |
+    export PCU_CACHE_ENABLED=true
+    pcu check --concurrency 5 --timeout 30000
+```
+
+### 大規模モノリポ処理
+
+**100+ パッケージ設定：**
+
+```json
+{
+  "concurrency": 2,
+  "timeout": 120000,
+  "batchSize": 10,
+  "advanced": {
+    "memoryOptimization": true,
+    "parallelCatalogs": false,
+    "incrementalUpdates": true
+  }
+}
+```
+
+**選択的処理：**
+
+```bash
+# カテゴリ別に処理
+pcu check --include "@company/ui-*" --limit 20
+pcu check --include "@company/api-*" --limit 20
+pcu check --include "@types/*" --target latest
+
+# 大規模操作でフィルタリング使用
+pcu update --include "react*" --exclude "*-experimental"
+```
+
+### ネットワーク最適化
+
+**リポジトリ設定：**
+
+```bash
+# 地理的に近い高速リポジトリを使用
+export PCU_REGISTRY=https://registry-asia.npmjs.org/
+export PCU_TIMEOUT=60000
+export PCU_MAX_RETRIES=3
+```
+
+## エラーハンドリングと復旧
+
+### 一般的なエラー解決
+
+**ネットワーク問題：**
+
+```bash
+# 低速接続でタイムアウト増加
+PCU_TIMEOUT=120000 pcu check
+
+# バックアップリポジトリを使用
+PCU_REGISTRY=https://registry.npmjs.org/ pcu check
+
+# ネットワーク問題のデバッグを有効化
+DEBUG=pcu:network pcu check
+```
+
+**メモリ問題：**
+
+```bash
+# Node.jsメモリ制限を増加
+NODE_OPTIONS="--max-old-space-size=8192" pcu check
+
+# メモリ制限環境で並行性を削減
+pcu check --concurrency 1
+```
+
+### バックアップと復旧
+
+**メジャー更新前のバックアップ作成：**
+
+```bash
+# 自動バックアップ作成
+pcu update --create-backup --target minor
+
+# 手動バックアップ
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+cp -r packages/*/package.json backups/
+
+# バックアップから復元
+pcu restore-backup --timestamp 2024-01-15T10:30:00Z
+```
+
+**バージョンロールバック戦略：**
+
+```bash
+# 特定パッケージをロールバック
+pcu rollback react 18.2.0
+pcu rollback @types/node 20.5.0
+
+# ディレクトリ全体をロールバック
+git checkout HEAD~1 pnpm-workspace.yaml
+pnpm install
+```
+
+### 監視とアラート
+
+**CI/CD統合：**
+
+```yaml
+- name: 依存関係ヘルスチェック
+  run: |
+    set -e
+    pcu check --format json > check-results.json
+
+    # 結果を解析してアラート設定
+    if grep -q "critical" check-results.json; then
+      echo "::error::重大な依存関係問題を発見"
+      exit 1
+    fi
+
+- name: セキュリティ監視
+  run: |
+    pcu security --format json > security-results.json
+
+    # 高/クリティカル脆弱性アラート
+    CRITICAL_COUNT=$(jq '.vulnerabilities.critical // 0' security-results.json)
+    if [ "$CRITICAL_COUNT" -gt 0 ]; then
+      # 監視システムにアラート送信
+      curl -X POST "$SLACK_WEBHOOK" -d '{"text":"🚨 重大なセキュリティ脆弱性を発見"}'
+    fi
+```
+
+## 統合パターン
+
+### IDEとエディタ統合
+
+**VS Code設定：**
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "PCU_CACHE_ENABLED": "true"
+  },
+  "tasks.json": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "PCUチェック",
+        "type": "shell",
+        "command": "pcu check --interactive",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}
+```
+
+### 自動化スクリプト
+
+**Package.jsonスクリプト：**
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update:patch": "pcu update --target patch",
+    "deps:update:minor": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --fix-vulns",
+    "deps:analyze": "pcu analyze default",
+    "prerelease": "npm run deps:check && npm run deps:security"
+  }
+}
+```
+
+**Gitフック統合：**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+
+# コミット前に依存関係問題をチェック
+if command -v pcu &> /dev/null; then
+  pcu check --format json > /dev/null || {
+    echo "⚠️  依存関係の問題を検出。'pcu check'で詳細を確認してください。"
+    exit 1
+  }
+fi
+```
+
+---
+
+## クイックリファレンスチェックリスト
+
+### 日常ワークフロー
+
+1. セキュリティ更新チェック：`pcu security`
+2. 古い依存関係レビュー：`pcu check --limit 10`
+3. パッチバージョン更新：`pcu update --target patch`
+
+### 週次ワークフロー
+
+1. 包括的依存関係チェック：`pcu check`
+2. マイナーバージョン更新：`pcu update --target minor --interactive`
+3. 除外ルールのレビューと更新
+4. チームレビュー用依存関係レポート生成
+
+### 月次ワークフロー
+
+1. メジャーバージョン更新レビュー：`pcu check --target latest`
+2. 開発依存関係更新：`pcu update --dev`
+3. 依存関係ライセンスとコンプライアンス監査
+4. PCU設定のレビューと最適化
+5. 未使用依存関係のクリーンアップ
+
+### リリース前
+
+1. 完全依存関係監査実行：`pcu security --comprehensive`
+2. バックアップ作成：`pcu update --create-backup`
+3. プレリリース環境でテスト
+4. 依存関係変更を含むリリースノート生成

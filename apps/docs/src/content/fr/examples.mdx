@@ -1,0 +1,1380 @@
+export const metadata = {
+  title: 'Exemples',
+  description:
+    "Exemples concrets et cas d'usage pour pnpm-catalog-updates. Apprenez à partir de scénarios pratiques et de flux de travail courants.",
+};
+
+# Exemples
+
+Exemples concrets et cas d'usage pour vous aider à tirer le meilleur parti de PCU. Des mises à jour simples à la gestion complexe de monorepo. {{ className: 'lead' }}
+
+## Flux de travail de base
+
+### Vérification quotidienne des dépendances
+
+Vérifiez les mises à jour dans le cadre de votre routine quotidienne de développement :
+
+<CodeGroup>
+
+```bash {{ title: 'Vérification rapide' }}
+# Vérifier les mises à jour avec sortie simple
+pcu -c --format minimal
+
+# Exemple de sortie :
+# react           ^18.2.0  →  ^18.3.0
+# typescript      ^5.0.0   →  ^5.2.0
+# @types/node     ^18.0.0  →  ^20.0.0
+```
+
+```bash {{ title: 'Vérification détaillée' }}
+# Vérifier avec format de tableau complet
+pcu -c
+
+# Affiche un tableau coloré avec :
+# - Noms des packages
+# - Versions actuelles
+# - Versions disponibles
+# - Types de mise à jour (major/minor/patch)
+# - Indicateurs de sécurité
+```
+
+</CodeGroup>
+
+### Mises à jour sécurisées avec sauvegarde
+
+Mettez à jour les dépendances en toute sécurité avec des sauvegardes automatiques :
+
+```bash
+# Mises à jour interactives avec sauvegarde
+pcu -i -b
+
+# Ou mises à jour mineures automatisées avec sauvegarde
+pcu -u --target minor --create-backup
+```
+
+### Mises à jour ciblées spécifiques
+
+Mettre à jour uniquement des types spécifiques de changements :
+
+<CodeGroup>
+
+```bash {{ title: 'Mises à jour conservatrices' }}
+# Uniquement les mises à jour de correctifs (corrections de bugs)
+pcu -u --target patch
+
+# Uniquement les mises à jour mineures (nouvelles fonctionnalités, pas de changements cassants)
+pcu -u --target minor
+```
+
+```bash {{ title: 'Tout à jour' }}
+# Mettre à jour vers les dernières versions (y compris major)
+pcu -u --target latest
+
+# Inclure les versions préliminaires
+pcu -u --prerelease
+```
+
+</CodeGroup>
+
+## Espaces de travail multi-catalogues
+
+### Scénario de support hérité
+
+Gestion de plusieurs versions React dans un espace de travail :
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml' }}
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  # Catalogue par défaut - dernières versions
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  @types/react: ^18.2.0
+
+catalogs:
+  # Support hérité
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    @types/react: ^17.0.62
+
+  # Tests bêta
+  react-next:
+    react: ^19.0.0-beta
+    react-dom: ^19.0.0-beta
+```
+
+```bash {{ title: 'Mises à jour spécifiques au catalogue' }}
+# Mettre à jour uniquement le catalogue par défaut
+pcu -u --catalog default
+
+# Mettre à jour les versions React héritées
+pcu -u --catalog react17 --target minor
+
+# Vérifier les versions bêta
+pcu -c --catalog react-next --prerelease
+```
+
+</CodeGroup>
+
+### Utilisation de package
+
+```json {{ title: 'package.json' }}
+{
+  "name": "@myorg/modern-app",
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
+```
+
+```json {{ title: 'package.json hérité' }}
+{
+  "name": "@myorg/legacy-app",
+  "dependencies": {
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
+  }
+}
+```
+
+## Exemples de configuration
+
+### Gestion de l'écosystème React
+
+Mises à jour coordonnées pour React et les packages liés :
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": [
+        "@types/react",
+        "@types/react-dom",
+        "react-router-dom",
+        "@testing-library/react"
+      ]
+    }
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  }
+}
+```
+
+### Configuration de projet TypeScript
+
+Mises à jour conservatrices de TypeScript avec définitions de types automatiques :
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "@typescript-eslint/*"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+### Configuration d'entreprise
+
+Configuration prête pour l'entreprise avec contrôles stricts :
+
+```json {{ title: '.pcurc.json' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000,
+    "retries": 5
+  },
+  "ui": {
+    "theme": "minimal",
+    "animations": false
+  }
+}
+```
+
+## Intégration CI/CD
+
+### GitHub Actions
+
+Automatisez la vérification des dépendances dans votre pipeline CI :
+
+<CodeGroup>
+
+```yaml {{ title: '.github/workflows/dependencies.yml' }}
+name: Check Dependencies
+
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # Tous les lundis à 9h
+  workflow_dispatch:
+
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pcu
+
+      - name: Check for updates
+        run: pcu -c --format json > updates.json
+
+      - name: Create Issue if Updates Available
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const updates = JSON.parse(fs.readFileSync('updates.json', 'utf8'));
+            if (updates.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Dependencies Update Available',
+                body: `Found ${updates.length} packages that can be updated:
+
+` +
+                      updates.map(u => `- ${u.package}: ${u.current} → ${u.available}`).join('
+')
+              });
+            }
+```
+
+```bash {{ title: 'Scripts Package.json' }}
+# Ajouter à votre package.json
+{
+  "scripts": {
+    "deps:check": "pcu -c",
+    "deps:update": "pcu -i -b",
+    "deps:update-minor": "pcu -u --target minor --create-backup",
+    "deps:analyze": "pcu -a default"
+  }
+}
+```
+
+</CodeGroup>
+
+## Gestion d'erreurs et dépannage
+
+### Problèmes réseau
+
+Gérer les problèmes réseau et l'accès aux registres :
+
+```bash
+# Augmenter le délai d'expiration pour les connexions lentes
+pcu -c --timeout 60000
+
+# Réduire la concurrence pour les réseaux instables
+pcu -u --concurrency 2
+```
+
+### Validation de l'espace de travail
+
+Validez la configuration de votre espace de travail :
+
+```bash
+# Vérifier la configuration de l'espace de travail
+pcu -s --validate
+
+# Obtenir des informations détaillées sur l'espace de travail
+pcu -s --stats --verbose
+```
+
+### Registres privés
+
+PCU lit automatiquement les configurations `.npmrc` et `.pnpmrc` :
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+registry=https://registry.npmjs.org/
+```
+
+```bash {{ title: 'Utilisation' }}
+# PCU utilisera automatiquement vos paramètres de registre
+pcu -c
+
+# Vérifier les packages du registre privé
+pcu -c --include "@myorg/*"
+```
+
+</CodeGroup>
+
+## Cas d'usage avancés
+
+### Analyse d'impact
+
+Analyser l'impact de la mise à jour de packages spécifiques :
+
+```bash
+# Analyser l'impact de la mise à jour React
+pcu -a default react
+
+# Analyser avec une version spécifique
+pcu -a default react 18.3.0
+
+# Vérifier l'impact sur tous les catalogues
+pcu -a react17 react 17.0.3
+```
+
+### Mises à jour sélectives
+
+Mettre à jour uniquement des packages ou motifs spécifiques :
+
+```bash
+# Mettre à jour uniquement les packages liés à React
+pcu -u --include "react*"
+
+# Mettre à jour tout sauf les frameworks principaux
+pcu -u --exclude "react*,vue*,angular*"
+
+# Mettre à jour uniquement les définitions de types
+pcu -u --include "@types/*" --target latest
+```
+
+### Analyse d'exécution à sec
+
+Prévisualiser les modifications avant de les appliquer :
+
+```bash
+# Voir ce qui serait mis à jour
+pcu -u --dry-run --verbose
+
+# Prévisualiser avec des cibles spécifiques
+pcu -u --dry-run --target minor --include "@types/*"
+```
+
+## Bonnes pratiques
+
+### Flux de travail quotidien
+
+1. **Vérification matinale** : `pcu -c` pour voir les mises à jour disponibles
+2. **Examiner l'impact** : Utiliser `pcu -a` pour les mises à jour importantes
+3. **Mise à jour sécurisée** : `pcu -i -b` pour les mises à jour interactives avec sauvegarde
+4. **Tester** : Exécuter votre suite de tests après les mises à jour
+5. **Commit** : Committer les mises à jour de dépendances séparément
+
+### Flux de travail d'équipe
+
+1. **Configuration partagée** : Committer `.pcurc.json` dans le contrôle de version
+2. **Révisions régulières** : Planifier des réunions hebdomadaires de révision des dépendances
+3. **Priorité sécurité** : Toujours prioriser les mises à jour de sécurité
+4. **Documentation** : Documenter les décisions majeures de dépendances
+5. **Plan de rollback** : Conserver des sauvegardes pour un rollback facile
+
+### Flux de travail de release
+
+1. **Vérification pré-release** : `pcu -c --target patch` avant les releases
+2. **Scan de sécurité** : Activer `autoFixVulnerabilities` en CI
+3. **Épinglage de version** : Utiliser des versions exactes pour les releases de production
+4. **Calendrier de mise à jour** : Planifier les mises à jour de dépendances entre les releases
+
+## Surveillance de sécurité
+
+### Scan de sécurité continu
+
+Intégrez le scan de sécurité dans votre flux de travail de développement :
+
+<CodeGroup>
+
+```bash {{ title: 'Vérification de sécurité quotidienne' }}
+# Scan de sécurité rapide
+pcu security
+
+# Correction automatisée des vulnérabilités
+pcu security --fix-vulns
+
+# Se concentrer uniquement sur les problèmes élevés et critiques
+pcu security --severity high --fix-vulns
+```
+
+```bash {{ title: 'Audit de sécurité complet' }}
+# Scan de sécurité complet avec intégration Snyk
+pcu security --snyk --include-dev --verbose
+
+# Exporter le rapport de sécurité pour révision
+pcu security --format json --snyk > security-report.json
+```
+
+</CodeGroup>
+
+### CI/CD axé sur la sécurité
+
+```yaml {{ title: '.github/workflows/security.yml' }}
+name: Security Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Quotidien à 2h
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pcu
+
+      - name: Security Scan
+        run: pcu security --fix-vulns --format json > security-results.json
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-results.json
+```
+
+## Personnalisation de thème
+
+### Configuration interactive de thème
+
+Configurez l'apparence de PCU pour votre équipe :
+
+```bash
+# Lancer l'assistant de thème interactif
+pcu theme --interactive
+
+# Définir un thème spécifique
+pcu theme --set modern
+
+# Lister tous les thèmes disponibles avec aperçus
+pcu theme --list
+```
+
+### Configuration de thème d'équipe
+
+```json {{ title: '.pcurc.json' }}
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+## Optimisation des performances
+
+### Configuration de grand monorepo
+
+Optimisez PCU pour de grands espaces de travail avec des centaines de packages :
+
+```json {{ title: '.pcurc.json' }}
+{
+  "advanced": {
+    "concurrency": 10,
+    "timeout": 120000,
+    "retries": 3,
+    "cacheResults": true,
+    "batchSize": 50
+  },
+  "performance": {
+    "skipUnchanged": true,
+    "useCache": true,
+    "parallelAnalysis": true
+  }
+}
+```
+
+### Traitement sélectif
+
+```bash
+# Traiter uniquement les packages modifiés depuis le dernier commit
+pcu -c --changed-only
+
+# Ignorer les packages non modifiés depuis 30 jours
+pcu -c --skip-stale --stale-days 30
+
+# Traitement parallèle pour des résultats plus rapides
+pcu -c --concurrency 15
+```
+
+## Exemples de migration
+
+### Depuis npm-check-updates
+
+Migration de `ncu` vers PCU :
+
+<CodeGroup>
+
+```bash {{ title: 'Équivalent npm-check-updates' }}
+# Anciennes commandes ncu → Nouveaux équivalents PCU
+
+# ncu
+pcu -c
+
+# ncu -u
+pcu -u
+
+# ncu --target minor
+pcu -u --target minor
+
+# ncu --interactive
+pcu -i
+
+# ncu --packageFile package.json
+pcu -w ./path/to/workspace
+```
+
+```json {{ title: 'Configuration de migration' }}
+{
+  "migration": {
+    "from": "npm-check-updates",
+    "preserveRanges": true,
+    "convertToCatalog": true
+  },
+  "defaults": {
+    "target": "minor",
+    "interactive": false
+  }
+}
+```
+
+</CodeGroup>
+
+### Conversion vers les catalogues pnpm
+
+Transformer un espace de travail existant pour utiliser les catalogues pnpm :
+
+```bash
+# Analyser les dépendances actuelles
+pcu workspace --stats
+
+# Initialiser la structure de catalogue
+pcu init --create-workspace
+
+# Convertir les dépendances vers les références de catalogue
+pcu convert --to-catalog --dry-run
+pcu convert --to-catalog --backup
+```
+
+---
+
+## Guides de migration
+
+### Migration depuis npm-check-updates
+
+Transition en douceur de `npm-check-updates` vers PCU pour la gestion des catalogues pnpm :
+
+<CodeGroup>
+
+```bash {{ title: 'Avant : npm-check-updates' }}
+# Ancien flux de travail avec ncu
+ncu --upgrade --packageFile package.json
+ncu --upgrade --packageFile packages/*/package.json
+npm install
+```
+
+```bash {{ title: 'Après : PCU' }}
+# Nouveau flux de travail avec PCU
+pcu -c                    # Vérifier les mises à jour de catalogue
+pcu -i                    # Mises à jour de catalogue interactives
+# pnpm met automatiquement à jour tous les packages utilisant le catalogue
+```
+
+</CodeGroup>
+
+#### Étapes de migration
+
+1. **Installer PCU aux côtés de ncu** temporairement pour comparaison
+2. **Initialiser la configuration PCU** :
+   ```bash
+   pcu init --template standard
+   ```
+3. **Comparer les sorties** pour s'assurer d'une fonctionnalité équivalente :
+   ```bash
+   ncu --format minimal > ncu-output.txt
+   pcu -c --format minimal > pcu-output.txt
+   diff ncu-output.txt pcu-output.txt
+   ```
+4. **Migrer les règles de package** de la configuration ncu
+5. **Supprimer ncu** une fois à l'aise avec PCU
+
+### Migration depuis Dependabot
+
+Remplacer Dependabot par PCU pour un contrôle plus granulaire :
+
+<CodeGroup>
+
+```yaml {{ title: 'Avant : .github/dependabot.yml' }}
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+```
+
+```yaml {{ title: 'Après : .github/workflows/pcu-updates.yml' }}
+name: PCU Dependency Updates
+on:
+  schedule:
+    - cron: '0 9 * * MON' # Hebdomadaire lundi 9h
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - run: pnpm install
+      - run: pnpm add -g pnpm-catalog-updates
+
+      # Vérifier les mises à jour
+      - name: Check updates
+        run: pcu -c --format json > updates.json
+
+      # Créer PR si des mises à jour sont disponibles
+      - name: Create PR
+        run: |
+          if [ -s updates.json ]; then
+            pcu -u --target minor --create-backup
+            git add .
+            git commit -m "chore: update dependencies via PCU"
+            # Utiliser GitHub CLI pour créer la PR
+            gh pr create --title "🔄 Weekly dependency updates" --body "Automated updates via PCU"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+</CodeGroup>
+
+### Migration depuis Renovate
+
+Transition de Renovate vers PCU avec configuration avancée :
+
+#### Différences clés
+
+| Fonctionnalité    | Renovate               | PCU                                 |
+| ----------------- | ---------------------- | ----------------------------------- |
+| **Portée**        | Packages individuels   | Mises à jour au niveau catalogue    |
+| **Configuration** | renovate.json          | .pcurc.json                         |
+| **UI**            | Tableau de bord web    | Terminal + intégration CI           |
+| **Monorepo**      | Configuration complexe | Support d'espace de travail intégré |
+
+#### Configuration de migration
+
+<CodeGroup>
+
+```json {{ title: 'Avant : renovate.json' }}
+{
+  "extends": ["config:base"],
+  "schedule": ["before 5am on monday"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["react", "react-dom"],
+      "groupName": "React"
+    }
+  ]
+}
+```
+
+```json {{ title: 'Après : .pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "name": "React ecosystem",
+      "patterns": ["react", "react-dom", "@types/react*"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    }
+  ],
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react"],
+          "strategy": "exact"
+        }
+      ]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+## Intégration de flux de travail CI/CD
+
+### Intégration GitHub Actions
+
+Configuration GitHub Actions complète pour la gestion automatisée des dépendances :
+
+<CodeGroup>
+
+```yaml {{ title: 'Vérification de dépendance de base' }}
+name: Dependency Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Check for updates
+        run: pcu -c --format table
+
+      - name: Security scan
+        run: pcu security --severity high
+```
+
+```yaml {{ title: 'Flux de travail de mise à jour avancé' }}
+name: Advanced PCU Workflow
+
+on:
+  schedule:
+    - cron: '0 8 * * MON' # Lundi 8h
+  workflow_dispatch:
+    inputs:
+      update_target:
+        description: 'Update target'
+        required: false
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - latest
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Configure Git
+        run: |
+          git config user.name "PCU Bot"
+          git config user.email "pcu-bot@github-actions.com"
+
+      - name: Check for updates
+        id: check-updates
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Security scan
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu security --format json --severity critical > security.json
+          if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+            echo "❌ Critical security vulnerabilities found"
+            exit 1
+          fi
+
+      - name: Update dependencies
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu -u --target ${{ github.event.inputs.update_target || 'minor' }} --create-backup
+
+      - name: Run tests
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: pnpm test
+
+      - name: Create Pull Request
+        if: steps.check-updates.outputs.updates-available == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update catalog dependencies'
+          title: "🔄 Weekly dependency updates (${{ github.event.inputs.update_target || 'minor' }})"
+          body: |
+            ## 📦 Dependency Updates
+
+            This PR contains catalog dependency updates generated by PCU.
+
+            ### Changes
+            - Target: `${{ github.event.inputs.update_target || 'minor' }}`
+            - Security scan: ✅ Passed
+            - Tests: ✅ Passed
+
+            ### Review Checklist
+            - [ ] Review breaking changes
+            - [ ] Test critical user paths
+            - [ ] Update documentation if needed
+
+            ---
+            *Generated by PCU Bot 🤖*
+          branch: pcu/weekly-updates
+          labels: |
+            dependencies
+            automated
+```
+
+</CodeGroup>
+
+### Intégration GitLab CI
+
+Pipeline GitLab CI pour la gestion des dépendances PCU :
+
+<CodeGroup>
+
+```yaml {{ title: '.gitlab-ci.yml' }}
+stages:
+  - check
+  - security
+  - update
+
+variables:
+  PNPM_CACHE_FOLDER: .pnpm-store
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store
+
+before_script:
+  - corepack enable
+  - pnpm config set store-dir $PNPM_CACHE_FOLDER
+  - pnpm install
+  - pnpm add -g pnpm-catalog-updates
+
+dependency-check:
+  stage: check
+  script:
+    - pcu -c --format table
+    - pcu workspace --validate
+  artifacts:
+    reports:
+      junit: dependency-report.xml
+  only:
+    - merge_requests
+    - main
+
+security-scan:
+  stage: security
+  script:
+    - pcu security --format json --severity moderate > security.json
+    - |
+      if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+        echo "Security vulnerabilities found:"
+        cat security.json | jq '.'
+        exit 1
+      fi
+  artifacts:
+    reports:
+      security: security.json
+  only:
+    - merge_requests
+    - main
+
+weekly-update:
+  stage: update
+  script:
+    - git config user.name "PCU Bot"
+    - git config user.email "pcu@gitlab.com"
+    - pcu -c --format json > updates.json
+    - |
+      if [ -s updates.json ]; then
+        pcu -u --target minor --create-backup
+        git add .
+        git commit -m "chore: weekly dependency updates"
+        git push origin HEAD:pcu/weekly-updates
+      fi
+  only:
+    - schedules
+  variables:
+    GIT_STRATEGY: clone
+```
+
+</CodeGroup>
+
+### Intégration de pipeline Jenkins
+
+Pipeline Jenkins pour la gestion des dépendances d'entreprise :
+
+<CodeGroup>
+
+```groovy {{ title: 'Jenkinsfile' }}
+pipeline {
+    agent any
+
+    tools {
+        nodejs '18'
+    }
+
+    environment {
+        PNPM_HOME = "${env.WORKSPACE}/.pnpm"
+        PATH = "${env.PNPM_HOME}:${env.PATH}"
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'corepack enable'
+                sh 'pnpm install'
+                sh 'pnpm add -g pnpm-catalog-updates'
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                sh 'pcu -c --format json > dependency-check.json'
+
+                script {
+                    def updates = readJSON file: 'dependency-check.json'
+                    if (updates.size() > 0) {
+                        env.HAS_UPDATES = 'true'
+                        echo "Found ${updates.size()} packages to update"
+                    } else {
+                        env.HAS_UPDATES = 'false'
+                        echo "No updates available"
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check.json'
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            when {
+                environment name: 'HAS_UPDATES', value: 'true'
+            }
+            steps {
+                sh 'pcu security --format json --severity high > security-report.json'
+
+                script {
+                    def securityReport = readJSON file: 'security-report.json'
+                    if (securityReport.vulnerabilities && securityReport.vulnerabilities.size() > 0) {
+                        error "Critical security vulnerabilities found: ${securityReport.vulnerabilities.size()}"
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.',
+                        reportFiles: 'security-report.json',
+                        reportName: 'Security Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Update Dependencies') {
+            when {
+                allOf {
+                    environment name: 'HAS_UPDATES', value: 'true'
+                    branch 'main'
+                }
+            }
+            steps {
+                sh 'pcu -u --target minor --create-backup'
+                sh 'pnpm test'
+
+                script {
+                    sh '''
+                        git config user.name "Jenkins PCU"
+                        git config user.email "jenkins@company.com"
+                        git add .
+                        git commit -m "chore: automated dependency updates [skip ci]"
+                    '''
+
+                    // Create merge request (GitLab) or pull request (GitHub)
+                    sh '''
+                        git push origin HEAD:pcu/automated-updates-${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+
+        success {
+            echo 'PCU dependency check completed successfully'
+        }
+
+        failure {
+            emailext (
+                subject: "PCU Dependency Check Failed - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "Dependency check failed. Please review the console output.",
+                to: "${env.CHANGE_AUTHOR_EMAIL}"
+            )
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+### Pipeline Azure DevOps
+
+Pipeline Azure DevOps pour l'intégration PCU :
+
+<CodeGroup>
+
+```yaml {{ title: 'azure-pipelines.yml' }}
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: '0 8 * * 1'
+    displayName: Weekly dependency check
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PNPM_CACHE_FOLDER: $(Pipeline.Workspace)/.pnpm-store
+
+stages:
+  - stage: DependencyCheck
+    displayName: 'Dependency Check'
+    jobs:
+      - job: CheckUpdates
+        displayName: 'Check for updates'
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
+              path: $(PNPM_CACHE_FOLDER)
+            displayName: Cache pnpm
+
+          - script: |
+              corepack enable
+              pnpm config set store-dir $(PNPM_CACHE_FOLDER)
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'Setup PNPM and PCU'
+
+          - script: |
+              pcu -c --format json > $(Agent.TempDirectory)/updates.json
+              pcu workspace --validate
+            displayName: 'Check dependencies'
+
+          - script: |
+              pcu security --format json --severity moderate > $(Agent.TempDirectory)/security.json
+            displayName: 'Security scan'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-results.xml'
+              failTaskOnFailedTests: true
+            displayName: 'Publish security results'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Agent.TempDirectory)'
+              artifactName: 'dependency-reports'
+            displayName: 'Publish artifacts'
+
+  - stage: UpdateDependencies
+    displayName: 'Update Dependencies'
+    condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: UpdateCatalog
+        displayName: 'Update catalog dependencies'
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              corepack enable
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'Setup environment'
+
+          - script: |
+              git config user.name "Azure DevOps PCU"
+              git config user.email "devops@company.com"
+
+              pcu -u --target minor --create-backup
+
+              if [ -n "$(git status --porcelain)" ]; then
+                git add .
+                git commit -m "chore: update catalog dependencies [skip ci]"
+                git push origin HEAD:refs/heads/pcu/automated-updates-$(Build.BuildNumber)
+              fi
+            displayName: 'Update dependencies'
+
+          - script: pnpm test
+            displayName: 'Run tests'
+```
+
+</CodeGroup>
+
+### Intégration Docker
+
+PCU conteneurisé pour des environnements CI/CD cohérents :
+
+<CodeGroup>
+
+```dockerfile {{ title: 'Dockerfile.pcu' }}
+FROM node:18-alpine
+
+# Install pnpm and PCU
+RUN corepack enable
+RUN pnpm add -g pnpm-catalog-updates
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pcurc.json ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Set entrypoint
+ENTRYPOINT ["pcu"]
+CMD ["--help"]
+```
+
+```yaml {{ title: 'docker-compose.yml' }}
+version: '3.8'
+
+services:
+  pcu-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-store:/workspace/.pnpm-store
+    command: ['-c', '--format', 'table']
+
+  pcu-security:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-store:/workspace/.pnpm-store
+    command: ['security', '--format', 'json']
+
+  pcu-update:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-store:/workspace/.pnpm-store
+    command: ['-u', '--target', 'minor', '--dry-run']
+
+volumes:
+  pnpm-store:
+```
+
+```bash {{ title: 'Exemples d'utilisation' }}
+# Construire le conteneur PCU
+docker build -t pcu:latest -f Dockerfile.pcu .
+
+# Vérifier les mises à jour
+docker run --rm -v $(pwd):/workspace pcu:latest -c
+
+# Mise à jour interactive
+docker run --rm -it -v $(pwd):/workspace pcu:latest -i
+
+# Scan de sécurité en CI
+docker-compose run --rm pcu-security > security-report.json
+```
+
+</CodeGroup>
+
+---
+
+## Flux de travail d'entreprise
+
+### Gestion multi-environnements
+
+Gérer les dépendances à travers les environnements de développement, staging et production :
+
+<CodeGroup>
+
+```json {{ title: '.pcurc.development.json' }}
+{
+  "defaults": {
+    "target": "latest",
+    "createBackup": true,
+    "interactive": true
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBarStyle": "fancy"
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "target": "latest",
+      "requireConfirmation": false
+    }
+  ]
+}
+```
+
+```json {{ title: '.pcurc.production.json' }}
+{
+  "defaults": {
+    "target": "patch",
+    "createBackup": true,
+    "interactive": false
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBarStyle": "minimal"
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "target": "patch",
+      "requireConfirmation": true
+    }
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "severityThreshold": "high"
+  }
+}
+```
+
+</CodeGroup>
+
+### Flux de travail d'approbation
+
+Implémenter des flux de travail d'approbation pour les mises à jour critiques :
+
+```bash
+# Flux de travail de mise à jour de production
+pcu -c --config .pcurc.production.json > updates-pending.json
+
+# Générer une demande d'approbation
+pcu analyze default typescript --format json > impact-analysis.json
+
+# Après approbation, appliquer les mises à jour
+pcu -u --config .pcurc.production.json --create-backup
+
+# Rollback si des problèmes sont trouvés
+git checkout HEAD~1 -- package.json pnpm-lock.yaml
+pnpm install
+```

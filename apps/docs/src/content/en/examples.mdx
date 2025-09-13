@@ -251,7 +251,7 @@ jobs:
           node-version: '20'
 
       - name: Install PCU
-        run: npm install -g pnpm-catalog-updates
+        run: npm install -g pcu
 
       - name: Check for updates
         run: pcu -c --format json > updates.json
@@ -459,7 +459,7 @@ jobs:
           node-version: '20'
 
       - name: Install PCU
-        run: npm install -g pnpm-catalog-updates
+        run: npm install -g pcu
 
       - name: Security Scan
         run: pcu security --fix-vulns --format json > security-results.json

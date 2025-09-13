@@ -39,7 +39,7 @@
 
 ```bash
 # 全局安装（推荐）
-npm install -g pnpm-catalog-updates
+npm install -g pcu
 
 # 或者使用 npx
 npx pnpm-catalog-updates

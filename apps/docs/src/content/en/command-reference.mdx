@@ -1376,7 +1376,7 @@ PCU supports multiple package managers with automatic fallback:
 
 ```bash
 # PCU tries in order: npm → pnpm → yarn
-npm install -g pnpm-catalog-updates@latest
+npm install -g pcu@latest
 # If npm fails, tries:
 pnpm add -g pnpm-catalog-updates@latest
 # If pnpm fails, tries:
@@ -1424,7 +1424,7 @@ yarn global add pnpm-catalog-updates@latest
 ```bash
 pcu check
 # ✨ PCU v0.8.0 is available (current: v0.7.15)
-# Run 'npm install -g pnpm-catalog-updates@latest' to update
+# Run 'npm install -g pcu@latest' to update
 # Use --no-update-check to disable this message
 ```
 
@@ -1433,7 +1433,7 @@ pcu check
 ```bash
 pcu security
 # 🔒 SECURITY UPDATE: PCU v0.7.16 contains security fixes (current: v0.7.15)
-# Update immediately: npm install -g pnpm-catalog-updates@latest
+# Update immediately: npm install -g pcu@latest
 ```
 
 #### Prerelease Notification
@@ -1442,7 +1442,7 @@ pcu security
 # Only shown if notifyPrerelease: true
 pcu check
 # 🧪 PCU v0.8.0-beta.1 is available for testing (current: v0.7.15)
-# Install with: npm install -g pnpm-catalog-updates@beta
+# Install with: npm install -g pcu@beta
 ```
 
 ### Manual Update Commands
@@ -1457,13 +1457,13 @@ pcu -V
 
 ```bash {{ title: 'Manual Update' }}
 # Update via npm
-npm install -g pnpm-catalog-updates@latest
+npm install -g pcu@latest
 
 # Update via pnpm
 pnpm add -g pnpm-catalog-updates@latest
 
 # Update to specific version
-npm install -g pnpm-catalog-updates@0.8.0
+npm install -g pcu@0.8.0
 ```
 
 </CodeGroup>

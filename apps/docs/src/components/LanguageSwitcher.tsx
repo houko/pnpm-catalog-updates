@@ -12,7 +12,7 @@ export function LanguageSwitcher() {
 
   function onSelectChange(nextLocale: Locale) {
     // Remove current locale from pathname
-    // Match /en or /zh at the start, handling both /en and /en/ cases
+    // Match /en, /zh, or /ja at the start, handling both /en and /en/ cases
     const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/') || '/'
 
     // Ensure the path starts with / but doesn't have double slashes
@@ -34,6 +34,11 @@ export function LanguageSwitcher() {
       >
         <option value="en">🇺🇸 {t('english')}</option>
         <option value="zh">🇨🇳 {t('chinese')}</option>
+        <option value="ja">🇯🇵 {t('japanese')}</option>
+        <option value="es">🇪🇸 {t('spanish')}</option>
+        <option value="de">🇩🇪 {t('german')}</option>
+        <option value="fr">🇫🇷 {t('french')}</option>
+        <option value="ko">🇰🇷 {t('korean')}</option>
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-700 dark:text-zinc-300">
         <svg

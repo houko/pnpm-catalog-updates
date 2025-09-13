@@ -1,0 +1,259 @@
+export const metadata = {
+  title: 'Écriture de Composants',
+  description:
+    'Apprenez à utiliser des composants UI interactifs comme Notes, Buttons et autres éléments pour améliorer votre documentation.',
+};
+
+# Écriture de Composants
+
+Améliorez votre documentation avec des composants UI interactifs. Apprenez à utiliser Notes pour les informations importantes, Buttons pour les actions, et d'autres éléments qui rendent vos docs plus engageantes et fonctionnelles. {{ className: 'lead' }}
+
+## Notes et Encadrés
+
+Le composant `<Note>` est parfait pour mettre en évidence les informations importantes, les avertissements ou les conseils auxquels les lecteurs doivent porter une attention particulière.
+
+### Utilisation de Base des Notes
+
+<Note>
+  Ceci est un composant de note de base. Il stylise automatiquement le contenu avec un thème
+  émeraude et une icône d'information, faisant ressortir les informations importantes du texte
+  régulier.
+</Note>
+
+```mdx
+<Note>Ceci est un composant de note de base avec des informations importantes.</Note>
+```
+
+### Notes avec Contenu Riche
+
+Les notes supportent le formatage Markdown complet, incluant **texte gras**, _texte italique_, `code en ligne`, et même [liens vers d'autres pages](/writing-basics).
+
+<Note>
+  **Exigence de Configuration Importante** : Avant de procéder, assurez-vous d'avoir : - Node.js
+  version 18 ou supérieure installée - Accès au dépôt du projet - Identifiants API valides
+  configurés Voir le [Guide de Référence des Commandes](/command-reference) pour la configuration
+  des identifiants.
+</Note>
+
+```mdx
+<Note>
+  **Exigence de Configuration Importante** : Avant de procéder, assurez-vous d'avoir : - Node.js
+  version 18 ou supérieure installée - Accès au dépôt du projet - Identifiants API valides
+  configurés Voir le [Guide de Référence des Commandes](/command-reference) pour la configuration
+  des identifiants.
+</Note>
+```
+
+### Notes Multi-paragraphes
+
+<Note>
+  Ceci est le premier paragraphe d'une note plus longue qui contient plusieurs éléments d'information connexes.
+
+Ce deuxième paragraphe continue la réflexion avec un contexte supplémentaire. Vous pouvez inclure autant de paragraphes que nécessaire pour expliquer complètement le concept.
+
+Rappelez-vous que de bonnes notes sont concises mais complètes, fournissant juste assez d'informations pour aider les lecteurs à comprendre l'importance du message.
+
+</Note>
+
+```mdx
+<Note>
+  Premier paragraphe avec les informations initiales.
+
+Deuxième paragraphe avec contexte et détails supplémentaires.
+
+Paragraphe final avec résumé ou étapes suivantes.
+
+</Note>
+```
+
+## Boutons et Actions
+
+Le composant `<Button>` crée des éléments d'appel à l'action qui guident les utilisateurs vers des liens importants ou des étapes suivantes.
+
+### Variantes de Boutons
+
+#### Boutons Remplis
+
+Utilisez pour les actions principales et les appels à l'action les plus importants :
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Apprenez les Composants de Code
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Apprenez les Composants de Code
+  </Button>
+</div>
+```
+
+#### Boutons Contour
+
+Parfaits pour les actions secondaires et les chemins alternatifs :
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explorez les Composants de Mise en Page
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explorez les Composants de Mise en Page
+  </Button>
+</div>
+```
+
+#### Boutons Texte
+
+Liens subtils qui se fondent avec le contenu tout en ressortant :
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Retour aux Bases
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Retour aux Bases
+  </Button>
+</div>
+```
+
+### Flèches de Boutons
+
+Les boutons supportent les flèches directionnelles pour indiquer la navigation :
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Section Précédente
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Section Suivante
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Section Précédente
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Section Suivante
+  </Button>
+</div>
+```
+
+### Meilleures Pratiques pour les Boutons
+
+- **Utilisez avec parcimonie** : Trop de boutons réduisent leur efficacité
+- **Mots d'action clairs** : "Commencer", "En Savoir Plus", "Voir la Documentation"
+- **Hiérarchie logique** : Rempli pour primaire, contour pour secondaire, texte pour tertiaire
+- **Flèches directionnelles** : Gauche pour "retour/précédent", droite pour "avant/suivant"
+- **Enveloppez dans not-prose** : Utilisez toujours l'enveloppeur `<div className="not-prose">`
+
+## Contexte de Style des Composants
+
+### L'Enveloppeur not-prose
+
+Certains composants doivent échapper au style prose par défaut. Enveloppez toujours ces composants :
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    Votre Texte de Bouton
+  </Button>
+</div>
+```
+
+Composants qui **requièrent** `not-prose` :
+
+- Tous les composants `<Button>`
+- Éléments de mise en page personnalisés
+- Widgets interactifs
+- Composants stylés complexes
+
+Composants qui **fonctionnent sans** `not-prose` :
+
+- Composants `<Note>` (style autonome)
+- Éléments Markdown standards
+- Composants basés sur le texte
+
+### Composants Multiples
+
+Lors de l'affichage de composants multiples ensemble :
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    Guide Documentation API
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Fonctionnalités Avancées
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    Réviser les Bases
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    Guide Documentation API
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Fonctionnalités Avancées
+  </Button>
+</div>
+```
+
+## Accessibilité des Composants
+
+Tous les composants sont construits avec l'accessibilité à l'esprit :
+
+- **HTML sémantique** : Éléments bouton et lien appropriés
+- **Labels ARIA** : Support de lecteur d'écran au besoin
+- **Navigation clavier** : Accessibilité clavier complète
+- **Gestion du focus** : Indicateurs de focus clairs
+- **Contraste des couleurs** : Schémas de couleurs conformes WCAG
+
+## Quand Utiliser Chaque Composant
+
+### Utilisez les Notes Quand :
+
+- Mettre en évidence des informations critiques
+- Avertir de problèmes potentiels
+- Fournir des conseils utiles ou du contexte
+- Expliquer les prérequis ou exigences
+- Attirer l'attention sur des changements importants
+
+### Utilisez les Boutons Quand :
+
+- Guider vers les étapes logiques suivantes
+- Lier vers des ressources externes
+- Créer des moments d'appel à l'action clairs
+- Navigation entre sections majeures
+- Mettre en évidence les actions principales
+
+### Évitez la Surutilisation :
+
+- N'utilisez pas de notes pour chaque paragraphe
+- Limitez les boutons à 1-2 par section
+- Réservez les composants pour le contenu vraiment important
+- Laissez le texte régulier et Markdown porter la plupart du contenu
+
+## Étapes Suivantes
+
+Maintenant que vous comprenez les composants UI, explorez :
+
+- [Écriture de Code](/writing-code) - Mise en évidence de syntaxe et blocs de code
+- [Mise en Page d'Écriture](/writing-layout) - Mises en page multi-colonnes et organisation
+- [Écriture API](/writing-api) - Composants de documentation API
+- [Écriture Avancée](/writing-advanced) - Fonctionnalités avancées et métadonnées
+
+Maîtrisez ces éléments interactifs pour créer une documentation qui non seulement informe mais guide et engage efficacement vos lecteurs.

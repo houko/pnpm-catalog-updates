@@ -1,0 +1,1037 @@
+export const metadata = {
+  title: '設定',
+  description:
+    '.pcurc.json設定、パッケージルール、高度なオプションを使用してワークフローに合わせてpnpm-catalog-updatesを設定する方法を学習します。',
+};
+
+# 設定
+
+PCUをワークフローとプロジェクトのニーズに合わせて設定します。設定ファイル、パッケージ固有のルール、高度な設定について学習します。{{ className: 'lead' }}
+
+## 設定ファイルタイプ
+
+PCUは様々な開発ワークフローに対応するため、複数の設定ファイル形式と場所をサポートしています。
+
+### サポートされる設定ファイル
+
+PCUは以下の順序で設定ファイルを検索します（最初に見つかったものが有効）：
+
+<Properties>
+  <Property name=".pcurc.json" type="JSON">
+    プロジェクトルートのメインJSON設定ファイル
+  </Property>
+  <Property name=".pcurc.js" type="JavaScript">
+    動的設定をサポートするJavaScript設定ファイル
+  </Property>
+  <Property name="pcu.config.js" type="JavaScript">
+    代替のJavaScript設定ファイル名
+  </Property>
+  <Property name="~/.pcurc.json" type="JSON">
+    ホームディレクトリのグローバルユーザー設定
+  </Property>
+  <Property name="package.json" type="JSON">
+    package.jsonの"pcu"キー下の設定
+  </Property>
+</Properties>
+
+### JavaScript設定サポート
+
+JavaScript設定ファイルは、環境、ワークスペース構造、その他のランタイム条件に基づく動的設定をサポートします：
+
+<CodeGroup>
+
+```javascript {{ title: '.pcurc.js' }}
+module.exports = {
+  defaults: {
+    target: process.env.NODE_ENV === 'production' ? 'minor' : 'latest',
+    createBackup: true,
+  },
+  workspace: {
+    autoDiscover: true,
+    catalogMode: 'strict',
+  },
+  // ワークスペース構造に基づく動的パッケージルール
+  packageRules: [
+    {
+      patterns: ['react*'],
+      target: 'minor',
+      requireConfirmation: process.env.CI !== 'true',
+    },
+  ],
+  // 環境固有の設定
+  ...(process.env.NODE_ENV === 'development' && {
+    ui: {
+      theme: 'modern',
+      progressBarStyle: 'fancy',
+    },
+  }),
+};
+```
+
+```javascript {{ title: 'pcu.config.js with functions' }}
+const fs = require('fs');
+const path = require('path');
+
+function getWorkspacePackages() {
+  const workspaceFile = path.join(__dirname, 'pnpm-workspace.yaml');
+  if (fs.existsSync(workspaceFile)) {
+    // ワークスペースパッケージを動的に解析
+    return ['packages/*', 'apps/*', 'tools/*'];
+  }
+  return ['packages/*'];
+}
+
+module.exports = {
+  workspace: {
+    packages: getWorkspacePackages(),
+    catalogMode: 'flexible',
+  },
+  packageRules: [
+    // 既存のパッケージに基づいてルールを生成
+    ...fs.readdirSync('./packages').map((pkg) => ({
+      patterns: [`@myorg/${pkg}`],
+      target: 'minor',
+    })),
+  ],
+};
+```
+
+</CodeGroup>
+
+### Package.json設定
+
+シンプルなプロジェクトの場合、設定をpackage.jsonに埋め込むことができます：
+
+```json
+{
+  "name": "my-project",
+  "pcu": {
+    "defaults": {
+      "target": "minor",
+      "createBackup": true
+    },
+    "packageRules": [
+      {
+        "patterns": ["@types/*"],
+        "target": "latest",
+        "autoUpdate": true
+      }
+    ]
+  }
+}
+```
+
+### 設定の検証
+
+PCUは設定ファイルを自動的に検証し、一般的な問題に対して詳細なエラーメッセージを提供します：
+
+#### 検証機能
+
+- **JSONスキーマ検証**：すべての設定プロパティが有効であることを確保
+- **パターン検証**：ワイルドカードパターンとパッケージ名形式を検証
+- **型チェック**：すべての設定値の正しいデータ型を検証
+- **競合検出**：競合するルールと設定オプションを識別
+- **提案システム**：設定エラーの修正に役立つ提案を提供
+
+#### 検証例
+
+```bash
+# 現在の設定を検証
+pcu workspace --validate
+
+# 一般的な検証エラーと提案：
+# ❌ packageRules[0] の無効なターゲット "lastest"
+#    💡 "latest"のことですか？
+#
+# ❌ パターン "react+" は無効なワイルドカード構文です
+#    💡 "react"で始まるパッケージをマッチするには "react*" を使用してください
+#
+# ⚠️  パッケージ "react" に競合するルールがあります
+#    📝 インデックス0と2のルールがこのパッケージにマッチします
+```
+
+<CodeGroup>
+
+```json {{ title: '基本設定' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+```json {{ title: '高度な設定' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "update": {
+    "interactive": true,
+    "dryRunFirst": true,
+    "skipPrereleases": false
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  }
+}
+```
+
+</CodeGroup>
+
+## パッケージフィルタリング
+
+包含/除外パターンとパッケージ固有のルールを使用して、更新するパッケージを制御します。
+
+<CodeGroup>
+
+```json {{ title: 'シンプルフィルタリング' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: 'パッケージルール' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### パッケージルール属性
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    パッケージ名をマッチするワイルドカードパターン
+  </Property>
+  <Property name="target" type="enum">
+    更新ターゲット：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    これらのパッケージを更新する前に常に確認する
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    確認なしで自動更新
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    同じ更新戦略に従うパッケージ
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    関連パッケージをまとめて更新
+  </Property>
+</Properties>
+
+## セキュリティ設定
+
+セキュリティ脆弱性スキャンと自動修復を設定します。
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    セキュリティ脆弱性を自動でチェックして修復
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    セキュリティ修復のためのメジャーバージョンアップグレードを許可
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    セキュリティ更新時に通知を表示
+  </Property>
+</Properties>
+
+## 高度な設定
+
+高度な設定オプションでパフォーマンスと動作を微調整します。
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    同時ネットワークリクエスト数
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    ネットワークリクエストタイムアウト（ミリ秒）
+  </Property>
+  <Property name="retries" type="number" default="3">
+    失敗時のリトライ回数
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    キャッシュ有効期限（0でキャッシュ無効）
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    起動時にPCUツールの更新を自動チェック。CI環境ではスキップされます。新しいバージョンがある場合、更新通知とインストール手順が表示されます。
+  </Property>
+</Properties>
+
+## UI設定
+
+視覚的外観とユーザーインターフェース設定をカスタマイズします。
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### 利用可能なテーマ
+
+- `default` - 汎用使用のバランス取れた色
+- `modern` - 開発環境用の活気ある色
+- `minimal` - プロダクション環境用の簡潔なスタイル
+- `neon` - デモ用の高コントラスト色
+
+### プログレスバースタイル
+
+PCUは操作中の視覚的フィードバック向上のため、6つの異なるプログレスバースタイルをサポートしています：
+
+- `default` - 基本スタイルの標準プログレスバー
+- `gradient` - モダンな外観のグラデーション色プログレスバー
+- `fancy` - 装飾要素付きの拡張プログレスバー
+- `minimal` - 簡潔なプログレス表示
+- `rainbow` - 活気ある表示のカラフルプログレスバー
+- `neon` - ネオンテーマに合う高コントラストプログレスバー
+
+**設定例：**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**コマンドライン使用：**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## 設定優先度
+
+設定設定は以下の優先順位で適用されます：
+
+1. **コマンドラインフラグ**（最高優先度）
+2. `.pcurc.json`の**パッケージ固有ルール**
+3. `.pcurc.json`の**一般設定**
+4. **デフォルト値**（最低優先度）
+
+<Note>
+  関連パッケージは自動的に親パッケージルールの設定を継承し、エコシステムパッケージ間のバージョン一貫性を保証します。
+</Note>
+
+## 例
+
+### Reactエコシステム
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScriptプロジェクト
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### エンタープライズ設定
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+---
+
+## 環境変数
+
+すべてのCLIオプションは自動化とCI/CD環境に適応するため、環境変数で設定可能です：
+
+<CodeGroup>
+
+```bash {{ title: 'グローバル環境変数' }}
+# ワークスペース設定
+export PCU_WORKSPACE="/path/to/workspace"
+export PCU_VERBOSE=true
+export PCU_NO_COLOR=true
+
+# レジストリ設定
+export PCU_REGISTRY="https://npm.company.com/"
+export PCU_TIMEOUT=30000
+
+# 設定ファイル
+export PCU_CONFIG="/path/to/.pcurc.json"
+```
+
+```bash {{ title: 'コマンド固有変数' }}
+# チェック/更新動作
+export PCU_OUTPUT_FORMAT=json
+export PCU_UPDATE_TARGET=minor
+export PCU_CATALOG=default
+
+# 更新オプション
+export PCU_INTERACTIVE=true
+export PCU_DRY_RUN=true
+export PCU_CREATE_BACKUP=true
+export PCU_FORCE=false
+
+# フィルタリング
+export PCU_INCLUDE="react*,@types/*"
+export PCU_EXCLUDE="eslint*"
+export PCU_PRERELEASE=false
+```
+
+</CodeGroup>
+
+### 環境変数優先度
+
+設定ソースは以下の順序で読み込まれます（後者が前者を上書き）：
+
+1. **内蔵デフォルト値**（最低優先度）
+2. **グローバル設定**（`~/.pcurc.json`）
+3. **プロジェクト設定**（`.pcurc.json`）
+4. **環境変数**（`PCU_*`）
+5. **コマンドラインフラグ**（最高優先度）
+
+---
+
+## レジストリ設定
+
+PCUは自動的にNPMとPNPM設定ファイルのレジストリ設定を読み取ります：
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc / .pnpmrc' }}
+# デフォルトレジストリ
+registry=https://registry.npmjs.org/
+
+# スコープレジストリ
+@mycompany:registry=https://npm.mycompany.com/
+@types:registry=https://registry.npmjs.org/
+
+# 認証トークン
+//npm.mycompany.com/:_authToken=${NPM_TOKEN}
+//registry.npmjs.org/:_authToken=${NPM_PUBLIC_TOKEN}
+
+# レガシー認証（必要な場合）
+//npm.mycompany.com/:username=myuser
+//npm.mycompany.com/:_password=base64encodedpassword
+//npm.mycompany.com/:email=user@company.com
+
+# SSLとプロキシ設定
+strict-ssl=true
+ca=/path/to/ca.pem
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+```
+
+```json {{ title: 'PCUレジストリオーバーライド' }}
+{
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "scoped": {
+      "@mycompany": "https://npm.mycompany.com/",
+      "@types": "https://registry.npmjs.org/"
+    },
+    "auth": {
+      "npm.mycompany.com": {
+        "token": "${NPM_TOKEN}",
+        "type": "Bearer"
+      }
+    },
+    "timeout": 30000,
+    "retries": 3,
+    "userAgent": "pcu-custom/1.0.0"
+  }
+}
+```
+
+</CodeGroup>
+
+### レジストリ優先度
+
+1. **CLI `--registry`フラグ**（最高優先度）
+2. **PCU設定**（`.pcurc.json`レジストリセクション）
+3. **プロジェクト`.npmrc/.pnpmrc`**
+4. **グローバル`.npmrc/.pnpmrc`**
+5. **デフォルトNPMレジストリ**（最低優先度）
+
+---
+
+## 拡張キャッシュ設定
+
+PCUはパフォーマンス向上のための先進的なキャッシュシステムを含んでいます：
+
+<CodeGroup>
+
+```json {{ title: 'キャッシュ設定' }}
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "strategy": "lru"
+  }
+}
+```
+
+```bash {{ title: 'キャッシュ管理' }}
+# すべてのキャッシュをクリア
+rm -rf ~/.pcu/cache
+
+# 詳細モードでキャッシュ情報を表示
+pcu -c --verbose
+
+# 単回実行でキャッシュを無効にする
+pcu -c --no-cache
+
+# カスタムキャッシュディレクトリを設定
+export PCU_CACHE_DIR="/tmp/pcu-cache"
+```
+
+</CodeGroup>
+
+### キャッシュ設定
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    キャッシュシステムを有効/無効にする
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    Time To Live（ミリ秒）（デフォルト1時間）
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    最大キャッシュサイズ（バイト）（デフォルト50MB）
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    最大キャッシュエントリ数
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    実行間でキャッシュをディスクに保存
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    永続キャッシュ保存ディレクトリ
+  </Property>
+  <Property name="strategy" type="enum" default="lru">
+    キャッシュ削除戦略：lru、fifo、lfu
+  </Property>
+</Properties>
+
+---
+
+## 検証設定
+
+PCUは有用な提案付きの包括的な検証を含んでいます：
+
+<CodeGroup>
+
+```json {{ title: '検証設定' }}
+{
+  "validation": {
+    "strict": true,
+    "warnOnRiskyUpdates": true,
+    "requireConfirmationFor": ["major"],
+    "suggestions": {
+      "enabled": true,
+      "includePerformanceTips": true,
+      "includeBestPractices": true
+    }
+  }
+}
+```
+
+```bash {{ title: '検証例' }}
+# 厳密検証モードを有効にする
+pcu -u --force  # バックアップ不足の警告を表示
+
+# 検証提案を表示
+pcu -c --verbose  # 追加のヒントと提案を表示
+
+# 設定ファイルを検証
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json')))"
+```
+
+</CodeGroup>
+
+### 検証オプション
+
+<Properties>
+  <Property name="strict" type="boolean" default="false">
+    追加チェック付きの厳密検証モードを有効にする
+  </Property>
+  <Property name="warnOnRiskyUpdates" type="boolean" default="true">
+    潜在的にリスクのある更新に警告を表示
+  </Property>
+  <Property name="requireConfirmationFor" type="array" default="[]">
+    確認が必要な更新タイプ：major、minor、patch
+  </Property>
+  <Property name="suggestions.enabled" type="boolean" default="true">
+    有用な提案とヒントを有効にする
+  </Property>
+  <Property name="suggestions.includePerformanceTips" type="boolean" default="true">
+    パフォーマンス最適化提案を含める
+  </Property>
+  <Property name="suggestions.includeBestPractices" type="boolean" default="true">
+    ベストプラクティス提案を含める
+  </Property>
+</Properties>
+
+---
+
+## インタラクティブモード設定
+
+インタラクティブプロンプトとユーザーエクスペリエンスを設定します：
+
+<CodeGroup>
+
+```json {{ title: 'インタラクティブ設定' }}
+{
+  "interactive": {
+    "enabled": true,
+    "pageSize": 15,
+    "showPackageDescriptions": true,
+    "showReleaseNotes": false,
+    "autoComplete": {
+      "enabled": true,
+      "fuzzyMatching": true,
+      "maxSuggestions": 10
+    },
+    "confirmations": {
+      "majorUpdates": true,
+      "forceUpdates": true,
+      "multiplePackages": false
+    }
+  }
+}
+```
+
+```bash {{ title: 'インタラクティブモード例' }}
+# インタラクティブモードを開始
+pcu -i
+
+# パッケージ説明付きインタラクティブモード
+pcu -i --verbose  # インタラクティブ選択でより詳細な情報を表示
+
+# インタラクティブテーマ選択を使用
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### インタラクティブ設定
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    インタラクティブモード機能を有効にする
+  </Property>
+  <Property name="pageSize" type="number" default="15">
+    リストの1ページあたりの表示項目数
+  </Property>
+  <Property name="showPackageDescriptions" type="boolean" default="false">
+    選択リストでパッケージ説明を表示
+  </Property>
+  <Property name="showReleaseNotes" type="boolean" default="false">
+    更新のリリースノートを表示（ネットワークが必要）
+  </Property>
+  <Property name="autoComplete.enabled" type="boolean" default="true">
+    パッケージ名の自動補完を有効にする
+  </Property>
+  <Property name="autoComplete.fuzzyMatching" type="boolean" default="true">
+    自動補完のファジーマッチングを有効にする
+  </Property>
+  <Property name="confirmations.majorUpdates" type="boolean" default="true">
+    メジャーバージョン更新に確認が必要
+  </Property>
+</Properties>
+
+---
+
+## Monorepo設定
+
+PCUは大規模monorepoと複雑なワークスペース管理のために特別に設計された高度な機能を提供します。
+
+### バージョン同期
+
+monorepo内で関連パッケージの同期を保ちます：
+
+<CodeGroup>
+
+```json {{ title: 'バージョン同期設定' }}
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+          "strategy": "exact" // または "compatible", "latest"
+        },
+        {
+          "name": "testing-libraries",
+          "packages": ["jest", "@testing-library/*", "@types/jest"],
+          "strategy": "compatible"
+        }
+      ]
+    },
+    "catalogPriority": ["default", "react17", "node18"],
+    "crossWorkspaceDependencies": {
+      "analyze": true,
+      "enforce": "warn" // "error", "warn", "off"
+    }
+  }
+}
+```
+
+```json {{ title: '大規模ワークスペース最適化' }}
+{
+  "monorepo": {
+    "performance": {
+      "batchSize": 50,
+      "concurrency": 15,
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true
+    },
+    "workspacePackages": {
+      "autoDiscover": true,
+      "includePrivate": false,
+      "excludePatterns": ["**/node_modules", "**/dist", "**/coverage"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 高度なワークスペース管理
+
+#### カタログ優先度システム
+
+競合が発生した場合にどのカタログが優先されるかを定義します：
+
+```json
+{
+  "catalogPriority": ["production", "default", "experimental"],
+  "catalogConflictResolution": "priority" // または "interactive", "error"
+}
+```
+
+#### クロスワークスペース依存関係
+
+ワークスペースパッケージ間の依存関係を分析・管理します：
+
+<Properties>
+  <Property name="analyze" type="boolean" default="false">
+    クロスワークスペース依存関係を分析
+  </Property>
+  <Property name="enforce" type="enum" default="warn">
+    バージョン不一致の処理方法：error、warn、off
+  </Property>
+  <Property name="reportUnused" type="boolean" default="true">
+    どのワークスペースパッケージからも使用されていないカタログ内のパッケージを報告
+  </Property>
+  <Property name="validateVersions" type="boolean" default="true">
+    すべてのワークスペースパッケージがカタログバージョンを使用していることを検証
+  </Property>
+</Properties>
+
+### Monorepo固有パッケージルール
+
+monorepoの異なる領域に対して複雑なルールを作成します：
+
+<CodeGroup>
+
+```json {{ title: 'Monorepoパッケージルール' }}
+{
+  "packageRules": [
+    {
+      "name": "フロントエンドパッケージ",
+      "patterns": ["react*", "@types/react*", "next*"],
+      "workspacePackages": ["apps/web", "apps/admin"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "name": "バックエンド依存関係",
+      "patterns": ["express*", "@types/express*", "fastify*"],
+      "workspacePackages": ["apps/api", "services/*"],
+      "target": "patch",
+      "autoUpdate": false
+    },
+    {
+      "name": "開発ツール",
+      "patterns": ["eslint*", "prettier", "typescript"],
+      "workspacePackages": ["*"], // すべてのパッケージ
+      "target": "latest",
+      "autoUpdate": true,
+      "excludeFromProduction": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### ワークスペース固有設定
+
+monorepoの異なる部分に対して異なる設定を使用します：
+
+<CodeGroup>
+
+```json {{ title: 'ワークスペース毎ルール' }}
+{
+  "workspaceRules": {
+    "apps/web": {
+      "defaults": {
+        "target": "minor",
+        "createBackup": true
+      },
+      "packageRules": [
+        {
+          "patterns": ["react*"],
+          "target": "patch"
+        }
+      ]
+    },
+    "packages/*": {
+      "defaults": {
+        "target": "latest",
+        "requireConfirmation": false
+      }
+    },
+    "tools/*": {
+      "defaults": {
+        "target": "latest",
+        "autoUpdate": true
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 大規模Monorepoのパフォーマンス最適化
+
+#### バッチ処理設定
+
+<Properties>
+  <Property name="batchSize" type="number" default="20">
+    バッチごとに処理するパッケージ数
+  </Property>
+  <Property name="concurrency" type="number" default="5">
+    最大同時操作数
+  </Property>
+  <Property name="cacheWorkspaceStructure" type="boolean" default="true">
+    実行間でワークスペースパッケージ発見をキャッシュ
+  </Property>
+  <Property name="parallelCatalogProcessing" type="boolean" default="true">
+    複数カタログを並列処理
+  </Property>
+</Properties>
+
+#### メモリ管理
+
+```json
+{
+  "monorepo": {
+    "memoryOptimization": {
+      "streamingMode": true, // すべてのパッケージをメモリに読み込まずに処理
+      "maxMemoryUsage": "2GB", // 大規模ワークスペース用のメモリ制限
+      "temporaryFileCleanup": "immediate" // "immediate", "session-end", "manual"
+    }
+  }
+}
+```
+
+### Monorepo検証
+
+複雑なワークスペース設定のための包括的検証：
+
+#### 検証ルール
+
+<Properties>
+  <Property name="enforceWorkspaceProtocol" type="boolean" default="true">
+    内部依存関係がworkspace:プロトコルを使用することを確保
+  </Property>
+  <Property name="validateCatalogCoverage" type="boolean" default="true">
+    すべての依存関係がカタログでカバーされていることを確保
+  </Property>
+  <Property name="requireConsistentVersions" type="boolean" default="false">
+    すべてのワークスペースパッケージが共有依存関係に同じバージョンを使用することを要求
+  </Property>
+  <Property name="detectCircularDependencies" type="boolean" default="true">
+    ワークスペースパッケージ間の循環依存関係を検出
+  </Property>
+</Properties>
+
+### Monorepo使用例
+
+#### 大規模エンタープライズMonorepo設定
+
+```json
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "core-frontend",
+          "packages": ["react", "react-dom", "react-router", "@types/react*"],
+          "strategy": "exact"
+        },
+        {
+          "name": "ui-libraries",
+          "packages": ["@company/design-system", "@company/components"],
+          "strategy": "workspace"
+        }
+      ]
+    },
+    "performance": {
+      "batchSize": 100,
+      "concurrency": 20,
+      "streamingMode": true
+    },
+    "workspaceRules": {
+      "apps/*": { "target": "minor", "requireConfirmation": true },
+      "packages/*": { "target": "latest", "autoUpdate": true },
+      "tools/*": { "target": "latest", "autoUpdate": true }
+    }
+  }
+}
+```
+
+#### CI/CD最適化設定
+
+```json
+{
+  "monorepo": {
+    "ci": {
+      "parallelCatalogProcessing": true,
+      "skipInteractivePrompts": true,
+      "generateReport": true,
+      "reportFormat": "json",
+      "exitOnError": true
+    },
+    "validation": {
+      "enforceWorkspaceProtocol": true,
+      "validateCatalogCoverage": true,
+      "failOnInconsistentVersions": true
+    }
+  }
+}
+```

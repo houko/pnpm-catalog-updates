@@ -1,0 +1,198 @@
+{
+  "Navigation": {
+    "quickstart": "Démarrage Rapide",
+    "command-reference": "Référence des Commandes",
+    "configuration": "Configuration",
+    "examples": "Exemples",
+    "development": "Développement",
+    "cicd": "Intégration CI/CD",
+    "faq": "FAQ",
+    "best-practices": "Meilleures Pratiques",
+    "performance": "Performance",
+    "migration": "Guide de Migration",
+    "troubleshooting": "Dépannage",
+    "writing-basics": "Bases de l'Écriture",
+    "writing-components": "Écriture de Composants",
+    "writing-code": "Écriture de Code",
+    "writing-layout": "Écriture de Mise en Page",
+    "writing-api": "Écriture d'API",
+    "writing-advanced": "Écriture Avancée"
+  },
+  "Common": {
+    "language": "Langue",
+    "english": "English",
+    "chinese": "中文",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "german": "Deutsch",
+    "french": "Français",
+    "korean": "한국어",
+    "documentation": "Documentation",
+    "getStarted": "Commencer",
+    "gettingStarted": "Bien Commencer",
+    "guidesAndExamples": "Guides & Exemples",
+    "writingDocumentation": "Écriture de Documentation",
+    "api": "Commandes",
+    "support": "Aide",
+    "guides": "Guides",
+    "writing": "Écriture de Documentation",
+    "resources": "Ressources",
+    "introduction": "Introduction"
+  },
+  "Home": {
+    "title": "Documentation PCU",
+    "description": "Un outil CLI puissant pour gérer les dépendances de catalogue d'espace de travail pnpm",
+    "heroTitle": "Gérez vos catalogues pnpm avec facilité",
+    "heroDescription": "PCU vous aide à vérifier, mettre à jour et analyser efficacement les dépendances dans vos catalogues d'espace de travail pnpm.",
+    "exploreSdks": "Voir la Référence des Commandes",
+    "gettingStartedTitle": "Commencer",
+    "gettingStartedDesc": "PCU est un outil de gestion des dépendances conçu spécifiquement pour les espaces de travail pnpm. Il vous aide à vérifier les dépendances obsolètes, mettre à jour les versions par lots et optimiser votre configuration de catalogue.",
+    "getApiKey": "Commencer l'Installation"
+  },
+  "NotFound": {
+    "title": "Page non trouvée",
+    "description": "Désolé, nous n'avons pas pu trouver la page que vous recherchez.",
+    "backButton": "Retour à la documentation"
+  },
+  "WritingGuide": {
+    "title": "Guide de Rédaction de Documentation",
+    "description": "Guide complet pour écrire de la documentation en utilisant tous les composants MDX et fonctionnalités supportés."
+  },
+  "Feedback": {
+    "question": "Cette page était-elle utile ?",
+    "yes": "Oui",
+    "no": "Non",
+    "thanks": "Merci pour votre retour !"
+  },
+  "Search": {
+    "placeholder": "Rechercher quelque chose...",
+    "noResults": "Rien trouvé pour",
+    "tryAgain": "Veuillez réessayer."
+  },
+  "Quickstart": {
+    "title": "Démarrage Rapide",
+    "description": "Ce guide vous aidera à installer et configurer rapidement PCU pour commencer à gérer les dépendances de votre catalogue pnpm.",
+    "installTitle": "Installer PCU",
+    "installDesc": "PCU peut être installé globalement via npm, yarn ou pnpm. Nous recommandons d'utiliser pnpm pour la cohérence.",
+    "configTitle": "Configurer l'Espace de Travail",
+    "configDesc": "Dans le répertoire racine de votre espace de travail pnpm, assurez-vous d'avoir une configuration de catalogue appropriée.",
+    "firstRunTitle": "Première Exécution",
+    "firstRunDesc": "Exécutez PCU pour vérifier le statut des dépendances dans votre espace de travail.",
+    "nextStepsTitle": "Et maintenant ?",
+    "nextStepsDesc": "Maintenant que vous avez installé PCU et effectué votre première vérification. Voici quelques étapes utiles :",
+    "checkDeps": "Vérifier les dépendances obsolètes",
+    "updateCatalogs": "Mettre à jour la configuration du catalogue",
+    "learnCommands": "Apprendre toutes les commandes disponibles"
+  },
+  "CommandReference": {
+    "title": "Référence des Commandes",
+    "description": "Documentation de référence complète pour toutes les commandes PCU."
+  },
+  "Configuration": {
+    "title": "Configuration",
+    "description": "Apprenez comment configurer PCU pour s'adapter à votre flux de travail de développement."
+  },
+  "Examples": {
+    "title": "Exemples",
+    "description": "Apprenez comment utiliser PCU pour gérer et mettre à jour les dépendances de votre projet."
+  },
+  "Development": {
+    "title": "Développement",
+    "description": "Meilleures pratiques pour utiliser PCU dans des environnements d'équipe."
+  },
+  "Troubleshooting": {
+    "title": "Dépannage",
+    "description": "Solutions aux problèmes et erreurs courantes."
+  },
+  "CICD": {
+    "title": "Intégration CI/CD",
+    "description": "Intégrez PCU dans vos pipelines d'intégration continue et de déploiement."
+  },
+  "BestPractices": {
+    "title": "Meilleures Pratiques",
+    "description": "Meilleures pratiques pour utiliser PCU efficacement dans des environnements d'équipe et des flux de travail d'entreprise."
+  },
+  "Performance": {
+    "title": "Optimisation des Performances",
+    "description": "Optimisez les performances de PCU pour les grands monorepos, améliorez la vitesse d'exécution et réduisez la consommation de ressources."
+  },
+  "Migration": {
+    "title": "Guide de Migration",
+    "description": "Migrez depuis d'autres outils de gestion de dépendances vers PCU et aidez votre équipe à utiliser efficacement les catalogues pnpm."
+  },
+  "FAQ": {
+    "title": "Questions Fréquentes",
+    "description": "Questions fréquemment posées sur PCU. Trouvez des réponses rapides aux questions et problèmes courants."
+  },
+  "QuickstartPage": {
+    "title": "Démarrage Rapide",
+    "description": "Ce guide vous aidera à installer et configurer rapidement PCU pour commencer à gérer les dépendances de votre catalogue pnpm.",
+    "intro": "Ce guide vous aidera à installer et configurer rapidement PCU pour commencer à gérer les dépendances de votre catalogue pnpm. Nous couvrirons comment installer l'outil, configurer votre espace de travail et effectuer votre première vérification de dépendances.",
+    "noteText": "Avant de commencer à utiliser PCU, assurez-vous que votre projet utilise pnpm comme gestionnaire de paquets et a des espaces de travail configurés. Vous pouvez trouver la configuration de l'espace de travail dans le fichier pnpm-workspace.yaml à la racine de votre projet.",
+    "chooseInstallTitle": "Choisir la Méthode d'Installation",
+    "chooseInstallDesc": "Avant votre première vérification, vous devez choisir comment installer PCU. En plus de l'installation globale npm traditionnelle, PCU prend aussi en charge l'installation via pnpm, yarn et l'exécution temporaire via npx. Les exemples suivants montrent comment installer PCU :",
+    "installGlobal": "# Installer PCU globalement",
+    "installPnpm": "# Installer PCU avec pnpm",
+    "installYarn": "# Installer PCU avec yarn",
+    "installNpx": "# Exécuter temporairement avec npx",
+    "checkCommandsLink": "Voir toutes les commandes disponibles",
+    "firstCheckTitle": "Effectuer la Première Vérification",
+    "firstCheckDesc": "Après avoir choisi une méthode d'installation, vous pouvez effectuer votre première vérification de dépendances dans votre espace de travail pnpm. Les exemples suivants montrent comment exécuter PCU pour vérifier les dépendances obsolètes, affichant les 10 premiers résultats par défaut :",
+    "checkOutdated": "Vérifier les dépendances obsolètes",
+    "checkSpecific": "Vérifier les mises à jour pour des paquets spécifiques",
+    "checkWorkspace": "Vérifier tout l'espace de travail",
+    "updateCatalog": "Mettre à jour la configuration du catalogue",
+    "readDocsLink": "Lire la documentation de gestion des dépendances",
+    "nextStepsTitle": "Et maintenant ?",
+    "nextStepsDesc": "Parfait ! Vous avez maintenant PCU installé et avez effectué votre première vérification de dépendances. Voici quelques liens utiles pour vous aider à explorer plus de fonctionnalités de PCU :",
+    "getCatalogLink": "Obtenir la configuration du catalogue de l'espace de travail pnpm",
+    "checkDependenciesLink": "Voir la documentation de gestion des dépendances",
+    "learnErrorsLink": "Apprendre sur la gestion d'erreurs de PCU"
+  },
+  "Guides": {
+    "title": "Guides",
+    "readMore": "Lire plus",
+    "commandReference": {
+      "name": "Référence des Commandes",
+      "description": "Référence complète pour toutes les commandes PCU et leurs options."
+    },
+    "configuration": {
+      "name": "Configuration",
+      "description": "Apprenez comment configurer PCU pour votre flux de travail et vos besoins de projet."
+    },
+    "troubleshooting": {
+      "name": "Dépannage",
+      "description": "Problèmes courants et solutions lors du travail avec PCU et les dépendances."
+    },
+    "examples": {
+      "name": "Exemples",
+      "description": "Exemples pratiques et cas d'usage pour gérer les dépendances de catalogue."
+    }
+  },
+  "Resources": {
+    "title": "Ressources",
+    "configuration": {
+      "name": "Configuration",
+      "description": "Apprenez les options de configuration de PCU et comment personnaliser votre configuration pour différents flux de travail."
+    },
+    "examples": {
+      "name": "Exemples",
+      "description": "Explorez des exemples pratiques et des cas d'usage courants pour gérer les dépendances avec PCU."
+    },
+    "troubleshooting": {
+      "name": "Dépannage",
+      "description": "Problèmes courants et solutions lors de l'utilisation de PCU. Messages d'erreur, conseils de débogage et guides de dépannage."
+    },
+    "development": {
+      "name": "Développement",
+      "description": "Apprenez les flux de travail de développement, les directives de contribution et les modèles d'usage avancé de PCU."
+    }
+  },
+  "Footer": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "copyright": "{year} pnpm-catalog-updates. Tous droits réservés.",
+    "followGitHub": "Suivez-nous sur GitHub",
+    "joinDiscord": "Rejoignez notre serveur Discord"
+  }
+}

@@ -1,0 +1,400 @@
+export const metadata = {
+  title: 'よくある質問',
+  description:
+    'PCU (pnpm-catalog-updates) に関するよくある質問。一般的な問題とトラブルシューティングをすばやく見つけます。',
+};
+
+# よくある質問
+
+PCUに関するよくある質問への迅速な回答。お探しの内容が見つかりませんか？[トラブルシューティングガイド](/troubleshooting)をご覧いただくか、[問題を提出](https://github.com/houko/pnpm-catalog-updates/issues)してください。{{ className: 'lead' }}
+
+## インストールとセットアップ
+
+### PCUをインストールする方法は？
+
+PCUはnpm、pnpm、またはyarnを使用してグローバルにインストールできます：
+
+<CodeGroup>
+
+```bash {{ title: 'npm' }}
+npm install -g pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'yarn' }}
+yarn global add pnpm-catalog-updates
+```
+
+```bash {{ title: 'npx（インストール不要）' }}
+npx pnpm-catalog-updates check
+```
+
+</CodeGroup>
+
+### システム要件は何ですか？
+
+- **Node.js**: >= 18.0.0（LTSバージョン推奨）
+- **pnpm**: >= 8.0.0
+- **オペレーティングシステム**: Windows、macOS、Linux
+
+### PCUを使用するためにpnpmワークスペースが必要ですか？
+
+はい、PCUはカタログ依存関係を使用するpnpmワークスペース専用に設計されています。まだワークスペースがない場合は、`pcu init`を実行して作成してください。
+
+### npmやyarnプロジェクトでPCUを使用できますか？
+
+いいえ、PCUはカタログ依存関係を使用するpnpmワークスペース専用です。他のパッケージマネージャーについては、`npm-check-updates`や`yarn upgrade-interactive`などのツールの使用をご検討ください。
+
+## 設定
+
+### `.pcurc.json`設定ファイルはどこに配置すべきですか？
+
+ワークスペースのルートディレクトリ（`pnpm-workspace.yaml`と同じレベル）に配置してください。PCUは以下もサポートしています：
+
+- グローバル設定：`~/.pcurc.json`
+- プロジェクト設定：`./.pcurc.json`（最高優先度）
+
+### ワークスペースレベルとグローバル設定の違いは何ですか？
+
+- **グローバル**（`~/.pcurc.json`）：異なるプロジェクト間のすべてのPCU操作に適用
+- **プロジェクト**（`./.pcurc.json`）：現在のワークスペース固有で、グローバル設定を上書き
+
+### 異なるパッケージに異なる更新戦略を設定できますか？
+
+はい！設定でパッケージルールを使用してください：
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## コマンドと使用法
+
+### `pcu check`と`pcu -c`の違いは何ですか？
+
+完全に同じです！PCUは完全なコマンド名と短縮エイリアスの両方をサポートしています：
+
+- `pcu check` = `pcu -c`
+- `pcu update` = `pcu -u`
+- `pcu interactive` = `pcu -i`
+
+### 特定のタイプのパッケージのみを更新するには？
+
+`--include`と`--exclude`フラグを使用してください：
+
+```bash
+# React関連パッケージのみを更新
+pcu update --include "react*"
+
+# 主要フレームワークの変更を除くすべてを更新
+pcu update --exclude "react*,vue*,angular*"
+
+# 型定義のみを更新
+pcu update --include "@types/*"
+```
+
+### 更新ターゲット間の違いは何ですか？
+
+- **`patch`**：バグ修正のみ（1.0.0 → 1.0.1）
+- **`minor`**：新機能、後方互換性あり（1.0.0 → 1.1.0）
+- **`latest`**：最新安定版、破壊的変更を含む（1.0.0 → 2.0.0）
+- **`greatest`**：プレリリースを含む最新版（1.0.0 → 2.0.0-beta.1）
+
+### 実際に更新する前に何が更新されるかを確認するには？
+
+`--dry-run`フラグを使用してください：
+
+```bash
+pcu update --dry-run --target minor
+```
+
+これにより、変更を加えることなく、正確に何が更新されるかが表示されます。
+
+## トラブルシューティング
+
+### なぜPCUが「pnpmワークスペースが見つかりません」と言うのですか？
+
+これは、PCUが現在のディレクトリで`pnpm-workspace.yaml`ファイルを見つけられないことを意味します。解決策：
+
+1. **ワークスペースを作成**：`pcu init`を実行
+2. **ワークスペースルートに移動**：`pnpm-workspace.yaml`を含むディレクトリに`cd`
+3. **ワークスペースパスを指定**：`pcu -c --workspace /path/to/workspace`
+
+### なぜPCUが「カタログ依存関係が見つかりません」と言うのですか？
+
+ワークスペースがまだカタログ依存関係を使用していません。以下が必要です：
+
+1. **ワークスペースファイル内のカタログ**：
+
+   ```yaml
+   # pnpm-workspace.yaml
+   packages:
+     - 'packages/*'
+
+   catalog:
+     react: ^18.2.0
+     typescript: ^5.0.0
+   ```
+
+2. **パッケージ内でカタログを使用**：
+   ```json
+   {
+     "dependencies": {
+       "react": "catalog:",
+       "typescript": "catalog:"
+     }
+   }
+   ```
+
+### PCUの動作が非常に遅いです。パフォーマンスを改善するには？
+
+以下の最適化を試してください：
+
+1. **並行性を減らす**：`pcu check --concurrency 2`
+2. **タイムアウトを増やす**：`pcu check --timeout 60000`
+3. **キャッシュを有効にする**：`PCU_CACHE_ENABLED=true`（デフォルト）を確認
+4. **フィルタリングを使用**：特定のパッケージに`pcu check --include "react*"`
+
+### "ENOTFOUND registry.npmjs.org"エラーを修正するには？
+
+これはネットワーク接続の問題です：
+
+1. **ネットワーク接続を確認**：`ping registry.npmjs.org`
+2. **プロキシを設定**：`HTTP_PROXY`と`HTTPS_PROXY`環境変数を設定
+3. **企業レジストリを使用**：`.npmrc`で会社のレジストリを設定
+4. **タイムアウトを増やす**：`PCU_TIMEOUT=120000 pcu check`
+
+## セキュリティ
+
+### PCUはセキュリティ脆弱性をどのように処理しますか？
+
+PCUはnpm auditとオプションのSnykを統合しています：
+
+```bash
+# 脆弱性をチェック
+pcu security
+
+# セキュリティ問題を自動修正
+pcu security --fix-vulns
+
+# Snykスキャンを含める
+pcu security --snyk --severity high
+```
+
+### すべてのセキュリティ脆弱性を自動修正すべきですか？
+
+`--auto-fix`を使用する際は注意してください：
+
+- ✅ **安全**：セキュリティ修正のパッチおよびマイナーバージョン更新
+- ⚠️ **要レビュー**：アプリケーションを破壊する可能性のあるメジャーバージョン更新
+- ❌ **回避**：本番環境でテストなしの盲目的な自動修正
+
+### 偽陽性のセキュリティ警告を処理するには？
+
+`.pcurc.json`で無視する脆弱性を設定してください：
+
+```json
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn"
+    }
+  }
+}
+```
+
+## ワークフローとCI/CD
+
+### CI/CDパイプラインでPCUを使用できますか？
+
+もちろんです！PCUは自動化用に設計されています：
+
+```bash
+# CI対応コマンド
+PCU_NO_COLOR=true pcu check --format json
+pcu security --format json --severity critical
+```
+
+完全な例については、[CI/CD統合ガイド](/cicd)をご覧ください。
+
+### 自動化された依存関係更新PRを作成するには？
+
+PCUをGitHub Actions、GitLab CI、または他のプラットフォームと組み合わせて使用してください：
+
+```yaml
+- name: 依存関係を更新
+  run: |
+    pcu update --target minor --create-backup
+    # 変更でPRを作成
+```
+
+完全なワークフローについては、[CI/CD統合ガイド](/cicd)をご覧ください。
+
+### チームコラボレーションの最適なワークフローは何ですか？
+
+1. **設定を共有**：`.pcurc.json`をバージョン管理にコミット
+2. **定期レビュー**：週次の依存関係レビューミーティングをスケジュール
+3. **セキュリティを優先**：常にセキュリティ更新を優先
+4. **段階的更新**：大きなバッチよりも小さく頻繁な更新を優先
+5. **テスト**：更新後は常にテストしてからマージ
+
+## 高度な使用法
+
+### 一つのワークスペースで複数のカタログを使用できますか？
+
+はい！pnpmは複数のカタログをサポートしています：
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+
+catalogs:
+  react17:
+    react: ^17.0.2
+  experimental:
+    react: ^19.0.0-beta
+```
+
+その後、パッケージで使用してください：
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:react17"
+  }
+}
+```
+
+### 特定のパッケージを更新することの影響を分析するには？
+
+analyzeコマンドを使用してください：
+
+```bash
+# Reactを更新することの影響を分析
+pcu analyze default react 18.3.0
+
+# すべてのカタログをチェック
+pcu analyze react17 react 17.0.3
+```
+
+### 特定のパッケージの更新を永続的に除外できますか？
+
+はい、`.pcurc.json`で除外項目を設定してください：
+
+```json
+{
+  "exclude": ["react", "vue", "@types/node"],
+  "packageRules": [
+    {
+      "patterns": ["critical-*"],
+      "exclude": true
+    }
+  ]
+}
+```
+
+### 100+パッケージを持つmonorepoを処理するには？
+
+大規模monorepoのパフォーマンスのヒント：
+
+1. **バッチ処理**：高度な設定で`batchSize: 10`を設定
+2. **並行性を減らす**：レジストリを圧倒しないよう`concurrency: 2`を設定
+3. **フィルタリングを使用**：`--include`パターンを使用してパッケージをグループで処理
+4. **キャッシュを有効にする**：キャッシュが有効で正しく設定されていることを確認
+5. **メモリを増やす**：`NODE_OPTIONS="--max-old-space-size=8192"`を設定
+
+## エラーメッセージ
+
+### 「ピア依存関係を解決できません」
+
+これはパッケージバージョンが競合している際に発生します。解決策：
+
+1. **関連パッケージを一緒に更新**：`pcu update --include "react*"`
+2. **インタラクティブモードを使用**：`pcu update --interactive`で慎重にバージョンを選択
+3. **ピア依存関係をチェック**：各パッケージの要件を確認
+4. **複数カタログを使用**：競合するバージョンを異なるカタログに分離
+
+### 「.pcurc.jsonの設定が無効です」
+
+設定ファイルにJSON構文エラーがあります：
+
+```bash
+# JSON構文を検証
+node -e "JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8'))"
+
+# 必要に応じて設定を再生成
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+### 「コマンドが見つかりません：pcu」
+
+インストールまたはPATHの問題：
+
+1. **グローバルに再インストール**：`npm install -g pcu`
+2. **PATHをチェック**：npmグローバルbinがPATHに含まれていることを確認
+3. **npxを使用**：代替として`npx pnpm-catalog-updates check`
+4. **pnpmを使用**：`pnpm add -g pnpm-catalog-updates`（推奨）
+
+## 統合とツール
+
+### PCUはRenovateやDependabotと互換性がありますか？
+
+PCUはこれらのツールの代替品であり、補完品ではありません：
+
+- **PCU**：手動制御、pnpm特化、カタログに特化
+- **Renovate**：自動化PR、複数パッケージマネージャーサポート
+- **Dependabot**：GitHub統合、自動セキュリティ更新
+
+ワークフローの好みに応じて選択してください。移行については、[移行ガイド](/examples#他のツールからの移行)をご覧ください。
+
+### PCUをIDEと統合できますか？
+
+公式IDEエクステンションはありませんが、以下が可能です：
+
+1. **npmスクリプトを追加**：`package.json`でコマンドを設定
+2. **タスクランナーを使用**：VS Codeタスクや類似ツールと統合
+3. **ターミナル統合**：ほとんどのIDEはターミナル統合をサポート
+
+### PCUはプライベートnpmレジストリをサポートしますか？
+
+はい！PCUは`.npmrc`設定を読み取ります：
+
+```ini
+# .npmrc
+@mycompany:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+```
+
+PCUは各パッケージスコープに対して自動的に正しいレジストリを使用します。
+
+---
+
+## まだ質問がありますか？
+
+- 📖 **ドキュメント**：包括的な[コマンドリファレンス](/command-reference)をご覧ください
+- 🛠️ **トラブルシューティング**：[トラブルシューティングガイド](/troubleshooting)をご覧ください
+- 🐛 **バグ報告**：[イシューを作成](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **ディスカッション**：[GitHubディスカッション](https://github.com/houko/pnpm-catalog-updates/discussions)

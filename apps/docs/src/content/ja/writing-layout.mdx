@@ -1,0 +1,154 @@
+export const metadata = {
+  title: 'レイアウトライティング',
+  description:
+    'Row、Col、およびスティッキーポジショニングを使用して複雑なマルチカラムレイアウトを作成し、コンテンツを整理します。',
+};
+
+# レイアウトライティング
+
+読みやすさとユーザーエクスペリエンスを向上させる複雑なレイアウトを作成します。RowとColコンポーネントを使用したマルチカラムデザイン、スティッキーポジショニング、効果的なコンテンツ整理について学びます。 {{ className: 'lead' }}
+
+## 2カラムレイアウト
+
+`<Row>`と`<Col>`を使用してサイドバイサイドコンテンツを実現：
+
+<Row>
+  <Col>
+    **左カラム**
+    
+    このコンテンツは左カラムに表示されます。説明、記述、補足情報に最適です。
+    
+    - 重要なポイント1
+    - 重要な詳細
+    - 追加のコンテキスト
+  </Col>
+  
+  <Col>
+    **右カラム**
+    
+    ```javascript
+    // 右カラムにコード例を配置
+    const example = {
+      feature: "マルチカラムレイアウト",
+      benefit: "より良い組織化"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>左カラムのコンテンツ、説明を含む。</Col>
+
+  <Col>右カラムのコンテンツ、サンプルコードを含む。</Col>
+</Row>
+```
+
+## スティッキーカラムレイアウト
+
+スクロール時にコンテンツをスティッキーに保つ：
+
+<Row>
+  <Col>
+    **スクロールコンテンツ**
+    
+    これは通常スクロールする一般的なコンテンツです。ユーザーがスクロールして読む必要がある長い説明をここに配置できます。
+    
+    このカラムには、完全に消費するためにスクロールが必要な主要な説明や詳細情報が含まれます。
+  </Col>
+  
+  <Col sticky>
+    **スティッキーリファレンス**
+    
+    ```json
+    {
+      "status": "スティッキー",
+      "position": "固定",
+      "scroll": "独立"
+    }
+    ```
+    
+    これはスクロール時に表示され続けます。
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>ここは通常のスクロールコンテンツです。</Col>
+
+  <Col sticky>このカラムはスクロール時に固定されたままです。</Col>
+</Row>
+```
+
+## Guidesコンポーネント
+
+`<Guides>`コンポーネントを使用してガイドリンクのグリッドを表示：
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+Guidesコンポーネントは、リンクと説明を含む事前定義されたドキュメントガイドのコレクションを表示します。概要ページと入門セクションに最適です。
+
+## Resourcesコンポーネント
+
+アニメーションカードを使用して主要なリソースカテゴリを表示：
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+Resourcesコンポーネントは、アイコンと説明付きのアニメーションリソースカードを表示します。メインランディングページやAPI概要セクションに最適です。
+
+## アイコン
+
+インライン装飾やカスタムレイアウトに個別のアイコンを使用：
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### 利用可能なアイコン
+
+- `<UserIcon />` - 単一ユーザー
+- `<UsersIcon />` - 複数ユーザー
+- `<EnvelopeIcon />` - メッセージ/メール
+- `<ChatBubbleIcon />` - 会話
+- `<BookIcon />` - ドキュメント
+- `<CheckIcon />` - 成功/完了
+- `<BellIcon />` - 通知
+- `<CogIcon />` - 設定/構成
+
+## レイアウトのベストプラクティス
+
+- 補足コンテンツには2カラムレイアウトを使用
+- スティッキーカラムは参考資料に最適
+- カラムのコンテンツ長をバランス良く保つ
+- モバイル対応を確保（小画面ではカラムがスタックされる）
+- ドキュメント概要ページにはGuidesコンポーネントを使用
+- APIカテゴリ表示にはResourcesコンポーネントを使用
+- アイコンとカスタムTailwindクラスで色とサイズを制御
+
+## 次のステップ
+
+[APIドキュメント](/writing-api)を読み続けて専用コンポーネントについて学びましょう。

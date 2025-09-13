@@ -1,0 +1,276 @@
+export const metadata = {
+  title: 'コードライティング',
+  description:
+    'コードブロック、シンタックスハイライト、およびCodeGroupコンポーネントを使用した多言語例をマスターします。',
+};
+
+# コードライティング
+
+ドキュメントでコードを表示する技術をマスターしましょう。シンタックスハイライトの使用、多言語の例の作成、開発者がソリューションを理解し実装するのに役立つコードブロックの効果的な整理について学びます。 {{ className: 'lead' }}
+
+## 単一のコードブロック
+
+自動シンタックスハイライト付きの基本的なコードブロック：
+
+```javascript
+// シンタックスハイライト付きのJavaScriptの例
+const greeting = 'こんにちは、世界！';
+console.log(greeting);
+```
+
+上記のJavaScriptコードブロックは以下のMDX構文を使用して作成されます：
+
+````mdx
+```javascript
+const greeting = 'こんにちは、世界！';
+console.log(greeting);
+```
+````
+
+**Pythonの例：**
+
+```python
+# Pythonの例
+def greet(name):
+    return f"こんにちは、{name}！"
+
+print(greet("世界"))
+```
+
+Pythonコードブロックのmdx構文：
+
+````mdx
+```python
+def greet(name):
+    return f"こんにちは、{name}！"
+
+print(greet("世界"))
+```
+````
+
+**Bash/Shellコマンド：**
+
+```bash
+# Bash/Shellコマンド
+npm install @example/package
+pnpm add dependency
+```
+
+Bashコードブロックのmdx構文：
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## 多言語CodeGroup
+
+`<CodeGroup>`を使用して異なる言語での同じ例を表示：
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+上記の多言語コードグループは以下のMDX構文を使用して作成されます：
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## APIエンドポイントの例
+
+APIドキュメントの場合、HTTPメソッドタグを使用：
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "田中太郎", "email": "tanaka@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '田中太郎',
+    email: 'tanaka@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+上記のAPIエンドポイントの例は以下のMDX構文を使用して作成されます。`tag`と`label`属性に注意：
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "张三", "email": "zhangsan@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '张三',
+    email: 'zhangsan@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### コードブロックタイトル
+
+単一のコードブロックにタイトルを追加することもできます：
+
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## サポートされている言語
+
+コードブロックは多くのプログラミング言語のシンタックスハイライトをサポートしています：
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Shellスクリプト**: `bash`, `shell`, `sh`
+- **その他の言語**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**例：**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+JSONコードブロックのMDX構文：
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**コード比較（Diff）：**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+DiffコードブロックのMDX構文：
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## ベストプラクティス
+
+- シンタックスハイライトを得るため、常にコードブロックに言語を指定する
+- 異なるコード例を区別するため説明的なタイトルを使用する
+- 完全で実行可能な例を含める
+- 例を簡潔に保ちつつ機能的に完全にする
+- 一貫したフォーマットとスタイルを使用する
+- CodeGroupで使用頻度に基づいて言語タブを並べ替える
+
+## 次のステップ
+
+[レイアウトコンポーネント](/writing-layout)を読み続けて、コンテンツを効果的に整理しましょう。

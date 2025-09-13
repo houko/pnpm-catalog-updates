@@ -27,8 +27,8 @@ const useCustomDomain = process.env.USE_CUSTOM_DOMAIN === 'true'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // GitHub Pages compatible static export
-  output: 'export',
+  // GitHub Pages compatible static export (only in production)
+  ...(isProduction && { output: 'export' }),
   trailingSlash: true,
   images: {
     unoptimized: true,

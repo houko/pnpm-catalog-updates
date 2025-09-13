@@ -101,6 +101,14 @@ function DiscordIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   )
 }
 
+function NpmIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
+  return (
+    <svg viewBox="0 0 128 128" aria-hidden="true" {...props}>
+      <path d="M2 38.5h124v43.71H64v7.29H36.44v-7.29H2zm6.89 36.43h13.78V53.07h6.89v21.86h6.89V45.79H8.89zm34.44-29.14v36.42h13.78v-7.28h13.78V45.79zm13.78 7.29H64v14.56h-6.89zm20.67-7.29v29.14h13.78V53.07h6.89v21.86h6.89V53.07h6.89v21.86h6.89V45.79z" />
+    </svg>
+  )
+}
+
 function SocialLink({
   href,
   icon: Icon,
@@ -113,7 +121,7 @@ function SocialLink({
   return (
     <Link href={href} className="group" target="_blank" rel="noopener noreferrer">
       <span className="sr-only">{children}</span>
-      <Icon className="h-5 w-5 fill-zinc-700 transition group-hover:fill-zinc-900 dark:group-hover:fill-zinc-500" />
+      <Icon className="h-6 w-6 fill-zinc-700 transition group-hover:fill-zinc-900 dark:group-hover:fill-zinc-500" />
     </Link>
   )
 }
@@ -135,6 +143,9 @@ function SmallPrint() {
           icon={DiscordIcon}
         >
           {t('joinDiscord')}
+        </SocialLink>
+        <SocialLink href="https://www.npmjs.com/package/pcu" icon={NpmIcon}>
+          NPM: pcu
         </SocialLink>
       </div>
     </div>

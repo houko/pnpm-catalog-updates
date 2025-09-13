@@ -46,7 +46,7 @@ pnpm ワークスペースカタログ依存関係をチェックおよび更新
 
 ```bash
 # グローバルインストール（推奨）
-npm install -g pnpm-catalog-updates
+npm install -g pcu
 
 # または npx を使用
 npx pnpm-catalog-updates

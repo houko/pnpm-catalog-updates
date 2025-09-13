@@ -1,0 +1,1227 @@
+export const metadata = {
+  title: 'Referencia de Comandos',
+  description:
+    'Guía de referencia completa para todos los comandos, opciones y patrones de uso de pnpm-catalog-updates.',
+};
+
+# Referencia de Comandos
+
+Referencia completa para todos los comandos y opciones de PCU. Aprende sobre cada comando, flag y opción de configuración disponible. {{ className: 'lead' }}
+
+## Resumen de Comandos
+
+PCU proporciona varios comandos principales con nombres completos y atajos convenientes:
+
+| Comando Completo | Atajos y Alias      | Descripción                                             |
+| ---------------- | ------------------- | ------------------------------------------------------- |
+| `pcu init`       | `pcu i`             | Inicializar workspace PNPM y configuración PCU          |
+| `pcu check`      | `pcu chk`, `pcu -c` | Verificar dependencias de catálogo desactualizadas      |
+| `pcu update`     | `pcu u`, `pcu -u`   | Actualizar dependencias de catálogo                     |
+| `pcu analyze`    | `pcu a`, `pcu -a`   | Analizar impacto de actualizaciones de dependencias     |
+| `pcu workspace`  | `pcu w`, `pcu -s`   | Mostrar información y validación del workspace          |
+| `pcu theme`      | `pcu t`, `pcu -t`   | Configurar temas de color y configuraciones UI          |
+| `pcu security`   | `pcu sec`           | Escaneo y correcciones de vulnerabilidades de seguridad |
+| `pcu help`       | `pcu h`, `pcu -h`   | Mostrar información de ayuda                            |
+
+### Atajos Especiales
+
+| Atajo                  | Comando Equivalente        | Descripción                                                |
+| ---------------------- | -------------------------- | ---------------------------------------------------------- |
+| `pcu -i`               | `pcu update --interactive` | Modo de actualización interactiva                          |
+| `pcu --security-audit` | `pcu security`             | Ejecutar escaneo de seguridad                              |
+| `pcu --security-fix`   | `pcu security --fix-vulns` | Ejecutar escaneo de seguridad con correcciones automáticas |
+
+---
+
+## `pcu init` - Inicializar Workspace
+
+Inicializar un entorno completo de workspace PNPM con configuración PCU.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu init
+pcu i
+```
+
+```bash {{ title: 'Con Opciones' }}
+pcu init --force --verbose
+pcu init --workspace ./mi-proyecto
+pcu init --no-create-workspace
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="--force" type="boolean">
+    Sobrescribir archivo de configuración existente sin confirmación
+  </Property>
+  <Property name="--full" type="boolean">
+    Generar configuración comprensiva con todas las opciones disponibles
+  </Property>
+  <Property name="--interactive" type="boolean">
+    Lanzar asistente de configuración interactivo con configuración guiada
+  </Property>
+  <Property name="--template" type="enum">
+    Plantilla de configuración: minimal, standard, full, monorepo, enterprise
+  </Property>
+  <Property name="--create-workspace" type="boolean" default="true">
+    Crear estructura de workspace PNPM si falta
+  </Property>
+  <Property name="--no-create-workspace" type="boolean">
+    Omitir creación de estructura de workspace PNPM
+  </Property>
+  <Property name="--packages-dir" type="string" default="packages">
+    Nombre de directorio para paquetes del workspace
+  </Property>
+  <Property name="--package-rules" type="boolean" default="true">
+    Incluir reglas de paquetes comunes en configuración
+  </Property>
+  <Property name="--typescript" type="boolean">
+    Agregar reglas de paquetes y configuraciones específicas de TypeScript
+  </Property>
+  <Property name="--react" type="boolean">
+    Agregar reglas de paquetes del ecosistema React
+  </Property>
+  <Property name="--vue" type="boolean">
+    Agregar reglas de paquetes del ecosistema Vue
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    Directorio del workspace (predeterminado: directorio actual)
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar información detallada y progreso
+  </Property>
+</Properties>
+
+### Plantillas Disponibles
+
+PCU incluye plantillas predefinidas para diferentes tipos de proyectos:
+
+#### Minimal
+
+```json
+{
+  "defaults": {
+    "target": "minor"
+  }
+}
+```
+
+#### Standard
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+#### Full
+
+Configuración comprensiva con todas las características habilitadas.
+
+#### Monorepo
+
+Configuración optimizada para workspaces grandes con múltiples paquetes.
+
+#### Enterprise
+
+Configuración orientada a empresas con características de seguridad y cumplimiento.
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Inicialización Básica' }}
+# Inicializar con configuración por defecto
+pcu init
+
+# Usar plantilla específica
+pcu init --template monorepo
+
+# Modo interactivo
+pcu init --interactive
+```
+
+```bash {{ title: 'Configuración Personalizada' }}
+# Configuración específica de framework
+pcu init --react --typescript
+
+# Con directorio personalizado
+pcu init --packages-dir libs --workspace ./mi-monorepo
+
+# Configuración completa
+pcu init --full --verbose
+```
+
+</CodeGroup>
+
+---
+
+## `pcu check` - Verificar Actualizaciones
+
+Verificar dependencias de catálogo desactualizadas sin realizar actualizaciones.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu check
+pcu chk
+pcu -c
+```
+
+```bash {{ title: 'Con Filtros' }}
+pcu check --include "react*"
+pcu check --exclude "typescript"
+pcu check --catalog default
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="--catalog" type="string">
+    Verificar catálogo específico (predeterminado: todos los catálogos)
+  </Property>
+  <Property name="--include" type="string">
+    Incluir solo paquetes que coincidan con el patrón (separados por coma)
+  </Property>
+  <Property name="--exclude" type="string">
+    Excluir paquetes que coincidan con el patrón (separados por coma)
+  </Property>
+  <Property name="--target" type="enum" default="latest">
+    Objetivo de actualización: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    Incluir versiones de prelanzamiento
+  </Property>
+  <Property name="--dev" type="boolean">
+    Verificar solo dependencias de desarrollo
+  </Property>
+  <Property name="--prod" type="boolean">
+    Verificar solo dependencias de producción
+  </Property>
+  <Property name="--outdated-only" type="boolean">
+    Mostrar solo paquetes desactualizados
+  </Property>
+  <Property name="--limit" type="number">
+    Limitar número de paquetes mostrados
+  </Property>
+  <Property name="--sort" type="enum" default="name">
+    Ordenar por: name, current, latest, age, severity
+  </Property>
+  <Property name="--security" type="boolean">
+    Verificar solo paquetes con vulnerabilidades de seguridad
+  </Property>
+  <Property name="--dry-run" type="boolean">
+    Mostrar qué se verificaría sin ejecutar verificaciones
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, csv, minimal
+  </Property>
+  <Property name="-o, --output" type="string">
+    Escribir salida a archivo
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar información detallada incluyendo notas de lanzamiento
+  </Property>
+  <Property name="--no-color" type="boolean">
+    Deshabilitar salida a color
+  </Property>
+</Properties>
+
+### Formatos de Salida
+
+#### Table (Predeterminado)
+
+```
+┌─────────────────┬─────────┬─────────┬──────────┬────────────┐
+│ Package         │ Current │ Latest  │ Type     │ Catalog    │
+├─────────────────┼─────────┼─────────┼──────────┼────────────┤
+│ react           │ 18.2.0  │ 18.3.1  │ minor    │ default    │
+│ typescript      │ 5.0.4   │ 5.2.2   │ minor    │ default    │
+└─────────────────┴─────────┴─────────┴──────────┴────────────┘
+```
+
+#### JSON
+
+```json
+{
+  "packages": [
+    {
+      "name": "react",
+      "current": "18.2.0",
+      "latest": "18.3.1",
+      "type": "minor",
+      "catalog": "default"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "outdated": 1
+  }
+}
+```
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Verificaciones Básicas' }}
+# Verificar todos los paquetes
+pcu check
+
+# Solo paquetes desactualizados
+pcu check --outdated-only
+
+# Con límite
+pcu check --limit 10
+```
+
+```bash {{ title: 'Filtrado' }}
+# Verificar solo React
+pcu check --include "react*"
+
+# Excluir tipos TypeScript
+pcu check --exclude "@types/*"
+
+# Solo dependencias de producción
+pcu check --prod
+```
+
+```bash {{ title: 'Diferentes Formatos' }}
+# Salida JSON
+pcu check --format json
+
+# Guardar en archivo
+pcu check --output dependencies.json
+
+# CSV para análisis
+pcu check --format csv --output report.csv
+```
+
+</CodeGroup>
+
+---
+
+## `pcu update` - Actualizar Dependencias
+
+Actualizar dependencias de catálogo a versiones más nuevas.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu update
+pcu u
+pcu -u
+```
+
+```bash {{ title: 'Modo Interactivo' }}
+pcu update --interactive
+pcu -i
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="--catalog" type="string">
+    Actualizar catálogo específico
+  </Property>
+  <Property name="--include" type="string">
+    Incluir solo paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--exclude" type="string">
+    Excluir paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--target" type="enum" default="latest">
+    Objetivo de actualización: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--interactive" type="boolean">
+    Modo interactivo para seleccionar paquetes
+  </Property>
+  <Property name="--dry-run" type="boolean">
+    Mostrar qué se actualizaría sin realizar cambios
+  </Property>
+  <Property name="--force" type="boolean">
+    Actualizar sin confirmación
+  </Property>
+  <Property name="--create-backup" type="boolean">
+    Crear respaldo antes de actualizar
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    Incluir versiones de prelanzamiento
+  </Property>
+  <Property name="--dev" type="boolean">
+    Actualizar solo dependencias de desarrollo
+  </Property>
+  <Property name="--prod" type="boolean">
+    Actualizar solo dependencias de producción
+  </Property>
+  <Property name="--workspace" type="string">
+    Actualizar paquetes específicos del workspace
+  </Property>
+  <Property name="--concurrency" type="number" default="5">
+    Número de actualizaciones concurrentes
+  </Property>
+  <Property name="--timeout" type="number" default="30000">
+    Timeout para operaciones de red (ms)
+  </Property>
+  <Property name="--ignore-scripts" type="boolean">
+    Omitir scripts de instalación
+  </Property>
+  <Property name="--skip-install" type="boolean">
+    Solo actualizar catálogos, omitir instalación de paquetes
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, minimal
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar información detallada del progreso
+  </Property>
+</Properties>
+
+### Targets de Actualización
+
+<Properties>
+  <Property name="latest" type="string">
+    Última versión estable disponible
+  </Property>
+  <Property name="greatest" type="string">
+    Versión más alta disponible (incluyendo prereleases si se especifica)
+  </Property>
+  <Property name="minor" type="string">
+    Última versión minor compatible
+  </Property>
+  <Property name="patch" type="string">
+    Última versión patch compatible
+  </Property>
+  <Property name="newest" type="string">
+    Versión más nueva independientemente de restricciones semver
+  </Property>
+</Properties>
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Actualizaciones Básicas' }}
+# Actualizar todos los paquetes
+pcu update
+
+# Solo actualizaciones minor
+pcu update --target minor
+
+# Con respaldo
+pcu update --create-backup
+```
+
+```bash {{ title: 'Actualizaciones Selectivas' }}
+# Modo interactivo
+pcu update --interactive
+
+# Solo React ecosystem
+pcu update --include "react*"
+
+# Excluir tipos TypeScript
+pcu update --exclude "@types/*"
+```
+
+```bash {{ title: 'Opciones Avanzadas' }}
+# Previsualizar cambios
+pcu update --dry-run
+
+# Actualización forzada
+pcu update --force --target latest
+
+# Solo catálogo específico
+pcu update --catalog default
+```
+
+</CodeGroup>
+
+### Modo Interactivo
+
+El modo interactivo permite seleccionar manualmente qué paquetes actualizar:
+
+```bash
+pcu update --interactive
+```
+
+Características del modo interactivo:
+
+- ✅ Selección individual de paquetes
+- 🎯 Selección de versiones específicas
+- 📊 Vista previa de impacto de cambios
+- 🔒 Creación automática de respaldos
+- 📝 Notas de lanzamiento en línea
+
+---
+
+## `pcu analyze` - Analizar Impacto
+
+Analizar el impacto de actualizar dependencias específicas.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu analyze [catalog] [package] [version]
+pcu a default react 18.3.0
+```
+
+```bash {{ title: 'Análisis Múltiple' }}
+pcu analyze --include "react*"
+pcu analyze --workspace apps/web
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="catalog" type="string" required>
+    Nombre del catálogo a analizar
+  </Property>
+  <Property name="package" type="string">
+    Paquete específico a analizar
+  </Property>
+  <Property name="version" type="string">
+    Versión específica a analizar
+  </Property>
+  <Property name="--include" type="string">
+    Incluir paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--exclude" type="string">
+    Excluir paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--workspace" type="string">
+    Analizar impacto en workspace específico
+  </Property>
+  <Property name="--depth" type="number" default="3">
+    Profundidad de análisis de dependencias
+  </Property>
+  <Property name="--show-breaking" type="boolean">
+    Mostrar cambios potencialmente disruptivos
+  </Property>
+  <Property name="--show-peer-deps" type="boolean">
+    Incluir análisis de peer dependencies
+  </Property>
+  <Property name="--security-impact" type="boolean">
+    Incluir análisis de impacto de seguridad
+  </Property>
+  <Property name="--performance-impact" type="boolean">
+    Estimar impacto en rendimiento (tamaño del bundle)
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, graph
+  </Property>
+  <Property name="-o, --output" type="string">
+    Guardar análisis en archivo
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar análisis detallado
+  </Property>
+</Properties>
+
+### Tipos de Análisis
+
+#### Análisis de Dependencias
+
+- Dependencias directas e indirectas afectadas
+- Conflictos potenciales de versiones
+- Dependencias circulares
+
+#### Análisis de Compatibilidad
+
+- Cambios disruptivos detectados
+- Compatibilidad de peer dependencies
+- Requisitos de versión de Node.js
+
+#### Análisis de Seguridad
+
+- Vulnerabilidades corregidas
+- Nuevas vulnerabilidades introducidas
+- Impacto en superficie de ataque
+
+#### Análisis de Rendimiento
+
+- Cambios en tamaño del bundle
+- Impacto en tiempo de compilación
+- Dependencias agregadas/removidas
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Análisis Básico' }}
+# Analizar actualización específica
+pcu analyze default react 18.3.0
+
+# Analizar multiple paquetes
+pcu analyze default --include "react*"
+```
+
+```bash {{ title: 'Análisis Detallado' }}
+# Con información de seguridad
+pcu analyze default react --security-impact
+
+# Con análisis de rendimiento
+pcu analyze default --performance-impact
+
+# Análisis comprensivo
+pcu analyze default react --show-breaking --show-peer-deps --verbose
+```
+
+</CodeGroup>
+
+---
+
+## `pcu workspace` - Información del Workspace
+
+Mostrar información detallada sobre la configuración del workspace y validación.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu workspace
+pcu w
+pcu -s
+```
+
+```bash {{ title: 'Con Validación' }}
+pcu workspace --validate
+pcu workspace --check-config
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="--validate" type="boolean">
+    Ejecutar validación comprensiva del workspace
+  </Property>
+  <Property name="--check-config" type="boolean">
+    Validar archivo de configuración PCU
+  </Property>
+  <Property name="--show-packages" type="boolean">
+    Mostrar todos los paquetes del workspace
+  </Property>
+  <Property name="--show-catalogs" type="boolean">
+    Mostrar información detallada de catálogos
+  </Property>
+  <Property name="--show-dependencies" type="boolean">
+    Mostrar árbol de dependencias
+  </Property>
+  <Property name="--workspace-path" type="string">
+    Ruta específica del workspace a inspeccionar
+  </Property>
+  <Property name="--depth" type="number" default="2">
+    Profundidad para mostrar dependencias
+  </Property>
+  <Property name="--include-dev" type="boolean">
+    Incluir dependencias de desarrollo
+  </Property>
+  <Property name="--check-unused" type="boolean">
+    Verificar dependencias no utilizadas en catálogos
+  </Property>
+  <Property name="--fix-issues" type="boolean">
+    Intentar corregir problemas detectados automáticamente
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, tree
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar información detallada
+  </Property>
+</Properties>
+
+### Información Mostrada
+
+#### Información del Workspace
+
+- Ruta del workspace
+- Configuración PNPM
+- Paquetes descubiertos
+- Estructura de directorios
+
+#### Información de Catálogos
+
+- Catálogos disponibles
+- Dependencias por catálogo
+- Conflictos de versiones
+- Dependencias no utilizadas
+
+#### Validación
+
+- Configuración PCU válida
+- Consistencia de catálogos
+- Dependencias faltantes
+- Problemas de estructura
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Información Básica' }}
+# Mostrar información del workspace
+pcu workspace
+
+# Con validación
+pcu workspace --validate
+```
+
+```bash {{ title: 'Información Detallada' }}
+# Mostrar todos los paquetes
+pcu workspace --show-packages --verbose
+
+# Información de catálogos
+pcu workspace --show-catalogs --show-dependencies
+
+# Verificar problemas
+pcu workspace --check-unused --fix-issues
+```
+
+</CodeGroup>
+
+---
+
+## `pcu theme` - Configurar Temas
+
+Configurar temas de color y configuraciones de interfaz de usuario.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu theme
+pcu t
+pcu -t
+```
+
+```bash {{ title: 'Configurar Tema' }}
+pcu theme set modern
+pcu theme --list
+pcu theme --reset
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="set <theme>" type="string">
+    Establecer tema específico: default, modern, minimal, neon
+  </Property>
+  <Property name="--list" type="boolean">
+    Listar todos los temas disponibles
+  </Property>
+  <Property name="--preview" type="boolean">
+    Mostrar vista previa de todos los temas
+  </Property>
+  <Property name="--interactive" type="boolean">
+    Selector interactivo de temas
+  </Property>
+  <Property name="--progress-style" type="enum">
+    Estilo de barra de progreso: default, gradient, fancy, minimal, rainbow, neon
+  </Property>
+  <Property name="--color-scheme" type="enum">
+    Esquema de colores: auto, light, dark
+  </Property>
+  <Property name="--animations" type="boolean">
+    Habilitar/deshabilitar animaciones
+  </Property>
+  <Property name="--reset" type="boolean">
+    Restablecer a tema por defecto
+  </Property>
+  <Property name="--global" type="boolean">
+    Aplicar configuración globalmente para el usuario
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar configuración detallada del tema
+  </Property>
+</Properties>
+
+### Temas Disponibles
+
+#### Default
+
+Colores balanceados para uso general:
+
+- 🟦 Azul para información
+- 🟩 Verde para éxito
+- 🟨 Amarillo para advertencias
+- 🟥 Rojo para errores
+
+#### Modern
+
+Colores vibrantes para entornos de desarrollo:
+
+- 🔵 Azul brillante
+- 🟢 Verde neón
+- 🟡 Amarillo vibrante
+- 🔴 Rojo intenso
+
+#### Minimal
+
+Limpio y simple para entornos de producción:
+
+- ⚫ Escala de grises
+- Contraste alto
+- Sin colores de acento
+
+#### Neon
+
+Colores de alto contraste para presentaciones:
+
+- 🌈 Colores fluorescentes
+- Alto contraste
+- Efectos de brillo
+
+### Estilos de Barra de Progreso
+
+- `default` - Barra estándar
+- `gradient` - Colores degradados
+- `fancy` - Elementos decorativos
+- `minimal` - Indicador simple
+- `rainbow` - Multicolor
+- `neon` - Alto contraste
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Gestión de Temas' }}
+# Listar temas disponibles
+pcu theme --list
+
+# Selector interactivo
+pcu theme --interactive
+
+# Vista previa de temas
+pcu theme --preview
+```
+
+```bash {{ title: 'Configuración Específica' }}
+# Establecer tema modern
+pcu theme set modern
+
+# Configurar barra de progreso
+pcu theme --progress-style gradient
+
+# Esquema de colores oscuro
+pcu theme --color-scheme dark
+```
+
+</CodeGroup>
+
+---
+
+## `pcu security` - Escaneo de Seguridad
+
+Escanear vulnerabilidades de seguridad y aplicar correcciones.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu security
+pcu sec
+```
+
+```bash {{ title: 'Con Correcciones' }}
+pcu security --fix-vulns
+pcu security --auto-fix
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="--fix-vulns" type="boolean">
+    Automáticamente corregir vulnerabilidades cuando sea posible
+  </Property>
+  <Property name="--auto-fix" type="boolean">
+    Modo de corrección automática sin confirmación
+  </Property>
+  <Property name="--severity" type="enum">
+    Filtrar por severidad: low, moderate, high, critical
+  </Property>
+  <Property name="--include" type="string">
+    Incluir solo paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--exclude" type="string">
+    Excluir paquetes que coincidan con el patrón
+  </Property>
+  <Property name="--catalog" type="string">
+    Escanear catálogo específico
+  </Property>
+  <Property name="--workspace" type="string">
+    Escanear workspace específico
+  </Property>
+  <Property name="--ignore-dev" type="boolean">
+    Ignorar vulnerabilidades en dependencias de desarrollo
+  </Property>
+  <Property name="--report" type="boolean">
+    Generar reporte detallado de seguridad
+  </Property>
+  <Property name="--report-format" type="enum" default="json">
+    Formato del reporte: json, csv, html, sarif
+  </Property>
+  <Property name="--allow-major" type="boolean">
+    Permitir actualizaciones major para correcciones de seguridad
+  </Property>
+  <Property name="--create-backup" type="boolean">
+    Crear respaldo antes de aplicar correcciones
+  </Property>
+  <Property name="--timeout" type="number" default="60000">
+    Timeout para escaneo de seguridad (ms)
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Formato de salida: table, json, yaml, csv
+  </Property>
+  <Property name="-o, --output" type="string">
+    Guardar reporte en archivo
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Mostrar información detallada de vulnerabilidades
+  </Property>
+</Properties>
+
+### Niveles de Severidad
+
+<Properties>
+  <Property name="low" type="string">
+    Vulnerabilidades de bajo riesgo
+  </Property>
+  <Property name="moderate" type="string">
+    Vulnerabilidades de riesgo moderado
+  </Property>
+  <Property name="high" type="string">
+    Vulnerabilidades de alto riesgo
+  </Property>
+  <Property name="critical" type="string">
+    Vulnerabilidades críticas que requieren atención inmediata
+  </Property>
+</Properties>
+
+### Estrategias de Corrección
+
+#### Automática
+
+- Actualizar a versión corregida más cercana
+- Preferir actualizaciones patch/minor
+- Aplicar correcciones con bajo riesgo
+
+#### Manual
+
+- Mostrar opciones de corrección disponibles
+- Permitir selección de versión específica
+- Requerir confirmación para cambios major
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Escaneo Básico' }}
+# Escanear todas las vulnerabilidades
+pcu security
+
+# Solo vulnerabilidades críticas
+pcu security --severity critical
+
+# Con corrección automática
+pcu security --auto-fix
+```
+
+```bash {{ title: 'Reportes' }}
+# Generar reporte JSON
+pcu security --report --output security-report.json
+
+# Reporte HTML
+pcu security --report --report-format html --output report.html
+
+# Formato SARIF para CI/CD
+pcu security --report --report-format sarif
+```
+
+</CodeGroup>
+
+---
+
+## `pcu help` - Ayuda
+
+Mostrar información de ayuda para comandos y opciones.
+
+<CodeGroup>
+
+```bash {{ title: 'Uso Básico' }}
+pcu help
+pcu h
+pcu -h
+pcu --help
+```
+
+```bash {{ title: 'Ayuda de Comando Específico' }}
+pcu help init
+pcu help update
+pcu init --help
+```
+
+</CodeGroup>
+
+### Opciones
+
+<Properties>
+  <Property name="command" type="string">
+    Mostrar ayuda para comando específico
+  </Property>
+  <Property name="--examples" type="boolean">
+    Mostrar ejemplos de uso
+  </Property>
+  <Property name="--all" type="boolean">
+    Mostrar ayuda para todos los comandos
+  </Property>
+  <Property name="--format" type="enum" default="text">
+    Formato de salida: text, markdown, json
+  </Property>
+</Properties>
+
+### Información de Ayuda
+
+#### Información General
+
+- Versión de PCU
+- Información de uso básico
+- Lista de comandos disponibles
+- Opciones globales
+
+#### Ayuda de Comando Específico
+
+- Descripción del comando
+- Opciones disponibles
+- Ejemplos de uso
+- Comandos relacionados
+
+### Ejemplos
+
+<CodeGroup>
+
+```bash {{ title: 'Ayuda General' }}
+# Ayuda básica
+pcu help
+
+# Todos los comandos
+pcu help --all
+
+# Con ejemplos
+pcu help --examples
+```
+
+```bash {{ title: 'Ayuda Específica' }}
+# Ayuda para init
+pcu help init
+
+# Ayuda para update con ejemplos
+pcu help update --examples
+```
+
+</CodeGroup>
+
+---
+
+## Opciones Globales
+
+Estas opciones están disponibles para todos los comandos:
+
+<Properties>
+  <Property name="-w, --workspace" type="string">
+    Directorio del workspace (predeterminado: directorio actual)
+  </Property>
+  <Property name="-c, --config" type="string">
+    Archivo de configuración personalizado
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Habilitar salida detallada
+  </Property>
+  <Property name="--silent" type="boolean">
+    Suprimir toda la salida excepto errores
+  </Property>
+  <Property name="--no-color" type="boolean">
+    Deshabilitar salida a color
+  </Property>
+  <Property name="--no-progress" type="boolean">
+    Deshabilitar barras de progreso
+  </Property>
+  <Property name="--no-cache" type="boolean">
+    Deshabilitar caching para esta ejecución
+  </Property>
+  <Property name="--timeout" type="number" default="30000">
+    Timeout global para operaciones de red (ms)
+  </Property>
+  <Property name="--concurrency" type="number" default="5">
+    Número máximo de operaciones concurrentes
+  </Property>
+  <Property name="--registry" type="string">
+    Registro NPM personalizado
+  </Property>
+  <Property name="--dry-run" type="boolean">
+    Mostrar qué se haría sin ejecutar cambios
+  </Property>
+  <Property name="--help" type="boolean">
+    Mostrar información de ayuda
+  </Property>
+  <Property name="--version" type="boolean">
+    Mostrar versión de PCU
+  </Property>
+</Properties>
+
+---
+
+## Variables de Entorno
+
+PCU respeta las siguientes variables de entorno:
+
+<Properties>
+  <Property name="PCU_WORKSPACE" type="string">
+    Directorio por defecto del workspace
+  </Property>
+  <Property name="PCU_CONFIG" type="string">
+    Archivo de configuración por defecto
+  </Property>
+  <Property name="PCU_REGISTRY" type="string">
+    Registro NPM por defecto
+  </Property>
+  <Property name="PCU_TIMEOUT" type="number">
+    Timeout por defecto para operaciones de red
+  </Property>
+  <Property name="PCU_CONCURRENCY" type="number">
+    Concurrencia por defecto
+  </Property>
+  <Property name="PCU_CACHE_ENABLED" type="boolean">
+    Habilitar/deshabilitar caching
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string">
+    Directorio de cache personalizado
+  </Property>
+  <Property name="PCU_VERBOSE" type="boolean">
+    Habilitar modo verbose por defecto
+  </Property>
+  <Property name="PCU_NO_COLOR" type="boolean">
+    Deshabilitar colores por defecto
+  </Property>
+  <Property name="PCU_PROGRESS_STYLE" type="string">
+    Estilo de barra de progreso por defecto
+  </Property>
+</Properties>
+
+---
+
+## Códigos de Salida
+
+PCU usa los siguientes códigos de salida:
+
+<Properties>
+  <Property name="0" type="number">
+    Éxito
+  </Property>
+  <Property name="1" type="number">
+    Error general
+  </Property>
+  <Property name="2" type="number">
+    Error de configuración
+  </Property>
+  <Property name="3" type="number">
+    Error de workspace
+  </Property>
+  <Property name="4" type="number">
+    Error de red/registro
+  </Property>
+  <Property name="5" type="number">
+    Vulnerabilidades de seguridad encontradas
+  </Property>
+  <Property name="6" type="number">
+    Actualizaciones disponibles (cuando se usa --fail-on-outdated)
+  </Property>
+  <Property name="130" type="number">
+    Interrumpido por usuario (Ctrl+C)
+  </Property>
+</Properties>
+
+---
+
+## Patrones de Uso Común
+
+### Flujo de Trabajo Diario
+
+```bash
+# 1. Verificar actualizaciones
+pcu check --outdated-only
+
+# 2. Actualizar dependencias patch
+pcu update --target patch
+
+# 3. Verificar seguridad
+pcu security --severity high
+```
+
+### Flujo de Trabajo Semanal
+
+```bash
+# 1. Verificación comprensiva
+pcu check --verbose
+
+# 2. Actualización interactiva
+pcu update --interactive --create-backup
+
+# 3. Análisis de impacto
+pcu analyze default --include "react*"
+```
+
+### Flujo de Trabajo de Release
+
+```bash
+# 1. Verificar workspace
+pcu workspace --validate
+
+# 2. Escaneo de seguridad
+pcu security --report --output security-report.json
+
+# 3. Actualizaciones finales
+pcu update --target minor --force
+```
+
+### Configuración de CI/CD
+
+```bash
+# Variables de entorno
+export PCU_NO_COLOR=true
+export PCU_TIMEOUT=60000
+export PCU_CONCURRENCY=10
+
+# Verificaciones automatizadas
+pcu check --format json --output check-results.json
+pcu security --severity critical --format json
+
+# Fallar en problemas
+if [ $? -ne 0 ]; then
+  echo "Problemas de dependencias encontrados"
+  exit 1
+fi
+```

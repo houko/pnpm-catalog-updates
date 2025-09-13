@@ -1,0 +1,828 @@
+export const metadata = {
+  title: 'マイグレーションガイド',
+  description:
+    '他の依存関係管理ツールから PCU への移行、pnpm カタログ依存関係の効果的な移行をチームでサポート。',
+};
+
+# マイグレーションガイド
+
+既存の依存関係管理ソリューションから PCU への移行方法を学び、チームが pnpm カタログ依存関係への移行をサポートします。{{ className: 'lead' }}
+
+## マイグレーション概要
+
+PCU はカタログ依存関係を使用する pnpm ワークスペース専用に設計されています。現在他のツールやパッケージマネージャーを使用している場合、このガイドがスムーズな移行を支援します。
+
+### 開始前に
+
+**PCU の前提条件：**
+
+- パッケージマネージャーとしての pnpm（バージョン 8.0.0+）
+- ワークスペース設定（`pnpm-workspace.yaml`）
+- ワークスペース内のカタログ依存関係
+
+**マイグレーション決定マトリクス：**
+
+| 現在のツール             | マイグレーション複雑度 | メリット                               | 考慮事項                         |
+| ------------------------ | ---------------------- | -------------------------------------- | -------------------------------- |
+| npm-check-updates        | 低                     | より良い pnpm 統合、カタログサポート   | pnpm ワークスペース設定が必要    |
+| 手動更新                 | 低                     | 自動化、一貫性、セキュリティスキャン   | 初期設定作業                     |
+| Renovate                 | 中                     | 手動制御、ワークスペース固有機能       | 自動化の喪失                     |
+| Dependabot               | 中                     | 強化されたカタログ管理                 | GitHub 固有機能                  |
+| yarn upgrade-interactive | 高                     | カタログの利点、より良いパフォーマンス | 完全なパッケージマネージャー変更 |
+
+## npm-check-updates からの移行
+
+### 現在の設定分析
+
+現在 `npm-check-updates` (ncu) を使用している場合、以下のようなスクリプトがあるかもしれません：
+
+```json
+{
+  "scripts": {
+    "deps:check": "ncu",
+    "deps:update": "ncu -u",
+    "deps:interactive": "ncu -i"
+  }
+}
+```
+
+### マイグレーション手順
+
+**1. pnpm をインストールしてワークスペースを設定**
+
+```bash
+# pnpm をグローバルインストール
+npm install -g pnpm
+
+# pnpm ワークスペースを初期化
+echo 'packages:\n  - "packages/*"' > pnpm-workspace.yaml
+
+# pnpm で依存関係をインストール
+pnpm install
+```
+
+**2. カタログ依存関係に変換**
+
+`pnpm-workspace.yaml` でカタログエントリを作成：
+
+```yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  # 共通依存関係を抽出
+  react: ^18.2.0
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+  prettier: ^3.0.0
+
+  # 開発依存関係
+  '@types/node': ^20.5.0
+  '@types/react': ^18.2.0
+```
+
+**3. パッケージファイルを更新**
+
+`package.json` ファイルをカタログ参照を使用するように変換：
+
+<CodeGroup>
+
+```json {{ title: '変更前（従来）' }}
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```json {{ title: '変更後（カタログ）' }}
+{
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+**4. PCU をインストールして設定**
+
+```bash
+# PCU をインストール
+pnpm add -g pnpm-catalog-updates
+
+# 初期設定を作成
+pcu init
+
+# PCU 機能をテスト
+pcu check
+```
+
+**5. スクリプトを更新**
+
+ncu スクリプトを PCU の同等コマンドに置き換え：
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update": "pcu update --interactive",
+    "deps:security": "pcu security",
+    "deps:analyze": "pcu analyze default"
+  }
+}
+```
+
+### 設定マイグレーション
+
+**ncu 設定 → PCU 設定：**
+
+<CodeGroup>
+
+```json {{ title: '.ncurc.json（変更前）' }}
+{
+  "upgrade": true,
+  "interactive": true,
+  "target": "minor",
+  "reject": ["react", "react-dom"],
+  "timeout": 60000
+}
+```
+
+```json {{ title: '.pcurc.json（変更後）' }}
+{
+  "target": "minor",
+  "timeout": 60000,
+  "requireConfirmation": true,
+  "exclude": ["react", "react-dom"],
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## Renovate からの移行
+
+### 違いの理解
+
+**Renovate vs PCU：**
+
+- **Renovate**：自動 PR 作成、多言語サポート、幅広い設定
+- **PCU**：手動制御、pnpm 専用、カタログ重視、セキュリティ統合
+
+### マイグレーション戦略
+
+**1. Renovate 設定をエクスポート**
+
+現在の `renovate.json` を分析：
+
+```json
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "minor": {
+        "automerge": true
+      }
+    },
+    {
+      "matchPackageNames": ["react", "react-dom"],
+      "groupName": "React",
+      "schedule": ["before 10am on monday"]
+    }
+  ],
+  "timezone": "America/New_York",
+  "schedule": ["before 10am every weekday"]
+}
+```
+
+**2. PCU 設定に変換**
+
+Renovate ルールを PCU の同等機能にマッピング：
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "groupUpdate": true
+    }
+  ],
+  "schedule": {
+    "enabled": false
+  }
+}
+```
+
+**3. 手動ワークフローを設定**
+
+自動 PR を予定された手動レビューに置き換え：
+
+```bash
+# 週次依存関係レビュー
+pcu check --format json > weekly-deps-$(date +%Y%m%d).json
+
+# セキュリティ更新（即座に）
+pcu security --severity high --require-confirmation
+
+# 定期更新（隔週）
+pcu update --target minor --interactive
+```
+
+**4. チーム移行**
+
+**フェーズ 1：並行実行（2週間）**
+
+- Renovate を有効にしたまま
+- 手動チェック用に PCU を導入
+- チームに PCU コマンドを訓練
+
+**フェーズ 2：PCU 主導（2週間）**
+
+- Renovate PR 作成を無効化
+- すべての更新に PCU を使用
+- レビュープロセスを確立
+
+**フェーズ 3：完全移行**
+
+- Renovate 設定を削除
+- PCU 設定を最適化
+- 新しいワークフローを文書化
+
+### Renovate 機能マッピング
+
+| Renovate 機能    | PCU 同等機能         | 備考                         |
+| ---------------- | -------------------- | ---------------------------- |
+| 自動 PR          | 手動 `pcu update`    | より多くの制御、少ないノイズ |
+| スケジューリング | Cron ジョブ + PCU    | 柔軟なタイミング             |
+| グループ更新     | `--include` パターン | 関連パッケージをグループ化   |
+| 自動マージ       | `autoUpdate: true`   | セキュリティパッケージに限定 |
+| 脆弱性アラート   | `pcu security`       | 統合スキャン                 |
+| 設定プリセット   | パッケージルール     | 再利用可能なパターン         |
+
+## Dependabot からの移行
+
+### GitHub 統合の考慮事項
+
+**複製すべき Dependabot の利点：**
+
+- セキュリティ脆弱性アラート
+- 自動セキュリティ更新
+- GitHub 統合
+- PR 作成と管理
+
+### マイグレーション方法
+
+**1. 現在の Dependabot 設定を監査**
+
+`.github/dependabot.yml` をレビュー：
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'team-leads'
+    allow:
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-patch'
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-minor'
+```
+
+**2. GitHub Actions で PCU を設定**
+
+`.github/workflows/dependencies.yml` を作成：
+
+```yaml
+name: 依存関係管理
+
+on:
+  schedule:
+    - cron: '0 10 * * MON' # 月曜日午前10時
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pnpm を設定
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: PCU をインストール
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: 依存関係をチェック
+        run: |
+          pcu check --format json > dep-check.json
+          pcu security --format json > security-check.json
+
+      - name: 更新用のイシューを作成
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const depCheck = JSON.parse(fs.readFileSync('dep-check.json', 'utf8'));
+
+            if (depCheck.updates.length > 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `週次依存関係更新が利用可能`,
+                body: `${depCheck.updates.length} 個のパッケージに利用可能な更新があります。\n\n更新をレビューして適用するには \`pcu update --interactive\` を実行してください。`
+              });
+            }
+```
+
+**3. セキュリティ統合**
+
+Dependabot のセキュリティ機能を置き換え：
+
+```bash
+# 日次セキュリティチェック
+pcu security --severity critical --auto-fix
+
+# 週次包括スキャン
+pcu security --comprehensive --format json > security-report.json
+```
+
+**4. 手動レビュープロセス**
+
+人間中心のワークフローを確立：
+
+```bash
+# 週次チームレビュー
+pcu check --limit 20 --require-confirmation
+
+# 月次メジャー更新
+pcu check --target latest --interactive
+
+# 即座のセキュリティ対応
+pcu security --fix-vulns --severity high
+```
+
+## 手動依存関係管理からの移行
+
+### 評価フェーズ
+
+**現在の状態分析：**
+
+1. **頻度**：どのくらいの頻度で依存関係を更新しますか？
+2. **プロセス**：現在の更新ワークフローは何ですか？
+3. **テスト**：更新をどのように検証しますか？
+4. **セキュリティ**：脆弱性をどのように処理しますか？
+
+**一般的な手動パターン：**
+
+<CodeGroup>
+
+```bash {{ title: 'アドホック更新' }}
+# 典型的な手動プロセス
+npm outdated
+npm update package-name
+npm audit
+npm audit fix
+```
+
+```bash {{ title: 'バッチ更新' }}
+# 月次更新ミーティング
+npm outdated > outdated.txt
+# 手動レビューと更新
+npm update
+npm test
+```
+
+</CodeGroup>
+
+### 構造化移行
+
+**フェーズ 1：評価（第1週）**
+
+```bash
+# 評価用に PCU をインストール
+pnpm add -g pnpm-catalog-updates
+
+# 現在の状態を分析
+pcu check --dry-run > current-state.txt
+pcu security > security-state.txt
+
+# 発見を記録
+echo "更新が必要な依存関係: $(grep -c 'outdated' current-state.txt)"
+echo "セキュリティ脆弱性: $(grep -c 'vulnerability' security-state.txt)"
+```
+
+**フェーズ 2：カタログ変換（第2週）**
+
+```bash
+# pnpm ワークスペースに変換
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+
+# 共通依存関係を抽出
+pcu analyze-workspace > catalog-suggestions.json
+
+# 初期カタログを作成
+pcu generate-catalog >> pnpm-workspace.yaml
+```
+
+**フェーズ 3：プロセス統合（第3-4週）**
+
+```json
+{
+  "scripts": {
+    "deps:daily": "pcu security --severity critical",
+    "deps:weekly": "pcu check --limit 10",
+    "deps:monthly": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --comprehensive"
+  }
+}
+```
+
+### 自動化戦略
+
+**段階的自動化：**
+
+1. **手動開始**：すべての更新に確認が必要
+2. **半自動化**：開発依存関係とタイプを自動更新
+3. **インテリジェント自動化**：パッチを自動、マイナーを確認
+4. **フル自動化**：メジャー以外のすべてを自動更新
+
+**設定の進化：**
+
+<CodeGroup>
+
+```json {{ title: 'フェーズ 1：手動' }}
+{
+  "target": "patch",
+  "requireConfirmation": true,
+  "autoUpdate": false
+}
+```
+
+```json {{ title: 'フェーズ 2：半自動' }}
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "packageRules": [
+    {
+      "patterns": ["@types/*", "eslint*"],
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+```json {{ title: 'フェーズ 3：インテリジェント自動' }}
+{
+  "target": "minor",
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "target": "patch",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react*", "vue*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## 非 pnpm プロジェクトの変換
+
+### npm プロジェクトから
+
+**1. 依存関係分析**
+
+```bash
+# 現在の状態をバックアップ
+cp package.json package.json.backup
+cp package-lock.json package-lock.json.backup
+
+# 依存関係を分析
+npm ls --depth=0 > npm-deps.txt
+```
+
+**2. pnpm マイグレーション**
+
+```bash
+# pnpm をインストール
+npm install -g pnpm
+
+# npm アーティファクトを削除
+rm -rf node_modules package-lock.json
+
+# pnpm でインストール
+pnpm install
+
+# ワークスペース構造を作成
+mkdir -p packages apps
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+```
+
+**3. カタログ抽出**
+
+```bash
+# PCU をインストール
+pnpm add -g pnpm-catalog-updates
+
+# package.json からカタログを生成
+pcu extract-catalog package.json >> pnpm-workspace.yaml
+
+# package.json をカタログ使用に変換
+pcu convert-to-catalog package.json
+```
+
+### Yarn プロジェクトから
+
+**1. ワークスペース変換**
+
+<CodeGroup>
+
+```json {{ title: 'yarn ワークスペース（変更前）' }}
+{
+  "name": "my-monorepo",
+  "workspaces": ["packages/*", "apps/*"],
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```yaml {{ title: 'pnpm ワークスペース（変更後）' }}
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+```
+
+</CodeGroup>
+
+**2. マイグレーションコマンド**
+
+```bash
+# yarn アーティファクトを削除
+rm -rf node_modules yarn.lock
+
+# yarn.lock を pnpm-lock.yaml に変換
+pnpm import
+
+# 依存関係をインストール
+pnpm install
+
+# PCU を設定
+pnpm add -g pnpm-catalog-updates
+pcu init
+```
+
+### モノレポ変換
+
+**大規模モノレポ戦略：**
+
+```bash
+# フェーズ 1：構造分析
+find . -name "package.json" -not -path "./node_modules/*" | head -20
+
+# フェーズ 2：ワークスペース作成
+cat > pnpm-workspace.yaml << EOF
+packages:
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'packages/services/*'
+  - 'apps/*'
+  - 'tools/*'
+EOF
+
+# フェーズ 3：共通依存関係を抽出
+pcu analyze-monorepo > common-deps.json
+
+# フェーズ 4：カタログを生成
+pcu generate-multi-catalog common-deps.json >> pnpm-workspace.yaml
+```
+
+## チーム移行戦略
+
+### 変更管理
+
+**1. コミュニケーション計画**
+
+- **第 -2 週**：移行計画を発表
+- **第 -1 週**：トレーニングセッションと文書
+- **第 0 週**：並行実行開始
+- **第 2 週**：完全移行
+- **第 4 週**：プロセス最適化
+
+**2. トレーニングプログラム**
+
+**開発者トレーニングセッション（1時間）：**
+
+```bash
+# 基本 PCU コマンド
+pcu check                    # 更新をチェック
+pcu update --interactive     # インタラクティブ更新
+pcu security                # セキュリティスキャン
+
+# 高度な機能
+pcu analyze default react    # 影響分析
+pcu --help                  # 完全なコマンドリファレンス
+```
+
+**チームリーダートレーニング（2時間）：**
+
+- 設定管理
+- セキュリティポリシー統合
+- パフォーマンス最適化
+- 監視とレポート
+
+### ロールアウト戦略
+
+**パイロットプロジェクトアプローチ：**
+
+1. **パイロットプロジェクトを選択**：代表的だが重要でないプロジェクトを選択
+2. **パイロットを移行**：パイロットチームと移行を完了
+3. **教訓を学ぶ**：問題と解決策を文書化
+4. **スケールアウト**：他のプロジェクトに学んだことを適用
+
+**リスク軽減：**
+
+```bash
+# 移行前のバックアップ戦略
+git branch backup-pre-pcu-migration
+tar -czf dependencies-backup-$(date +%Y%m%d).tar.gz package.json pnpm-workspace.yaml
+
+# ロールバック計画
+git checkout backup-pre-pcu-migration
+npm install  # または以前のパッケージマネージャー
+```
+
+### プロセス統合
+
+**コードレビュー統合：**
+
+```yaml
+# .github/workflows/pr-check.yml
+name: PR 依存関係チェック
+
+on: pull_request
+
+jobs:
+  deps-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PCU をインストール
+        run: pnpm add -g pnpm-catalog-updates
+      - name: 依存関係をチェック
+        run: |
+          pcu check --format json > pr-deps.json
+          if grep -q "outdated\|vulnerable" pr-deps.json; then
+            echo "::warning::古いまたは脆弱な依存関係が検出されました"
+          fi
+```
+
+**リリース統合：**
+
+```bash
+# リリース前依存関係チェック
+pcu security --severity critical --exit-on-error
+pcu check --target latest --limit 5
+
+# リリース後依存関係更新
+pcu update --target patch --auto-update
+```
+
+## 検証とテスト
+
+### マイグレーション検証
+
+**1. 機能テスト**
+
+```bash
+# 基本機能をテスト
+pnpm install
+pnpm run build
+pnpm run test
+
+# PCU 機能をテスト
+pcu check --dry-run
+pcu security --dry-run
+```
+
+**2. パフォーマンス比較**
+
+```bash
+# 移行前のベンチマーク
+time npm install
+time npm run build
+
+# 移行後のベンチマーク
+time pnpm install
+time pnpm run build
+time pcu check
+```
+
+**3. 依存関係整合性**
+
+```bash
+# 依存関係ツリーを比較
+npm ls --depth=1 > npm-tree.txt
+pnpm ls --depth=1 > pnpm-tree.txt
+diff npm-tree.txt pnpm-tree.txt
+```
+
+### 成功指標
+
+**主要パフォーマンス指標：**
+
+- **インストール速度**：pnpm install vs npm install
+- **更新頻度**：移行前後の月次更新回数
+- **セキュリティ応答**：脆弱性修正時間
+- **開発者満足度**：チーム調査結果
+- **ビルドパフォーマンス**：CI/CD 実行時間
+
+**監視ダッシュボード：**
+
+```bash
+# 週次メトリクス収集
+pcu metrics --output weekly-metrics-$(date +%Y%m%d).json
+```
+
+---
+
+## マイグレーションチェックリスト
+
+### 移行前
+
+1. 現在の依存関係管理アプローチを評価
+2. 隔離環境で pnpm をインストールしてテスト
+3. ワークスペース構造を計画
+4. カタログの共通依存関係を特定
+5. 現在の設定をバックアップ
+6. コアチームメンバーをトレーニング
+
+### 移行段階
+
+1. pnpm ワークスペース構造に変換
+2. 依存関係をカタログに抽出
+3. カタログ参照を使用するように package.json ファイルを更新
+4. PCU をインストールして設定
+5. パイロットプロジェクトで機能をテスト
+6. CI/CD パイプラインを更新
+7. 新しいプロセスを文書化
+
+### 移行後
+
+1. すべての機能が正常に動作することを検証
+2. 残りのチームメンバーをトレーニング
+3. PCU 設定を最適化
+4. 定期メンテナンススケジュールを確立
+5. 成功指標を監視・測定
+6. フィードバックを収集して反復
+
+### トラブルシューティング
+
+1. 一般的な移行問題を文書化
+2. ロールバック手順を作成
+3. サポートチャンネルを確立
+4. 定期的なヘルスチェックと最適化

@@ -1,0 +1,1518 @@
+export const metadata = {
+  title: 'Référence des commandes',
+  description:
+    "Guide de référence complet pour toutes les commandes, options et modèles d'utilisation de pnpm-catalog-updates.",
+};
+
+# Référence des commandes
+
+Référence complète pour toutes les commandes et options PCU. Apprenez chaque commande, drapeau et option de configuration disponible. {{ className: 'lead' }}
+
+## Aperçu des commandes
+
+PCU fournit plusieurs commandes principales avec des noms complets et des raccourcis pratiques :
+
+| Commande complète | Raccourcis et alias | Description                                                    |
+| ----------------- | ------------------- | -------------------------------------------------------------- |
+| `pcu init`        | `pcu i`             | Initialiser l'espace de travail PNPM et la configuration PCU   |
+| `pcu check`       | `pcu chk`, `pcu -c` | Vérifier les dépendances de catalogue obsolètes                |
+| `pcu update`      | `pcu u`, `pcu -u`   | Mettre à jour les dépendances de catalogue                     |
+| `pcu analyze`     | `pcu a`, `pcu -a`   | Analyser l'impact des mises à jour de dépendances              |
+| `pcu workspace`   | `pcu w`, `pcu -s`   | Afficher les informations et validation de l'espace de travail |
+| `pcu theme`       | `pcu t`, `pcu -t`   | Configurer les thèmes couleur et paramètres d'interface        |
+| `pcu security`    | `pcu sec`           | Analyse et corrections des vulnérabilités de sécurité          |
+| `pcu help`        | `pcu h`, `pcu -h`   | Afficher l'aide                                                |
+
+### Raccourcis spéciaux
+
+| Raccourci              | Commande équivalente       | Description                                                  |
+| ---------------------- | -------------------------- | ------------------------------------------------------------ |
+| `pcu -i`               | `pcu update --interactive` | Mode de mise à jour interactive                              |
+| `pcu --security-audit` | `pcu security`             | Exécuter l'analyse de sécurité                               |
+| `pcu --security-fix`   | `pcu security --fix-vulns` | Exécuter l'analyse de sécurité avec corrections automatiques |
+
+---
+
+## `pcu init` - Initialiser l'espace de travail
+
+Initialiser un environnement d'espace de travail PNPM complet avec la configuration PCU.
+
+<CodeGroup>
+
+```bash {{ title: 'Usage de base' }}
+pcu init
+pcu i
+```
+
+```bash {{ title: 'Avec options' }}
+pcu init --force --verbose
+pcu init --workspace ./my-project
+pcu init --no-create-workspace
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="--force" type="boolean">
+    Écraser le fichier de configuration existant sans confirmation
+  </Property>
+  <Property name="--full" type="boolean">
+    Générer une configuration complète avec toutes les options disponibles
+  </Property>
+  <Property name="--interactive" type="boolean">
+    Lancer l'assistant de configuration interactif avec configuration guidée
+  </Property>
+  <Property name="--template" type="enum">
+    Modèle de configuration : minimal, standard, full, monorepo, enterprise
+  </Property>
+  <Property name="--create-workspace" type="boolean" default="true">
+    Créer la structure d'espace de travail PNPM si manquante
+  </Property>
+  <Property name="--no-create-workspace" type="boolean">
+    Ignorer la création de structure d'espace de travail PNPM
+  </Property>
+  <Property name="--packages-dir" type="string" default="packages">
+    Nom du répertoire pour les packages d'espace de travail
+  </Property>
+  <Property name="--package-rules" type="boolean" default="true">
+    Inclure les règles de packages communes dans la configuration
+  </Property>
+  <Property name="--typescript" type="boolean">
+    Ajouter des règles et paramètres spécifiques à TypeScript
+  </Property>
+  <Property name="--react" type="boolean">
+    Ajouter des règles pour l'écosystème React
+  </Property>
+  <Property name="--vue" type="boolean">
+    Ajouter des règles pour l'écosystème Vue
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    Répertoire d'espace de travail (défaut : répertoire actuel)
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Afficher des informations détaillées et le progrès
+  </Property>
+</Properties>
+
+### Modèles de configuration
+
+PCU fournit des modèles préconfigurés pour les types de projets courants :
+
+#### Types de modèles
+
+- **`minimal`** - Configuration de base avec les paramètres essentiels uniquement
+- **`standard`** - Configuration équilibrée adaptée à la plupart des projets
+- **`full`** - Configuration complète avec toutes les options disponibles
+- **`monorepo`** - Optimisé pour les grands monorepos avec fonctionnalités avancées
+- **`enterprise`** - Prêt pour l'entreprise avec fonctionnalités de sécurité et gouvernance
+
+<CodeGroup>
+
+```bash {{ title: 'Exemples de modèles' }}
+# Utiliser le modèle minimal
+pcu init --template minimal
+
+# Configuration de monorepo d'entreprise
+pcu init --template enterprise --interactive
+
+# Projet React avec TypeScript
+pcu init --template standard --react --typescript
+```
+
+</CodeGroup>
+
+### Assistant de configuration interactive
+
+Le mode interactif (`--interactive`) fournit une expérience de configuration guidée :
+
+#### Fonctionnalités de l'assistant
+
+- **Détection de projet** : Détecte automatiquement le type de projet (React, Vue, TypeScript)
+- **Structure d'espace de travail** : Découvre les packages existants et suggère une configuration optimale
+- **Configuration de règles de packages** : Sélection interactive de règles de packages et stratégies de mise à jour
+- **Configuration de registre** : Configuration pour registres NPM personnalisés et authentification
+- **Réglage des performances** : Optimise les paramètres selon la taille et les exigences du projet
+- **Sélection de thème** : Choix de thèmes couleur et styles de barres de progression
+- **Configuration de validation** : Configure les portes de qualité et vérifications de sécurité
+
+#### Flux de l'assistant
+
+1. **Analyse du projet** : Analyse les fichiers existants pour comprendre la structure du projet
+2. **Sélection de modèle** : Recommande des modèles appropriés basés sur l'analyse
+3. **Règles de packages** : Configuration interactive de stratégies de mise à jour spécifiques aux packages
+4. **Paramètres avancés** : Configuration optionnelle de mise en cache, performances et paramètres d'interface
+5. **Validation** : Vérifications préalables et validation de configuration
+6. **Création de fichiers** : Crée tous les fichiers nécessaires avec confirmation
+
+### Fichiers et répertoires créés
+
+#### Fichiers principaux
+
+<Properties>
+  <Property name=".pcurc.json" type="file">
+    Fichier de configuration principal avec tous les paramètres PCU
+  </Property>
+  <Property name="package.json" type="file">
+    package.json racine de l'espace de travail (créé si manquant)
+  </Property>
+  <Property name="pnpm-workspace.yaml" type="file">
+    Configuration d'espace de travail PNPM (créée si manquante)
+  </Property>
+</Properties>
+
+#### Structure de répertoire
+
+<Properties>
+  <Property name="packages/" type="directory">
+    Répertoire par défaut pour les packages d'espace de travail (personnalisable)
+  </Property>
+  <Property name="apps/" type="directory">
+    Créé pour le modèle monorepo - packages d'applications
+  </Property>
+  <Property name="tools/" type="directory">
+    Créé pour le modèle monorepo - outils de développement
+  </Property>
+  <Property name="docs/" type="directory">
+    Créé pour le modèle enterprise - documentation
+  </Property>
+</Properties>
+
+#### Fichiers spécifiques aux modèles
+
+<Properties>
+  <Property name=".nvmrc" type="file">
+    Spécification de version Node (modèle enterprise)
+  </Property>
+  <Property name=".gitignore" type="file">
+    Amélioré avec des motifs spécifiques à PCU (si manquant)
+  </Property>
+  <Property name="tsconfig.json" type="file">
+    Configuration TypeScript (avec le drapeau --typescript)
+  </Property>
+</Properties>
+
+### Initialisation avancée
+
+#### Configuration spécifique au framework
+
+<CodeGroup>
+
+```bash {{ title: 'Projet React' }}
+# React avec monorepo TypeScript
+pcu init --template monorepo --react --typescript --interactive
+```
+
+```bash {{ title: 'Projet Vue' }}
+# Projet Vue avec configuration standard
+pcu init --template standard --vue --packages-dir libs
+```
+
+```bash {{ title: 'Configuration Enterprise' }}
+# Grand monorepo d'entreprise avec fonctionnalités de sécurité
+pcu init --template enterprise --full --interactive
+```
+
+</CodeGroup>
+
+#### Structure d'espace de travail personnalisée
+
+```bash
+# Répertoire de packages personnalisé et structure
+pcu init --packages-dir "libs" --create-workspace --verbose
+
+# Répertoires de packages multiples (modèle monorepo)
+pcu init --template monorepo
+# Crée : apps/, packages/, tools/, docs/
+```
+
+### Validation et vérifications de santé
+
+La commande init effectue une validation complète :
+
+#### Vérifications pré-initialisation
+
+- **Permissions de répertoire** : Assure l'accès en écriture au répertoire de l'espace de travail
+- **Installation PNPM** : Vérifie que PNPM est installé et accessible
+- **Configuration existante** : Détecte et propose de fusionner les configurations existantes
+- **Dépôt Git** : Vérifie si le répertoire est un dépôt git
+
+#### Validation post-initialisation
+
+- **Syntaxe de configuration** : Valide les fichiers de configuration générés
+- **Structure d'espace de travail** : Assure que l'espace de travail PNPM est correctement configuré
+- **Découverte de packages** : Vérifie que PCU peut découvrir les packages d'espace de travail
+- **Analyse des dépendances** : Vérification de santé de base des dépendances existantes
+
+### Exemples d'utilisation
+
+#### Démarrage rapide
+
+```bash
+pcu init
+```
+
+Initialise avec le modèle standard en utilisant la détection automatique de projet.
+
+#### Configuration interactive
+
+```bash
+pcu init --interactive
+```
+
+Lance l'assistant de configuration complet avec configuration guidée.
+
+#### Initialisation de monorepo
+
+```bash
+pcu init --template monorepo --typescript --verbose
+```
+
+Crée un monorepo prêt pour l'entreprise avec support TypeScript et sortie détaillée.
+
+#### Configuration Enterprise personnalisée
+
+```bash
+pcu init --template enterprise --interactive --force
+```
+
+Configuration enterprise interactive qui écrase la configuration existante.
+
+---
+
+## `pcu check` - Vérifier les mises à jour
+
+Vérifier les dépendances obsolètes dans vos catalogues d'espace de travail pnpm.
+
+<CodeGroup>
+
+```bash {{ title: 'Vérification de base' }}
+pcu check
+pcu -c
+pcu chk
+```
+
+```bash {{ title: 'Usage avancé' }}
+pcu -c --format minimal
+pcu check --catalog node18 --include "react*"
+pcu -c --target minor --prerelease
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="--catalog" type="string">
+    Vérifier uniquement le catalogue spécifique
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    Cible de mise à jour : latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    Inclure les versions préliminaires
+  </Property>
+  <Property name="--include" type="string">
+    Inclure les packages correspondant au motif
+  </Property>
+  <Property name="--exclude" type="string">
+    Exclure les packages correspondant au motif
+  </Property>
+</Properties>
+
+### Formats de sortie
+
+- **table** : Format de tableau riche avec couleurs et détails
+- **minimal** : Style simple npm-check-updates (package → version)
+- **json** : Sortie JSON pour utilisation programmatique
+- **yaml** : Sortie YAML pour fichiers de configuration
+
+---
+
+## `pcu update` - Mettre à jour les dépendances
+
+Mettre à jour les dépendances de catalogue vers des versions plus récentes.
+
+<CodeGroup>
+
+```bash {{ title: 'Mise à jour interactive' }}
+pcu update --interactive
+pcu -u -i
+pcu u -i
+```
+
+```bash {{ title: 'Mise à jour automatisée' }}
+pcu -u --target minor --create-backup
+pcu update --dry-run --verbose
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="-i, --interactive" type="boolean">
+    Mode interactif pour choisir les mises à jour
+  </Property>
+  <Property name="-d, --dry-run" type="boolean">
+    Prévisualiser les modifications sans écrire de fichiers
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    Cible de mise à jour : latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--catalog" type="string">
+    Mettre à jour uniquement le catalogue spécifique
+  </Property>
+  <Property name="--force" type="boolean">
+    Forcer les mises à jour même si risquées
+  </Property>
+  <Property name="-b, --create-backup" type="boolean">
+    Créer des fichiers de sauvegarde avant la mise à jour
+  </Property>
+  <Property name="--include" type="string">
+    Inclure les packages correspondant au motif (peut être utilisé plusieurs fois)
+  </Property>
+  <Property name="--exclude" type="string">
+    Exclure les packages correspondant au motif (peut être utilisé plusieurs fois)
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    Inclure les versions préliminaires dans les mises à jour
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+  <Property name="--batch-size" type="number" default="10">
+    Nombre de packages à traiter en parallèle
+  </Property>
+  <Property name="--skip-peer-conflicts" type="boolean">
+    Ignorer les packages avec conflits de dépendances pairs
+  </Property>
+  <Property name="--confirm-major" type="boolean" default="true">
+    Exiger confirmation pour les mises à jour de version majeure
+  </Property>
+</Properties>
+
+### Fonctionnalités interactives
+
+Le mode interactif (`--interactive` ou `-i`) fournit des capacités avancées de sélection de packages :
+
+#### Interface de sélection de packages
+
+- **Multi-sélection** avec cases à cocher pour mises à jour individuelles de packages
+- **Fonctionnalité de recherche** pour filtrer les packages par nom ou description
+- **Opérations par lots** pour sélectionner/désélectionner plusieurs packages
+- **Sélection de stratégie de mise à jour** pour chaque package (latest, greatest, minor, patch)
+
+#### Résolution intelligente de conflits
+
+- **Détection de dépendances pairs** avec suggestions de résolution
+- **Avertissements de changements cassants** basés sur l'analyse de versioning sémantique
+- **Analyse d'impact** montrant les packages d'espace de travail affectés
+- **Capacités de rollback** si les mises à jour causent des problèmes
+
+#### Suivi de progression
+
+- **Barres de progression en temps réel** avec plusieurs styles visuels
+- **État de traitement par lots** montrant les mises à jour terminées/en attente
+- **Récupération d'erreur** avec options ignorer/réessayer pour les mises à jour échouées
+- **Confirmation de succès** avec résumé de tous les changements effectués
+
+### Stratégies de mise à jour avancées
+
+<CodeGroup>
+
+```bash {{ title: 'Mises à jour conservatrices' }}
+# Uniquement les mises à jour patch et minor
+pcu update --target minor --confirm-major
+```
+
+```bash {{ title: 'Mises à jour agressives' }}
+# Inclure prerelease et forcer les mises à jour major
+pcu update --target greatest --prerelease --force
+```
+
+```bash {{ title: 'Mises à jour sélectives' }}
+# Mettre à jour des packages spécifiques avec motifs
+pcu update --include "react*" --exclude "*-dev" --create-backup
+```
+
+```bash {{ title: 'Traitement par lots' }}
+# Traiter efficacement les grands espaces de travail
+pcu update --batch-size 20 --skip-peer-conflicts
+```
+
+</CodeGroup>
+
+### Exemples d'utilisation
+
+#### Mise à jour interactive sécurisée
+
+```bash
+pcu update --interactive --create-backup --target minor
+```
+
+Met à jour les dépendances de manière interactive avec sauvegardes automatiques, limitant aux incréments de version mineure uniquement.
+
+#### Mise à jour sûre pour la production
+
+```bash
+pcu update --exclude "*-dev" --confirm-major --dry-run
+```
+
+Montre ce qui serait mis à jour dans les dépendances de production, nécessitant confirmation pour les mises à jour majeures.
+
+#### Mises à jour spécifiques au framework
+
+```bash
+pcu update --include "react*,@types/*" --prerelease
+```
+
+Met à jour les packages de l'écosystème React incluant les définitions TypeScript, autorisant les versions préliminaires.
+
+---
+
+## `pcu analyze` - Analyse d'impact
+
+Analyser l'impact de la mise à jour d'une dépendance spécifique pour comprendre les changements cassants potentiels et packages affectés.
+
+<CodeGroup>
+
+```bash {{ title: 'Analyse de base' }}
+pcu analyze default react
+pcu a default react 18.3.0
+pcu -a react17 @types/react
+```
+
+```bash {{ title: 'Analyse avancée' }}
+pcu analyze default typescript --format json
+pcu a my-catalog lodash 4.17.21 --verbose
+```
+
+</CodeGroup>
+
+### Arguments
+
+<Properties>
+  <Property name="catalog" type="string" required>
+    Nom du catalogue (ex : 'default', 'react17')
+  </Property>
+  <Property name="package" type="string" required>
+    Nom du package (ex : 'react', '@types/node')
+  </Property>
+  <Property name="version" type="string">
+    Nouvelle version (optionnelle, par défaut dernière version)
+  </Property>
+</Properties>
+
+### Options
+
+<Properties>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+</Properties>
+
+### Informations d'analyse
+
+La commande analyze fournit :
+
+- **Dépendances affectées** par la mise à jour
+- **Changements cassants** détectés entre versions
+- **Packages d'espace de travail** qui utilisent cette dépendance
+- **Recommandations de mise à jour** et évaluation de risque
+- **Analyse de compatibilité** de version
+
+### Exemples d'utilisation
+
+#### Analyser l'impact de la dernière version
+
+```bash
+pcu analyze default react
+```
+
+Analyse l'impact de mise à jour de React vers la dernière version dans le catalogue par défaut.
+
+#### Analyser une version spécifique
+
+```bash
+pcu analyze default typescript 5.0.0
+```
+
+Analyse l'impact de mise à jour de TypeScript vers la version 5.0.0.
+
+#### Sortie JSON pour automatisation
+
+```bash
+pcu analyze default lodash --format json
+```
+
+Sorte les résultats d'analyse en JSON pour traitement programmatique.
+
+---
+
+## `pcu workspace` - Informations de l'espace de travail
+
+Afficher les informations et validation de l'espace de travail avec analyse complète de l'espace de travail.
+
+<CodeGroup>
+
+```bash {{ title: 'Informations de base' }}
+pcu workspace
+pcu w
+```
+
+```bash {{ title: 'Validation et statistiques' }}
+pcu workspace --validate
+pcu workspace --stats
+pcu w --validate --stats --format json
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="--validate" type="boolean">
+    Valider la configuration et structure de l'espace de travail
+  </Property>
+  <Property name="-s, --stats" type="boolean">
+    Afficher les statistiques détaillées de l'espace de travail
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+</Properties>
+
+### Informations de sortie
+
+#### Mode informations de base (par défaut)
+
+- Nom et chemin de l'espace de travail
+- Nombre total de packages
+- Nombre de catalogues
+- Liste des noms de catalogues
+
+#### Mode validation (`--validate`)
+
+- Validation du fichier de configuration
+- Validation de la structure de l'espace de travail
+- Vérifications de cohérence package.json
+- Vérification d'intégrité des catalogues
+- Codes de sortie : 0 (valide), 1 (problèmes trouvés)
+
+#### Mode statistiques (`--stats`)
+
+- Répartition détaillée des packages
+- Analyse des dépendances
+- Statistiques d'usage des catalogues
+- Métriques de santé de l'espace de travail
+
+### Exemples d'utilisation
+
+#### Informations de base de l'espace de travail
+
+```bash
+pcu workspace
+```
+
+Affiche le nom de l'espace de travail, chemin, nombre de packages et catalogues disponibles.
+
+#### Validation complète
+
+```bash
+pcu workspace --validate
+```
+
+Valide la configuration et structure de l'espace de travail, sort avec code approprié.
+
+#### Statistiques détaillées
+
+```bash
+pcu workspace --stats --format json
+```
+
+Montre les statistiques détaillées de l'espace de travail en format JSON.
+
+#### Analyse combinée
+
+```bash
+pcu w --validate --stats
+```
+
+Effectue validation et affiche les statistiques ensemble.
+
+---
+
+## `pcu security` - Analyse des vulnérabilités de sécurité
+
+Analyse complète des vulnérabilités de sécurité utilisant npm audit et intégration Snyk optionnelle, avec capacités de correction automatisée.
+
+<CodeGroup>
+
+```bash {{ title: 'Analyse de sécurité de base' }}
+pcu security
+pcu sec
+```
+
+```bash {{ title: 'Analyse de sécurité avancée' }}
+pcu security --fix-vulns --severity high
+pcu sec --snyk --include-dev --verbose
+pcu security --format json --workspace ./my-project
+```
+
+```bash {{ title: 'Intégration CI/CD' }}
+pcu security --format json --severity critical > security-report.json
+pcu sec --auto-fix --no-color
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="--audit" type="boolean" default="true">
+    Effectuer l'analyse npm audit (activée par défaut)
+  </Property>
+  <Property name="--fix-vulns" type="boolean">
+    Corriger automatiquement les vulnérabilités en utilisant npm audit fix
+  </Property>
+  <Property name="--severity" type="enum">
+    Filtrer par niveau de sévérité : low, moderate, high, critical
+  </Property>
+  <Property name="--include-dev" type="boolean">
+    Inclure les dépendances de développement dans l'analyse de vulnérabilité
+  </Property>
+  <Property name="--snyk" type="boolean">
+    Inclure l'analyse de sécurité Snyk (nécessite l'installation de snyk CLI)
+  </Property>
+  <Property name="--auto-fix" type="boolean">
+    Appliquer automatiquement les corrections de sécurité sans confirmation
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    Format de sortie : table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    Chemin du répertoire de l'espace de travail (par défaut répertoire actuel)
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    Afficher les informations détaillées de vulnérabilité et étapes de remédiation
+  </Property>
+</Properties>
+
+### Fonctionnalités du rapport de sécurité
+
+La commande security fournit une analyse complète des vulnérabilités :
+
+- **Intégration multi-scanners** : Combine npm audit et Snyk pour une couverture complète
+- **Classification de sévérité** : Catégorise les vulnérabilités comme critiques, élevées, modérées, faibles et info
+- **Remédiation automatisée** : Applique les correctifs de sécurité automatiquement avec `--fix-vulns`
+- **Recommandations de packages** : Suggère des mises à jour de version spécifiques pour résoudre les vulnérabilités
+- **Dépendances de développement** : Inclusion/exclusion optionnelle des dépendances dev
+- **Informations CWE/CVE** : Identifiants et descriptions détaillés des vulnérabilités
+- **Codes de sortie** : Retourne des codes appropriés (0 pour propre, 1 pour vulnérabilités trouvées)
+- **Prêt pour CI/CD** : Sortie JSON et mode non-interactif pour automatisation
+
+### Exemples d'utilisation
+
+#### Analyse de vulnérabilité de base
+
+```bash
+pcu security
+```
+
+Effectue une analyse de sécurité standard utilisant npm audit, affichant les résultats dans un tableau formaté.
+
+#### Analyse avec corrections automatiques
+
+```bash
+pcu security --fix-vulns
+```
+
+Analyse les vulnérabilités et applique automatiquement les corrections de sécurité disponibles.
+
+#### Filtre de sévérité élevée
+
+```bash
+pcu security --severity high
+```
+
+Montre uniquement les vulnérabilités de sévérité élevée et critiques, filtrant les problèmes de moindre priorité.
+
+#### Analyse complète avec Snyk
+
+```bash
+pcu security --snyk --include-dev --verbose
+```
+
+Exécute à la fois npm audit et analyse Snyk, incluant les dépendances de développement avec informations détaillées de vulnérabilité.
+
+#### Intégration pipeline CI/CD
+
+```bash
+pcu security --format json --severity critical --no-color > security-report.json
+```
+
+Exporte les vulnérabilités de sécurité critiques en JSON pour traitement automatisé dans pipelines CI/CD.
+
+#### Correction automatique pour production
+
+```bash
+pcu security --auto-fix --severity moderate --exclude-dev
+```
+
+Corrige automatiquement les vulnérabilités de sévérité modérée et supérieure dans les dépendances de production uniquement.
+
+### Intégration de flux de travail de sécurité
+
+#### Vérification de sécurité pré-déploiement
+
+```bash
+# Faire échouer la build si vulnérabilités critiques existent
+pcu security --severity critical
+if [ $? -ne 0 ]; then
+  echo "Vulnérabilités de sécurité critiques trouvées. Build échouée."
+  exit 1
+fi
+```
+
+#### Maintenance de sécurité automatisée
+
+```bash
+# Maintenance de sécurité hebdomadaire
+pcu security --fix-vulns --severity moderate --create-backup
+```
+
+---
+
+## `pcu theme` - Configuration de thème
+
+Configurer les thèmes couleur et apparence de l'interface.
+
+<CodeGroup>
+
+```bash {{ title: 'Gestion de thème' }}
+pcu theme --list
+pcu -t --set modern
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### Options
+
+<Properties>
+  <Property name="-s, --set" type="string">
+    Définir le thème couleur : default, modern, minimal, neon
+  </Property>
+  <Property name="-l, --list" type="boolean">
+    Lister tous les thèmes disponibles avec échantillons d'aperçu
+  </Property>
+  <Property name="-i, --interactive" type="boolean">
+    Lancer l'assistant de configuration de thème interactif avec aperçu en direct
+  </Property>
+  <Property name="--preview" type="boolean">
+    Afficher l'aperçu du thème sans appliquer les modifications
+  </Property>
+  <Property name="--progress-style" type="enum">
+    Définir le style de barre de progression : default, gradient, fancy, minimal, rainbow, neon
+  </Property>
+  <Property name="--environment" type="enum">
+    Définir le préréglage spécifique à l'environnement : development, production, presentation
+  </Property>
+  <Property name="--reset" type="boolean">
+    Réinitialiser tous les paramètres de thème aux valeurs par défaut
+  </Property>
+</Properties>
+
+### Thèmes disponibles
+
+#### Thèmes principaux
+
+- **`default`** - Couleurs équilibrées optimisées pour usage général de terminal
+- **`modern`** - Couleurs vives parfaites pour environnements de développement avec coloration syntaxique
+- **`minimal`** - Design monochrome propre idéal pour environnements de production et CI/CD
+- **`neon`** - Couleurs cyberpunk à contraste élevé conçues pour présentations et démos
+
+#### Styles de barres de progression
+
+- **`default`** - Indication de progression standard
+- **`gradient`** - Transitions de couleur douces
+- **`fancy`** - Effets visuels riches avec animations
+- **`minimal`** - Barres de progression propres et simples
+- **`rainbow`** - Progression animée multi-couleurs
+- **`neon`** - Barres de progression à effet lumineux
+
+#### Préréglages d'environnement
+
+- **`development`** - Couleur complète, progression détaillée, sortie verbeuse
+- **`production`** - Couleurs minimales, informations essentielles uniquement
+- **`presentation`** - Contraste élevé, grandes polices, effets dramatiques
+
+### Fonctionnalités de thème avancées
+
+#### Mappage de couleurs sémantiques
+
+- **Succès** - Tons verts pour opérations terminées
+- **Avertissement** - Jaune/ambre pour états de précaution
+- **Erreur** - Tons rouges pour échecs et problèmes critiques
+- **Info** - Tons bleus pour messages informatifs
+- **Progression** - Couleurs dynamiques pour opérations en cours
+- **Surbrillance** - Couleurs d'accent pour informations importantes
+
+#### Configuration de thème interactive
+
+Le mode interactif fournit :
+
+- **Aperçu en direct** de thèmes avec sortie échantillon
+- **Sélection de couleur personnalisée** avec support code hex
+- **Détection d'environnement** avec paramètres optimaux automatiques
+- **Test de barres de progression** pour voir différents styles en action
+- **Export/import** de configurations de thèmes
+- **Thèmes par espace de travail** pour stylisation spécifique au projet
+
+### Exemples d'utilisation
+
+#### Lister les thèmes disponibles
+
+```bash
+pcu theme --list
+```
+
+Montre tous les thèmes disponibles avec descriptions.
+
+#### Définir directement un thème
+
+```bash
+pcu theme --set modern
+pcu -t --set neon
+```
+
+Définit directement un thème spécifique.
+
+#### Configuration de thème interactive
+
+```bash
+pcu theme --interactive
+pcu -t -i
+```
+
+Lance un assistant de sélection de thème guidé qui permet de prévisualiser les thèmes et configurer les paramètres d'interface de manière interactive.
+
+---
+
+## Fonctionnalités interactives et suivi de progression
+
+PCU fournit des capacités interactives avancées et un suivi de progression sophistiqué pour toutes les commandes.
+
+### Interface de commande interactive
+
+#### Système de sélection de packages
+
+- **Multi-sélection intelligente** : Choisissez des packages spécifiques avec cases visuelles et raccourcis clavier
+- **Recherche et filtre** : Filtrage de packages en temps réel avec correspondance de motifs et recherche floue
+- **Opérations par lots** : Sélectionner/désélectionner des groupes entiers avec sélection basée sur catégories
+- **Aperçu d'impact** : Voir les changements potentiels avant d'appliquer toute mise à jour
+
+#### Assistant de configuration
+
+L'assistant de configuration interactif (`pcu init --interactive`) fournit :
+
+- **Détection d'espace de travail** : Découverte automatique des espaces de travail PNPM existants
+- **Sélection de modèle** : Choisir entre modèles de configuration minimaux et complets
+- **Configuration de règles de packages** : Configurer des règles pour différentes catégories de packages (React, Vue, TypeScript)
+- **Configuration de registre** : Configurer des registres NPM personnalisés et authentification
+- **Paramètres de validation** : Configurer des portes de qualité et vérifications de sécurité
+
+#### Navigateur de répertoires et fichiers
+
+- **Navigation d'espace de travail** : Navigateur de système de fichiers intégré pour sélection d'espace de travail
+- **Validation de chemin** : Validation en temps réel des chemins et structures d'espaces de travail
+- **Mode aperçu** : Voir le contenu de l'espace de travail avant confirmation de sélection
+
+### Suivi de progression avancé
+
+#### Barres de progression multi-styles
+
+PCU offre six styles différents de barres de progression, configurables par commande ou globalement :
+
+<CodeGroup>
+
+```bash {{ title: 'Exemples de styles' }}
+# Utiliser des barres de progression en dégradé
+pcu update --progress-style gradient
+
+# Progression animée arc-en-ciel
+pcu check --progress-style rainbow
+
+# Minimal pour environnements CI/CD
+pcu security --progress-style minimal
+```
+
+</CodeGroup>
+
+#### Fonctionnalités de progression
+
+- **Suivi multi-étapes** : Montre la progression à travers différentes phases (scan → analyze → update)
+- **État d'opération parallèle** : Barres de progression individuelles pour opérations simultanées
+- **Métriques de performance** : Indicateurs de vitesse en temps réel, calculs ETA, temps écoulé
+- **Affichage sûr pour mémoire** : Sortie multi-lignes stable qui réduit le scintillement du terminal
+
+#### État de traitement par lots
+
+- **Gestion de file d'attente** : Montre les opérations de packages en attente, actives et terminées
+- **Résolution de conflits** : Gestion interactive des conflits de dépendances pairs
+- **Récupération d'erreur** : Options ignorer/réessayer pour opérations échouées avec contexte d'erreur détaillé
+- **Capacités de rollback** : Annuler les modifications si des problèmes sont détectés durant les mises à jour
+
+### Gestion d'erreurs et récupération
+
+#### Détection d'erreur intelligente
+
+- **Erreurs de validation** : Vérifications préalables avec suggestions utiles pour erreurs communes
+- **Problèmes réseau** : Réessai automatique avec backoff exponentiel pour échecs de registre
+- **Conflits de dépendances** : Analyse détaillée de conflits avec recommandations de résolution
+- **Problèmes de permissions** : Conseils clairs pour problèmes de permissions de système de fichiers
+
+#### Options de récupération interactive
+
+- **Ignorer et continuer** : Ignorer les packages problématiques et continuer avec les mises à jour restantes
+- **Réessayer avec options** : Réessayer les opérations échouées avec paramètres différents
+- **Rollback des modifications** : Annuler les modifications partielles si des problèmes surviennent durant opérations par lots
+- **Exporter rapport d'erreur** : Générer des rapports d'erreur détaillés pour dépannage
+
+### Intégration d'espace de travail
+
+#### Fonctionnalités de découverte automatique
+
+- **Détection d'espace de travail PNPM** : Trouve et valide automatiquement les configurations d'espace de travail
+- **Découverte de catalogue** : Détecte les catalogues existants et leurs mappages de packages
+- **Analyse de packages** : Analyse la structure de l'espace de travail et relations de dépendances
+- **Héritage de configuration** : Applique automatiquement les paramètres spécifiques à l'espace de travail
+
+#### Validation et vérifications de santé
+
+- **Validation de structure** : Assure que l'espace de travail suit les bonnes pratiques PNPM
+- **Cohérence des dépendances** : Vérifie les incompatibilités de version entre packages
+- **Intégrité de configuration** : Valide la configuration PCU contre la structure de l'espace de travail
+- **Métriques de santé** : Fournit une évaluation complète de santé de l'espace de travail
+
+### Exemples d'utilisation
+
+#### Mise à jour interactive avec fonctionnalités avancées
+
+```bash
+pcu update --interactive --progress-style fancy --batch-size 15
+```
+
+Lance mise à jour interactive avec barres de progression fantaisie et traitement par lots optimisé.
+
+#### Configuration avec aperçu
+
+```bash
+pcu init --interactive --preview --verbose
+```
+
+Exécute l'assistant de configuration avec mode aperçu et journalisation détaillée.
+
+#### Flux de travail de récupération d'erreur
+
+```bash
+pcu update --interactive --create-backup --confirm-major
+```
+
+Met à jour avec récupération d'erreur interactive, sauvegardes automatiques et confirmation de version majeure.
+
+---
+
+## Options globales
+
+Ces options fonctionnent avec toutes les commandes et peuvent être définies via variables d'environnement :
+
+<Properties>
+  <Property name="-w, --workspace" type="string" env="PCU_WORKSPACE">
+    Chemin du répertoire d'espace de travail
+  </Property>
+  <Property name="-v, --verbose" type="boolean" env="PCU_VERBOSE">
+    Activer la journalisation verbeuse avec sortie détaillée
+  </Property>
+  <Property name="--no-color" type="boolean" env="PCU_NO_COLOR">
+    Désactiver la sortie colorée pour environnements CI/CD
+  </Property>
+  <Property name="--registry" type="string" env="PCU_REGISTRY">
+    Remplacer l'URL du registre NPM
+  </Property>
+  <Property name="--timeout" type="number" env="PCU_TIMEOUT">
+    Délai d'expiration de requête en millisecondes (défaut : 30000)
+  </Property>
+  <Property name="--config" type="string" env="PCU_CONFIG">
+    Chemin vers fichier de configuration personnalisé
+  </Property>
+  <Property name="-V, --version" type="boolean">
+    Afficher le numéro de version et vérifier les mises à jour
+  </Property>
+  <Property name="-h, --help" type="boolean">
+    Afficher l'aide pour la commande
+  </Property>
+</Properties>
+
+### Utilisation de variables d'environnement
+
+Toutes les options globales et paramètres spécifiques aux commandes peuvent être configurés via variables d'environnement :
+
+#### Variables d'environnement principales
+
+<Properties>
+  <Property name="PCU_WORKSPACE" type="string">
+    Chemin du répertoire d'espace de travail par défaut
+  </Property>
+  <Property name="PCU_VERBOSE" type="boolean">
+    Activer la journalisation verbeuse globalement
+  </Property>
+  <Property name="PCU_NO_COLOR" type="boolean">
+    Désactiver la sortie colorée (utile pour CI/CD)
+  </Property>
+  <Property name="PCU_REGISTRY" type="string">
+    URL du registre NPM par défaut
+  </Property>
+  <Property name="PCU_TIMEOUT" type="number">
+    Délai d'expiration de requête en millisecondes
+  </Property>
+  <Property name="PCU_CONFIG" type="string">
+    Chemin vers fichier de configuration personnalisé
+  </Property>
+</Properties>
+
+#### Variables d'environnement spécifiques aux commandes
+
+<Properties>
+  <Property name="PCU_CATALOG" type="string">
+    Catalogue par défaut à utiliser pour opérations check/update
+  </Property>
+  <Property name="PCU_OUTPUT_FORMAT" type="enum">
+    Format de sortie par défaut : table, json, yaml, minimal
+  </Property>
+  <Property name="PCU_UPDATE_TARGET" type="enum">
+    Cible de mise à jour par défaut : latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="PCU_PRERELEASE" type="boolean">
+    Inclure les versions préliminaires par défaut
+  </Property>
+  <Property name="PCU_INCLUDE" type="string">
+    Motif d'inclusion de packages par défaut
+  </Property>
+  <Property name="PCU_EXCLUDE" type="string">
+    Motif d'exclusion de packages par défaut
+  </Property>
+  <Property name="PCU_INTERACTIVE" type="boolean">
+    Activer le mode interactif par défaut
+  </Property>
+  <Property name="PCU_DRY_RUN" type="boolean">
+    Activer le mode dry-run par défaut
+  </Property>
+  <Property name="PCU_FORCE" type="boolean">
+    Forcer les mises à jour sans confirmation
+  </Property>
+  <Property name="PCU_CREATE_BACKUP" type="boolean">
+    Créer des fichiers de sauvegarde avant les mises à jour
+  </Property>
+</Properties>
+
+#### Variables d'environnement de thème et affichage
+
+<Properties>
+  <Property name="PCU_THEME" type="enum">
+    Thème couleur par défaut : default, modern, minimal, neon
+  </Property>
+  <Property name="PCU_PROGRESS_STYLE" type="enum">
+    Style de barre de progression : default, gradient, fancy, minimal, rainbow, neon
+  </Property>
+  <Property name="PCU_ENVIRONMENT" type="enum">
+    Préréglage d'environnement : development, production, presentation
+  </Property>
+</Properties>
+
+#### Variables d'environnement de sécurité et cache
+
+<Properties>
+  <Property name="PCU_SECURITY_SEVERITY" type="enum">
+    Filtre de sévérité de sécurité par défaut : low, moderate, high, critical
+  </Property>
+  <Property name="PCU_AUTO_FIX" type="boolean">
+    Corriger automatiquement les vulnérabilités
+  </Property>
+  <Property name="PCU_CACHE_ENABLED" type="boolean">
+    Activer/désactiver le système de cache
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number">
+    Durée de vie du cache en millisecondes
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string">
+    Chemin du répertoire de cache personnalisé
+  </Property>
+</Properties>
+
+#### Variables d'environnement de configuration avancée
+
+<Properties>
+  <Property name="PCU_CONCURRENCY" type="number">
+    Nombre de requêtes réseau parallèles
+  </Property>
+  <Property name="PCU_BATCH_SIZE" type="number">
+    Nombre de packages à traiter par lots
+  </Property>
+  <Property name="PCU_RETRIES" type="number">
+    Nombre de tentatives de réessai pour opérations échouées
+  </Property>
+  <Property name="PCU_CHECK_UPDATES" type="boolean">
+    Vérifier les mises à jour PCU CLI au démarrage
+  </Property>
+</Properties>
+
+### Exemples de variables d'environnement
+
+<CodeGroup>
+
+```bash {{ title: 'Environnement de développement' }}
+# Configuration de développement avec fonctionnalités complètes
+export PCU_WORKSPACE="./my-workspace"
+export PCU_VERBOSE=true
+export PCU_THEME="modern"
+export PCU_PROGRESS_STYLE="fancy"
+export PCU_INTERACTIVE=true
+export PCU_CREATE_BACKUP=true
+```
+
+```bash {{ title: 'Environnement de production' }}
+# Configuration de production avec sortie minimale
+export PCU_THEME="minimal"
+export PCU_NO_COLOR=true
+export PCU_PROGRESS_STYLE="minimal"
+export PCU_VERBOSE=false
+export PCU_DRY_RUN=true
+```
+
+```bash {{ title: 'Environnement CI/CD' }}
+# Optimisé pour pipelines automatisés
+export PCU_NO_COLOR=true
+export PCU_OUTPUT_FORMAT="json"
+export PCU_CHECK_UPDATES=false
+export PCU_TIMEOUT=120000
+export PCU_RETRIES=5
+```
+
+```bash {{ title: 'Configuration axée sécurité' }}
+# Analyse de sécurité améliorée
+export PCU_SECURITY_SEVERITY="moderate"
+export PCU_AUTO_FIX=true
+export PCU_INCLUDE_DEV=false
+export PCU_FORCE=false
+```
+
+</CodeGroup>
+
+### Priorité de configuration
+
+Les paramètres sont appliqués dans cet ordre (les derniers remplacent les premiers) :
+
+1. Valeurs par défaut intégrées
+2. Configuration globale (`~/.pcurc.json`)
+3. Configuration projet (`.pcurc.json`)
+4. Variables d'environnement (`PCU_*`)
+5. Drapeaux de ligne de commande (priorité la plus élevée)
+
+---
+
+## Système de mise à jour automatique
+
+PCU inclut un mécanisme de mise à jour automatique sophistiqué qui maintient l'outil CLI à jour avec les dernières fonctionnalités et correctifs de sécurité.
+
+### Vérification automatique de mise à jour
+
+Par défaut, PCU vérifie les mises à jour quand vous exécutez toute commande :
+
+<CodeGroup>
+
+```bash {{ title: 'Opération normale' }}
+# PCU vérifie automatiquement les mises à jour
+pcu check
+# La sortie peut inclure : "📦 PCU v0.8.0 est disponible (actuel : v0.7.15)"
+```
+
+```bash {{ title: 'Désactiver vérifications de mise à jour' }}
+# Désactiver pour une seule commande
+pcu check --no-update-check
+
+# Désactiver globalement via environnement
+export PCU_SKIP_VERSION_CHECK=true
+pcu check
+```
+
+</CodeGroup>
+
+### Comportement de mise à jour
+
+#### Détection d'environnement CI/CD
+
+PCU détecte automatiquement les environnements CI/CD et ignore les vérifications de mise à jour pour éviter de perturber les pipelines automatisés :
+
+- **GitHub Actions** : Détecté via variable d'environnement `GITHUB_ACTIONS`
+- **CircleCI** : Détecté via variable d'environnement `CIRCLECI`
+- **Jenkins** : Détecté via variable d'environnement `JENKINS_URL`
+- **GitLab CI** : Détecté via variable d'environnement `GITLAB_CI`
+- **Azure DevOps** : Détecté via variable d'environnement `TF_BUILD`
+- **CI générique** : Détecté via variable d'environnement `CI`
+
+#### Installation de mise à jour
+
+PCU prend en charge plusieurs gestionnaires de packages avec fallback automatique :
+
+```bash
+# PCU essaie dans l'ordre : npm → pnpm → yarn
+npm install -g pcu@latest
+# Si npm échoue, essaie :
+pnpm add -g pnpm-catalog-updates@latest
+# Si pnpm échoue, essaie :
+yarn global add pnpm-catalog-updates@latest
+```
+
+### Options de configuration
+
+#### Variables d'environnement
+
+<Properties>
+  <Property name="PCU_SKIP_VERSION_CHECK" type="boolean">
+    Désactiver complètement la vérification de version et notifications de mise à jour
+  </Property>
+  <Property name="PCU_UPDATE_CHECK_INTERVAL" type="number">
+    Heures entre vérifications de mise à jour (défaut : 24)
+  </Property>
+  <Property name="PCU_AUTO_UPDATE" type="boolean">
+    Installer automatiquement les mises à jour sans demande (utiliser avec précaution)
+  </Property>
+  <Property name="PCU_UPDATE_TIMEOUT" type="number">
+    Délai d'expiration pour requêtes de vérification de mise à jour en millisecondes (défaut : 5000)
+  </Property>
+</Properties>
+
+#### Paramètres de fichier de configuration
+
+```json
+{
+  "updates": {
+    "checkForUpdates": true,
+    "autoUpdate": false,
+    "checkInterval": 86400000,
+    "timeout": 5000,
+    "skipInCI": true,
+    "notifyPrerelease": false
+  }
+}
+```
+
+### Notifications de mise à jour
+
+#### Notification standard
+
+```bash
+pcu check
+# ✨ PCU v0.8.0 est disponible (actuel : v0.7.15)
+# Exécutez 'npm install -g pcu@latest' pour mettre à jour
+# Utilisez --no-update-check pour désactiver ce message
+```
+
+#### Notification de mise à jour de sécurité
+
+```bash
+pcu security
+# 🔒 MISE À JOUR DE SÉCURITÉ : PCU v0.7.16 contient des correctifs de sécurité (actuel : v0.7.15)
+# Mettez à jour immédiatement : npm install -g pcu@latest
+```
+
+#### Notification prerelease
+
+```bash
+# Montrée uniquement si notifyPrerelease: true
+pcu check
+# 🧪 PCU v0.8.0-beta.1 est disponible pour test (actuel : v0.7.15)
+# Installer avec : npm install -g pcu@beta
+```
+
+### Commandes de mise à jour manuelle
+
+<CodeGroup>
+
+```bash {{ title: 'Vérifier statut de mise à jour' }}
+# Vérifier version actuelle et mises à jour disponibles
+pcu --version
+pcu -V
+```
+
+```bash {{ title: 'Mise à jour manuelle' }}
+# Mettre à jour via npm
+npm install -g pcu@latest
+
+# Mettre à jour via pnpm
+pnpm add -g pnpm-catalog-updates@latest
+
+# Mettre à jour vers version spécifique
+npm install -g pcu@0.8.0
+```
+
+</CodeGroup>
+
+### Dépannage des mises à jour
+
+#### Échecs de vérification de mise à jour
+
+```bash
+# Si la vérification de mise à jour échoue à cause de problèmes réseau
+PCU_UPDATE_TIMEOUT=10000 pcu check
+
+# Forcer la vérification de mise à jour même en CI
+PCU_SKIP_VERSION_CHECK=false CI=false pcu check
+```
+
+#### Effacement de cache
+
+```bash
+# Effacer le cache de vérification de mise à jour
+rm -rf ~/.pcu/cache/version-check
+
+# Ou désactiver complètement la mise en cache
+PCU_CACHE_ENABLED=false pcu check
+```
+
+#### Problèmes de permissions
+
+```bash
+# Corriger les problèmes de permissions npm
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# Ou utiliser pnpm/yarn qui gèrent mieux les permissions
+pnpm add -g pnpm-catalog-updates@latest
+```
+
+---
+
+## Système de gestion de cache
+
+PCU inclut un système de cache complet pour optimiser les performances et réduire les requêtes réseau.
+
+### Types de cache
+
+#### Cache de registre
+
+Stocke les métadonnées de packages NPM et informations de version :
+
+- **TTL par défaut** : 1 heure (3 600 000ms)
+- **Taille max** : 10MB par type de cache
+- **Entrées max** : 500 packages
+- **Persistance disque** : Activée
+
+#### Cache d'espace de travail
+
+Stocke la configuration d'espace de travail et résultats d'analyse package.json :
+
+- **TTL par défaut** : 5 minutes (300 000ms)
+- **Taille max** : 5MB
+- **Entrées max** : 200 espaces de travail
+- **Persistance disque** : Désactivée (mémoire uniquement)
+
+### Configuration de cache
+
+#### Variables d'environnement
+
+<Properties>
+  <Property name="PCU_CACHE_ENABLED" type="boolean" default="true">
+    Activer/désactiver le système de cache entier
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number" default="3600000">
+    TTL de cache par défaut en millisecondes
+  </Property>
+  <Property name="PCU_CACHE_MAX_SIZE" type="number" default="52428800">
+    Taille totale maximale du cache en octets (50MB par défaut)
+  </Property>
+  <Property name="PCU_CACHE_MAX_ENTRIES" type="number" default="10000">
+    Nombre maximum d'entrées de cache
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string" default="~/.pcu/cache">
+    Chemin du répertoire de cache personnalisé
+  </Property>
+  <Property name="PCU_CACHE_PERSIST" type="boolean" default="true">
+    Activer la persistance disque pour les caches
+  </Property>
+</Properties>
+
+#### Paramètres de fichier de configuration
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "registry": {
+      "ttl": 3600000,
+      "maxSize": 10485760,
+      "maxEntries": 500
+    },
+    "workspace": {
+      "ttl": 300000,
+      "maxSize": 5242880,
+      "maxEntries": 200,
+      "persistToDisk": false
+    }
+  }
+}
+```
+
+### Commandes de gestion de cache
+
+<CodeGroup>
+
+```bash {{ title: 'Statut du cache' }}
+# Voir les statistiques de cache (via mode verbose)
+pcu check --verbose
+# Montre : Cache hits: 85%, Size: 15.2MB, Entries: 342
+```
+
+```bash {{ title: 'Effacer le cache' }}
+# Effacer tous les caches
+rm -rf ~/.pcu/cache
+
+# Effacer type de cache spécifique
+rm -rf ~/.pcu/cache/registry
+rm -rf ~/.pcu/cache/workspace
+
+# Désactiver le cache pour une seule commande
+PCU_CACHE_ENABLED=false pcu check
+```
+
+</CodeGroup>
+
+### Performance du cache
+
+#### Fonctionnalités d'optimisation
+
+- **Éviction LRU** : Les éléments utilisés le moins récemment sont supprimés en premier
+- **Nettoyage automatique** : Les entrées expirées sont supprimées toutes les 5 minutes
+- **Surveillance de taille** : Éviction automatique quand les limites de taille sont dépassées
+- **Traitement parallèle** : Les opérations de cache ne bloquent pas le thread principal
+
+#### Bénéfices de performance
+
+- **Requêtes de registre** : 60-90% de réduction des appels au registre NPM
+- **Analyse d'espace de travail** : 80-95% plus rapide sur exécutions répétées
+- **Dépendance réseau** : Dépendance réduite à la connectivité réseau
+- **Temps de démarrage** : 2-5x plus rapide au démarrage pour opérations subséquentes

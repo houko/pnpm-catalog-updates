@@ -1,4 +1,5 @@
 import * as mdxComponents from '@/components/mdx'
+import { locales } from '@/i18n'
 import { rehypePlugins } from '@/mdx/rehype.mjs'
 import { remarkPlugins } from '@/mdx/remark.mjs'
 import fs from 'fs'
@@ -17,7 +18,6 @@ interface PageProps {
 
 // Automatically discover pages from content directory
 export async function generateStaticParams() {
-  const locales = ['en', 'zh']
   const params = []
 
   // Scan content directory for available pages

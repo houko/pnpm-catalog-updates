@@ -51,7 +51,7 @@ inspired by
 
 ```bash
 # Global installation (recommended)
-npm install -g pnpm-catalog-updates
+npm install -g pcu
 
 # Or use with npx
 npx pnpm-catalog-updates

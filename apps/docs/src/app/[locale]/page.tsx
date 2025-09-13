@@ -1,14 +1,19 @@
-'use client'
-
 import { Button } from '@/components/Button'
 import { Guides } from '@/components/Guides'
 import { HeroPattern } from '@/components/HeroPattern'
 import { Resources } from '@/components/Resources'
-import { useTranslations } from 'next-intl'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 
-export default function HomePage() {
-  const t = useTranslations('Home')
-  const tCommon = useTranslations('Common')
+type Props = {
+  params: Promise<{ locale: string }>
+}
+
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
+  const t = await getTranslations({ locale, namespace: 'Home' })
+  const tCommon = await getTranslations({ locale, namespace: 'Common' })
 
   return (
     <>
@@ -46,7 +51,7 @@ export default function HomePage() {
         </Button>
       </div>
 
-      <Guides />
+      <Guides locale={locale} />
       <Resources />
     </>
   )

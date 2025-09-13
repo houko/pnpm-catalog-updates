@@ -1,0 +1,400 @@
+export const metadata = {
+  title: 'FAQ',
+  description:
+    'Questions fréquentes sur PCU (pnpm-catalog-updates). Trouvez des réponses rapides aux questions et problèmes courants.',
+};
+
+# Questions Fréquentes
+
+Réponses rapides aux questions courantes sur PCU. Vous ne trouvez pas ce que vous cherchez ? Consultez notre [guide de dépannage](/troubleshooting) ou [ouvrez un ticket](https://github.com/houko/pnpm-catalog-updates/issues). {{ className: 'lead' }}
+
+## Installation et Configuration
+
+### Comment installer PCU ?
+
+PCU peut être installé globalement via npm, pnpm ou yarn :
+
+<CodeGroup>
+
+```bash {{ title: 'npm' }}
+npm install -g pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'yarn' }}
+yarn global add pnpm-catalog-updates
+```
+
+```bash {{ title: 'npx (sans installation)' }}
+npx pnpm-catalog-updates check
+```
+
+</CodeGroup>
+
+### Quelles sont les exigences système ?
+
+- **Node.js**: >= 18.0.0 (version LTS recommandée)
+- **pnpm**: >= 8.0.0
+- **Système d'exploitation**: Windows, macOS, Linux
+
+### Ai-je besoin d'un espace de travail pnpm pour utiliser PCU ?
+
+Oui, PCU est spécifiquement conçu pour les espaces de travail pnpm avec des dépendances de catalogue. Si vous n'avez pas encore d'espace de travail, exécutez `pcu init` pour en créer un.
+
+### Puis-je utiliser PCU avec des projets npm ou yarn ?
+
+Non, PCU est exclusivement pour les espaces de travail pnpm utilisant les dépendances de catalogue. Pour d'autres gestionnaires de packages, considérez des outils comme `npm-check-updates` ou `yarn upgrade-interactive`.
+
+## Configuration
+
+### Où dois-je placer mon fichier de configuration `.pcurc.json` ?
+
+Placez-le dans le répertoire racine de votre espace de travail (même niveau que `pnpm-workspace.yaml`). PCU prend également en charge :
+
+- Configuration globale : `~/.pcurc.json`
+- Configuration de projet : `./.pcurc.json` (priorité la plus élevée)
+
+### Quelle est la différence entre la configuration au niveau de l'espace de travail et globale ?
+
+- **Globale** (`~/.pcurc.json`) : Appliquée à toutes les opérations PCU dans différents projets
+- **Projet** (`./.pcurc.json`) : Spécifique à l'espace de travail actuel, remplace les paramètres globaux
+
+### Puis-je configurer différentes stratégies de mise à jour pour différents packages ?
+
+Oui ! Utilisez les règles de packages dans votre configuration :
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## Commandes et Utilisation
+
+### Quelle est la différence entre `pcu check` et `pcu -c` ?
+
+Elles sont identiques ! PCU prend en charge les noms de commandes complets et les alias courts :
+
+- `pcu check` = `pcu -c`
+- `pcu update` = `pcu -u`
+- `pcu interactive` = `pcu -i`
+
+### Comment mettre à jour seulement des types spécifiques de packages ?
+
+Utilisez les drapeaux `--include` et `--exclude` :
+
+```bash
+# Mettre à jour uniquement les packages liés à React
+pcu update --include "react*"
+
+# Mettre à jour tout sauf les changements majeurs de frameworks
+pcu update --exclude "react*,vue*,angular*"
+
+# Mettre à jour uniquement les définitions de types
+pcu update --include "@types/*"
+```
+
+### Quelle est la différence entre les cibles de mise à jour ?
+
+- **`patch`** : Corrections de bugs uniquement (1.0.0 → 1.0.1)
+- **`minor`** : Nouvelles fonctionnalités, rétrocompatibles (1.0.0 → 1.1.0)
+- **`latest`** : Dernière version stable incluant les changements majeurs (1.0.0 → 2.0.0)
+- **`greatest`** : Dernière version incluant les pré-versions (1.0.0 → 2.0.0-beta.1)
+
+### Comment vérifier ce qui sera mis à jour avant de faire la mise à jour ?
+
+Utilisez le drapeau `--dry-run` :
+
+```bash
+pcu update --dry-run --target minor
+```
+
+Cela vous montre exactement ce qui serait mis à jour sans apporter de modifications.
+
+## Dépannage
+
+### Pourquoi PCU dit "Aucun espace de travail pnpm trouvé" ?
+
+Cela signifie que PCU ne peut pas trouver un fichier `pnpm-workspace.yaml` dans votre répertoire actuel. Solutions :
+
+1. **Créer un espace de travail** : Exécutez `pcu init`
+2. **Naviguer vers la racine de l'espace de travail** : `cd` vers le répertoire contenant `pnpm-workspace.yaml`
+3. **Spécifier le chemin de l'espace de travail** : `pcu -c --workspace /path/to/workspace`
+
+### Pourquoi PCU dit "Aucune dépendance de catalogue trouvée" ?
+
+Votre espace de travail n'utilise pas encore les dépendances de catalogue. Vous avez besoin de :
+
+1. **Catalogue dans le fichier d'espace de travail** :
+
+   ```yaml
+   # pnpm-workspace.yaml
+   packages:
+     - 'packages/*'
+
+   catalog:
+     react: ^18.2.0
+     typescript: ^5.0.0
+   ```
+
+2. **Utiliser les catalogues dans les packages** :
+   ```json
+   {
+     "dependencies": {
+       "react": "catalog:",
+       "typescript": "catalog:"
+     }
+   }
+   ```
+
+### PCU fonctionne très lentement. Comment puis-je améliorer les performances ?
+
+Essayez ces optimisations :
+
+1. **Réduire la concurrence** : `pcu check --concurrency 2`
+2. **Augmenter le timeout** : `pcu check --timeout 60000`
+3. **Activer le cache** : Assurez-vous que `PCU_CACHE_ENABLED=true` (par défaut)
+4. **Utiliser le filtrage** : `pcu check --include "react*"` pour des packages spécifiques
+
+### Comment corriger les erreurs "ENOTFOUND registry.npmjs.org" ?
+
+C'est un problème de connectivité réseau :
+
+1. **Vérifier la connexion internet** : `ping registry.npmjs.org`
+2. **Configurer le proxy** : Définir les variables d'environnement `HTTP_PROXY` et `HTTPS_PROXY`
+3. **Utiliser un registre d'entreprise** : Configurer `.npmrc` avec le registre de votre entreprise
+4. **Augmenter le timeout** : `PCU_TIMEOUT=120000 pcu check`
+
+## Sécurité
+
+### Comment PCU gère-t-il les vulnérabilités de sécurité ?
+
+PCU s'intègre avec npm audit et optionnellement Snyk :
+
+```bash
+# Vérifier les vulnérabilités
+pcu security
+
+# Auto-correction des problèmes de sécurité
+pcu security --fix-vulns
+
+# Inclure le scan Snyk
+pcu security --snyk --severity high
+```
+
+### Dois-je auto-corriger toutes les vulnérabilités de sécurité ?
+
+Utilisez la prudence avec `--auto-fix` :
+
+- ✅ **Sûr** : Mises à jour de patch et mineures pour les corrections de sécurité
+- ⚠️ **À réviser** : Mises à jour de versions majeures qui pourraient casser votre app
+- ❌ **Éviter** : Auto-correction aveugle en production sans tests
+
+### Comment gérer les fausses alertes de sécurité ?
+
+Configurez les vulnérabilités ignorées dans `.pcurc.json` :
+
+```json
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn"
+    }
+  }
+}
+```
+
+## Flux de Travail et CI/CD
+
+### Puis-je utiliser PCU dans les pipelines CI/CD ?
+
+Absolument ! PCU est conçu pour l'automatisation :
+
+```bash
+# Commandes compatibles CI
+PCU_NO_COLOR=true pcu check --format json
+pcu security --format json --severity critical
+```
+
+Consultez notre [guide d'intégration CI/CD](/cicd) pour des exemples complets.
+
+### Comment créer des PR automatisées de mise à jour de dépendances ?
+
+Utilisez PCU avec GitHub Actions, GitLab CI ou d'autres plateformes :
+
+```yaml
+- name: Mettre à jour les dépendances
+  run: |
+    pcu update --target minor --create-backup
+    # Créer une PR avec les changements
+```
+
+Consultez le [guide d'intégration CI/CD](/cicd) pour des flux complets.
+
+### Quel est le meilleur flux de travail pour la collaboration d'équipe ?
+
+1. **Configuration partagée** : Commitez `.pcurc.json` dans le contrôle de version
+2. **Révisions régulières** : Planifiez des réunions hebdomadaires de révision des dépendances
+3. **Sécurité d'abord** : Priorisez toujours les mises à jour de sécurité
+4. **Mises à jour incrémentales** : Préférez des mises à jour plus petites et fréquentes plutôt que de gros lots
+5. **Tests** : Testez toujours après les mises à jour avant de fusionner
+
+## Utilisation Avancée
+
+### Puis-je utiliser plusieurs catalogues dans un espace de travail ?
+
+Oui ! PNPM prend en charge plusieurs catalogues :
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+
+catalogs:
+  react17:
+    react: ^17.0.2
+  experimental:
+    react: ^19.0.0-beta
+```
+
+Puis les utiliser dans les packages :
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:react17"
+  }
+}
+```
+
+### Comment analyser l'impact de la mise à jour d'un package spécifique ?
+
+Utilisez la commande d'analyse :
+
+```bash
+# Analyser l'impact de la mise à jour de React
+pcu analyze default react 18.3.0
+
+# Vérifier tous les catalogues
+pcu analyze react17 react 17.0.3
+```
+
+### Puis-je exclure définitivement certains packages des mises à jour ?
+
+Oui, configurez les exclusions dans `.pcurc.json` :
+
+```json
+{
+  "exclude": ["react", "vue", "@types/node"],
+  "packageRules": [
+    {
+      "patterns": ["critical-*"],
+      "exclude": true
+    }
+  ]
+}
+```
+
+### Comment gérer les monorepos avec plus de 100 packages ?
+
+Conseils de performance pour les grands monorepos :
+
+1. **Traitement par lots** : Configurez `batchSize: 10` dans les paramètres avancés
+2. **Réduire la concurrence** : Définissez `concurrency: 2` pour éviter de surcharger le registre
+3. **Utiliser le filtrage** : Traitez les packages par groupes avec des patterns `--include`
+4. **Activer le cache** : Assurez-vous que le cache est activé et bien configuré
+5. **Augmenter la mémoire** : Définissez `NODE_OPTIONS="--max-old-space-size=8192"`
+
+## Messages d'Erreur
+
+### "Cannot resolve peer dependencies"
+
+Cela arrive quand les versions de packages sont en conflit. Solutions :
+
+1. **Mettre à jour les packages liés ensemble** : `pcu update --include "react*"`
+2. **Utiliser le mode interactif** : `pcu update --interactive` pour choisir les versions soigneusement
+3. **Vérifier les peer dependencies** : Examiner ce que chaque package requiert
+4. **Utiliser plusieurs catalogues** : Séparer les versions conflictuelles dans différents catalogues
+
+### "Invalid configuration in .pcurc.json"
+
+Votre fichier de configuration a des erreurs de syntaxe JSON :
+
+```bash
+# Valider la syntaxe JSON
+node -e "JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8'))"
+
+# Régénérer la config si nécessaire
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+### "Command not found: pcu"
+
+Problèmes d'installation ou de PATH :
+
+1. **Réinstaller globalement** : `npm install -g pcu`
+2. **Vérifier le PATH** : Assurez-vous que npm global bin est dans votre PATH
+3. **Utiliser npx** : `npx pnpm-catalog-updates check` comme alternative
+4. **Utiliser pnpm** : `pnpm add -g pnpm-catalog-updates` (recommandé)
+
+## Intégration et Outils
+
+### PCU fonctionne-t-il avec Renovate ou Dependabot ?
+
+PCU est une alternative à ces outils, pas un complément :
+
+- **PCU** : Contrôle manuel, spécifique à pnpm, axé sur les catalogues
+- **Renovate** : PR automatisées, prend en charge de nombreux gestionnaires de packages
+- **Dependabot** : Intégré à GitHub, mises à jour de sécurité automatisées
+
+Choisissez selon vos préférences de flux de travail. Pour la migration, consultez notre [guide de migration](/examples#migration-from-other-tools).
+
+### Puis-je intégrer PCU avec mon IDE ?
+
+Bien qu'il n'y ait pas d'extension IDE officielle, vous pouvez :
+
+1. **Ajouter des scripts npm** : Configurer des commandes dans `package.json`
+2. **Utiliser des exécuteurs de tâches** : Intégrer avec les tâches VS Code ou similaires
+3. **Intégration terminal** : La plupart des IDE prennent en charge l'intégration terminal
+
+### PCU prend-il en charge les registres npm privés ?
+
+Oui ! PCU lit votre configuration `.npmrc` :
+
+```ini
+# .npmrc
+@mycompany:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+```
+
+PCU utilisera automatiquement le bon registre pour chaque scope de package.
+
+---
+
+## Vous avez encore des questions ?
+
+- 📖 **Documentation** : Consultez notre [référence des commandes](/command-reference) complète
+- 🛠️ **Dépannage** : Visitez notre [guide de dépannage](/troubleshooting)
+- 🐛 **Rapports de bugs** : [Créer un ticket](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Discussions** : [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)

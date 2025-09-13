@@ -1077,7 +1077,7 @@ PCU 支持多个包管理器，具有自动回退功能：
 
 ```bash
 # PCU 按顺序尝试：npm → pnpm → yarn
-npm install -g pnpm-catalog-updates@latest
+npm install -g pcu@latest
 # 如果 npm 失败，尝试：
 pnpm add -g pnpm-catalog-updates@latest
 # 如果 pnpm 失败，尝试：
@@ -1125,7 +1125,7 @@ yarn global add pnpm-catalog-updates@latest
 ```bash
 pcu check
 # ✨ PCU v0.8.0 可用 (当前版本：v0.7.15)
-# 运行 'npm install -g pnpm-catalog-updates@latest' 以更新
+# 运行 'npm install -g pcu@latest' 以更新
 # 使用 --no-update-check 禁用此消息
 ```
 
@@ -1134,7 +1134,7 @@ pcu check
 ```bash
 pcu security
 # 🔒 安全更新：PCU v0.7.16 包含安全修复 (当前版本：v0.7.15)
-# 立即更新：npm install -g pnpm-catalog-updates@latest
+# 立即更新：npm install -g pcu@latest
 ```
 
 #### 预发布通知
@@ -1143,7 +1143,7 @@ pcu security
 # 仅在 notifyPrerelease: true 时显示
 pcu check
 # 🧪 PCU v0.8.0-beta.1 可用于测试 (当前版本：v0.7.15)
-# 使用以下命令安装：npm install -g pnpm-catalog-updates@beta
+# 使用以下命令安装：npm install -g pcu@beta
 ```
 
 ### 手动更新命令
@@ -1158,13 +1158,13 @@ pcu -V
 
 ```bash {{ title: '手动更新' }}
 # 通过 npm 更新
-npm install -g pnpm-catalog-updates@latest
+npm install -g pcu@latest
 
 # 通过 pnpm 更新
 pnpm add -g pnpm-catalog-updates@latest
 
 # 更新到特定版本
-npm install -g pnpm-catalog-updates@0.8.0
+npm install -g pcu@0.8.0
 ```
 
 </CodeGroup>

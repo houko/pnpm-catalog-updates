@@ -1,0 +1,259 @@
+export const metadata = {
+  title: '컴포넌트 작성',
+  description:
+    'Notes, Buttons 등 대화형 UI 컴포넌트를 사용하여 문서 효과를 향상시키는 방법을 배워보세요.',
+};
+
+# 컴포넌트 작성
+
+대화형 UI 컴포넌트로 문서 효과를 향상시켜보세요. 중요한 정보를 위한 Notes 사용법, 액션을 위한 Buttons 사용법, 그리고 문서를 더욱 매력적이고 기능적으로 만드는 기타 요소들을 알아보세요. {{ className: 'lead' }}
+
+## 노트와 콜아웃
+
+`<Note>` 컴포넌트는 독자가 특별히 주의해야 할 중요한 정보, 경고 또는 팁을 강조하는데 완벽합니다.
+
+### 기본 Note 사용법
+
+<Note>
+  이것은 기본 노트 컴포넌트입니다. 자동으로 에메랄드 테마와 정보 아이콘을 사용하여 콘텐츠를
+  스타일링하고, 중요한 정보가 일반 텍스트에서 돋보이도록 합니다.
+</Note>
+
+```mdx
+<Note>중요한 정보가 포함된 기본 노트 컴포넌트입니다.</Note>
+```
+
+### 풍부한 콘텐츠가 포함된 Notes
+
+Notes는 **굵은 텍스트**, _기울임 텍스트_, `인라인 코드`, 심지어 [다른 페이지로의 링크](/writing-basics)까지 포함한 완전한 Markdown 형식을 지원합니다.
+
+<Note>
+  **중요한 설정 요구사항**: 계속하기 전에 다음을 확인하세요: - Node.js 18 이상 버전이 설치됨 -
+  프로젝트 저장소에 대한 액세스 권한 - 유효한 API 자격 증명이 구성됨 자격 증명 설정에 대해서는
+  [명령어 참조 가이드](/command-reference)를 참조하세요.
+</Note>
+
+```mdx
+<Note>
+  **중요한 설정 요구사항**: 계속하기 전에 다음을 확인하세요: - Node.js 18 이상 버전이 설치됨 -
+  프로젝트 저장소에 대한 액세스 권한 - 유효한 API 자격 증명이 구성됨 자격 증명 설정에 대해서는
+  [명령어 참조 가이드](/command-reference)를 참조하세요.
+</Note>
+```
+
+### 다중 단락 Notes
+
+<Note>
+  이것은 여러 관련 정보 조각을 포함하는 긴 노트의 첫 번째 단락입니다.
+
+두 번째 단락은 추가적인 맥락과 함께 생각을 이어갑니다. 개념을 완전히 설명하기 위해 필요한 만큼 많은 단락을 포함할 수 있습니다.
+
+좋은 노트는 간결하지만 완전하며, 독자가 메시지의 중요성을 이해하는 데 도움이 되는 적절한 양의 정보를 제공한다는 것을 기억하세요.
+
+</Note>
+
+```mdx
+<Note>
+  초기 정보가 포함된 첫 번째 단락입니다.
+
+추가적인 맥락과 세부사항이 포함된 두 번째 단락입니다.
+
+요약이나 다음 단계가 포함된 마지막 단락입니다.
+
+</Note>
+```
+
+## 버튼과 액션
+
+`<Button>` 컴포넌트는 사용자를 중요한 링크나 다음 단계로 안내하는 콜 투 액션 요소를 생성합니다.
+
+### 버튼 변형
+
+#### 채워진 버튼
+
+주요 액션과 가장 중요한 콜 투 액션에 사용하세요:
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    코드 컴포넌트 배우기
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    코드 컴포넌트 배우기
+  </Button>
+</div>
+```
+
+#### 아웃라인 버튼
+
+보조 액션과 대안 경로에 완벽합니다:
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    레이아웃 컴포넌트 탐색
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    레이아웃 컴포넌트 탐색
+  </Button>
+</div>
+```
+
+#### 텍스트 버튼
+
+콘텐츠와 조화를 이루면서도 여전히 돋보이는 미묘한 링크:
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    기초로 돌아가기
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    기초로 돌아가기
+  </Button>
+</div>
+```
+
+### 버튼 화살표
+
+버튼은 내비게이션을 나타내는 방향 화살표를 지원합니다:
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    이전 섹션
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    다음 섹션
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    이전 섹션
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    다음 섹션
+  </Button>
+</div>
+```
+
+### 버튼 모범 사례
+
+- **적당히 사용**: 너무 많은 버튼은 효과를 감소시킵니다
+- **명확한 액션 단어**: "시작하기", "더 알아보기", "문서 보기"
+- **논리적 계층**: 주요는 채워진 버튼, 보조는 아웃라인, 3차는 텍스트
+- **방향 화살표**: 왼쪽은 "뒤로/이전", 오른쪽은 "앞으로/다음"
+- **not-prose로 감싸기**: 항상 `<div className="not-prose">` 래퍼 사용
+
+## 컴포넌트 스타일링 컨텍스트
+
+### not-prose 래퍼
+
+일부 컴포넌트는 기본 prose 스타일링에서 벗어나야 합니다. 항상 이러한 컴포넌트를 감싸세요:
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    버튼 텍스트
+  </Button>
+</div>
+```
+
+`not-prose`가 **필요한** 컴포넌트:
+
+- 모든 `<Button>` 컴포넌트
+- 커스텀 레이아웃 요소
+- 대화형 위젯
+- 복잡한 스타일 컴포넌트
+
+`not-prose` **없이 작동하는** 컴포넌트:
+
+- `<Note>` 컴포넌트 (자체 포함 스타일링)
+- 표준 Markdown 요소
+- 텍스트 기반 컴포넌트
+
+### 여러 컴포넌트
+
+여러 컴포넌트를 함께 표시할 때:
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API 문서 가이드
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    고급 기능
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    기초 복습
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API 문서 가이드
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    고급 기능
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    기초 복습
+  </Button>
+</div>
+```
+
+## 컴포넌트 접근성
+
+모든 컴포넌트는 접근성을 고려하여 만들어졌습니다:
+
+- **시맨틱 HTML**: 적절한 버튼과 링크 요소
+- **ARIA 라벨**: 필요한 곳에 스크린 리더 지원
+- **키보드 내비게이션**: 완전한 키보드 접근성
+- **포커스 관리**: 명확한 포커스 인디케이터
+- **색상 대비**: WCAG 호환 색상 스킴
+
+## 각 컴포넌트 사용 시기
+
+### Notes를 사용할 때:
+
+- 중요한 정보 강조
+- 잠재적 문제에 대한 경고
+- 유용한 팁이나 컨텍스트 제공
+- 전제 조건이나 요구 사항 설명
+- 중요한 변경 사항에 주의 집중
+
+### Buttons를 사용할 때:
+
+- 다음 논리적 단계로 안내
+- 외부 리소스에 링크
+- 명확한 콜 투 액션 순간 생성
+- 주요 섹션 간 내비게이션
+- 주요 액션 강조
+
+### 과도한 사용 피하기:
+
+- 모든 단락에 노트를 사용하지 마세요
+- 섹션당 버튼을 1-2개로 제한
+- 정말 중요한 콘텐츠를 위해 컴포넌트를 보존
+- 일반 텍스트와 Markdown이 대부분의 콘텐츠를 담당하도록 하세요
+
+## 다음 단계
+
+이제 UI 컴포넌트를 이해했으니 다음을 탐색해보세요:
+
+- [코드 작성](/writing-code) - 구문 강조와 코드 블록
+- [레이아웃 작성](/writing-layout) - 다중 열 레이아웃과 조직
+- [API 작성](/writing-api) - API 문서 컴포넌트
+- [고급 작성](/writing-advanced) - 고급 기능과 메타데이터
+
+이러한 대화형 요소를 마스터하여 정보를 제공할 뿐만 아니라 독자를 효과적으로 안내하고 참여시키는 문서를 만드세요.

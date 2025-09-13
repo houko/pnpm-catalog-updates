@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'Escribir Documentación de API',
+  description:
+    'Crea documentación completa de API usando Properties, Tags y componentes especializados.',
+};
+
+# Escribir Documentación de API
+
+Crea documentación completa de API que los desarrolladores amen. Aprende a usar Properties para parámetros, Tags para métodos HTTP, Libraries para mostrar SDKs y componentes especializados que hacen las referencias de API claras y accionables. {{ className: 'lead' }}
+
+## Listas de Properties
+
+Documenta parámetros de API con `<Properties>` y `<Property>`:
+
+<Properties>
+  <Property name="id" type="string">
+    Identificador único para el recurso. Se genera automáticamente cuando se crea el recurso.
+  </Property>
+
+<Property name="name" type="string">
+  Nombre de visualización del recurso. Debe tener entre 1 y 100 caracteres.
+</Property>
+
+<Property name="email" type="string">
+  Dirección de correo electrónico válida. Debe ser única entre todos los usuarios.
+</Property>
+
+  <Property name="created_at" type="timestamp">
+    Marca de tiempo ISO 8601 que indica cuándo se creó el recurso.
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    Descripción del parámetro y su uso.
+  </Property>
+</Properties>
+```
+
+## Etiquetas de Métodos HTTP
+
+Las etiquetas se colorean automáticamente basándose en métodos HTTP:
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">PERSONALIZADO</Tag>
+  <Tag color="emerald">ÉXITO</Tag>
+  <Tag color="rose">ERROR</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">ÉXITO</Tag>
+```
+
+## Componentes Libraries
+
+### Cuadrícula Completa de Libraries
+
+Muestra todos los SDKs oficiales usando el componente `<Libraries>`:
+
+<Libraries />
+
+```mdx
+<Libraries />
+```
+
+### Library Individual
+
+Usa el componente `<Library>` para mostrar bibliotecas individuales:
+
+<Library language="node" />
+
+### Libraries Compactas
+
+Para espacios más pequeños, usa el modo compacto con descripciones:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+O sin descripciones para una visualización aún más compacta:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- Libraries compactas con descripciones -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- Libraries compactas sin descripciones -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Opciones del Componente Library
+
+- **language**: Elige entre `php`, `ruby`, `node`, `python`, `go` (por defecto: `node`)
+- **compact**: Usar estilo más pequeño (por defecto: `false`)
+- **showDescription**: Mostrar/ocultar texto de descripción (por defecto: `true`)
+
+### Casos de Uso de Libraries
+
+- **`<Libraries />`**: Páginas de resumen completo de SDK, secciones de introducción
+- **`<Library />`**: Documentación en línea, guías de lenguajes específicos
+- **`<Library compact />`**: Referencias de barra lateral, listados compactos
+
+## Mejores Prácticas de API
+
+- Siempre documenta todos los parámetros con componentes Properties
+- Incluye ejemplos de solicitudes y respuestas
+- Usa códigos de estado HTTP apropiados con Tags
+- Proporciona mensajes de error claros
+- Incluye requisitos de autenticación
+- Usa el componente Libraries para páginas de SDK
+- Mantén las listas de Properties enfocadas y bien organizadas
+
+## Próximos Pasos
+
+Completa tu viaje de documentación con [Características Avanzadas](/writing-advanced).

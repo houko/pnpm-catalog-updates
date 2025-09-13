@@ -1,11 +1,13 @@
-'use client'
-
 import { Button } from '@/components/Button'
 import { Heading } from '@/components/Heading'
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 
-export function Guides() {
-  const t = useTranslations('Guides')
+type Props = {
+  locale: string
+}
+
+export async function Guides({ locale }: Props) {
+  const t = await getTranslations({ locale, namespace: 'Guides' })
 
   const guides = [
     {

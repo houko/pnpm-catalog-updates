@@ -1,0 +1,794 @@
+export const metadata = {
+  title: '문제 해결',
+  description:
+    'pnpm-catalog-updates 사용 시 일반적인 문제와 해결책. 오류 메시지, 디버깅 팁, 문제 해결 가이드.',
+};
+
+# 문제 해결
+
+PCU 문제 해결을 도와주는 일반적인 문제와 해결책. 자주 발생하는 오류와 디버깅 팁을 찾아보세요. {{ className: 'lead' }}
+
+## 일반적인 오류
+
+### 워크스페이스를 찾을 수 없음
+
+**오류 메시지:**
+
+```
+Error: No pnpm workspace found in the current directory
+```
+
+**원인:** PCU가 `pnpm-workspace.yaml` 파일을 찾을 수 없거나 유효한 pnpm 워크스페이스 구조를 감지할 수 없습니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '워크스페이스 초기화' }}
+# 새 pnpm 워크스페이스 생성
+pcu init
+
+# 또는 수동으로 pnpm-workspace.yaml 생성
+echo "packages:
+  - 'packages/*'" > pnpm-workspace.yaml
+```
+
+```bash {{ title: '워크스페이스 경로 지정' }}
+# 워크스페이스 루트에서 PCU 실행
+cd /path/to/workspace/root
+pcu -c
+
+# 또는 워크스페이스 디렉토리 지정
+pcu -c --workspace /path/to/workspace
+```
+
+</CodeGroup>
+
+---
+
+### 카탈로그 의존성 없음
+
+**오류 메시지:**
+
+```
+No catalog dependencies found in workspace
+```
+
+**원인:** 워크스페이스가 pnpm 카탈로그 의존성을 사용하지 않습니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml에 카탈로그 추가' }}
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+  typescript: ^5.0.0
+  lodash: ^4.17.21
+```
+
+```json {{ title: 'package.json에서 카탈로그 사용' }}
+{
+  "name": "my-package",
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "lodash": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+### 레지스트리 액세스 문제
+
+**오류 메시지:**
+
+```
+Error: getaddrinfo ENOTFOUND registry.npmjs.org
+```
+
+**원인:** 네트워크 연결 문제 또는 레지스트리 액세스 문제입니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '네트워크 문제 해결' }}
+# 네트워크 연결 확인
+ping registry.npmjs.org
+
+# 증가된 타임아웃으로 테스트
+pcu -c --timeout 60000
+
+# 동시 요청 줄이기
+pcu -c --concurrency 2
+```
+
+```ini {{ title: '레지스트리 구성 (.npmrc)' }}
+# 다른 레지스트리 사용
+registry=https://registry.npmjs.org/
+
+# 기업 네트워크용
+registry=https://your-corporate-registry.com/
+strict-ssl=false
+```
+
+</CodeGroup>
+
+---
+
+### 인증 오류
+
+**오류 메시지:**
+
+```
+Error: 401 Unauthorized - authentication required
+```
+
+**원인:** 개인 레지스트리를 위한 인증 토큰이 누락되었거나 유효하지 않습니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```ini {{ title: '인증 구성 (.npmrc)' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+# 또는 레거시 인증 사용
+//npm.private-registry.com/:username=myuser
+//npm.private-registry.com/:_password=base64password
+//npm.private-registry.com/:email=my.email@example.com
+```
+
+```bash {{ title: '환경 변수 설정' }}
+export NPM_TOKEN=your_token_here
+pcu -c
+```
+
+</CodeGroup>
+
+---
+
+### 구성 파일 오류
+
+**오류 메시지:**
+
+```
+Error: Invalid configuration in .pcurc.json
+```
+
+**원인:** 잘못된 JSON 형식이거나 유효하지 않은 구성 옵션입니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '구성 검증' }}
+# JSON 구문 확인
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8')))"
+
+# 구성 재생성
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+```json {{ title: '최소 유효 구성' }}
+{
+  "defaults": {
+    "target": "latest"
+  },
+  "output": {
+    "format": "table"
+  }
+}
+```
+
+</CodeGroup>
+
+## 디버깅
+
+### 상세 로깅 활성화
+
+<CodeGroup>
+
+```bash {{ title: '상세 출력' }}
+# 상세 로깅 활성화
+pcu -c --verbose
+
+# 환경 변수로 디버그 모드
+DEBUG=pcu:* pcu -c
+
+# 특정 디버그 모듈
+DEBUG=pcu:core,pcu:registry pcu -c
+```
+
+```bash {{ title: '파일로 출력' }}
+# 디버그 출력 저장
+pcu -c --verbose > debug.log 2>&1
+
+# 로그 파일 확인
+cat debug.log | grep -i error
+```
+
+</CodeGroup>
+
+### 워크스페이스 검증
+
+<CodeGroup>
+
+```bash {{ title: '워크스페이스 검증' }}
+# 워크스페이스 구성 확인
+pcu -s --validate
+
+# 상세한 워크스페이스 정보 가져오기
+pcu -s --stats --verbose
+```
+
+```bash {{ title: '수동 검증' }}
+# pnpm-workspace.yaml 존재 확인
+ls -la pnpm-workspace.yaml
+
+# 카탈로그 구문 검증
+pnpm exec -- pnpm list --depth=0
+```
+
+</CodeGroup>
+
+## 성능 문제
+
+### 느린 네트워크 요청
+
+**증상:** PCU가 업데이트 확인에 오래 걸림
+
+**해결책:**
+
+<CodeGroup>
+
+```json {{ title: '구성 최적화' }}
+{
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 30000,
+    "retries": 2,
+    "cacheValidityMinutes": 120
+  }
+}
+```
+
+```bash {{ title: '캐시 관리' }}
+# 오래된 캐시 정리
+rm -rf ~/.pcu/cache
+
+# 디버깅을 위해 캐시 비활성화
+pcu -c --no-cache
+```
+
+</CodeGroup>
+
+### 높은 메모리 사용량
+
+**증상:** PCU가 대규모 워크스페이스에서 과도한 메모리 소비
+
+**해결책:**
+
+<CodeGroup>
+
+```json {{ title: '메모리 최적화' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 10
+  }
+}
+```
+
+```bash {{ title: '프로세스 관리' }}
+# 메모리 사용량 모니터링
+top -p $(pgrep node)
+
+# Node.js 메모리 플래그 사용
+node --max-old-space-size=4096 $(which pcu) -c
+```
+
+</CodeGroup>
+
+## 환경 문제
+
+### Node.js 버전 호환성
+
+**오류 메시지:**
+
+```
+Error: Unsupported Node.js version
+```
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '버전 확인' }}
+node --version  # >= 18.0.0이어야 함
+
+# 호환 버전 설치
+nvm install 20
+nvm use 20
+```
+
+```bash {{ title: 'Node.js 업데이트' }}
+# nvm 사용
+nvm install --lts
+nvm use --lts
+
+# 설치 확인
+node --version
+npm --version
+```
+
+</CodeGroup>
+
+### pnpm 버전 문제
+
+**오류 메시지:**
+
+```
+Error: pnpm command not found
+```
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: 'pnpm 설치' }}
+# 최신 pnpm 설치
+npm install -g pnpm@latest
+
+# 설치 확인
+pnpm --version  # >= 8.0.0이어야 함
+```
+
+```bash {{ title: '대체 설치 방법' }}
+# Corepack 사용 (권장)
+corepack enable
+corepack prepare pnpm@latest --activate
+
+# 직접 다운로드
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+</CodeGroup>
+
+## Windows 특정 문제
+
+### 경로 구분자 문제
+
+**오류 메시지:**
+
+```
+Error: Cannot resolve workspace path
+```
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '슬래시 사용' }}
+# 경로에 슬래시 사용
+pcu -c --workspace ./my/workspace
+
+# 또는 PowerShell 사용
+pwsh -c "pcu -c"
+```
+
+```json {{ title: 'Windows 구성' }}
+{
+  "workspace": {
+    "pathSeparator": "/"
+  }
+}
+```
+
+</CodeGroup>
+
+### 권한 오류
+
+**오류 메시지:**
+
+```
+Error: EPERM: operation not permitted
+```
+
+**해결책:**
+
+<CodeGroup>
+
+```cmd {{ title: '관리자 권한으로 실행' }}
+# 관리자 권한으로 명령 프롬프트 실행
+runas /user:Administrator cmd
+
+# 또는 관리자 권한으로 PowerShell 사용
+Start-Process powershell -Verb RunAs
+```
+
+```bash {{ title: '권한 수정' }}
+# npm 권한 수정
+npm config set cache ~/.npm-cache
+npm config set prefix ~/npm-global
+```
+
+</CodeGroup>
+
+## 도움 받기
+
+### 진단 정보
+
+문제를 신고할 때 다음 진단 정보를 포함하세요:
+
+<CodeGroup>
+
+```bash {{ title: '시스템 정보' }}
+# PCU 버전
+pcu --version
+
+# Node.js 및 pnpm 버전
+node --version
+pnpm --version
+
+# 운영체제
+uname -a  # Linux/macOS
+systeminfo  # Windows
+```
+
+```bash {{ title: '구성 정보' }}
+# 현재 구성 표시
+cat .pcurc.json
+
+# 워크스페이스 검증
+pcu -s --validate --verbose
+
+# 디버그 출력
+DEBUG=pcu:* pcu -c --verbose
+```
+
+</CodeGroup>
+
+### 지원 채널
+
+- 🐛 **버그 신고**: [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **질문**: [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 📖 **문서**: 상세한 가이드는 이 문서를 확인하세요
+- 🔧 **기능 요청**: enhancement 라벨과 함께 GitHub Issues 사용
+
+### 이슈 템플릿
+
+버그를 신고할 때 다음을 포함해 주세요:
+
+1. **PCU 버전** 및 **사용한 명령어**
+2. **오류 메시지** (`--verbose`와 함께 전체 출력)
+3. **환경** (OS, Node.js, pnpm 버전)
+4. **워크스페이스 구조** (pnpm-workspace.yaml, package.json)
+5. **구성** (.pcurc.json, 관련된 경우 .npmrc)
+6. **재현 단계**
+7. **예상 vs 실제 동작**
+
+## 보안 명령어 문제
+
+### Snyk 통합 문제
+
+**오류 메시지:**
+
+```
+Error: Snyk CLI not found
+```
+
+**원인:** Snyk CLI가 설치되지 않았지만 `--snyk` 플래그가 사용됨.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: 'Snyk CLI 설치' }}
+# Snyk 전역 설치
+npm install -g snyk
+
+# Snyk 인증
+snyk auth
+
+# Snyk 설치 테스트
+snyk --version
+```
+
+```bash {{ title: 'Snyk 없이 실행' }}
+# npm audit만 사용 (기본값)
+pcu security
+
+# 명시적으로 Snyk 비활성화
+pcu security --no-snyk
+```
+
+</CodeGroup>
+
+### 보안 수정 실패
+
+**오류 메시지:**
+
+```
+Error: Unable to automatically fix vulnerabilities
+```
+
+**원인:** 일부 취약점은 수동 개입이나 메이저 버전 업데이트가 필요합니다.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '수동 보안 수정' }}
+# 먼저 취약점 검토
+pcu security --format json > security.json
+
+# 자동 수정 시도
+pcu security --fix-vulns
+
+# 필요시 수동 패키지 업데이트
+pcu -u --include "vulnerable-package"
+```
+
+```bash {{ title: '보안을 위한 메이저 업데이트 강제' }}
+# 보안 수정을 위한 메이저 업데이트 허용
+pcu security --fix-vulns --allow-major-security
+
+# 적용 전 영향 확인
+pcu -a default vulnerable-package
+```
+
+</CodeGroup>
+
+---
+
+### 테마 명령어 문제
+
+**오류 메시지:**
+
+```
+Error: Theme 'custom-theme' not found
+```
+
+**원인:** 존재하지 않는 테마를 설정하려고 시도함.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '사용 가능한 테마 나열' }}
+# 모든 사용 가능한 테마 보기
+pcu theme --list
+
+# 대화형 테마 선택 사용
+pcu theme --interactive
+```
+
+```bash {{ title: '기본 테마로 재설정' }}
+# 기본 테마로 재설정
+pcu theme --set default
+
+# 또는 테마 구성 삭제
+rm ~/.pcu/theme.json
+```
+
+</CodeGroup>
+
+---
+
+### 대화형 모드 문제
+
+**오류 메시지:**
+
+```
+Error: Interactive mode not supported in this environment
+```
+
+**원인:** 비대화형 환경(CI, 파이프 등)에서 PCU 실행.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '비대화형 대안' }}
+# 변경사항 미리보기를 위한 dry-run 사용
+pcu -u --dry-run
+
+# 대화형 대신 특정 대상 사용
+pcu -u --target minor
+
+# 자동화를 위한 구성 파일 사용
+pcu -u --config .pcurc.json
+```
+
+```bash {{ title: '대화형 모드 강제' }}
+# 대화형 모드를 위한 TTY 강제
+script -c "pcu -i" /dev/null
+
+# 특정 터미널 사용
+TERM=xterm pcu -i
+```
+
+</CodeGroup>
+
+## 명령어별 문제
+
+### 분석 명령어 문제
+
+**오류 메시지:**
+
+```
+Error: Package 'react' not found in catalog 'nonexistent'
+```
+
+**원인:** 지정된 카탈로그에 존재하지 않는 패키지를 분석하려고 시도.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '사용 가능한 카탈로그 확인' }}
+# 워크스페이스 카탈로그 나열
+pcu workspace --stats
+
+# 기본 카탈로그에 패키지가 존재하는지 확인
+pcu -a default react
+
+# 카탈로그의 모든 패키지 나열
+pcu -c --catalog specific-catalog
+```
+
+```bash {{ title: '패키지 이름 확인' }}
+# 유사한 패키지 이름 검색
+pcu -c --include "*react*"
+
+# 레지스트리에 패키지가 존재하는지 확인
+npm view react versions --json
+```
+
+</CodeGroup>
+
+### 업데이트 명령어 실패
+
+**오류 메시지:**
+
+```
+Error: Failed to update package.json files
+```
+
+**원인:** 파일 권한 문제 또는 워크스페이스 구조 문제.
+
+**해결책:**
+
+<CodeGroup>
+
+```bash {{ title: '권한 확인' }}
+# 파일 권한 확인
+ls -la pnpm-workspace.yaml
+find packages -name "package.json" -exec ls -la {} \;
+
+# 필요시 권한 수정
+chmod u+w pnpm-workspace.yaml
+chmod u+w packages/*/package.json
+```
+
+```bash {{ title: '워크스페이스 검증' }}
+# 먼저 워크스페이스 검증
+pcu workspace --validate
+
+# 안전을 위한 백업 플래그 사용
+pcu -u --create-backup
+
+# dry-run으로 테스트
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+## 고급 디버깅
+
+### 메모리 누수 조사
+
+**증상:** PCU 프로세스 메모리가 작업 중 계속 증가
+
+**디버그 단계:**
+
+<CodeGroup>
+
+```bash {{ title: '메모리 모니터링' }}
+# 메모리 사용량 모니터링
+watch -n 1 'ps aux | grep pcu'
+
+# Node.js 메모리 프로파일링 사용
+node --inspect $(which pcu) -c
+
+# 가비지 컬렉션 로깅 활성화
+node --trace-gc $(which pcu) -c
+```
+
+```bash {{ title: '대규모 워크스페이스 디버깅' }}
+# 더 작은 배치로 처리
+pcu -c --batch-size 10
+
+# 동시성 줄이기
+pcu -c --concurrency 1
+
+# 메모리 최적화 활성화
+node --optimize-for-size $(which pcu) -c
+```
+
+</CodeGroup>
+
+### 레지스트리 응답 문제
+
+**증상:** 일관성 없는 결과 또는 타임아웃 오류
+
+**디버그 단계:**
+
+<CodeGroup>
+
+```bash {{ title: '레지스트리 디버깅' }}
+# 레지스트리 연결 테스트
+curl -I https://registry.npmjs.org/
+
+# 레지스트리 응답 시간 확인
+time npm view react versions
+
+# 대체 레지스트리 사용
+npm config set registry https://registry.npmmirror.com/
+```
+
+```bash {{ title: '네트워크 진단' }}
+# 네트워크 요청 추적
+DEBUG=pcu:registry pcu -c
+
+# 네트워크 활동 모니터링
+netstat -an | grep :443
+
+# 다른 타임아웃으로 테스트
+pcu -c --timeout 5000
+pcu -c --timeout 30000
+```
+
+</CodeGroup>
+
+### 구성 상속 문제
+
+**증상:** 구성이 예상대로 적용되지 않음
+
+**디버그 단계:**
+
+<CodeGroup>
+
+```bash {{ title: '구성 해결' }}
+# 구성 파일 위치 확인
+ls -la .pcurc.json
+ls -la ~/.pcurc.json
+ls -la ~/.config/pcu/config.json
+
+# 구성 로딩 디버그
+DEBUG=pcu:config pcu -c --verbose
+
+# 효과적인 구성 표시
+pcu config --show-effective
+```
+
+```bash {{ title: '구성 검증' }}
+# 구성 구문 검증
+node -pe "JSON.parse(require('fs').readFileSync('.pcurc.json'))"
+
+# 최소 구성으로 테스트
+echo '{"defaults":{"target":"latest"}}' > test.pcurc.json
+pcu -c --config test.pcurc.json
+```
+
+</CodeGroup>

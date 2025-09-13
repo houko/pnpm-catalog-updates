@@ -1,0 +1,216 @@
+export const metadata = {
+  title: 'Schreib-Grundlagen',
+  description:
+    'Lernen Sie die Grundlagen des Schreibens von Dokumentation mit Markdown-Formatierung, Listen, Links und grundlegender Syntax.',
+};
+
+# Schreib-Grundlagen
+
+Meistern Sie die grundlegenden Bausteine des Dokumentationsschreibens. Dieser Leitfaden behandelt Standard-Markdown-Syntax, Formatierungsoptionen und grundlegende Elemente, die Sie in jedem Dokument verwenden werden. {{ className: 'lead' }}
+
+## Markdown-Grundlagen
+
+Standard-Markdown-Formatierung wird vollständig unterstützt und bildet die Grundlage aller Dokumentation:
+
+**Fetter Text** für Betonung und Wichtigkeit  
+_Kursiver Text_ für subtile Betonung  
+`Inline-Code` für technische Begriffe, Befehle und kurze Code-Snippets
+
+Sie können diese kombinieren: **_fett und kursiv_** oder **fett mit `Code`**
+
+## Textformatierung
+
+### Betonung und starker Text
+
+Verwenden Sie Sternchen oder Unterstriche für Betonung:
+
+```markdown
+_Dies ist kursiver Text_
+_Dies ist auch kursiv_
+
+**Dies ist fetter Text**
+**Dies ist auch fett**
+
+**_Dies ist fett und kursiv_**
+```
+
+### Code und technische Begriffe
+
+Für Inline-Code, Variablen oder technische Begriffe verwenden Sie Backticks:
+
+```markdown
+Verwenden Sie den `npm install` Befehl zur Paketinstallation.
+Setzen Sie die `NODE_ENV` Variable auf `production`.
+Der `useState` Hook verwaltet Komponentenzustände.
+```
+
+## Listen und Organisation
+
+### Ungeordnete Listen
+
+Perfekt für Feature-Listen, Anforderungen oder beliebige nicht-sequenzielle Elemente:
+
+- Hauptfunktion oder Punkt
+- Ein weiterer wichtiger Punkt
+- Dritte Überlegung
+  - Verschachtelter Unterpunkt
+  - Zusätzliches Unterdetail
+- Zurück zur Hauptebene
+
+### Geordnete Listen
+
+Verwenden Sie diese für Schritt-für-Schritt-Anleitungen, Verfahren oder priorisierte Elemente:
+
+1. Erster Schritt im Prozess
+2. Zweiter Schritt mit wichtigen Details
+3. Dritter Schritt
+   1. Unterschritt mit spezifischen Anweisungen
+   2. Ein weiterer Unterschritt
+4. Letzter Schritt
+
+### Aufgabenlisten
+
+Großartig für Checklisten und Fortschrittsverfolgung:
+
+- [x] Erledigte Aufgabe
+- [x] Ein weiterer abgeschlossener Punkt
+- [ ] Ausstehende Aufgabe
+- [ ] Zukünftige Verbesserung
+
+## Links und Navigation
+
+### Interne Links
+
+Verlinken Sie zu anderen Seiten in Ihrer Dokumentation:
+
+```markdown
+Siehe unseren [Schnellstart-Leitfaden](/quickstart) für Setup-Anweisungen.
+Prüfen Sie die [API-Referenz](/api) für vollständige Endpoint-Details.
+```
+
+Beispiele:
+
+- [Befehlsreferenz-Leitfaden](/command-reference)
+- [Fehlerbehebung](/troubleshooting)
+- [SDK-Dokumentation](/sdks)
+
+### Externe Links
+
+Verlinken Sie zu externen Ressourcen:
+
+```markdown
+Besuchen Sie [GitHub](https://github.com) für den Quellcode.
+Lesen Sie die [offizielle Dokumentation](https://example.com/docs).
+```
+
+### Anker-Links
+
+Verlinken Sie zu spezifischen Abschnitten innerhalb von Seiten:
+
+```markdown
+Springen Sie zum [Textformatierung](#textformatierung) Abschnitt oben.
+Siehe [Best Practices](#best-practices) unten.
+```
+
+## Überschriften und Struktur
+
+Erstellen Sie eine klare Dokumenthierarchie mit ordnungsgemäßen Überschriftenebenen:
+
+```markdown
+# Seitentitel (H1 - wird automatisch aus Metadaten verwendet)
+
+## Hauptabschnitt (H2)
+
+### Unterabschnitt (H3)
+
+#### Detailabschnitt (H4)
+
+##### Kleiner Abschnitt (H5)
+
+###### Kleinster Abschnitt (H6)
+```
+
+### Best Practices für Überschriften
+
+- Verwenden Sie H1 nur für Seitentitel (wird von Metadaten verwaltet)
+- Beginnen Sie Abschnitte mit H2, Unterabschnitte mit H3
+- Überspringen Sie keine Überschriftenebenen (kein H2 → H4)
+- Halten Sie Überschriften beschreibend und scannbar
+- Verwenden Sie Satzbau: "Erste Schritte" nicht "Erste Schritte"
+
+## Zitate und Hervorhebungen
+
+### Blockzitate
+
+Für wichtige Zitate oder Referenzen:
+
+> "Dokumentation ist ein Liebesbrief, den Sie an Ihr zukünftiges Ich schreiben."  
+> — Damian Conway
+
+> **Wichtiger Hinweis**: Dies ist ein hervorgehobenes Zitat mit zusätzlichem Kontext, das sich über mehrere Zeilen erstreckt und wichtige Informationen liefert.
+
+### Mehrzeilige Zitate
+
+> Dies ist der erste Absatz eines längeren Zitats.
+>
+> Dies ist der zweite Absatz, der den Gedanken mit zusätzlichen Details und Kontext fortsetzt.
+
+## Horizontale Linien
+
+Trennen Sie Hauptabschnitte mit horizontalen Linien:
+
+```markdown
+---
+```
+
+Erstellt eine visuelle Trennung:
+
+---
+
+## Tabellen
+
+Einfache Tabellen für strukturierte Daten:
+
+| Feature     | Basic  | Pro       | Enterprise |
+| ----------- | ------ | --------- | ---------- |
+| Benutzer    | 10     | 100       | Unbegrenzt |
+| Speicher    | 1GB    | 10GB      | 100GB      |
+| API-Aufrufe | 1.000  | 10.000    | Unbegrenzt |
+| Support     | E-Mail | Priorität | 24/7 Phone |
+
+### Tabellenausrichtung
+
+Spaltenausrichtung kontrollieren:
+
+| Linksbündig |  Zentriert  | Rechtsbündig |
+| :---------- | :---------: | -----------: |
+| Text        |    Text     |         Text |
+| Mehr Inhalt | Mehr Inhalt |  Mehr Inhalt |
+
+## Sonderzeichen
+
+Verwenden Sie Backslashes, um spezielle Markdown-Zeichen zu maskieren:
+
+```markdown
+\*Nicht kursiv\*
+\`Nicht Code\`
+\# Keine Überschrift
+```
+
+## Zeilenumbrüche und Abstände
+
+- Beenden Sie Zeilen mit zwei Leerzeichen für harte Umbrüche
+- Verwenden Sie leere Zeilen zur Trennung von Absätzen
+- Verwenden Sie `\` am Zeilenende für Umbrüche in Listen
+
+## Nächste Schritte
+
+Nachdem Sie diese Grundlagen gemeistert haben, erkunden Sie:
+
+- [Komponenten schreiben](/writing-components) - Interaktive UI-Elemente
+- [Code schreiben](/writing-code) - Code-Blöcke und Syntax-Highlighting
+- [Layout schreiben](/writing-layout) - Mehrspaltige Layouts und Organisation
+- [API schreiben](/writing-api) - API-Dokumentationskomponenten
+- [Erweitert schreiben](/writing-advanced) - Erweiterte Features und Best Practices
+
+Diese Grundlagen bilden das Fundament aller großartigen Dokumentation. Meistern Sie sie zuerst, dann bauen Sie darauf mit den erweiterten Komponenten und Techniken auf, die in den anderen Leitfäden behandelt werden.

@@ -21,7 +21,7 @@ npm install -g pcu
 pnpm add -g pcu
 
 # Or use legacy package name
-npm install -g pnpm-catalog-updates
+npm install -g pcu
 ```
 
 ### Usage

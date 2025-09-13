@@ -1,0 +1,1020 @@
+export const metadata = {
+  title: 'トラブルシューティング',
+  description:
+    'pnpm-catalog-updates 使用時の一般的な問題と解決策。エラーメッセージ、デバッグのコツ、トラブルシューティングガイド。',
+};
+
+# トラブルシューティング
+
+PCU の問題を解決するための一般的な問題と解決策。よくあるエラーの答えとデバッグのコツを見つけます。{{ className: 'lead' }}
+
+## 一般的なエラー
+
+### ワークスペースが見つからない
+
+**エラーメッセージ：**
+
+```
+Error: No pnpm workspace found in the current directory
+```
+
+**原因：** PCU が `pnpm-workspace.yaml` ファイルを見つけられないか、有効な pnpm ワークスペース構造を検出できません。
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'ワークスペースの初期化' }}
+# 新しい pnpm ワークスペースを作成
+pcu init
+
+# または手動で pnpm-workspace.yaml を作成
+echo "packages:
+  - 'packages/*'" > pnpm-workspace.yaml
+```
+
+```bash {{ title: 'ワークスペースパスの指定' }}
+# ワークスペースルートから PCU を実行
+cd /path/to/workspace/root
+pcu -c
+
+# またはワークスペースディレクトリを指定
+pcu -c --workspace /path/to/workspace
+```
+
+</CodeGroup>
+
+---
+
+### カタログ依存関係がない
+
+**エラーメッセージ：**
+
+```
+No catalog dependencies found in workspace
+```
+
+**原因：** あなたのワークスペースで pnpm カタログ依存関係が使用されていません。
+
+**解決策：**
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml にカタログを追加' }}
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+  typescript: ^5.0.0
+  lodash: ^4.17.21
+```
+
+```json {{ title: 'package.json でカタログを使用' }}
+{
+  "name": "my-package",
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "lodash": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+### レジストリアクセス問題
+
+**エラーメッセージ：**
+
+```
+Error: getaddrinfo ENOTFOUND registry.npmjs.org
+```
+
+**原因：** ネットワーク接続問題またはレジストリアクセス問題。
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'ネットワークトラブルシューティング' }}
+# ネットワーク接続を確認
+ping registry.npmjs.org
+
+# タイムアウトを増やしてテスト
+pcu -c --timeout 60000
+
+# 並行リクエストを減らす
+pcu -c --concurrency 2
+```
+
+```ini {{ title: 'レジストリ設定 (.npmrc)' }}
+# 異なるレジストリを使用
+registry=https://registry.npmjs.org/
+
+# 企業ネットワーク
+registry=https://your-corporate-registry.com/
+strict-ssl=false
+```
+
+</CodeGroup>
+
+---
+
+### 認証エラー
+
+**エラーメッセージ：**
+
+```
+Error: 401 Unauthorized - authentication required
+```
+
+**原因：** プライベートレジストリの認証トークンが欠落または無効です。
+
+**解決策：**
+
+<CodeGroup>
+
+```ini {{ title: '認証の設定 (.npmrc)' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+# またはレガシー認証を使用
+//npm.private-registry.com/:username=myuser
+//npm.private-registry.com/:_password=base64password
+//npm.private-registry.com/:email=my.email@example.com
+```
+
+```bash {{ title: '環境変数の設定' }}
+export NPM_TOKEN=your_token_here
+pcu -c
+```
+
+</CodeGroup>
+
+---
+
+### 設定ファイルエラー
+
+**エラーメッセージ：**
+
+```
+Error: Invalid configuration in .pcurc.json
+```
+
+**原因：** JSON フォーマットエラーまたは無効な設定オプション。
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: '設定の検証' }}
+# JSON 構文を確認
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8')))"
+
+# 設定を再生成
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+```json {{ title: '最小有効設定' }}
+{
+  "defaults": {
+    "target": "latest"
+  },
+  "output": {
+    "format": "table"
+  }
+}
+```
+
+</CodeGroup>
+
+## デバッグ
+
+### 詳細ログの有効化
+
+<CodeGroup>
+
+```bash {{ title: '詳細出力' }}
+# 詳細ログを有効にする
+pcu -c --verbose
+
+# 環境変数でデバッグモードを使用
+DEBUG=pcu:* pcu -c
+
+# 特定のデバッグモジュール
+DEBUG=pcu:core,pcu:registry pcu -c
+```
+
+```bash {{ title: 'ファイルへの出力' }}
+# デバッグ出力を保存
+pcu -c --verbose > debug.log 2>&1
+
+# ログファイルを確認
+cat debug.log | grep -i error
+```
+
+</CodeGroup>
+
+### ワークスペースの検証
+
+<CodeGroup>
+
+```bash {{ title: 'ワークスペースの検証' }}
+# ワークスペース設定を確認
+pcu -s --validate
+
+# 詳細なワークスペース情報を取得
+pcu -s --stats --verbose
+```
+
+```bash {{ title: '手動検証' }}
+# pnpm-workspace.yaml の存在を確認
+ls -la pnpm-workspace.yaml
+
+# カタログ構文を検証
+pnpm exec -- pnpm list --depth=0
+```
+
+</CodeGroup>
+
+## パフォーマンス問題
+
+### ネットワークリクエストが遅い
+
+**症状：** PCU の更新チェックに時間がかかりすぎる
+
+**解決策：**
+
+<CodeGroup>
+
+```json {{ title: '最適化設定' }}
+{
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 30000,
+    "retries": 2,
+    "cacheValidityMinutes": 120
+  }
+}
+```
+
+```bash {{ title: 'キャッシュ管理' }}
+# キャッシュが古い場合はクリア
+rm -rf ~/.pcu/cache
+
+# デバッグ用にキャッシュを無効化
+pcu -c --no-cache
+```
+
+</CodeGroup>
+
+### メモリ使用量が多い
+
+**症状：** PCU が大規模ワークスペースで過度にメモリを消費する
+
+**解決策：**
+
+<CodeGroup>
+
+```json {{ title: 'メモリ最適化' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 10
+  }
+}
+```
+
+```bash {{ title: 'プロセス管理' }}
+# メモリ使用量を監視
+top -p $(pgrep node)
+
+# Node.js メモリフラグを使用
+node --max-old-space-size=4096 $(which pcu) -c
+```
+
+</CodeGroup>
+
+## 環境問題
+
+### Node.js バージョン互換性
+
+**エラーメッセージ：**
+
+```
+Error: Unsupported Node.js version
+```
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'バージョン確認' }}
+node --version  # >= 18.0.0 である必要があります
+
+# 互換バージョンをインストール
+nvm install 20
+nvm use 20
+```
+
+```bash {{ title: 'Node.js の更新' }}
+# nvm を使用
+nvm install --lts
+nvm use --lts
+
+# インストールを確認
+node --version
+npm --version
+```
+
+</CodeGroup>
+
+### pnpm バージョン問題
+
+**エラーメッセージ：**
+
+```
+Error: pnpm command not found
+```
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'pnpm のインストール' }}
+# 最新の pnpm をインストール
+npm install -g pnpm@latest
+
+# インストールを確認
+pnpm --version  # >= 8.0.0 である必要があります
+```
+
+```bash {{ title: '代替インストール' }}
+# Corepack を使用（推奨）
+corepack enable
+corepack prepare pnpm@latest --activate
+
+# 直接ダウンロード
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+</CodeGroup>
+
+## Windows 固有の問題
+
+### パス区切り文字の問題
+
+**エラーメッセージ：**
+
+```
+Error: Cannot resolve workspace path
+```
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'フォワードスラッシュの使用' }}
+# パスでフォワードスラッシュを使用
+pcu -c --workspace ./my/workspace
+
+# または PowerShell を使用
+pwsh -c "pcu -c"
+```
+
+```json {{ title: 'Windows 設定' }}
+{
+  "workspace": {
+    "pathSeparator": "/"
+  }
+}
+```
+
+</CodeGroup>
+
+### 権限エラー
+
+**エラーメッセージ：**
+
+```
+Error: EPERM: operation not permitted
+```
+
+**解決策：**
+
+<CodeGroup>
+
+```cmd {{ title: '管理者として実行' }}
+# 管理者としてコマンドプロンプトを実行
+runas /user:Administrator cmd
+
+# または管理者として PowerShell を使用
+Start-Process powershell -Verb RunAs
+```
+
+```bash {{ title: '権限の修正' }}
+# npm 権限を修正
+npm config set cache ~/.npm-cache
+npm config set prefix ~/npm-global
+```
+
+</CodeGroup>
+
+## ヘルプの取得
+
+### 診断情報
+
+問題を報告する際は、この診断情報を含めてください：
+
+<CodeGroup>
+
+```bash {{ title: 'システム情報' }}
+# PCU バージョン
+pcu --version
+
+# Node.js と pnpm バージョン
+node --version
+pnpm --version
+
+# オペレーティングシステム
+uname -a  # Linux/macOS
+systeminfo  # Windows
+```
+
+```bash {{ title: '設定情報' }}
+# 現在の設定を表示
+cat .pcurc.json
+
+# ワークスペース検証
+pcu -s --validate --verbose
+
+# デバッグ出力
+DEBUG=pcu:* pcu -c --verbose
+```
+
+</CodeGroup>
+
+### サポートチャンネル
+
+- 🐛 **バグ報告**：[GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **質問**：[GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 📖 **ドキュメント**：詳細なガイドについてはこのドキュメントを参照
+- 🔧 **機能リクエスト**：拡張ラベル付きの GitHub Issues を使用
+
+### 問題テンプレート
+
+バグを報告する際は、以下を含めてください：
+
+1. **PCU バージョン**と**使用したコマンド**
+2. **エラーメッセージ**（`--verbose` での完全出力）
+3. **環境**（OS、Node.js、pnpm バージョン）
+4. **ワークスペース構造**（pnpm-workspace.yaml、package.json）
+5. **設定**（関連する場合は .pcurc.json、.npmrc）
+6. **問題を再現する手順**
+7. **期待される動作と実際の動作**
+
+---
+
+## 高度なトラブルシューティング
+
+### 複雑な依存関係の競合
+
+**エラーシナリオ：**
+
+```
+Error: Cannot resolve peer dependencies
+└─ react@18.2.0
+├─ react-dom@17.0.2 (peer dependency conflict)
+└─ @types/react@17.0.62 (version mismatch)
+```
+
+**症状：** 更新後にバージョン競合が発生し、アプリケーションが起動しない
+
+**完全な診断プロセス：**
+
+<CodeGroup>
+
+```bash {{ title: 'ステップ1：競合の分析' }}
+# 現在の依存関係ツリーを確認
+pnpm ls --depth=2 | grep -E "(react|@types)"
+
+# 特定パッケージの影響を分析
+pcu analyze default react 18.3.0
+
+# 問題のあるバージョンに依存するパッケージを確認
+pnpm why react-dom@17.0.2
+```
+
+```bash {{ title: 'ステップ2：根本原因の調査' }}
+# すべての package.json で React 関連の依存関係を確認
+find . -name "package.json" -exec grep -l "react" {} \;
+
+# 詳細な競合情報を表示
+pnpm install --dry-run --verbose
+```
+
+```bash {{ title: 'ステップ3：競合の修正' }}
+# バックアップを作成
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+
+# React エコシステムを統一して更新
+pcu update --include "react*,@types/react*" --target minor --interactive
+
+# 修正を確認
+pnpm install
+pnpm list --depth=1 | grep react
+```
+
+</CodeGroup>
+
+### CI/CD 環境の障害
+
+**エラーシナリオ：**
+
+```
+Error: EACCES permission denied, open '/home/runner/.pcu/cache'
+Exit code: 126 in GitHub Actions
+```
+
+**症状：** CI/CD で PCU が失敗するが、ローカルでは正常に動作する
+
+**解決策：**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions 修正' }}
+- name: PCU 権限の設定
+  run: |
+    # キャッシュディレクトリの権限が正しいことを確認
+    mkdir -p ~/.pcu/cache
+    chmod 755 ~/.pcu/cache
+
+    # CI 環境変数を設定
+    export PCU_NO_COLOR=true
+    export PCU_CACHE_ENABLED=false  # 権限問題を回避するためキャッシュを無効化
+
+    # PCU を実行
+    pcu check --verbose
+```
+
+```bash {{ title: 'CI 環境の診断' }}
+# 環境情報を確認
+echo "Node: $(node --version)"
+echo "PNPM: $(pnpm --version)"
+echo "PCU: $(pcu --version)"
+echo "Workspace: $(pwd)"
+echo "User: $(whoami)"
+echo "Permissions: $(ls -la ~/.pcu/ 2>/dev/null || echo 'Cache dir not found')"
+
+# 基本機能をテスト
+pcu workspace --validate --verbose
+```
+
+</CodeGroup>
+
+### 大規模 monorepo のパフォーマンス問題
+
+**エラーシナリオ：**
+
+```
+Error: JavaScript heap out of memory
+FATAL ERROR: Reached heap limit Allocation failed
+```
+
+**症状：** 100+ パッケージを含む monorepo で PCU がクラッシュする
+
+**最適化案：**
+
+<CodeGroup>
+
+```json {{ title: 'パフォーマンス設定最適化' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 5,
+    "timeout": 120000,
+    "retries": 1,
+    "maxMemory": "4GB"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 104857600,
+    "maxEntries": 1000
+  }
+}
+```
+
+```bash {{ title: 'メモリ管理戦略' }}
+# Node.js メモリ制限を増加
+export NODE_OPTIONS="--max-old-space-size=8192"
+
+# 大規模ワークスペースをバッチ処理
+pcu check --catalog default --include "@company/*"
+pcu check --catalog default --include "@other/*"
+
+# メモリ使用量を監視
+while true; do
+  ps aux | grep pcu | grep -v grep
+  sleep 2
+done &
+
+pcu check --verbose
+```
+
+</CodeGroup>
+
+### プライベートレジストリ認証問題
+
+**エラーシナリオ：**
+
+```
+Error: 403 Forbidden - access denied to package @company/private-lib
+HTTP 403: You must be logged in to access this package
+```
+
+**症状：** プライベートパッケージにアクセスできないが、パブリックパッケージは正常に動作する
+
+**完全解決フロー：**
+
+<CodeGroup>
+
+```bash {{ title: '認証状態の診断' }}
+# 現在の認証状態を確認
+npm whoami --registry https://npm.company.com
+
+# レジストリ接続をテスト
+curl -I https://npm.company.com/-/whoami \
+  -H "Authorization: Bearer $NPM_TOKEN"
+
+# .npmrc 設定を確認
+cat .npmrc | grep -E "(registry|authToken)"
+```
+
+```ini {{ title: '認証設定の修正' }}
+# .npmrc の正しい設定形式
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+
+# パブリックパッケージは引き続きデフォルトレジストリを使用
+registry=https://registry.npmjs.org/
+
+# 環境変数が設定されていることを確認
+# export NPM_TOKEN=your_actual_token_here
+```
+
+```bash {{ title: '検証とテスト' }}
+# プライベートレジストリに再ログイン
+npm login --registry https://npm.company.com --auth-type web
+
+# プライベートパッケージアクセスをテスト
+npm view @company/private-lib --registry https://npm.company.com
+
+# PCU がアクセスできることを確認
+pcu check --include "@company/*" --verbose
+```
+
+</CodeGroup>
+
+### セキュリティスキャンの誤検出処理
+
+**エラーシナリオ：**
+
+```
+🚨 lodash@4.17.20 で重大なセキュリティ脆弱性が発見されました
+CVE-2021-23337: Command Injection
+実際：プロジェクトは影響を受けるテンプレート機能を使用していません
+```
+
+**症状：** セキュリティスキャンで脆弱性が報告されるが、実際にはプロジェクトに影響しない
+
+**処理戦略：**
+
+<CodeGroup>
+
+```json {{ title: 'セキュリティ監査例外の設定' }}
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn",
+      "high": "error",
+      "critical": "error"
+    }
+  }
+}
+```
+
+```bash {{ title: '詳細脆弱性分析' }}
+# 詳細な脆弱性情報を取得
+pcu security --severity all --format json > security-full.json
+
+# 特定の脆弱性影響を分析
+npm audit --audit-level=none --json | jq '.vulnerabilities'
+
+# パッケージの実際の使用状況を確認
+pnpm why lodash
+find . -name "*.js" -o -name "*.ts" | xargs grep -l "lodash" | head -10
+```
+
+</CodeGroup>
+
+### ネットワーク環境のトラブルシューティング
+
+**エラーシナリオ：**
+
+```
+Error: connect ETIMEDOUT 104.16.21.35:443
+Error: socket hang up
+Error: Request timeout after 30000ms
+```
+
+**症状：** 企業ネットワーク環境で頻繁なタイムアウト、プロキシ問題
+
+**解決策：**
+
+<CodeGroup>
+
+```bash {{ title: 'ネットワーク診断' }}
+# レジストリ接続をテスト
+curl -I https://registry.npmjs.org --connect-timeout 10
+
+# プロキシ設定を確認
+echo "HTTP_PROXY: $HTTP_PROXY"
+echo "HTTPS_PROXY: $HTTPS_PROXY"
+echo "NO_PROXY: $NO_PROXY"
+
+# DNS 解決をテスト
+nslookup registry.npmjs.org
+dig registry.npmjs.org A +short
+```
+
+```ini {{ title: 'プロキシ設定' }}
+# .npmrc プロキシ設定
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+strict-ssl=false
+
+# 企業 CA 証明書
+cafile=/etc/ssl/certs/company-ca.pem
+```
+
+```json {{ title: 'PCU ネットワーク最適化' }}
+{
+  "advanced": {
+    "timeout": 120000,
+    "retries": 5,
+    "concurrency": 1,
+    "userAgent": "pcu/company-internal"
+  },
+  "proxy": {
+    "enabled": true,
+    "url": "http://proxy.company.com:8080",
+    "auth": {
+      "username": "${PROXY_USER}",
+      "password": "${PROXY_PASS}"
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### バージョン制約の競合
+
+**エラーシナリオ：**
+
+```
+Cannot resolve version constraints:
+- Package A requires react@^17.0.0
+- Package B requires react@^18.0.0
+- Catalog specifies react@^18.2.0
+```
+
+**症状：** ワークスペース内のパッケージのバージョン要件が競合する
+
+**解決戦略：**
+
+<CodeGroup>
+
+```bash {{ title: '競合分析' }}
+# すべてのバージョン制約を見つける
+find . -name "package.json" -exec jq -r '.dependencies.react // empty' {} \; | sort | uniq -c
+
+# 各パッケージの要件を分析
+for pkg in packages/*/package.json; do
+  echo "=== $pkg ==="
+  jq '.dependencies.react // empty' "$pkg"
+done
+```
+
+```yaml {{ title: 'マルチカタログ戦略' }}
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  # デフォルト最新バージョン
+  react: ^18.2.0
+  react-dom: ^18.2.0
+
+catalogs:
+  # 旧バージョンとの互換性のためのパッケージ
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+```
+
+```bash {{ title: '段階的アップグレード' }}
+# 1. 旧バージョンを維持する必要があるパッケージを特定
+pcu analyze default react 18.2.0
+
+# 2. これらのパッケージを互換カタログに移動
+# package.json で：
+# "react": "catalog:react17"
+
+# 3. 段階的にアップグレード
+pcu update --catalog react17 --target minor
+```
+
+</CodeGroup>
+
+## 復旧手順
+
+### 更新失敗のロールバック
+
+更新が問題を引き起こした場合の完全復旧フロー：
+
+<CodeGroup>
+
+```bash {{ title: '自動ロールバック' }}
+# バックアップが有効な場合（推奨）
+if [ -f "pnpm-workspace.yaml.backup" ]; then
+  echo "バックアップが見つかりました、ロールバックを開始します..."
+
+  # ワークスペース設定を復元
+  cp pnpm-workspace.yaml.backup pnpm-workspace.yaml
+
+  # クリーンアップして再インストール
+  rm -rf node_modules packages/*/node_modules
+  pnpm install
+
+  # ロールバックを確認
+  pcu workspace --validate
+  echo "✅ ロールバック完了"
+else
+  echo "❌ バックアップファイルが見つかりません"
+fi
+```
+
+```bash {{ title: '手動復旧' }}
+# Git を使用して復旧（バージョン管理されている場合）
+git status
+git restore pnpm-workspace.yaml
+git restore packages/*/package.json
+
+# ロックファイルをクリーンアップ
+rm pnpm-lock.yaml
+pnpm install
+
+# 復旧を確認
+pnpm run test
+```
+
+</CodeGroup>
+
+### 破損キャッシュの修復
+
+PCU キャッシュが破損して問題が発生する場合：
+
+<CodeGroup>
+
+```bash {{ title: '完全キャッシュリセット' }}
+# すべての PCU プロセスを停止
+pkill -f pcu
+
+# すべてのキャッシュをクリア
+rm -rf ~/.pcu/cache
+rm -rf ~/.npm/_cacache
+rm -rf ~/.pnpm-store
+
+# 再初期化
+pcu workspace --validate
+pcu check --verbose
+```
+
+```bash {{ title: '選択的キャッシュクリーンアップ' }}
+# 特定タイプのキャッシュのみをクリア
+rm -rf ~/.pcu/cache/registry  # NPM レジストリキャッシュ
+rm -rf ~/.pcu/cache/workspace  # ワークスペースキャッシュ
+rm -rf ~/.pcu/cache/security   # セキュリティスキャンキャッシュ
+
+# 強制再チェック
+PCU_CACHE_ENABLED=false pcu check
+```
+
+</CodeGroup>
+
+### ワークスペース破損の修復
+
+ワークスペース設定が破損した場合：
+
+<CodeGroup>
+
+```bash {{ title: '設定検証と修復' }}
+# 現在の設定をバックアップ
+cp pnpm-workspace.yaml pnpm-workspace.yaml.broken
+cp .pcurc.json .pcurc.json.broken 2>/dev/null || true
+
+# 設定を再生成
+pcu init --force
+
+# 必要なカスタム設定を手動マージ
+echo "以下のカスタム設定を確認してマージしてください："
+echo "=== 古いワークスペース設定 ==="
+cat pnpm-workspace.yaml.broken
+echo "=== 新しいワークスペース設定 ==="
+cat pnpm-workspace.yaml
+```
+
+```bash {{ title: 'パッケージ構造修復' }}
+# すべてのパッケージの構造を検証
+for pkg in packages/*/; do
+  if [ ! -f "$pkg/package.json" ]; then
+    echo "❌ package.json が不足: $pkg"
+  else
+    echo "✅ チェック通過: $pkg"
+    # JSON 形式を検証
+    node -e "JSON.parse(require('fs').readFileSync('$pkg/package.json'))"
+  fi
+done
+
+# ワークスペースを再リンク
+pnpm install
+```
+
+</CodeGroup>
+
+## ログ分析と監視
+
+### リアルタイム問題診断
+
+<CodeGroup>
+
+```bash {{ title: 'リアルタイムログ監視' }}
+# 詳細ログモードを開始
+DEBUG=pcu:*,pnpm:* pcu check --verbose 2>&1 | tee pcu-debug.log
+
+# 別のターミナルでログを監視
+tail -f pcu-debug.log | grep -E "(ERROR|WARN|TIMEOUT)"
+
+# ネットワークリクエストを分析
+DEBUG=pcu:registry pcu check 2>&1 | grep -E "(request|response)"
+```
+
+```bash {{ title: 'パフォーマンス監視' }}
+# PCU プロセスのパフォーマンスを監視
+#!/bin/bash
+echo "時間,CPU%,メモリMB,ネットワーク接続" > pcu-monitor.csv
+
+while pgrep -x pcu > /dev/null; do
+  PID=$(pgrep -x pcu)
+  CPU=$(ps -p $PID -o pcpu --no-headers)
+  MEM=$(ps -p $PID -o rss --no-headers)
+  MEM_MB=$((MEM / 1024))
+  CONN=$(netstat -an | grep :443 | wc -l)
+
+  echo "$(date '+%H:%M:%S'),$CPU,$MEM_MB,$CONN" >> pcu-monitor.csv
+  sleep 1
+done
+```
+
+</CodeGroup>
+
+### 問題パターン認識
+
+<CodeGroup>
+
+```bash {{ title: '一般的なエラーパターン検索' }}
+# ログのエラーパターンを分析
+grep -E "(ENOTFOUND|ETIMEDOUT|ECONNRESET)" pcu-debug.log | wc -l
+grep -E "(403|404|500)" pcu-debug.log | sort | uniq -c
+grep -E "memory.*exceeded" pcu-debug.log
+
+# エラー統計レポートを生成
+echo "=== PCU エラー統計 ==="
+echo "ネットワークエラー: $(grep -c "ENET\|TIMEOUT" pcu-debug.log)"
+echo "権限エラー: $(grep -c "403\|401\|EACCES" pcu-debug.log)"
+echo "メモリエラー: $(grep -c "memory\|heap" pcu-debug.log)"
+echo "設定エラー: $(grep -c "Invalid.*config" pcu-debug.log)"
+```
+
+</CodeGroup>
+
+これらの高度なトラブルシューティングガイドは、PCU 使用時に遭遇する複雑な問題を解決するのに役立ちます。問題が継続する場合は、「ヘルプの取得」セクションのガイダンスに従って診断情報を収集し、サポートを求めてください。

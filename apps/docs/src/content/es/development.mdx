@@ -1,0 +1,659 @@
+export const metadata = {
+  title: 'Desarrollo',
+  description:
+    'Configura pnpm-catalog-updates para desarrollo. Aprende sobre la estructura del proyecto, flujo de trabajo de desarrollo y cómo contribuir.',
+};
+
+# Desarrollo
+
+Configura PCU para desarrollo y aprende cómo contribuir al proyecto. Esta guía cubre configuración del proyecto, arquitectura y flujos de trabajo de desarrollo. {{ className: 'lead' }}
+
+## Prerrequisitos
+
+Antes de comenzar a desarrollar PCU, asegúrate de tener las herramientas requeridas:
+
+<Note>Se requiere Node.js >= 22.0.0 y pnpm >= 10.0.0 para desarrollo.</Note>
+
+<CodeGroup>
+
+```bash {{ title: 'Verificar Versiones' }}
+node --version  # Debería ser >= 22.0.0
+pnpm --version  # Debería ser >= 10.0.0
+```
+
+```bash {{ title: 'Instalar Herramientas' }}
+# Instalar Node.js via nvm (recomendado)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# Instalar pnpm
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## Configuración del Proyecto
+
+Clona y configura el entorno de desarrollo:
+
+<CodeGroup>
+
+```bash {{ title: 'Clonar y Configurar' }}
+# Clonar el repositorio
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# Instalar dependencias
+pnpm install
+
+# Construir el proyecto
+pnpm build
+
+# Ejecutar pruebas para verificar configuración
+pnpm test
+```
+
+```bash {{ title: 'Modo de Desarrollo' }}
+# Ejecutar en modo desarrollo
+pnpm dev --help
+
+# Construir en modo watch
+pnpm build:watch
+
+# Ejecutar pruebas en modo watch
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## Arquitectura del Proyecto
+
+PCU sigue principios de arquitectura limpia con clara separación de responsabilidades:
+
+```text
+├── apps/
+│   ├── cli/                    # Capa de aplicación CLI
+│   │   ├── src/cli/           # Interfaz CLI
+│   │   │   ├── commands/      # Manejadores de comandos
+│   │   │   ├── formatters/    # Formateadores de salida
+│   │   │   ├── interactive/   # Prompts interactivos
+│   │   │   ├── themes/        # Temas de color
+│   │   │   └── validators/    # Validación de entrada
+│   │   └── bin/               # Binarios ejecutables
+│   └── docs/                  # Sitio de documentación
+├── packages/
+│   ├── core/                  # Lógica de negocio principal
+│   │   └── src/
+│   │       ├── application/   # Servicios de aplicación
+│   │       ├── domain/        # Modelo de dominio (DDD)
+│   │       └── infrastructure/# Capa de infraestructura
+│   └── utils/                 # Utilidades compartidas
+└── scripts/                   # Construcción y despliegue
+```
+
+### Capas de Arquitectura
+
+<Properties>
+  <Property name="Capa CLI" type="apps/cli">
+    Interfaz de usuario, análisis de comandos, formateo de salida
+  </Property>
+  <Property name="Capa de Aplicación" type="packages/core/application">
+    Orquestación de lógica de negocio, casos de uso
+  </Property>
+  <Property name="Capa de Dominio" type="packages/core/domain">
+    Entidades de negocio principales, objetos de valor, interfaces de repositorio
+  </Property>
+  <Property name="Capa de Infraestructura" type="packages/core/infrastructure">
+    Clientes de API externa, acceso al sistema de archivos, implementaciones de repositorio
+  </Property>
+  <Property name="Capa de Utilidades" type="packages/utils">
+    Utilidades compartidas, configuración, logging, manejo de errores
+  </Property>
+</Properties>
+
+## Flujo de Trabajo de Desarrollo
+
+### Realizar Cambios
+
+1. **Crear una rama de característica**:
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. **Realizar cambios** siguiendo los estándares de codificación
+
+3. **Agregar pruebas** para tus cambios:
+
+   ```bash
+   pnpm test:watch  # Ejecutar pruebas en modo watch
+   ```
+
+4. **Asegurar que las verificaciones de calidad pasen**:
+
+   ```bash
+   pnpm lint        # Verificar estilo de código
+   pnpm typecheck   # Verificación de tipos
+   pnpm test        # Ejecutar todas las pruebas
+   ```
+
+5. **Confirmar cambios**:
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+
+### Estrategia de Pruebas
+
+PCU usa un enfoque de pruebas integral:
+
+<CodeGroup>
+
+```bash {{ title: 'Pruebas Unitarias' }}
+# Ejecutar pruebas unitarias
+pnpm test
+
+# Ejecutar con cobertura
+pnpm test:coverage
+
+# Probar paquete específico
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: 'Pruebas E2E' }}
+# Ejecutar pruebas de extremo a extremo
+pnpm test:e2e
+
+# Probar contra proyectos reales
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: 'Pruebas de Integración' }}
+# Probar comandos CLI
+pnpm test:cli
+
+# Probar con diferentes versiones de Node
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### Calidad de Código
+
+PCU mantiene altos estándares de calidad de código:
+
+<CodeGroup>
+
+```bash {{ title: 'Linting y Formateo' }}
+# Verificar estilo de código
+pnpm lint
+
+# Corregir problemas de linting
+pnpm lint:fix
+
+# Formatear código
+pnpm format
+
+# Verificar tipos TypeScript
+pnpm typecheck
+```
+
+```json {{ title: 'Estándares de Calidad' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "ESLint con reglas TypeScript",
+  "format": "Prettier con configuración personalizada",
+  "types": "Configuración TypeScript estricta"
+}
+```
+
+</CodeGroup>
+
+## Agregar Características
+
+### Crear Nuevos Comandos
+
+1. **Crear manejador de comando** en `apps/cli/src/cli/commands/`:
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('Descripción del nuevo comando')
+    .option('-f, --format <type>', 'Formato de salida', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // Implementación del comando
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: 'Registrar Comando' }}
+// En apps/cli/src/cli/index.ts
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **Agregar lógica de negocio** en `packages/core/src/application/services/`
+
+3. **Crear pruebas** para tanto CLI como lógica central
+
+4. **Actualizar documentación**
+
+### Agregar Nuevos Formatos de Salida
+
+1. **Crear formateador** en `apps/cli/src/cli/formatters/`:
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // Lógica de formateo XML
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **Registrar formateador** en el registro principal de formateadores
+
+3. **Agregar pruebas** y **actualizar documentación**
+
+## Guías de Contribución
+
+### Convención de Mensajes de Commit
+
+PCU usa [Conventional Commits](https://conventionalcommits.org/):
+
+<CodeGroup>
+
+```bash {{ title: 'Tipos de Commit' }}
+feat: Una nueva característica
+fix: Una corrección de bug
+docs: Cambios solo de documentación
+style: Cambios de estilo de código (formateo, etc)
+refactor: Cambio de código que no corrige un bug ni agrega una característica
+test: Agregar pruebas faltantes o corregir pruebas existentes
+chore: Cambios al proceso de construcción o herramientas auxiliares
+```
+
+```bash {{ title: 'Ejemplos' }}
+feat: add support for custom registries
+fix: handle network timeouts gracefully
+docs: update configuration examples
+test: add tests for package filtering
+```
+
+</CodeGroup>
+
+### Proceso de Pull Request
+
+1. **Fork el repositorio** y crear una rama de característica
+2. **Realizar cambios** siguiendo el flujo de trabajo de desarrollo
+3. **Asegurar que todas las pruebas pasen** y las verificaciones de calidad tengan éxito
+4. **Actualizar documentación** si es necesario
+5. **Enviar un pull request** con:
+   - Descripción clara de los cambios
+   - Enlace a issues relacionados
+   - Capturas de pantalla para cambios de UI
+   - Notas de cambios importantes si aplica
+
+### Lista de Verificación de Revisión de Código
+
+1. Todas las pruebas pasan
+2. Cobertura de código mantenida (>85%)
+3. Tipos TypeScript son correctos
+4. Estilo de código sigue estándares del proyecto
+5. Documentación actualizada
+6. Cambios importantes documentados
+7. Impacto en el rendimiento considerado
+
+## Depuración
+
+### Depuración de Desarrollo
+
+<CodeGroup>
+
+```bash {{ title: 'Depurar Comandos CLI' }}
+# Depurar con inspector Node.js
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# Depurar con VS Code
+# Usar la configuración de lanzamiento en .vscode/launch.json
+```
+
+```bash {{ title: 'Logging Verboso' }}
+# Habilitar logging de depuración
+DEBUG=pcu:* pnpm dev --verbose
+
+# Depurar módulos específicos
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### Depuración de Pruebas
+
+```bash
+# Depurar prueba específica
+npm test -- --grep "specific test name"
+
+# Depurar con inspector Node
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## Construcción y Publicación
+
+### Pruebas Locales
+
+<CodeGroup>
+
+```bash {{ title: 'Probar Construcción Local' }}
+# Construir y probar localmente
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# Probar instalación
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: 'Probar en Proyecto de Ejemplo' }}
+# Usar el workspace de ejemplo
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### Proceso de Lanzamiento
+
+1. **Actualizar versión** usando changesets:
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **Construir y probar**:
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **Publicar** (solo mantenedores):
+   ```bash
+   pnpm publish -r
+   ```
+
+## Obtener Ayuda
+
+- 📖 **Documentación**: Revisa esta documentación para guías detalladas
+- 🐛 **Issues**: Reporta bugs via [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Discusiones**: Haz preguntas en [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 🔧 **Desarrollo**: Únete a discusiones de desarrollo en issues y PRs
+
+---
+
+## Detalles Avanzados de Arquitectura
+
+### Modelo de Dominio Central
+
+Basado en principios de Domain-Driven Design (DDD), el dominio central de PCU incluye:
+
+<CodeGroup>
+
+```typescript {{ title: 'Entidades de Dominio' }}
+// packages/core/src/domain/entities/
+├── catalog.ts          // Raíz agregada de catálogo
+├── package.ts          // Entidad de paquete
+└── workspace.ts        // Raíz agregada de workspace
+
+// Conceptos clave de dominio:
+interface Catalog {
+  readonly id: CatalogId;
+  readonly name: string;
+  packages: PackageCollection;
+  addPackage(packageInfo: Package): void;
+  updatePackage(name: string, version: Version): void;
+}
+
+interface Package {
+  readonly name: string;
+  readonly currentVersion: Version;
+  readonly latestVersion: Version;
+  readonly updateType: UpdateType;
+}
+```
+
+```typescript {{ title: 'Objetos de Valor' }}
+// packages/core/src/domain/value-objects/
+├── version.ts           // Manejo de versión semántica
+├── workspacePath.ts     // Validación de ruta
+├── workspaceConfig.ts   // Objeto de configuración
+└── catalogCollection.ts // Gestión de colección
+
+// Objetos de valor inmutables aseguran integridad de datos
+class Version {
+  constructor(private readonly value: string) {
+    if (!this.isValid(value)) {
+      throw new InvalidVersionError(value);
+    }
+  }
+
+  toString(): string { return this.value; }
+  compare(other: Version): number { /* comparación semver */ }
+}
+```
+
+</CodeGroup>
+
+### Arquitectura de Capa de Servicio
+
+La capa de aplicación orquesta lógica de negocio a través de servicios:
+
+<CodeGroup>
+
+```typescript {{ title: 'Servicios de Aplicación' }}
+// packages/core/src/application/services/
+├── catalogUpdateService.ts  // Orquestación principal
+└── workspaceService.ts      // Operaciones de workspace
+
+// Responsabilidades de servicio:
+class CatalogUpdateService {
+  async checkForUpdates(options: CheckOptions): Promise<UpdateReport>;
+  async updateCatalog(options: UpdateOptions): Promise<UpdateResult>;
+  async analyzeImpact(catalog: string, package: string): Promise<ImpactAnalysis>;
+}
+```
+
+```typescript {{ title: 'Capa de Infraestructura' }}
+// packages/core/src/infrastructure/
+├── external-services/
+│   └── npmRegistryService.ts   // Cliente API NPM
+├── repositories/
+│   └── fileWorkspaceRepository.ts  // Persistencia del sistema de archivos
+├── cache/
+│   └── cache.ts                # Sistema de caché avanzado
+└── utils/
+    └── npmrcParser.ts          # Análisis de configuración
+
+// Infraestructura implementa interfaces de dominio:
+class FileWorkspaceRepository implements WorkspaceRepository {
+  async findWorkspace(path: string): Promise<Workspace | null>;
+  async saveWorkspace(workspace: Workspace): Promise<void>;
+}
+```
+
+</CodeGroup>
+
+### Diseño de Capa CLI
+
+La capa CLI proporciona una interfaz limpia al dominio central:
+
+<CodeGroup>
+
+```typescript {{ title: 'Estructura de Comando' }}
+// apps/cli/src/cli/commands/
+├── checkCommand.ts     // Implementación de comando de verificación
+├── updateCommand.ts    // Comando de actualización con validación
+├── analyzeCommand.ts   // Comando de análisis de impacto
+├── workspaceCommand.ts # Gestión de workspace
+├── themeCommand.ts     # Configuración de tema
+├── securityCommand.ts  # Escaneo de seguridad
+└── initCommand.ts      # Inicialización de workspace
+
+// Cada comando sigue patrones consistentes:
+export class CheckCommand {
+  constructor(
+    private readonly catalogService: CatalogUpdateService,
+    private readonly validator: CommandValidator,
+    private readonly formatter: OutputFormatter
+  ) {}
+
+  async execute(options: CheckCommandOptions): Promise<void> {
+    const validation = this.validator.validateCheckOptions(options);
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors);
+    }
+
+    const result = await this.catalogService.checkForUpdates(options);
+    const formatted = this.formatter.format(result, options.format);
+    console.log(formatted);
+  }
+}
+```
+
+```typescript {{ title: 'Características CLI Avanzadas' }}
+// apps/cli/src/cli/
+├── validators/
+│   └── commandValidator.ts    # Validación de entrada con sugerencias
+├── interactive/
+│   └── interactivePrompts.ts  # Prompts inteligentes con auto-completado
+├── themes/
+│   └── colorTheme.ts          # Sistema de temas integral
+├── formatters/
+│   └── outputFormatter.ts     # Múltiples formatos de salida
+└── options/
+    └── globalOptions.ts       # Soporte de variables de entorno
+
+// Características interactivas:
+class InteractivePrompts {
+  async selectPackages(packages: Package[]): Promise<string[]>;
+  async confirmUpdates(updates: Update[]): Promise<boolean>;
+  async configurationWizard(): Promise<Configuration>;
+}
+```
+
+</CodeGroup>
+
+### Arquitectura de Pruebas
+
+Estrategia de pruebas integral a través de todas las capas:
+
+<CodeGroup>
+
+```bash {{ title: 'Estructura de Pruebas' }}
+├── packages/core/src/**/__tests__/     # Pruebas unitarias
+├── packages/utils/src/**/__tests__/    # Pruebas de utilidades
+├── apps/cli/src/**/__tests__/         # Pruebas unitarias CLI
+├── tests/
+│   ├── e2e/                          # Pruebas de extremo a extremo
+│   ├── integration/                  # Pruebas de integración
+│   └── fixtures/                     # Fixtures de prueba
+└── .github/workflows/
+    └── test.yml                      # Pipeline de pruebas CI
+```
+
+```typescript {{ title: 'Patrones de Prueba' }}
+// Pruebas de capa de dominio
+describe('Catalog', () => {
+  it('should update package version', () => {
+    const catalog = new Catalog('default');
+    const package = new Package('react', '18.0.0', '18.2.0');
+
+    catalog.addPackage(package);
+    catalog.updatePackage('react', new Version('18.2.0'));
+
+    expect(catalog.getPackage('react').currentVersion.toString()).toBe('18.2.0');
+  });
+});
+
+// Pruebas de integración CLI
+describe('CheckCommand', () => {
+  it('should handle network errors gracefully', async () => {
+    const mockService = createMockCatalogService();
+    mockService.checkForUpdates.mockRejectedValue(new NetworkError());
+
+    const command = new CheckCommand(mockService);
+
+    await expect(command.execute({})).rejects.toThrow('Network error occurred');
+  });
+});
+```
+
+</CodeGroup>
+
+### Consideraciones de Rendimiento
+
+PCU está optimizado para rendimiento en monorepos grandes:
+
+<CodeGroup>
+
+```typescript {{ title: 'Estrategia de Caché' }}
+// Caché inteligente reduce llamadas API
+class Cache<T> {
+  constructor(
+    private readonly options: {
+      ttl: number; // Tiempo de vida
+      maxSize: number; // Límite de memoria
+      persistToDisk: boolean; // Caché de archivo
+      strategy: 'lru' | 'fifo' | 'lfu'; // Estrategia de expulsión
+    }
+  ) {}
+
+  async get(key: string): Promise<T | null>;
+  async set(key: string, value: T): Promise<void>;
+  getStats(): CacheStats; // Tasas de acierto, uso de memoria
+}
+```
+
+```typescript {{ title: 'Procesamiento Concurrente' }}
+// Procesamiento paralelo para mejor rendimiento
+class NpmRegistryService {
+  constructor(private readonly concurrency: number = 5) {}
+
+  async getPackageInfo(names: string[]): Promise<PackageInfo[]> {
+    // Procesar paquetes en lotes con concurrencia controlada
+    const batches = chunk(names, this.concurrency);
+    const results = await Promise.allSettled(batches.map((batch) => this.processBatch(batch)));
+
+    return results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  }
+}
+```
+
+</CodeGroup>

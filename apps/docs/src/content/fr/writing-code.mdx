@@ -1,0 +1,276 @@
+export const metadata = {
+  title: 'Écriture de Code',
+  description:
+    'Maîtrisez les blocs de code, la coloration syntaxique et les exemples multi-langages avec les composants CodeGroup.',
+};
+
+# Écriture de Code
+
+Maîtrisez l'art de présenter le code dans votre documentation. Apprenez à utiliser la coloration syntaxique, créer des exemples multi-langages et organiser efficacement les blocs de code pour aider les développeurs à comprendre et implémenter vos solutions. {{ className: 'lead' }}
+
+## Blocs de Code Simples
+
+Blocs de code basiques avec coloration syntaxique automatique :
+
+```javascript
+// Exemple JavaScript avec coloration syntaxique
+const greeting = 'Bonjour, le monde !';
+console.log(greeting);
+```
+
+Le bloc de code JavaScript ci-dessus est créé avec la syntaxe MDX suivante :
+
+````mdx
+```javascript
+const greeting = 'Bonjour, le monde !';
+console.log(greeting);
+```
+````
+
+**Exemple Python :**
+
+```python
+# Exemple Python
+def greet(name):
+    return f"Bonjour, {name} !"
+
+print(greet("le monde"))
+```
+
+Syntaxe MDX du bloc de code Python :
+
+````mdx
+```python
+def greet(name):
+    return f"Bonjour, {name} !"
+
+print(greet("le monde"))
+```
+````
+
+**Commandes Bash/Shell :**
+
+```bash
+# Commandes Bash/Shell
+npm install @example/package
+pnpm add dependency
+```
+
+Syntaxe MDX du bloc de code Bash :
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## CodeGroup pour Multiples Langages
+
+Utilisez `<CodeGroup>` pour montrer le même exemple dans différents langages :
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+Le groupe de code multi-langages ci-dessus est créé avec la syntaxe MDX suivante :
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## Exemples de Points de Terminaison API
+
+Pour la documentation API, utilisez les balises de méthodes HTTP :
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Jean Dupont", "email": "jean@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Jean Dupont',
+    email: 'jean@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+L'exemple de point de terminaison API ci-dessus est créé avec la syntaxe MDX suivante, notez les attributs `tag` et `label` :
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Jean Dupont", "email": "jean@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Jean Dupont',
+    email: 'jean@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### Titres de Blocs de Code
+
+Vous pouvez également ajouter des titres aux blocs de code individuels :
+
+```javascript {{ title: 'Client API' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'Client API' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## Langages Pris en Charge
+
+Nos blocs de code prennent en charge la coloration syntaxique pour de nombreux langages de programmation, notamment :
+
+- **JavaScript/TypeScript** : `javascript`, `typescript`, `js`, `ts`
+- **Python** : `python`, `py`
+- **Scripts Shell** : `bash`, `shell`, `sh`
+- **Autres langages** : `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**Exemple :**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+Syntaxe MDX du bloc de code JSON :
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**Comparaison de code (Diff) :**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Syntaxe MDX du bloc de code Diff :
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## Meilleures Pratiques
+
+- Toujours spécifier le langage pour la coloration syntaxique
+- Utiliser des titres descriptifs pour différencier les exemples de code
+- Inclure des exemples complets et exécutables
+- Garder les exemples concis mais fonctionnels
+- Utiliser un formatage et un style cohérents
+- Ordonner les onglets de langages dans CodeGroup par fréquence d'utilisation
+
+## Étapes Suivantes
+
+Continuez avec [Composants de Mise en Page](/writing-layout) pour organiser efficacement votre contenu.

@@ -1,0 +1,154 @@
+export const metadata = {
+  title: '레이아웃 작성',
+  description:
+    'Row, Col 및 스티키 포지셔닝을 사용하여 복잡한 다중 열 레이아웃을 만들고 콘텐츠를 구성하세요.',
+};
+
+# 레이아웃 작성
+
+가독성과 사용자 경험을 향상시키는 정교한 레이아웃을 만들어보세요. 다중 열 디자인을 위한 Row와 Col 컴포넌트 사용법, 스티키 포지셔닝, 그리고 효과적인 콘텐츠 구성을 배워보세요. {{ className: 'lead' }}
+
+## 2열 레이아웃
+
+나란히 배치되는 콘텐츠를 위해 `<Row>`와 `<Col>`을 사용하세요:
+
+<Row>
+  <Col>
+    **왼쪽 열**
+    
+    이 콘텐츠는 왼쪽 열에 나타납니다. 설명, 묘사 또는 보완 정보에 완벽합니다.
+    
+    - 주요 포인트 1
+    - 중요한 세부사항
+    - 추가 컨텍스트
+  </Col>
+  
+  <Col>
+    **오른쪽 열**
+    
+    ```javascript
+    // 오른쪽 열에 코드 배치
+    const example = {
+      feature: "다중 열",
+      benefit: "더 나은 구성"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>설명이 포함된 왼쪽 열 콘텐츠</Col>
+
+  <Col>예제가 포함된 오른쪽 열 콘텐츠</Col>
+</Row>
+```
+
+## 스티키 열 레이아웃
+
+스크롤하는 동안 콘텐츠를 고정시키세요:
+
+<Row>
+  <Col>
+    **스크롤 콘텐츠**
+    
+    이것은 정상적으로 스크롤되는 일반 콘텐츠입니다. 사용자가 완전히 읽기 위해 스크롤해야 하는 긴 설명을 여기에 배치할 수 있습니다.
+    
+    이 열에는 완전히 소비하기 위해 스크롤이 필요한 주요 내러티브나 세부 정보가 포함됩니다.
+  </Col>
+  
+  <Col sticky>
+    **스티키 참조**
+    
+    ```json
+    {
+      "status": "스티키",
+      "position": "고정됨",
+      "scroll": "독립적"
+    }
+    ```
+    
+    이것은 스크롤할 때 보이는 상태로 유지됩니다.
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>여기에 일반 스크롤 콘텐츠가 있습니다.</Col>
+
+  <Col sticky>이 열은 스크롤하는 동안 고정된 상태를 유지합니다.</Col>
+</Row>
+```
+
+## Guides 컴포넌트
+
+`<Guides>` 컴포넌트를 사용하여 가이드 링크의 그리드를 표시하세요:
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+Guides 컴포넌트는 링크와 설명이 포함된 미리 정의된 문서 가이드 세트를 보여줍니다. 개요 페이지와 시작 섹션에 완벽합니다.
+
+## Resources 컴포넌트
+
+애니메이션 카드로 주요 리소스 카테고리를 보여주세요:
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+Resources 컴포넌트는 아이콘과 설명이 포함된 애니메이션 리소스 카드를 표시합니다. 메인 랜딩 페이지와 API 개요 섹션에 적합합니다.
+
+## 아이콘
+
+인라인 장식이나 커스텀 레이아웃을 위해 개별 아이콘을 사용하세요:
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### 사용 가능한 아이콘
+
+- `<UserIcon />` - 단일 사용자
+- `<UsersIcon />` - 다중 사용자
+- `<EnvelopeIcon />` - 메시지/이메일
+- `<ChatBubbleIcon />` - 대화
+- `<BookIcon />` - 문서
+- `<CheckIcon />` - 성공/완료
+- `<BellIcon />` - 알림
+- `<CogIcon />` - 설정/구성
+
+## 레이아웃 모범 사례
+
+- 보완적인 콘텐츠에는 2열 레이아웃을 사용하세요
+- 스티키 열은 참조 자료에 가장 적합합니다
+- 열의 콘텐츠 길이를 균형 있게 유지하세요
+- 모바일 반응형을 확보하세요 (작은 화면에서는 열이 스택됩니다)
+- 문서 개요 페이지에는 Guides를 사용하세요
+- API 카테고리 쇼케이스에는 Resources를 사용하세요
+- 아이콘은 색상과 크기 제어를 위한 커스텀 Tailwind 클래스와 잘 작동합니다
+
+## 다음 단계
+
+전문적인 컴포넌트에 대해서는 [API 문서](/writing-api)를 계속 읽어보세요.

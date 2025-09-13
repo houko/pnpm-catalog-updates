@@ -1,0 +1,649 @@
+export const metadata = {
+  title: 'Integración CI/CD',
+  description:
+    'Integra PCU en tus pipelines de integración continua y despliegue para gestión automatizada de dependencias.',
+};
+
+# Integración CI/CD
+
+Integra PCU en tus pipelines de integración continua y despliegue. PCU puede integrarse sin problemas con flujos de trabajo CI/CD existentes, soportando GitHub Actions, GitLab CI, Jenkins, Azure DevOps y otras plataformas. {{ className: 'lead' }}
+
+## Integración con GitHub Actions
+
+### Flujo de Trabajo Básico de Verificación de Dependencias
+
+<CodeGroup>
+
+```yaml {{ title: 'Verificación Básica de Dependencias' }}
+name: PCU Dependency Check
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Check updates
+        run: pcu -c --format table
+
+      - name: Security scan
+        run: pcu security --severity high
+```
+
+```yaml {{ title: 'Flujo de Trabajo Avanzado de Actualización' }}
+name: PCU Advanced Workflow
+
+on:
+  schedule:
+    - cron: '0 8 * * MON' # Lunes 8 AM
+  workflow_dispatch:
+    inputs:
+      update_target:
+        description: 'Objetivo de actualización'
+        required: false
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - latest
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Configure Git
+        run: |
+          git config user.name "PCU Bot"
+          git config user.email "pcu-bot@github-actions.com"
+
+      - name: Check for updates
+        id: check-updates
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Security scan
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu security --format json --severity critical > security.json
+          if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+            echo "❌ Vulnerabilidades de seguridad críticas encontradas"
+            exit 1
+          fi
+
+      - name: Update dependencies
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu -u --target ${{ github.event.inputs.update_target || 'minor' }} --create-backup
+
+      - name: Run tests
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: pnpm test
+
+      - name: Create Pull Request
+        if: steps.check-updates.outputs.updates-available == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update catalog dependencies'
+          title: "🔄 Actualizaciones semanales de dependencias (${{ github.event.inputs.update_target || 'minor' }})"
+          body: |
+            ## 📦 Actualizaciones de Dependencias
+
+            Este PR contiene actualizaciones de dependencias del catálogo generadas por PCU.
+
+            ### Cambios
+            - Objetivo: `${{ github.event.inputs.update_target || 'minor' }}`
+            - Escaneo de seguridad: ✅ Aprobado
+            - Pruebas: ✅ Aprobadas
+
+            ### Lista de Verificación de Revisión
+            - [ ] Revisar cambios importantes
+            - [ ] Probar rutas críticas del usuario
+            - [ ] Actualizar documentación si es necesario
+
+            ---
+            *Generado por PCU Bot 🤖*
+          branch: pcu/weekly-updates
+          labels: |
+            dependencies
+            automated
+```
+
+</CodeGroup>
+
+## Integración con GitLab CI
+
+Pipeline de GitLab CI para gestión de dependencias con PCU:
+
+<CodeGroup>
+
+```yaml {{ title: '.gitlab-ci.yml' }}
+stages:
+  - check
+  - security
+  - update
+
+variables:
+  PNPM_CACHE_FOLDER: .pnpm-store
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store
+
+before_script:
+  - corepack enable
+  - pnpm config set store-dir $PNPM_CACHE_FOLDER
+  - pnpm install
+  - pnpm add -g pnpm-catalog-updates
+
+dependency-check:
+  stage: check
+  script:
+    - pcu -c --format table
+    - pcu workspace --validate
+  artifacts:
+    reports:
+      junit: dependency-report.xml
+  only:
+    - merge_requests
+    - main
+
+security-scan:
+  stage: security
+  script:
+    - pcu security --format json --severity moderate > security.json
+    - |
+      if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+        echo "Vulnerabilidades de seguridad encontradas:"
+        cat security.json | jq '.'
+        exit 1
+      fi
+  artifacts:
+    reports:
+      security: security.json
+  only:
+    - merge_requests
+    - main
+
+weekly-update:
+  stage: update
+  script:
+    - git config user.name "PCU Bot"
+    - git config user.email "pcu@gitlab.com"
+    - pcu -c --format json > updates.json
+    - |
+      if [ -s updates.json ]; then
+        pcu -u --target minor --create-backup
+        git add .
+        git commit -m "chore: actualizaciones semanales de dependencias"
+        git push origin HEAD:pcu/weekly-updates
+      fi
+  only:
+    - schedules
+  variables:
+    GIT_STRATEGY: clone
+```
+
+</CodeGroup>
+
+## Integración con Pipeline de Jenkins
+
+Pipeline de Jenkins de nivel empresarial para gestión de dependencias:
+
+<CodeGroup>
+
+```groovy {{ title: 'Jenkinsfile' }}
+pipeline {
+    agent any
+
+    tools {
+        nodejs '18'
+    }
+
+    environment {
+        PNPM_HOME = "${env.WORKSPACE}/.pnpm"
+        PATH = "${env.PNPM_HOME}:${env.PATH}"
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'corepack enable'
+                sh 'pnpm install'
+                sh 'pnpm add -g pnpm-catalog-updates'
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                sh 'pcu -c --format json > dependency-check.json'
+
+                script {
+                    def updates = readJSON file: 'dependency-check.json'
+                    if (updates.size() > 0) {
+                        env.HAS_UPDATES = 'true'
+                        echo "Encontrados ${updates.size()} paquetes para actualizar"
+                    } else {
+                        env.HAS_UPDATES = 'false'
+                        echo "No hay actualizaciones disponibles"
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check.json'
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            when {
+                environment name: 'HAS_UPDATES', value: 'true'
+            }
+            steps {
+                sh 'pcu security --format json --severity high > security-report.json'
+
+                script {
+                    def securityReport = readJSON file: 'security-report.json'
+                    if (securityReport.vulnerabilities && securityReport.vulnerabilities.size() > 0) {
+                        error "Vulnerabilidades de seguridad críticas encontradas: ${securityReport.vulnerabilities.size()}"
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.',
+                        reportFiles: 'security-report.json',
+                        reportName: 'Reporte de Seguridad'
+                    ])
+                }
+            }
+        }
+
+        stage('Update Dependencies') {
+            when {
+                allOf {
+                    environment name: 'HAS_UPDATES', value: 'true'
+                    branch 'main'
+                }
+            }
+            steps {
+                sh 'pcu -u --target minor --create-backup'
+                sh 'pnpm test'
+
+                script {
+                    sh '''
+                        git config user.name "Jenkins PCU"
+                        git config user.email "jenkins@company.com"
+                        git add .
+                        git commit -m "chore: actualizaciones automatizadas de dependencias [skip ci]"
+                    '''
+
+                    // Crear merge request (GitLab) o pull request (GitHub)
+                    sh '''
+                        git push origin HEAD:pcu/automated-updates-${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+
+        success {
+            echo 'Verificación de dependencias PCU completada exitosamente'
+        }
+
+        failure {
+            emailext (
+                subject: "Verificación de Dependencias PCU Falló - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "La verificación de dependencias falló. Por favor revise la salida de la consola.",
+                to: "${env.CHANGE_AUTHOR_EMAIL}"
+            )
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Pipeline de Azure DevOps
+
+Pipeline de Azure DevOps para integración con PCU:
+
+<CodeGroup>
+
+```yaml {{ title: 'azure-pipelines.yml' }}
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: '0 8 * * 1'
+    displayName: Verificación semanal de dependencias
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PNPM_CACHE_FOLDER: $(Pipeline.Workspace)/.pnpm-store
+
+stages:
+  - stage: DependencyCheck
+    displayName: 'Verificación de Dependencias'
+    jobs:
+      - job: CheckUpdates
+        displayName: 'Verificar actualizaciones'
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
+              path: $(PNPM_CACHE_FOLDER)
+            displayName: Cache pnpm
+
+          - script: |
+              corepack enable
+              pnpm config set store-dir $(PNPM_CACHE_FOLDER)
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'Configurar PNPM y PCU'
+
+          - script: |
+              pcu -c --format json > $(Agent.TempDirectory)/updates.json
+              pcu workspace --validate
+            displayName: 'Verificar dependencias'
+
+          - script: |
+              pcu security --format json --severity moderate > $(Agent.TempDirectory)/security.json
+            displayName: 'Escaneo de seguridad'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-results.xml'
+              failTaskOnFailedTests: true
+            displayName: 'Publicar resultados de seguridad'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Agent.TempDirectory)'
+              artifactName: 'dependency-reports'
+            displayName: 'Publicar artefactos'
+
+  - stage: UpdateDependencies
+    displayName: 'Actualizar Dependencias'
+    condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: UpdateCatalog
+        displayName: 'Actualizar dependencias del catálogo'
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              corepack enable
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'Configurar entorno'
+
+          - script: |
+              pcu -u --target minor --create-backup
+              pnpm test
+            displayName: 'Actualizar y probar'
+
+          - script: |
+              git config user.name "Azure DevOps PCU"
+              git config user.email "azuredevops@company.com"
+              git add .
+              git commit -m "chore: actualizaciones automatizadas de dependencias de Azure DevOps"
+              git push origin HEAD:refs/heads/pcu/azure-updates-$(Build.BuildNumber)
+            displayName: 'Confirmar cambios'
+```
+
+</CodeGroup>
+
+## Mejores Prácticas Generales de CI/CD
+
+### Configuración de Variables de Entorno
+
+Configura estas variables de entorno en todas las plataformas CI/CD para optimizar el comportamiento de PCU:
+
+```bash
+# Configuración principal
+PCU_NO_COLOR=true              # Desactivar salida colorizada
+PCU_CHECK_UPDATES=false        # Desactivar verificaciones de actualización de PCU en CI
+PCU_VERBOSE=true               # Activar logging verboso
+PCU_OUTPUT_FORMAT=json         # Usar salida JSON para facilitar el análisis
+
+# Configuración de caché
+PCU_CACHE_ENABLED=true         # Activar caché para mejor rendimiento
+PCU_CACHE_TTL=1800000         # TTL de caché de 30 minutos
+
+# Configuración de seguridad
+PCU_SECURITY_SEVERITY=high     # Verificar vulnerabilidades de alta severidad
+PCU_AUTO_FIX=false            # Control manual de correcciones en CI
+
+# Configuración de rendimiento
+PCU_TIMEOUT=120000            # Timeout de 2 minutos
+PCU_RETRIES=3                 # Número de reintentos de solicitudes de red
+PCU_CONCURRENCY=5             # Límite de solicitudes concurrentes
+```
+
+### Consideraciones de Seguridad
+
+#### Gestión de Tokens de Acceso
+
+Asegura la gestión segura de tokens de acceso en entornos CI/CD:
+
+```yaml
+# GitHub Actions
+- name: Configure Git
+  run: |
+    git config user.name "PCU Bot"
+    git config user.email "bot@company.com"
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# GitLab CI
+script:
+  - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+```
+
+#### Estrategia de Protección de Ramas
+
+Configura protección de ramas para prevenir pushes directos a la rama main:
+
+- Requerir revisiones de pull request
+- Requerir que las verificaciones de estado pasen
+- Restringir pushes a ramas protegidas
+- Requerir commits firmados
+
+### Solución de Problemas
+
+#### Problemas Comunes de CI/CD
+
+**Errores de Permisos**
+
+```bash
+# Corregir problemas de permisos de npm
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# O usar pnpm (recomendado)
+pnpm add -g pnpm-catalog-updates
+```
+
+**Problemas de Caché**
+
+```bash
+# Limpiar caché de CI
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+
+# Limpiar caché de PCU
+PCU_CACHE_ENABLED=false pcu check
+```
+
+**Timeouts de Red**
+
+```bash
+# Aumentar timeout
+PCU_TIMEOUT=300000 pcu check
+
+# Reducir solicitudes concurrentes
+PCU_CONCURRENCY=2 pcu update
+```
+
+### Monitoreo y Reportes
+
+#### Creación de Dashboards
+
+Usa características nativas de las plataformas CI/CD para crear dashboards de gestión de dependencias:
+
+- **GitHub Actions**: Usar Action insights y gráficos de dependencias
+- **GitLab CI**: Aprovechar Security Dashboard y escaneo de dependencias
+- **Jenkins**: Configurar plugin HTML Publisher
+- **Azure DevOps**: Usar Dashboards y Analytics
+
+#### Configuración de Notificaciones
+
+Configura notificaciones apropiadas para mantener informados a los equipos:
+
+```yaml
+# Ejemplo de notificación Slack (GitHub Actions)
+- name: Slack Notification
+  if: failure()
+  uses: 8398a7/action-slack@v3
+  with:
+    status: failure
+    text: Verificación de dependencias PCU falló
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+## Integración con Docker
+
+### Flujos de Trabajo PCU Contenerizados
+
+<CodeGroup>
+
+```dockerfile {{ title: 'Dockerfile.pcu' }}
+FROM node:18-alpine
+
+# Instalar pnpm y PCU
+RUN corepack enable
+RUN pnpm add -g pnpm-catalog-updates
+
+# Establecer directorio de trabajo
+WORKDIR /workspace
+
+# Copiar archivos de paquete
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml .pcurc.json ./
+
+# Instalar dependencias
+RUN pnpm install --frozen-lockfile
+
+# Establecer variables de entorno
+ENV PCU_NO_COLOR=true
+ENV PCU_VERBOSE=true
+
+# Comando por defecto
+CMD ["pcu", "--help"]
+```
+
+```yaml {{ title: 'docker-compose.yml' }}
+version: '3.8'
+
+services:
+  pcu-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-cache:/workspace/.pnpm-store
+    environment:
+      - PCU_CACHE_ENABLED=true
+      - PCU_OUTPUT_FORMAT=json
+    command: pcu check --format table
+
+  pcu-security:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+    command: pcu security --severity high
+
+volumes:
+  pnpm-cache:
+```
+
+</CodeGroup>
+
+Estos ejemplos de integración CI/CD proporcionan soluciones completas de gestión automatizada de dependencias, asegurando que tus proyectos se mantengan actualizados y seguros.

@@ -576,7 +576,7 @@ npm cache clean --force
 pnpm store prune
 
 # Reinstall tool
-npm install -g pnpm-catalog-updates@latest
+npm install -g pcu@latest
 ```
 
 Remember to always check the
