@@ -7,7 +7,7 @@
 
 A powerful CLI tool for managing pnpm workspace catalog dependencies with ease.
 
-**📖 Complete Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
+** Complete Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
 
 ## Quick Start
 
@@ -55,14 +55,14 @@ pcu -s
 
 ![PCU Showcase](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
-**➡️
+**
 [Complete Command Reference & Examples](https://pcu-cli.dev/en/command-reference)**
 
 ## Links
 
-- 📖 [Complete Documentation](https://pcu-cli.dev/en)
-- 🐛 [Report Issues](https://github.com/houko/pnpm-catalog-updates/issues)
-- 💬 [GitHub Repository](https://github.com/houko/pnpm-catalog-updates)
+- [Complete Documentation](https://pcu-cli.dev/en)
+- [Report Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- [GitHub Repository](https://github.com/houko/pnpm-catalog-updates)
 
 ## License
 
