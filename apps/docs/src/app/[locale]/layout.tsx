@@ -3,6 +3,7 @@ import { type Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import Script from 'next/script'
 
 import { Providers } from '@/app/[locale]/providers'
 import { Layout } from '@/components/Layout'
@@ -58,6 +59,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} className="h-full" suppressHydrationWarning>
       <body className="flex min-h-full bg-white antialiased dark:bg-zinc-900">
+        <Script
+          defer
+          src="https://analytics.xiaomo.info/script.js"
+          data-website-id="39cfc52c-e2e3-4f78-9e70-fcb2374dc72a"
+        />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <Providers>
             <div className="w-full">
