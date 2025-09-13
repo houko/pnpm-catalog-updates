@@ -1,10 +1,10 @@
 # pnpm-catalog-updates
 
-A powerful CLI tool to check and update pnpm workspace catalog dependencies,
-inspired by
+A powerful CLI tool to check and update pnpm workspace catalog
+dependencies,inspired by
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-** Full Documentation **: [https://pcu-cli.dev](https://pcu-cli.dev/en)
+**Full Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
 
 [![npm version](https://img.shields.io/npm/v/pcu.svg)](https://www.npmjs.com/package/pcu)
 [![npm downloads](https://img.shields.io/npm/dm/pcu.svg)](https://www.npmjs.com/package/pcu)
@@ -40,7 +40,7 @@ inspired by
 - **Multi-Registry**: Supports different registries for different package scopes
 - **Configurable**: Flexible configuration options and update strategies
 
-** [See all features and details](https://pcu-cli.dev/en)**
+**[See all features and details](https://pcu-cli.dev/en)**
 
 ## Quick Start
 
