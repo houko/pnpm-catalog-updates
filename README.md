@@ -4,7 +4,7 @@ A powerful CLI tool to check and update pnpm workspace catalog dependencies,
 inspired by
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
-** Full Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
+** Full Documentation **: [https://pcu-cli.dev](https://pcu-cli.dev/en)
 
 [![npm version](https://img.shields.io/npm/v/pcu.svg)](https://www.npmjs.com/package/pcu)
 [![npm downloads](https://img.shields.io/npm/dm/pcu.svg)](https://www.npmjs.com/package/pcu)
@@ -89,7 +89,7 @@ This project is organized as a pnpm monorepo with clean architecture:
     └── utils/                  # Shared utilities
 ```
 
-**➡️ [Detailed Architecture Guide](https://pcu-cli.dev/en/development)**
+** [Detailed Architecture Guide](https://pcu-cli.dev/en/development)**
 
 ## Development
 
@@ -167,7 +167,7 @@ for details.
 - Built with love for the pnpm community
 - Thanks to all contributors and users
 
-## 📞 Support
+## Support
 
 - [Full Documentation](https://pcu-cli.dev/en)
 - [Issue Tracker](https://github.com/houko/pnpm-catalog-updates/issues)

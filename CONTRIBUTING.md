@@ -460,14 +460,14 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 Report unacceptable behavior to the project maintainers. All reports will be
 reviewed and investigated promptly.
 
-## 📞 Getting Help
+## Getting Help
 
 - **Documentation**: Check the README and docs
 - **Issues**: Search existing issues or create a new one
 - **Discussions**: Use GitHub Discussions for questions
 - **Discord**: Join our community Discord (link in README)
 
-## 🎉 Recognition
+## Recognition
 
 Contributors will be recognized in:
 
