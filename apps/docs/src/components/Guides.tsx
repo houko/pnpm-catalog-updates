@@ -1,34 +1,39 @@
+'use client'
+
 import { Button } from '@/components/Button'
 import { Heading } from '@/components/Heading'
-
-const guides = [
-  {
-    href: '/command-reference' as const,
-    name: 'Command Reference',
-    description: 'Complete reference for all PCU commands and their options.',
-  },
-  {
-    href: '/configuration' as const,
-    name: 'Configuration',
-    description: 'Learn how to configure PCU for your workflow and project needs.',
-  },
-  {
-    href: '/troubleshooting' as const,
-    name: 'Troubleshooting',
-    description: 'Common issues and solutions when working with PCU and dependencies.',
-  },
-  {
-    href: '/examples' as const,
-    name: 'Examples',
-    description: 'Practical examples and use cases for managing catalog dependencies.',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export function Guides() {
+  const t = useTranslations('Guides')
+
+  const guides = [
+    {
+      href: '/command-reference' as const,
+      name: t('commandReference.name'),
+      description: t('commandReference.description'),
+    },
+    {
+      href: '/configuration' as const,
+      name: t('configuration.name'),
+      description: t('configuration.description'),
+    },
+    {
+      href: '/troubleshooting' as const,
+      name: t('troubleshooting.name'),
+      description: t('troubleshooting.description'),
+    },
+    {
+      href: '/examples' as const,
+      name: t('examples.name'),
+      description: t('examples.description'),
+    },
+  ]
+
   return (
     <div className="my-16 xl:max-w-none">
       <Heading level={2} id="guides">
-        Guides
+        {t('title')}
       </Heading>
       <div className="not-prose mt-4 grid grid-cols-1 gap-8 border-t border-zinc-900/5 pt-10 sm:grid-cols-2 xl:grid-cols-4 dark:border-white/5">
         {guides.map((guide) => (
@@ -37,7 +42,7 @@ export function Guides() {
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{guide.description}</p>
             <p className="mt-4">
               <Button href={guide.href} variant="text" arrow="right">
-                Read more
+                {t('readMore')}
               </Button>
             </p>
           </div>

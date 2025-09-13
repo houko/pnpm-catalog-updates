@@ -144,10 +144,49 @@
     "noResults": "未找到",
     "tryAgain": "请重试。"
   },
+  "Guides": {
+    "title": "指南",
+    "readMore": "了解更多",
+    "commandReference": {
+      "name": "命令参考",
+      "description": "PCU 所有命令和选项的完整参考文档。"
+    },
+    "configuration": {
+      "name": "配置",
+      "description": "了解如何为您的工作流程和项目需求配置 PCU。"
+    },
+    "troubleshooting": {
+      "name": "故障排除",
+      "description": "使用 PCU 和依赖项时的常见问题和解决方案。"
+    },
+    "examples": {
+      "name": "示例",
+      "description": "管理目录依赖项的实际示例和用例。"
+    }
+  },
+  "Resources": {
+    "title": "资源",
+    "configuration": {
+      "name": "配置",
+      "description": "了解 PCU 配置选项以及如何为不同的工作流程自定义设置。"
+    },
+    "examples": {
+      "name": "示例",
+      "description": "探索使用 PCU 管理依赖项的实际示例和常见用例。"
+    },
+    "troubleshooting": {
+      "name": "故障排除",
+      "description": "使用 PCU 时的常见问题和解决方案。错误消息、调试技巧和故障排除指南。"
+    },
+    "development": {
+      "name": "开发",
+      "description": "了解开发工作流程、贡献指南和高级 PCU 使用模式。"
+    }
+  },
   "Footer": {
     "previous": "上一页",
     "next": "下一页",
-    "copyright": "版权所有 {year}。保留所有权利。",
+    "copyright": "{year} pnpm-catalog-updates. All rights reserved.",
     "followGitHub": "关注我们的 GitHub",
     "joinDiscord": "加入我们的 Discord 服务器"
   }

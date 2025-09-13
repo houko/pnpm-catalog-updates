@@ -1,0 +1,20 @@
+<svg width="160" height="48" viewBox="0 0 80 24" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <path d="M1 10 L12 3 L23 10 L23 17 L12 24 L1 17 Z" fill="#f59e0b" />
+    <path d="M1 10 L12 13.5 L23 10 L12 3 Z" fill="#fbbf24" />
+    <path d="M12 13.5 L12 24 L23 17 L23 10 Z" fill="#d97706" />
+    <circle cx="12" cy="11.5" r="1.5" fill="white" />
+    <path d="M10.5 15 L13.5 15" stroke="white" stroke-width="1.2" stroke-linecap="round" />
+  </g>
+  <text
+    x="26"
+    y="13.5"
+    dominant-baseline="middle"
+    fill="#18181b"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-weight="bold"
+    font-size="20"
+  >
+    PCU
+  </text>
+</svg>

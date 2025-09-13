@@ -729,3 +729,402 @@ pcu -u --dry-run --target minor --include "@types/*"
 2. **安全扫描**：在 CI 中启用 `autoFixVulnerabilities`
 3. **版本固定**：生产发布使用精确版本
 4. **更新计划**：在发布之间规划依赖更新
+
+## 安全监控
+
+### 持续安全扫描
+
+将安全扫描集成到您的开发工作流中：
+
+<CodeGroup>
+
+```bash {{ title: '日常安全检查' }}
+# 快速安全扫描
+pcu security
+
+# 自动修复漏洞
+pcu security --fix-vulns
+
+# 仅关注高危和严重问题
+pcu security --severity high --fix-vulns
+```
+
+```bash {{ title: '全面安全审计' }}
+# 使用 Snyk 集成的完整安全扫描
+pcu security --snyk --include-dev --verbose
+
+# 导出安全报告供审查
+pcu security --format json --snyk > security-report.json
+```
+
+</CodeGroup>
+
+### 安全导向的 CI/CD
+
+```yaml {{ title: '.github/workflows/security.yml' }}
+name: Security Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 每天凌晨2点
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pnpm-catalog-updates
+
+      - name: Security Scan
+        run: pcu security --fix-vulns --format json > security-results.json
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-results.json
+```
+
+## 主题定制
+
+### 交互式主题设置
+
+为您的团队配置 PCU 的外观：
+
+```bash
+# 启动交互式主题向导
+pcu theme --interactive
+
+# 设置特定主题
+pcu theme --set modern
+
+# 列出所有可用主题和预览
+pcu theme --list
+```
+
+### 团队主题配置
+
+```json {{ title: '.pcurc.json' }}
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+## 性能优化
+
+### 大型 Monorepo 配置
+
+针对包含数百个包的大型工作空间的优化配置：
+
+```json {{ title: '.pcurc.json' }}
+{
+  "advanced": {
+    "concurrency": 15,
+    "timeout": 120000,
+    "retries": 5,
+    "batchSize": 100
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 7200000,
+    "maxSize": 104857600,
+    "persistToDisk": true
+  },
+  "monorepo": {
+    "performance": {
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true,
+      "streamingMode": true
+    }
+  }
+}
+```
+
+### 并行处理策略
+
+```bash
+# 高并发更新（适用于大型项目）
+pcu -u --concurrency 20 --timeout 180000
+
+# 批量处理模式
+pcu -u --batch-size 50 --progress-style fancy
+```
+
+## 迁移示例
+
+### 从 npm-check-updates 迁移
+
+从 `ncu` 迁移到 PCU：
+
+<CodeGroup>
+
+```bash {{ title: 'ncu 等效命令' }}
+# ncu 命令
+ncu
+
+# PCU 等效命令
+pcu -c
+```
+
+```bash {{ title: 'ncu 更新命令' }}
+# ncu 更新
+ncu -u
+
+# PCU 等效命令
+pcu -u --target latest
+```
+
+</CodeGroup>
+
+### 从传统依赖管理迁移
+
+迁移现有项目到 pnpm 目录系统：
+
+```bash
+# 第1步：分析现有依赖
+pcu migrate --analyze
+
+# 第2步：创建目录配置
+pcu migrate --create-catalogs
+
+# 第3步：转换 package.json
+pcu migrate --convert-packages
+
+# 第4步：验证迁移
+pcu analyze --validate-migration
+```
+
+## 迁移指南
+
+### 从 npm/yarn 工作空间迁移
+
+完整的迁移过程：
+
+<CodeGroup>
+
+```bash {{ title: '迁移准备' }}
+# 备份现有配置
+cp package.json package.json.backup
+cp package-lock.json package-lock.json.backup 2>/dev/null || true
+cp yarn.lock yarn.lock.backup 2>/dev/null || true
+
+# 分析项目结构
+pcu migrate --dry-run --verbose
+```
+
+```bash {{ title: '执行迁移' }}
+# 转换到 pnpm 工作空间
+pcu migrate --to-pnpm-workspace
+
+# 生成目录配置
+pcu migrate --generate-catalogs --strategy conservative
+
+# 验证迁移结果
+pcu analyze --migration-report
+```
+
+</CodeGroup>
+
+### 渐进式采用策略
+
+```json {{ title: '阶段1：基本设置' }}
+{
+  "defaults": {
+    "target": "patch"
+  },
+  "exclude": ["react", "react-dom", "typescript"]
+}
+```
+
+```json {{ title: '阶段2：扩展覆盖' }}
+{
+  "defaults": {
+    "target": "minor"
+  },
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## CI/CD 工作流集成
+
+### 多环境部署
+
+针对不同环境的完整 CI/CD 工作流：
+
+```yaml {{ title: '.github/workflows/deploy.yml' }}
+name: Multi-Environment Deployment
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PCU_WORKSPACE: ./
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    outputs:
+      has-updates: ${{ steps.check.outputs.has-updates }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pnpm-catalog-updates
+
+      - name: Check Dependencies
+        id: check
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "has-updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-updates=false" >> $GITHUB_OUTPUT
+          fi
+
+  update-dependencies:
+    needs: dependency-check
+    if: needs.dependency-check.outputs.has-updates == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Update PR
+        run: |
+          pcu -u --target minor --create-backup
+          # 创建 PR 的逻辑...
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Staging
+        run: |
+          pcu security --fix-vulns
+          # 部署逻辑...
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [dependency-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Production Security Check
+        run: |
+          pcu security --severity critical --format json
+          # 部署逻辑...
+```
+
+## 企业工作流
+
+### 合规性和审计
+
+企业级合规性工作流：
+
+```json {{ title: '.pcurc.json - 企业配置' }}
+{
+  "enterprise": {
+    "compliance": {
+      "requireApproval": ["major"],
+      "auditTrail": true,
+      "licenseCheck": true,
+      "securityScan": "mandatory"
+    },
+    "approval": {
+      "majorUpdates": {
+        "approvers": ["security-team", "tech-lead"],
+        "timeout": "7d"
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "./logs/pcu-audit.log",
+    "includeUserInfo": true
+  }
+}
+```
+
+### 多团队协作
+
+```bash
+# 团队A：前端团队
+pcu -u --workspace-filter "@frontend/*" --target minor
+
+# 团队B：后端团队
+pcu -u --workspace-filter "@backend/*" --target patch
+
+# 团队C：共享库团队
+pcu -u --workspace-filter "@shared/*" --target latest
+```
+
+### 企业安全策略
+
+```json {{ title: '安全策略配置' }}
+{
+  "security": {
+    "policy": {
+      "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+      "blockedPackages": ["unsafe-package"],
+      "maxAge": "90d",
+      "severityThreshold": "moderate"
+    },
+    "scanning": {
+      "schedule": "daily",
+      "integrations": ["snyk", "whitesource"],
+      "notifications": {
+        "slack": "#security-alerts",
+        "email": ["security@company.com"]
+      }
+    }
+  }
+}
+```
+
+### 发布管理
+
+企业级发布管道集成：
+
+```bash
+# 预发布依赖检查
+pcu enterprise --pre-release-check
+
+# 依赖冻结
+pcu enterprise --freeze-deps --release v2.1.0
+
+# 发布后依赖解冻
+pcu enterprise --unfreeze-deps --post-release
+
+# 合规性报告生成
+pcu enterprise --compliance-report --format pdf
+```

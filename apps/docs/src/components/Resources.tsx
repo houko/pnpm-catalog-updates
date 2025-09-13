@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, useMotionTemplate, useMotionValue, type MotionValue } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import { GridPattern } from '@/components/GridPattern'
@@ -18,66 +19,10 @@ interface Resource {
   pattern: Omit<React.ComponentPropsWithoutRef<typeof GridPattern>, 'width' | 'height' | 'x'>
 }
 
-const resources: Array<Resource> = [
-  {
-    href: '/configuration',
-    name: 'Configuration',
-    description:
-      'Learn about PCU configuration options and how to customize your setup for different workflows.',
-    icon: UserIcon,
-    pattern: {
-      y: 16,
-      squares: [
-        [0, 1],
-        [1, 3],
-      ],
-    },
-  },
-  {
-    href: '/examples',
-    name: 'Examples',
-    description:
-      'Explore practical examples and common use cases for managing dependencies with PCU.',
-    icon: ChatBubbleIcon,
-    pattern: {
-      y: -6,
-      squares: [
-        [-1, 2],
-        [1, 3],
-      ],
-    },
-  },
-  {
-    href: '/troubleshooting',
-    name: 'Troubleshooting',
-    description:
-      'Common issues and solutions when using PCU. Error messages, debugging tips, and troubleshooting guides.',
-    icon: EnvelopeIcon,
-    pattern: {
-      y: 32,
-      squares: [
-        [0, 2],
-        [1, 4],
-      ],
-    },
-  },
-  {
-    href: '/development',
-    name: 'Development',
-    description:
-      'Learn about development workflows, contributing guidelines, and advanced PCU usage patterns.',
-    icon: UsersIcon,
-    pattern: {
-      y: 22,
-      squares: [[0, 1]],
-    },
-  },
-]
-
 function ResourceIcon({ icon: Icon }: { icon: Resource['icon'] }) {
   return (
-    <div className="dark:bg-white/7.5 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900/5 ring-1 ring-zinc-900/25 backdrop-blur-[2px] transition duration-300 group-hover:bg-white/50 group-hover:ring-zinc-900/25 dark:ring-white/15 dark:group-hover:bg-emerald-300/10 dark:group-hover:ring-emerald-400">
-      <Icon className="h-5 w-5 fill-zinc-700/10 stroke-zinc-700 transition-colors duration-300 group-hover:stroke-zinc-900 dark:fill-white/10 dark:stroke-zinc-400 dark:group-hover:fill-emerald-300/10 dark:group-hover:stroke-emerald-400" />
+    <div className="dark:bg-white/7.5 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900/5 ring-1 ring-zinc-900/25 backdrop-blur-[2px] transition duration-300 group-hover:bg-white/50 group-hover:ring-zinc-900/25 dark:ring-white/15 dark:group-hover:bg-amber-300/10 dark:group-hover:ring-amber-400">
+      <Icon className="h-5 w-5 fill-zinc-700/10 stroke-zinc-700 transition-colors duration-300 group-hover:stroke-zinc-900 dark:fill-white/10 dark:stroke-zinc-400 dark:group-hover:fill-amber-300/10 dark:group-hover:stroke-amber-400" />
     </div>
   )
 }
@@ -157,10 +102,64 @@ function Resource({ resource }: { resource: Resource }) {
 }
 
 export function Resources() {
+  const t = useTranslations('Resources')
+
+  const resources: Array<Resource> = [
+    {
+      href: '/configuration',
+      name: t('configuration.name'),
+      description: t('configuration.description'),
+      icon: UserIcon,
+      pattern: {
+        y: 16,
+        squares: [
+          [0, 1],
+          [1, 3],
+        ],
+      },
+    },
+    {
+      href: '/examples',
+      name: t('examples.name'),
+      description: t('examples.description'),
+      icon: ChatBubbleIcon,
+      pattern: {
+        y: -6,
+        squares: [
+          [-1, 2],
+          [1, 3],
+        ],
+      },
+    },
+    {
+      href: '/troubleshooting',
+      name: t('troubleshooting.name'),
+      description: t('troubleshooting.description'),
+      icon: EnvelopeIcon,
+      pattern: {
+        y: 32,
+        squares: [
+          [0, 2],
+          [1, 4],
+        ],
+      },
+    },
+    {
+      href: '/development',
+      name: t('development.name'),
+      description: t('development.description'),
+      icon: UsersIcon,
+      pattern: {
+        y: 22,
+        squares: [[0, 1]],
+      },
+    },
+  ]
+
   return (
     <div className="my-16 xl:max-w-none">
       <Heading level={2} id="resources">
-        Resources
+        {t('title')}
       </Heading>
       <div className="not-prose mt-4 grid grid-cols-1 gap-8 border-t border-zinc-900/5 pt-10 sm:grid-cols-2 xl:grid-cols-4 dark:border-white/5">
         {resources.map((resource) => (
