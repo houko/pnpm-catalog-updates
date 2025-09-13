@@ -1,0 +1,255 @@
+export const metadata = {
+  title: '组件写作',
+  description: '学习使用Notes、Buttons等交互式UI组件来增强您的文档效果。',
+};
+
+# 组件写作
+
+通过交互式UI组件增强您的文档效果。学习如何使用Notes来突出重要信息、使用Buttons进行操作指导，以及其他让您的文档更具吸引力和功能性的元素。 {{ className: 'lead' }}
+
+## 提示和标注
+
+`<Note>`组件非常适合突出显示重要信息、警告或读者应该特别注意的提示。
+
+### 基础Note用法
+
+<Note>
+  这是一个基础的提示组件。它自动使用翠绿主题和信息图标来样式化内容，使重要信息从常规文本中脱颖而出。
+</Note>
+
+```mdx
+<Note>这是一个包含重要信息的基础提示组件。</Note>
+```
+
+### 包含丰富内容的Notes
+
+Notes支持完整的Markdown格式，包括**粗体文本**、_斜体文本_、`内联代码`，甚至是[到其他页面的链接](/writing-basics)。
+
+<Note>
+  **重要设置要求**：在继续之前，请确保您已经： - 安装了Node.js 18或更高版本 - 可以访问项目仓库 -
+  配置了有效的API凭据 有关凭据设置，请参阅[命令参考指南](/command-reference)。
+</Note>
+
+```mdx
+<Note>
+  **重要设置要求**：在继续之前，请确保您已经： - 安装了Node.js 18或更高版本 - 可以访问项目仓库 -
+  配置了有效的API凭据 有关凭据设置，请参阅[命令参考指南](/command-reference)。
+</Note>
+```
+
+### 多段落Notes
+
+<Note>
+  这是包含多个相关信息片段的长提示的第一段。
+
+第二段继续提供额外的上下文思路。您可以包含任意多的段落来完整解释概念。
+
+记住，好的提示简洁而完整，提供刚好足够的信息来帮助读者理解消息的重要性。
+
+</Note>
+
+```mdx
+<Note>
+  第一段包含初始信息。
+
+第二段包含额外的上下文和详细信息。
+
+最后一段包含总结或后续步骤。
+
+</Note>
+```
+
+## 按钮和操作
+
+`<Button>`组件创建行动号召元素，引导用户到重要链接或后续步骤。
+
+### 按钮变体
+
+#### 填充按钮
+
+用于主要操作和最重要的行动号召：
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    了解代码组件
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    了解代码组件
+  </Button>
+</div>
+```
+
+#### 轮廓按钮
+
+非常适合次要操作和替代路径：
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    探索布局组件
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    探索布局组件
+  </Button>
+</div>
+```
+
+#### 文本按钮
+
+与内容融合的微妙链接，同时仍然突出显示：
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    返回基础
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    返回基础
+  </Button>
+</div>
+```
+
+### 按钮箭头
+
+按钮支持方向箭头来指示导航：
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    上一节
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    下一节
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    上一节
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    下一节
+  </Button>
+</div>
+```
+
+### 按钮最佳实践
+
+- **适度使用**：太多按钮会降低效果
+- **清晰的动作词**："开始使用"、"了解更多"、"查看文档"
+- **逻辑层次**：填充用于主要，轮廓用于次要，文本用于第三级
+- **方向箭头**：左箭头表示"返回/上一个"，右箭头表示"前进/下一个"
+- **包裹在not-prose中**：始终使用`<div className="not-prose">`包装器
+
+## 组件样式上下文
+
+### not-prose包装器
+
+某些组件需要脱离默认的散文样式。始终包装这些组件：
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    您的按钮文本
+  </Button>
+</div>
+```
+
+**需要**`not-prose`的组件：
+
+- 所有`<Button>`组件
+- 自定义布局元素
+- 交互式小部件
+- 复杂的样式化组件
+
+**不需要**`not-prose`的组件：
+
+- `<Note>`组件（自包含样式）
+- 标准Markdown元素
+- 基于文本的组件
+
+### 多个组件
+
+当一起显示多个组件时：
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API文档指南
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    高级功能
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    回顾基础
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API文档指南
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    高级功能
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    回顾基础
+  </Button>
+</div>
+```
+
+## 组件可访问性
+
+所有组件都考虑了可访问性：
+
+- **语义HTML**：适当的按钮和链接元素
+- **ARIA标签**：需要时提供屏幕阅读器支持
+- **键盘导航**：完整的键盘可访问性
+- **焦点管理**：清晰的焦点指示器
+- **颜色对比度**：符合WCAG的颜色方案
+
+## 何时使用各个组件
+
+### 使用Notes的场合：
+
+- 突出显示关键信息
+- 警告潜在问题
+- 提供有用的提示或上下文
+- 解释先决条件或要求
+- 引起对重要更改的注意
+
+### 使用Buttons的场合：
+
+- 引导到下一个逻辑步骤
+- 链接到外部资源
+- 创建清晰的行动号召时机
+- 主要部分之间的导航
+- 突出显示主要操作
+
+### 避免过度使用：
+
+- 不要在每个段落都使用提示
+- 每个部分限制1-2个按钮
+- 为真正重要的内容保留组件
+- 让常规文本和Markdown承载大部分内容
+
+## 下一步
+
+现在您了解了UI组件，可以探索：
+
+- [代码写作](/writing-code) - 语法高亮和代码块
+- [布局写作](/writing-layout) - 多列布局和组织
+- [API写作](/writing-api) - API文档组件
+- [高级写作](/writing-advanced) - 高级功能和元数据
+
+掌握这些交互式元素，创建不仅能提供信息，还能有效指导和吸引读者的文档。

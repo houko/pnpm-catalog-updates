@@ -1,0 +1,154 @@
+export const metadata = {
+  title: 'Layout schreiben',
+  description:
+    'Erstellen Sie anspruchsvolle mehrspaltige Layouts und organisieren Sie Inhalte mit Row, Col und Sticky-Positionierung.',
+};
+
+# Layout schreiben
+
+Erstellen Sie anspruchsvolle Layouts, die Lesbarkeit und Benutzererfahrung verbessern. Lernen Sie, Row- und Col-Komponenten für mehrspaltige Designs, Sticky-Positionierung und effektive Inhaltsorganisation zu verwenden. {{ className: 'lead' }}
+
+## Zweispaltiges Layout
+
+Verwenden Sie `<Row>` und `<Col>` für nebeneinander stehende Inhalte:
+
+<Row>
+  <Col>
+    **Linke Spalte**
+    
+    Dieser Inhalt erscheint in der linken Spalte. Perfekt für Erklärungen, Beschreibungen oder ergänzende Informationen.
+    
+    - Wichtiger Punkt eins
+    - Wichtiges Detail
+    - Zusätzlicher Kontext
+  </Col>
+  
+  <Col>
+    **Rechte Spalte**
+    
+    ```javascript
+    // Rechte Spalte mit Code
+    const example = {
+      feature: "mehrspaltig",
+      benefit: "bessere Organisation"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Linker Spalteninhalt mit Erklärungen.</Col>
+
+  <Col>Rechter Spalteninhalt mit Beispielen.</Col>
+</Row>
+```
+
+## Sticky-Spalten-Layout
+
+Lassen Sie Inhalte beim Scrollen haften:
+
+<Row>
+  <Col>
+    **Scrollender Inhalt**
+    
+    Dies ist regulärer Inhalt, der normal scrollt. Sie können hier lange Erklärungen platzieren, durch die Benutzer scrollen werden, um sie vollständig zu lesen.
+    
+    Diese Spalte enthält die Haupterzählung oder detaillierte Informationen, die Scrollen erfordern, um vollständig konsumiert zu werden.
+  </Col>
+  
+  <Col sticky>
+    **Sticky-Referenz**
+    
+    ```json
+    {
+      "status": "sticky",
+      "position": "fixed",
+      "scroll": "independent"
+    }
+    ```
+    
+    Dies bleibt beim Scrollen sichtbar.
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Regulärer scrollender Inhalt hier.</Col>
+
+  <Col sticky>Diese Spalte bleibt beim Scrollen fixiert.</Col>
+</Row>
+```
+
+## Guides-Komponente
+
+Zeigen Sie ein Raster von Leitfaden-Links mit der `<Guides>`-Komponente an:
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+Die Guides-Komponente zeigt einen vordefinierten Satz von Dokumentationsleitfäden mit Links und Beschreibungen. Perfekt für Übersichtsseiten und Einstiegsabschnitte.
+
+## Resources-Komponente
+
+Präsentieren Sie Hauptressourcen-Kategorien mit animierten Karten:
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+Die Resources-Komponente zeigt animierte Ressourcenkarten mit Icons und Beschreibungen. Großartig für Haupt-Landing-Pages und API-Übersichtsabschnitte.
+
+## Icons
+
+Verwenden Sie einzelne Icons für Inline-Dekoration oder benutzerdefinierte Layouts:
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### Verfügbare Icons
+
+- `<UserIcon />` - Einzelner Benutzer
+- `<UsersIcon />` - Mehrere Benutzer
+- `<EnvelopeIcon />` - Nachrichten/E-Mail
+- `<ChatBubbleIcon />` - Unterhaltungen
+- `<BookIcon />` - Dokumentation
+- `<CheckIcon />` - Erfolg/Vervollständigung
+- `<BellIcon />` - Benachrichtigungen
+- `<CogIcon />` - Einstellungen/Konfiguration
+
+## Layout Best Practices
+
+- Verwenden Sie zweispaltige Layouts für ergänzende Inhalte
+- Sticky-Spalten funktionieren am besten für Referenzmaterial
+- Halten Sie Spalten in der Inhaltslänge ausgewogen
+- Stellen Sie Mobile-Responsivität sicher (Spalten stapeln sich auf kleinen Bildschirmen)
+- Verwenden Sie Guides für Dokumentationsübersichtsseiten
+- Verwenden Sie Resources für API-Kategorie-Showcases
+- Icons funktionieren gut mit benutzerdefinierten Tailwind-Klassen für Farben und Größen
+
+## Nächste Schritte
+
+Fahren Sie fort mit [API-Dokumentation](/writing-api) für spezialisierte Komponenten.

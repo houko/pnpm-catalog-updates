@@ -1,0 +1,400 @@
+export const metadata = {
+  title: 'FAQ',
+  description:
+    'Frequently asked questions about PCU (pnpm-catalog-updates). Find quick answers to common questions and issues.',
+};
+
+# Frequently Asked Questions
+
+Quick answers to common questions about PCU. Can't find what you're looking for? Check our [troubleshooting guide](/troubleshooting) or [open an issue](https://github.com/houko/pnpm-catalog-updates/issues). {{ className: 'lead' }}
+
+## Installation & Setup
+
+### How do I install PCU?
+
+PCU can be installed globally via npm, pnpm, or yarn:
+
+<CodeGroup>
+
+```bash {{ title: 'npm' }}
+npm install -g pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'yarn' }}
+yarn global add pnpm-catalog-updates
+```
+
+```bash {{ title: 'npx (no installation)' }}
+npx pnpm-catalog-updates check
+```
+
+</CodeGroup>
+
+### What are the system requirements?
+
+- **Node.js**: >= 18.0.0 (LTS recommended)
+- **pnpm**: >= 8.0.0
+- **Operating System**: Windows, macOS, Linux
+
+### Do I need a pnpm workspace to use PCU?
+
+Yes, PCU is specifically designed for pnpm workspaces with catalog dependencies. If you don't have a workspace yet, run `pcu init` to create one.
+
+### Can I use PCU with npm or yarn projects?
+
+No, PCU is exclusively for pnpm workspaces using catalog dependencies. For other package managers, consider tools like `npm-check-updates` or `yarn upgrade-interactive`.
+
+## Configuration
+
+### Where should I place my `.pcurc.json` configuration?
+
+Place it in your workspace root directory (same level as `pnpm-workspace.yaml`). PCU also supports:
+
+- Global configuration: `~/.pcurc.json`
+- Project configuration: `./.pcurc.json` (highest priority)
+
+### What's the difference between workspace-level and global configuration?
+
+- **Global** (`~/.pcurc.json`): Applied to all PCU operations across different projects
+- **Project** (`./.pcurc.json`): Specific to the current workspace, overrides global settings
+
+### Can I configure different update strategies for different packages?
+
+Yes! Use package rules in your configuration:
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## Commands & Usage
+
+### What's the difference between `pcu check` and `pcu -c`?
+
+They're identical! PCU supports both full command names and short aliases:
+
+- `pcu check` = `pcu -c`
+- `pcu update` = `pcu -u`
+- `pcu interactive` = `pcu -i`
+
+### How do I update only specific types of packages?
+
+Use the `--include` and `--exclude` flags:
+
+```bash
+# Only update React-related packages
+pcu update --include "react*"
+
+# Update everything except major framework changes
+pcu update --exclude "react*,vue*,angular*"
+
+# Only update type definitions
+pcu update --include "@types/*"
+```
+
+### What's the difference between update targets?
+
+- **`patch`**: Bug fixes only (1.0.0 → 1.0.1)
+- **`minor`**: New features, backward compatible (1.0.0 → 1.1.0)
+- **`latest`**: Latest stable version including major changes (1.0.0 → 2.0.0)
+- **`greatest`**: Latest version including prereleases (1.0.0 → 2.0.0-beta.1)
+
+### How do I check what will be updated before actually updating?
+
+Use the `--dry-run` flag:
+
+```bash
+pcu update --dry-run --target minor
+```
+
+This shows you exactly what would be updated without making any changes.
+
+## Troubleshooting
+
+### Why does PCU say "No pnpm workspace found"?
+
+This means PCU can't find a `pnpm-workspace.yaml` file in your current directory. Solutions:
+
+1. **Create a workspace**: Run `pcu init`
+2. **Navigate to workspace root**: `cd` to the directory containing `pnpm-workspace.yaml`
+3. **Specify workspace path**: `pcu -c --workspace /path/to/workspace`
+
+### Why does PCU say "No catalog dependencies found"?
+
+Your workspace doesn't use catalog dependencies yet. You need:
+
+1. **Catalog in workspace file**:
+
+   ```yaml
+   # pnpm-workspace.yaml
+   packages:
+     - 'packages/*'
+
+   catalog:
+     react: ^18.2.0
+     typescript: ^5.0.0
+   ```
+
+2. **Use catalogs in packages**:
+   ```json
+   {
+     "dependencies": {
+       "react": "catalog:",
+       "typescript": "catalog:"
+     }
+   }
+   ```
+
+### PCU is running very slowly. How can I improve performance?
+
+Try these optimizations:
+
+1. **Reduce concurrency**: `pcu check --concurrency 2`
+2. **Increase timeout**: `pcu check --timeout 60000`
+3. **Enable caching**: Ensure `PCU_CACHE_ENABLED=true` (default)
+4. **Use filtering**: `pcu check --include "react*"` for specific packages
+
+### How do I fix "ENOTFOUND registry.npmjs.org" errors?
+
+This is a network connectivity issue:
+
+1. **Check internet connection**: `ping registry.npmjs.org`
+2. **Configure proxy**: Set `HTTP_PROXY` and `HTTPS_PROXY` environment variables
+3. **Use corporate registry**: Configure `.npmrc` with your company's registry
+4. **Increase timeout**: `PCU_TIMEOUT=120000 pcu check`
+
+## Security
+
+### How does PCU handle security vulnerabilities?
+
+PCU integrates with npm audit and optionally Snyk:
+
+```bash
+# Check for vulnerabilities
+pcu security
+
+# Auto-fix security issues
+pcu security --fix-vulns
+
+# Include Snyk scanning
+pcu security --snyk --severity high
+```
+
+### Should I auto-fix all security vulnerabilities?
+
+Use caution with `--auto-fix`:
+
+- ✅ **Safe**: Patch and minor updates for security fixes
+- ⚠️ **Review**: Major version updates that might break your app
+- ❌ **Avoid**: Blindly auto-fixing in production without testing
+
+### How do I handle false positive security warnings?
+
+Configure ignored vulnerabilities in `.pcurc.json`:
+
+```json
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn"
+    }
+  }
+}
+```
+
+## Workflows & CI/CD
+
+### Can I use PCU in CI/CD pipelines?
+
+Absolutely! PCU is designed for automation:
+
+```bash
+# CI-friendly commands
+PCU_NO_COLOR=true pcu check --format json
+pcu security --format json --severity critical
+```
+
+See our [CI/CD integration guide](/cicd) for complete examples.
+
+### How do I create automated dependency update PRs?
+
+Use PCU with GitHub Actions, GitLab CI, or other platforms:
+
+```yaml
+- name: Update dependencies
+  run: |
+    pcu update --target minor --create-backup
+    # Create PR with changes
+```
+
+Check the [CI/CD integration guide](/cicd) for full workflows.
+
+### What's the best workflow for team collaboration?
+
+1. **Shared configuration**: Commit `.pcurc.json` to version control
+2. **Regular reviews**: Schedule weekly dependency review meetings
+3. **Security first**: Always prioritize security updates
+4. **Incremental updates**: Prefer smaller, frequent updates over big batch updates
+5. **Testing**: Always test after updates before merging
+
+## Advanced Usage
+
+### Can I use multiple catalogs in one workspace?
+
+Yes! PNPM supports multiple catalogs:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+
+catalogs:
+  react17:
+    react: ^17.0.2
+  experimental:
+    react: ^19.0.0-beta
+```
+
+Then use them in packages:
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:react17"
+  }
+}
+```
+
+### How do I analyze the impact of updating a specific package?
+
+Use the analyze command:
+
+```bash
+# Analyze impact of updating React
+pcu analyze default react 18.3.0
+
+# Check all catalogs
+pcu analyze react17 react 17.0.3
+```
+
+### Can I exclude certain packages from updates permanently?
+
+Yes, configure exclusions in `.pcurc.json`:
+
+```json
+{
+  "exclude": ["react", "vue", "@types/node"],
+  "packageRules": [
+    {
+      "patterns": ["critical-*"],
+      "exclude": true
+    }
+  ]
+}
+```
+
+### How do I handle monorepos with 100+ packages?
+
+Performance tips for large monorepos:
+
+1. **Batch processing**: Configure `batchSize: 10` in advanced settings
+2. **Reduce concurrency**: Set `concurrency: 2` to avoid overwhelming the registry
+3. **Use filtering**: Process packages in groups with `--include` patterns
+4. **Enable caching**: Ensure caching is enabled and properly configured
+5. **Increase memory**: Set `NODE_OPTIONS="--max-old-space-size=8192"`
+
+## Error Messages
+
+### "Cannot resolve peer dependencies"
+
+This happens when package versions conflict. Solutions:
+
+1. **Update related packages together**: `pcu update --include "react*"`
+2. **Use interactive mode**: `pcu update --interactive` to choose versions carefully
+3. **Check peer dependencies**: Review what each package requires
+4. **Use multiple catalogs**: Separate conflicting versions into different catalogs
+
+### "Invalid configuration in .pcurc.json"
+
+Your configuration file has JSON syntax errors:
+
+```bash
+# Validate JSON syntax
+node -e "JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8'))"
+
+# Regenerate config if needed
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+### "Command not found: pcu"
+
+Installation or PATH issues:
+
+1. **Reinstall globally**: `npm install -g pcu`
+2. **Check PATH**: Ensure npm global bin is in your PATH
+3. **Use npx**: `npx pnpm-catalog-updates check` as alternative
+4. **Use pnpm**: `pnpm add -g pnpm-catalog-updates` (recommended)
+
+## Integration & Tools
+
+### Does PCU work with Renovate or Dependabot?
+
+PCU is an alternative to these tools, not a complement:
+
+- **PCU**: Manual control, pnpm-specific, catalog-focused
+- **Renovate**: Automated PRs, supports many package managers
+- **Dependabot**: GitHub-integrated, automated security updates
+
+Choose based on your workflow preferences. For migration, see our [migration guide](/examples#migration-from-other-tools).
+
+### Can I integrate PCU with my IDE?
+
+While there's no official IDE extension, you can:
+
+1. **Add npm scripts**: Configure commands in `package.json`
+2. **Use task runners**: Integrate with VS Code tasks or similar
+3. **Terminal integration**: Most IDEs support terminal integration
+
+### Does PCU support private npm registries?
+
+Yes! PCU reads your `.npmrc` configuration:
+
+```ini
+# .npmrc
+@mycompany:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+```
+
+PCU will automatically use the correct registry for each package scope.
+
+---
+
+## Still Have Questions?
+
+- 📖 **Documentation**: Check our comprehensive [command reference](/command-reference)
+- 🛠️ **Troubleshooting**: Visit our [troubleshooting guide](/troubleshooting)
+- 🐛 **Bug Reports**: [Create an issue](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)

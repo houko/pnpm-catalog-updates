@@ -6,6 +6,7 @@ yarn-error.log*
 pnpm-debug.log*
 test-new-workspace
 .turbo
+.serena
 
 test-results.xml
 
@@ -155,3 +156,4 @@ bin/pnpm-catalog-updates
 # Package manager lock files (we'll use pnpm)
 package-lock.json
 yarn.lock
+.playwright-mcp

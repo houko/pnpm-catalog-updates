@@ -1,0 +1,198 @@
+{
+  "Navigation": {
+    "quickstart": "クイックスタート",
+    "command-reference": "コマンドリファレンス",
+    "configuration": "設定",
+    "examples": "例",
+    "development": "開発",
+    "cicd": "CI/CD統合",
+    "faq": "よくある質問",
+    "best-practices": "ベストプラクティス",
+    "performance": "パフォーマンス",
+    "migration": "移行ガイド",
+    "troubleshooting": "トラブルシューティング",
+    "writing-basics": "ライティング基礎",
+    "writing-components": "コンポーネント作成",
+    "writing-code": "コード作成",
+    "writing-layout": "レイアウト作成",
+    "writing-api": "API作成",
+    "writing-advanced": "高度なライティング"
+  },
+  "Common": {
+    "language": "言語",
+    "english": "English",
+    "chinese": "中文",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "german": "Deutsch",
+    "french": "Français",
+    "korean": "한국어",
+    "documentation": "ドキュメント",
+    "getStarted": "開始する",
+    "gettingStarted": "はじめに",
+    "guidesAndExamples": "ガイドと例",
+    "writingDocumentation": "ドキュメント作成",
+    "api": "コマンド",
+    "support": "ヘルプ",
+    "guides": "ガイド",
+    "writing": "ドキュメント作成",
+    "resources": "リソース",
+    "introduction": "紹介"
+  },
+  "Home": {
+    "title": "PCU ドキュメント",
+    "description": "pnpm ワークスペースカタログ依存関係管理のための強力なCLIツール",
+    "heroTitle": "pnpm カタログを簡単に管理",
+    "heroDescription": "PCU は pnpm ワークスペースカタログ内の依存関係を効率的にチェック、更新、分析するのに役立ちます。",
+    "exploreSdks": "コマンドリファレンスを見る",
+    "gettingStartedTitle": "はじめに",
+    "gettingStartedDesc": "PCU は pnpm ワークスペース専用の依存関係管理ツールです。古い依存関係のチェック、バージョンの一括更新、カタログ設定の最適化に役立ちます。",
+    "getApiKey": "インストールを開始"
+  },
+  "NotFound": {
+    "title": "ページが見つかりません",
+    "description": "申し訳ございませんが、お探しのページが見つかりませんでした。",
+    "backButton": "ドキュメントに戻る"
+  },
+  "WritingGuide": {
+    "title": "ドキュメント作成ガイド",
+    "description": "サポートされているすべてのMDXコンポーネントと機能を使用してドキュメントを作成するための完全なガイド。"
+  },
+  "Feedback": {
+    "question": "このページは役に立ちましたか？",
+    "yes": "はい",
+    "no": "いいえ",
+    "thanks": "フィードバックをありがとうございます！"
+  },
+  "Search": {
+    "placeholder": "検索...",
+    "noResults": "見つかりませんでした",
+    "tryAgain": "もう一度お試しください。"
+  },
+  "Quickstart": {
+    "title": "クイックスタート",
+    "description": "このガイドでは、PCU を素早くインストールして設定し、pnpm カタログ依存関係の管理を開始する方法を説明します。",
+    "installTitle": "PCU をインストール",
+    "installDesc": "PCU は npm、yarn、または pnpm でグローバルインストールできます。一貫性のために pnpm の使用を推奨します。",
+    "configTitle": "ワークスペースを設定",
+    "configDesc": "pnpm ワークスペースのルートディレクトリで、適切なカタログ設定があることを確認してください。",
+    "firstRunTitle": "初回実行",
+    "firstRunDesc": "PCU を実行してワークスペース内の依存関係の状態をチェックします。",
+    "nextStepsTitle": "次に何をしますか？",
+    "nextStepsDesc": "PCU をインストールして初回チェックを実行しました。以下の有用な次のステップがあります：",
+    "checkDeps": "古い依存関係をチェック",
+    "updateCatalogs": "カタログ設定を更新",
+    "learnCommands": "利用可能なすべてのコマンドを学習"
+  },
+  "CommandReference": {
+    "title": "コマンドリファレンス",
+    "description": "すべての PCU コマンドの完全なリファレンスドキュメント。"
+  },
+  "Configuration": {
+    "title": "設定",
+    "description": "開発ワークフローに合わせて PCU を設定する方法を学びます。"
+  },
+  "Examples": {
+    "title": "例",
+    "description": "PCU を使用してプロジェクトの依存関係を管理および更新する方法を学びます。"
+  },
+  "Development": {
+    "title": "開発",
+    "description": "チーム環境で PCU を使用するためのベストプラクティス。"
+  },
+  "Troubleshooting": {
+    "title": "トラブルシューティング",
+    "description": "一般的な問題とエラーの解決策。"
+  },
+  "CICD": {
+    "title": "CI/CD統合",
+    "description": "継続的インテグレーションとデプロイメントパイプラインに PCU を統合します。"
+  },
+  "BestPractices": {
+    "title": "ベストプラクティス",
+    "description": "チーム環境と企業ワークフローで PCU を効果的に使用するためのベストプラクティス。"
+  },
+  "Performance": {
+    "title": "パフォーマンス最適化",
+    "description": "大規模なモノレポに対して PCU のパフォーマンスを最適化し、実行速度を向上させ、リソース消費を削減します。"
+  },
+  "Migration": {
+    "title": "移行ガイド",
+    "description": "他の依存関係管理ツールから PCU に移行し、チームが pnpm カタログ依存関係の使用に効果的に移行できるよう支援します。"
+  },
+  "FAQ": {
+    "title": "よくある質問",
+    "description": "PCU に関するよくある質問。一般的な質問と問題の迅速な回答を見つけます。"
+  },
+  "QuickstartPage": {
+    "title": "クイックスタート",
+    "description": "このガイドでは、PCU を素早くインストールして設定し、pnpm カタログ依存関係の管理を開始する方法を説明します。",
+    "intro": "このガイドでは、PCU を素早くインストールして設定し、pnpm カタログ依存関係の管理を開始する方法を説明します。ツールのインストール、ワークスペースの設定、および初回依存関係チェックの実行方法について説明します。",
+    "noteText": "PCU の使用を開始する前に、プロジェクトが pnpm をパッケージマネージャーとして使用し、ワークスペースが設定されていることを確認してください。ワークスペース設定は、プロジェクトルートの pnpm-workspace.yaml ファイルで見つけることができます。",
+    "chooseInstallTitle": "インストール方法を選択",
+    "chooseInstallDesc": "初回チェックを開始する前に、PCU のインストール方法を選択する必要があります。従来の npm グローバルインストールに加えて、PCU は pnpm、yarn、および npx での一時実行もサポートしています。以下の例は PCU のインストール方法を示しています：",
+    "installGlobal": "# PCU をグローバルにインストール",
+    "installPnpm": "# pnpm を使用して PCU をインストール",
+    "installYarn": "# yarn を使用して PCU をインストール",
+    "installNpx": "# npx で一時実行",
+    "checkCommandsLink": "利用可能なすべてのコマンドを見る",
+    "firstCheckTitle": "初回チェックを実行",
+    "firstCheckDesc": "インストール方法を選択した後、pnpm ワークスペースで初回依存関係チェックを実行できます。以下の例は、古い依存関係をチェックするために PCU を実行する方法を示しており、デフォルトで最初の10件の結果を表示します：",
+    "checkOutdated": "古い依存関係をチェック",
+    "checkSpecific": "特定パッケージの更新をチェック",
+    "checkWorkspace": "ワークスペース全体をチェック",
+    "updateCatalog": "カタログ設定を更新",
+    "readDocsLink": "依存関係管理ドキュメントを読む",
+    "nextStepsTitle": "次に何をしますか？",
+    "nextStepsDesc": "素晴らしい！PCU をインストールして初回依存関係チェックを実行しました。PCU の機能をさらに探索するのに役立つリンクがあります：",
+    "getCatalogLink": "pnpm ワークスペースからカタログ設定を取得",
+    "checkDependenciesLink": "依存関係管理ドキュメントを見る",
+    "learnErrorsLink": "PCU のエラー処理について学ぶ"
+  },
+  "Guides": {
+    "title": "ガイド",
+    "readMore": "詳細を読む",
+    "commandReference": {
+      "name": "コマンドリファレンス",
+      "description": "すべての PCU コマンドとオプションの完全なリファレンスドキュメント。"
+    },
+    "configuration": {
+      "name": "設定",
+      "description": "ワークフローとプロジェクトのニーズに合わせて PCU を設定する方法を学びます。"
+    },
+    "troubleshooting": {
+      "name": "トラブルシューティング",
+      "description": "PCU と依存関係を使用する際の一般的な問題と解決策。"
+    },
+    "examples": {
+      "name": "例",
+      "description": "カタログ依存関係を管理するための実用的な例とユースケース。"
+    }
+  },
+  "Resources": {
+    "title": "リソース",
+    "configuration": {
+      "name": "設定",
+      "description": "PCU 設定オプションと、異なるワークフローに合わせてセットアップをカスタマイズする方法について学びます。"
+    },
+    "examples": {
+      "name": "例",
+      "description": "PCU で依存関係を管理するための実用的な例と一般的なユースケースを探索します。"
+    },
+    "troubleshooting": {
+      "name": "トラブルシューティング",
+      "description": "PCU を使用する際の一般的な問題と解決策。エラーメッセージ、デバッグのヒント、トラブルシューティングガイド。"
+    },
+    "development": {
+      "name": "開発",
+      "description": "開発ワークフロー、貢献ガイドライン、高度な PCU 使用パターンについて学びます。"
+    }
+  },
+  "Footer": {
+    "previous": "前へ",
+    "next": "次へ",
+    "copyright": "{year} pnpm-catalog-updates. All rights reserved.",
+    "followGitHub": "GitHub をフォロー",
+    "joinDiscord": "Discord サーバーに参加"
+  }
+}

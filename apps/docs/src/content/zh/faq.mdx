@@ -1,0 +1,399 @@
+export const metadata = {
+  title: '常见问题',
+  description: '关于 PCU (pnpm-catalog-updates) 的常见问题。快速找到常见问题和疑难解答。',
+};
+
+# 常见问题
+
+关于 PCU 常见问题的快速解答。找不到您要找的内容？请查看我们的[故障排除指南](/troubleshooting)或[提交问题](https://github.com/houko/pnpm-catalog-updates/issues)。{{ className: 'lead' }}
+
+## 安装和设置
+
+### 如何安装 PCU？
+
+PCU 可以通过 npm、pnpm 或 yarn 全局安装：
+
+<CodeGroup>
+
+```bash {{ title: 'npm' }}
+npm install -g pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+```bash {{ title: 'yarn' }}
+yarn global add pnpm-catalog-updates
+```
+
+```bash {{ title: 'npx (无需安装)' }}
+npx pnpm-catalog-updates check
+```
+
+</CodeGroup>
+
+### 系统要求是什么？
+
+- **Node.js**: >= 18.0.0 (推荐 LTS 版本)
+- **pnpm**: >= 8.0.0
+- **操作系统**: Windows、macOS、Linux
+
+### 我需要 pnpm 工作空间才能使用 PCU 吗？
+
+是的，PCU 专为使用目录依赖的 pnpm 工作空间设计。如果您还没有工作空间，请运行 `pcu init` 创建一个。
+
+### 我可以在 npm 或 yarn 项目中使用 PCU 吗？
+
+不可以，PCU 专用于使用目录依赖的 pnpm 工作空间。对于其他包管理器，请考虑使用 `npm-check-updates` 或 `yarn upgrade-interactive` 等工具。
+
+## 配置
+
+### 我应该将 `.pcurc.json` 配置文件放在哪里？
+
+将其放在工作空间根目录中（与 `pnpm-workspace.yaml` 同一级别）。PCU 还支持：
+
+- 全局配置：`~/.pcurc.json`
+- 项目配置：`./.pcurc.json`（最高优先级）
+
+### 工作空间级别和全局配置有什么区别？
+
+- **全局** (`~/.pcurc.json`)：应用于不同项目中的所有 PCU 操作
+- **项目** (`./.pcurc.json`)：特定于当前工作空间，覆盖全局设置
+
+### 我可以为不同的包配置不同的更新策略吗？
+
+可以！在配置中使用包规则：
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## 命令和使用
+
+### `pcu check` 和 `pcu -c` 有什么区别？
+
+它们完全相同！PCU 支持完整命令名称和简短别名：
+
+- `pcu check` = `pcu -c`
+- `pcu update` = `pcu -u`
+- `pcu interactive` = `pcu -i`
+
+### 如何只更新特定类型的包？
+
+使用 `--include` 和 `--exclude` 标志：
+
+```bash
+# 仅更新 React 相关包
+pcu update --include "react*"
+
+# 更新除主要框架变更外的所有内容
+pcu update --exclude "react*,vue*,angular*"
+
+# 仅更新类型定义
+pcu update --include "@types/*"
+```
+
+### 更新目标之间有什么区别？
+
+- **`patch`**：仅错误修复 (1.0.0 → 1.0.1)
+- **`minor`**：新功能，向后兼容 (1.0.0 → 1.1.0)
+- **`latest`**：最新稳定版本，包括主要更改 (1.0.0 → 2.0.0)
+- **`greatest`**：最新版本，包括预发布版本 (1.0.0 → 2.0.0-beta.1)
+
+### 在实际更新之前如何检查将要更新的内容？
+
+使用 `--dry-run` 标志：
+
+```bash
+pcu update --dry-run --target minor
+```
+
+这会显示将要更新的确切内容，而不会进行任何更改。
+
+## 故障排除
+
+### 为什么 PCU 说"未找到 pnpm 工作空间"？
+
+这意味着 PCU 在您的当前目录中找不到 `pnpm-workspace.yaml` 文件。解决方案：
+
+1. **创建工作空间**：运行 `pcu init`
+2. **导航到工作空间根**：`cd` 到包含 `pnpm-workspace.yaml` 的目录
+3. **指定工作空间路径**：`pcu -c --workspace /path/to/workspace`
+
+### 为什么 PCU 说"未找到目录依赖"？
+
+您的工作空间尚未使用目录依赖。您需要：
+
+1. **工作空间文件中的目录**：
+
+   ```yaml
+   # pnpm-workspace.yaml
+   packages:
+     - 'packages/*'
+
+   catalog:
+     react: ^18.2.0
+     typescript: ^5.0.0
+   ```
+
+2. **在包中使用目录**：
+   ```json
+   {
+     "dependencies": {
+       "react": "catalog:",
+       "typescript": "catalog:"
+     }
+   }
+   ```
+
+### PCU 运行非常缓慢。如何提高性能？
+
+尝试这些优化：
+
+1. **减少并发数**：`pcu check --concurrency 2`
+2. **增加超时时间**：`pcu check --timeout 60000`
+3. **启用缓存**：确保 `PCU_CACHE_ENABLED=true`（默认）
+4. **使用过滤**：`pcu check --include "react*"` 针对特定包
+
+### 如何修复"ENOTFOUND registry.npmjs.org"错误？
+
+这是网络连接问题：
+
+1. **检查网络连接**：`ping registry.npmjs.org`
+2. **配置代理**：设置 `HTTP_PROXY` 和 `HTTPS_PROXY` 环境变量
+3. **使用企业注册表**：在 `.npmrc` 中配置公司注册表
+4. **增加超时时间**：`PCU_TIMEOUT=120000 pcu check`
+
+## 安全
+
+### PCU 如何处理安全漏洞？
+
+PCU 集成了 npm audit 和可选的 Snyk：
+
+```bash
+# 检查漏洞
+pcu security
+
+# 自动修复安全问题
+pcu security --fix-vulns
+
+# 包括 Snyk 扫描
+pcu security --snyk --severity high
+```
+
+### 我应该自动修复所有安全漏洞吗？
+
+使用 `--auto-fix` 时要谨慎：
+
+- ✅ **安全**：安全修复的补丁和小版本更新
+- ⚠️ **需审查**：可能破坏应用的主版本更新
+- ❌ **避免**：在生产环境中盲目自动修复而不测试
+
+### 如何处理误报的安全警告？
+
+在 `.pcurc.json` 中配置忽略的漏洞：
+
+```json
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn"
+    }
+  }
+}
+```
+
+## 工作流和 CI/CD
+
+### 我可以在 CI/CD 流水线中使用 PCU 吗？
+
+当然可以！PCU 专为自动化而设计：
+
+```bash
+# CI 友好的命令
+PCU_NO_COLOR=true pcu check --format json
+pcu security --format json --severity critical
+```
+
+查看我们的 [CI/CD 集成指南](/cicd) 了解完整示例。
+
+### 如何创建自动化依赖更新 PR？
+
+将 PCU 与 GitHub Actions、GitLab CI 或其他平台结合使用：
+
+```yaml
+- name: 更新依赖
+  run: |
+    pcu update --target minor --create-backup
+    # 使用更改创建 PR
+```
+
+查看 [CI/CD 集成指南](/cicd) 了解完整工作流。
+
+### 团队协作的最佳工作流是什么？
+
+1. **共享配置**：将 `.pcurc.json` 提交到版本控制
+2. **定期审查**：安排每周依赖审查会议
+3. **安全优先**：始终优先处理安全更新
+4. **增量更新**：偏好小而频繁的更新而非大批量更新
+5. **测试**：更新后始终测试再合并
+
+## 高级用法
+
+### 我可以在一个工作空间中使用多个目录吗？
+
+可以！PNPM 支持多个目录：
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+
+catalogs:
+  react17:
+    react: ^17.0.2
+  experimental:
+    react: ^19.0.0-beta
+```
+
+然后在包中使用它们：
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:react17"
+  }
+}
+```
+
+### 如何分析更新特定包的影响？
+
+使用分析命令：
+
+```bash
+# 分析更新 React 的影响
+pcu analyze default react 18.3.0
+
+# 检查所有目录
+pcu analyze react17 react 17.0.3
+```
+
+### 我可以永久排除某些包的更新吗？
+
+可以，在 `.pcurc.json` 中配置排除项：
+
+```json
+{
+  "exclude": ["react", "vue", "@types/node"],
+  "packageRules": [
+    {
+      "patterns": ["critical-*"],
+      "exclude": true
+    }
+  ]
+}
+```
+
+### 如何处理有 100+ 包的 monorepo？
+
+大型 monorepo 的性能技巧：
+
+1. **批处理**：在高级设置中配置 `batchSize: 10`
+2. **减少并发数**：设置 `concurrency: 2` 避免压垮注册表
+3. **使用过滤**：使用 `--include` 模式按组处理包
+4. **启用缓存**：确保缓存已启用并正确配置
+5. **增加内存**：设置 `NODE_OPTIONS="--max-old-space-size=8192"`
+
+## 错误消息
+
+### "无法解析对等依赖"
+
+当包版本冲突时会发生这种情况。解决方案：
+
+1. **一起更新相关包**：`pcu update --include "react*"`
+2. **使用交互模式**：`pcu update --interactive` 仔细选择版本
+3. **检查对等依赖**：审查每个包的要求
+4. **使用多个目录**：将冲突版本分离到不同目录
+
+### ".pcurc.json 中的配置无效"
+
+您的配置文件有 JSON 语法错误：
+
+```bash
+# 验证 JSON 语法
+node -e "JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8'))"
+
+# 如需要重新生成配置
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+### "找不到命令：pcu"
+
+安装或 PATH 问题：
+
+1. **重新全局安装**：`npm install -g pcu`
+2. **检查 PATH**：确保 npm 全局 bin 在您的 PATH 中
+3. **使用 npx**：`npx pnpm-catalog-updates check` 作为替代
+4. **使用 pnpm**：`pnpm add -g pnpm-catalog-updates`（推荐）
+
+## 集成和工具
+
+### PCU 与 Renovate 或 Dependabot 兼容吗？
+
+PCU 是这些工具的替代方案，不是补充：
+
+- **PCU**：手动控制，pnpm 特定，专注目录
+- **Renovate**：自动化 PR，支持多种包管理器
+- **Dependabot**：GitHub 集成，自动安全更新
+
+根据您的工作流偏好选择。有关迁移，请查看我们的[迁移指南](/examples#从其他工具迁移)。
+
+### 我可以将 PCU 与 IDE 集成吗？
+
+虽然没有官方 IDE 扩展，但您可以：
+
+1. **添加 npm 脚本**：在 `package.json` 中配置命令
+2. **使用任务运行器**：与 VS Code 任务或类似工具集成
+3. **终端集成**：大多数 IDE 支持终端集成
+
+### PCU 支持私有 npm 注册表吗？
+
+支持！PCU 读取您的 `.npmrc` 配置：
+
+```ini
+# .npmrc
+@mycompany:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+```
+
+PCU 会自动为每个包范围使用正确的注册表。
+
+---
+
+## 仍有疑问？
+
+- 📖 **文档**：查看我们全面的[命令参考](/command-reference)
+- 🛠️ **故障排除**：访问我们的[故障排除指南](/troubleshooting)
+- 🐛 **错误报告**：[创建问题](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **讨论**：[GitHub 讨论](https://github.com/houko/pnpm-catalog-updates/discussions)

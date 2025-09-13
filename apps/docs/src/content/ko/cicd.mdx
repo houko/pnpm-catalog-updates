@@ -1,0 +1,649 @@
+export const metadata = {
+  title: 'CI/CD 통합',
+  description:
+    '지속적인 통합 및 배포 파이프라인에 PCU를 통합하여 자동화된 종속성 관리를 구현하세요.',
+};
+
+# CI/CD 통합
+
+지속적인 통합 및 배포 파이프라인에 PCU를 통합하세요. PCU는 기존 CI/CD 워크플로우와 원활하게 통합되어 GitHub Actions, GitLab CI, Jenkins, Azure DevOps 및 기타 플랫폼을 지원합니다. {{ className: 'lead' }}
+
+## GitHub Actions 통합
+
+### 기본 종속성 확인 워크플로우
+
+<CodeGroup>
+
+```yaml {{ title: '기본 종속성 확인' }}
+name: PCU Dependency Check
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: 종속성 설치
+        run: pnpm install
+
+      - name: PCU 설치
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: 업데이트 확인
+        run: pcu -c --format table
+
+      - name: 보안 스캔
+        run: pcu security --severity high
+```
+
+```yaml {{ title: '고급 업데이트 워크플로우' }}
+name: PCU 고급 워크플로우
+
+on:
+  schedule:
+    - cron: '0 8 * * MON' # 매주 월요일 오전 8시
+  workflow_dispatch:
+    inputs:
+      update_target:
+        description: '업데이트 대상'
+        required: false
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - latest
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: 종속성 설치
+        run: pnpm install
+
+      - name: PCU 설치
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Git 구성
+        run: |
+          git config user.name "PCU Bot"
+          git config user.email "pcu-bot@github-actions.com"
+
+      - name: 업데이트 확인
+        id: check-updates
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 보안 스캔
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu security --format json --severity critical > security.json
+          if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+            echo "❌ 치명적인 보안 취약점 발견"
+            exit 1
+          fi
+
+      - name: 종속성 업데이트
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu -u --target ${{ github.event.inputs.update_target || 'minor' }} --create-backup
+
+      - name: 테스트 실행
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: pnpm test
+
+      - name: Pull Request 생성
+        if: steps.check-updates.outputs.updates-available == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: 카탈로그 종속성 업데이트'
+          title: "🔄 주간 종속성 업데이트 (${{ github.event.inputs.update_target || 'minor' }})"
+          body: |
+            ## 📦 종속성 업데이트
+
+            이 PR은 PCU에서 생성된 카탈로그 종속성 업데이트를 포함합니다.
+
+            ### 변경 사항
+            - 대상: `${{ github.event.inputs.update_target || 'minor' }}`
+            - 보안 스캔: ✅ 통과
+            - 테스트: ✅ 통과
+
+            ### 검토 체크리스트
+            - [ ] Breaking Changes 검토
+            - [ ] 핵심 사용자 경로 테스트
+            - [ ] 필요시 문서 업데이트
+
+            ---
+            *PCU Bot에서 생성됨 🤖*
+          branch: pcu/weekly-updates
+          labels: |
+            dependencies
+            automated
+```
+
+</CodeGroup>
+
+## GitLab CI 통합
+
+PCU 종속성 관리를 위한 GitLab CI 파이프라인:
+
+<CodeGroup>
+
+```yaml {{ title: '.gitlab-ci.yml' }}
+stages:
+  - check
+  - security
+  - update
+
+variables:
+  PNPM_CACHE_FOLDER: .pnpm-store
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store
+
+before_script:
+  - corepack enable
+  - pnpm config set store-dir $PNPM_CACHE_FOLDER
+  - pnpm install
+  - pnpm add -g pnpm-catalog-updates
+
+dependency-check:
+  stage: check
+  script:
+    - pcu -c --format table
+    - pcu workspace --validate
+  artifacts:
+    reports:
+      junit: dependency-report.xml
+  only:
+    - merge_requests
+    - main
+
+security-scan:
+  stage: security
+  script:
+    - pcu security --format json --severity moderate > security.json
+    - |
+      if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+        echo "보안 취약점이 발견되었습니다:"
+        cat security.json | jq '.'
+        exit 1
+      fi
+  artifacts:
+    reports:
+      security: security.json
+  only:
+    - merge_requests
+    - main
+
+weekly-update:
+  stage: update
+  script:
+    - git config user.name "PCU Bot"
+    - git config user.email "pcu@gitlab.com"
+    - pcu -c --format json > updates.json
+    - |
+      if [ -s updates.json ]; then
+        pcu -u --target minor --create-backup
+        git add .
+        git commit -m "chore: 주간 종속성 업데이트"
+        git push origin HEAD:pcu/weekly-updates
+      fi
+  only:
+    - schedules
+  variables:
+    GIT_STRATEGY: clone
+```
+
+</CodeGroup>
+
+## Jenkins 파이프라인 통합
+
+종속성 관리를 위한 엔터프라이즈급 Jenkins 파이프라인:
+
+<CodeGroup>
+
+```groovy {{ title: 'Jenkinsfile' }}
+pipeline {
+    agent any
+
+    tools {
+        nodejs '18'
+    }
+
+    environment {
+        PNPM_HOME = "${env.WORKSPACE}/.pnpm"
+        PATH = "${env.PNPM_HOME}:${env.PATH}"
+    }
+
+    stages {
+        stage('환경 설정') {
+            steps {
+                sh 'corepack enable'
+                sh 'pnpm install'
+                sh 'pnpm add -g pnpm-catalog-updates'
+            }
+        }
+
+        stage('종속성 확인') {
+            steps {
+                sh 'pcu -c --format json > dependency-check.json'
+
+                script {
+                    def updates = readJSON file: 'dependency-check.json'
+                    if (updates.size() > 0) {
+                        env.HAS_UPDATES = 'true'
+                        echo "업데이트할 패키지 ${updates.size()}개 발견"
+                    } else {
+                        env.HAS_UPDATES = 'false'
+                        echo "사용 가능한 업데이트 없음"
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check.json'
+                }
+            }
+        }
+
+        stage('보안 스캔') {
+            when {
+                environment name: 'HAS_UPDATES', value: 'true'
+            }
+            steps {
+                sh 'pcu security --format json --severity high > security-report.json'
+
+                script {
+                    def securityReport = readJSON file: 'security-report.json'
+                    if (securityReport.vulnerabilities && securityReport.vulnerabilities.size() > 0) {
+                        error "치명적인 보안 취약점 발견: ${securityReport.vulnerabilities.size()}개"
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.',
+                        reportFiles: 'security-report.json',
+                        reportName: 'Security Report'
+                    ])
+                }
+            }
+        }
+
+        stage('종속성 업데이트') {
+            when {
+                allOf {
+                    environment name: 'HAS_UPDATES', value: 'true'
+                    branch 'main'
+                }
+            }
+            steps {
+                sh 'pcu -u --target minor --create-backup'
+                sh 'pnpm test'
+
+                script {
+                    sh '''
+                        git config user.name "Jenkins PCU"
+                        git config user.email "jenkins@company.com"
+                        git add .
+                        git commit -m "chore: 자동화된 종속성 업데이트 [skip ci]"
+                    '''
+
+                    // 병합 요청(GitLab) 또는 풀 리퀘스트(GitHub) 생성
+                    sh '''
+                        git push origin HEAD:pcu/automated-updates-${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+
+        success {
+            echo 'PCU 종속성 확인이 성공적으로 완료되었습니다'
+        }
+
+        failure {
+            emailext (
+                subject: "PCU 종속성 확인 실패 - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "종속성 확인이 실패했습니다. 콘솔 출력을 검토해 주세요.",
+                to: "${env.CHANGE_AUTHOR_EMAIL}"
+            )
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Azure DevOps 파이프라인
+
+PCU 통합을 위한 Azure DevOps 파이프라인:
+
+<CodeGroup>
+
+```yaml {{ title: 'azure-pipelines.yml' }}
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: '0 8 * * 1'
+    displayName: 주간 종속성 확인
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PNPM_CACHE_FOLDER: $(Pipeline.Workspace)/.pnpm-store
+
+stages:
+  - stage: DependencyCheck
+    displayName: '종속성 확인'
+    jobs:
+      - job: CheckUpdates
+        displayName: '업데이트 확인'
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
+              path: $(PNPM_CACHE_FOLDER)
+            displayName: pnpm 캐시
+
+          - script: |
+              corepack enable
+              pnpm config set store-dir $(PNPM_CACHE_FOLDER)
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'PNPM과 PCU 설정'
+
+          - script: |
+              pcu -c --format json > $(Agent.TempDirectory)/updates.json
+              pcu workspace --validate
+            displayName: '종속성 확인'
+
+          - script: |
+              pcu security --format json --severity moderate > $(Agent.TempDirectory)/security.json
+            displayName: '보안 스캔'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-results.xml'
+              failTaskOnFailedTests: true
+            displayName: '보안 결과 게시'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Agent.TempDirectory)'
+              artifactName: 'dependency-reports'
+            displayName: '아티팩트 게시'
+
+  - stage: UpdateDependencies
+    displayName: '종속성 업데이트'
+    condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: UpdateCatalog
+        displayName: '카탈로그 종속성 업데이트'
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              corepack enable
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: '환경 설정'
+
+          - script: |
+              pcu -u --target minor --create-backup
+              pnpm test
+            displayName: '업데이트 및 테스트'
+
+          - script: |
+              git config user.name "Azure DevOps PCU"
+              git config user.email "azuredevops@company.com"
+              git add .
+              git commit -m "chore: Azure DevOps 자동 종속성 업데이트"
+              git push origin HEAD:refs/heads/pcu/azure-updates-$(Build.BuildNumber)
+            displayName: '변경 사항 커밋'
+```
+
+</CodeGroup>
+
+## 일반적인 CI/CD 모범 사례
+
+### 환경 변수 구성
+
+PCU 동작을 최적화하기 위해 모든 CI/CD 플랫폼에서 이러한 환경 변수를 구성하세요:
+
+```bash
+# 핵심 구성
+PCU_NO_COLOR=true              # 컬러 출력 비활성화
+PCU_CHECK_UPDATES=false        # CI에서 PCU 업데이트 확인 비활성화
+PCU_VERBOSE=true               # 상세 로깅 활성화
+PCU_OUTPUT_FORMAT=json         # 쉬운 파싱을 위한 JSON 출력 사용
+
+# 캐시 구성
+PCU_CACHE_ENABLED=true         # 더 나은 성능을 위한 캐싱 활성화
+PCU_CACHE_TTL=1800000         # 30분 캐시 TTL
+
+# 보안 구성
+PCU_SECURITY_SEVERITY=high     # 높은 심각도 취약점 확인
+PCU_AUTO_FIX=false            # CI에서 수정 수동 제어
+
+# 성능 구성
+PCU_TIMEOUT=120000            # 2분 타임아웃
+PCU_RETRIES=3                 # 네트워크 요청 재시도 횟수
+PCU_CONCURRENCY=5             # 동시 요청 제한
+```
+
+### 보안 고려사항
+
+#### 접근 토큰 관리
+
+CI/CD 환경에서 접근 토큰의 안전한 관리를 보장하세요:
+
+```yaml
+# GitHub Actions
+- name: Git 구성
+  run: |
+    git config user.name "PCU Bot"
+    git config user.email "bot@company.com"
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# GitLab CI
+script:
+  - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+```
+
+#### 브랜치 보호 전략
+
+메인 브랜치로의 직접 푸시를 방지하기 위한 브랜치 보호 구성:
+
+- 풀 리퀘스트 검토 필요
+- 상태 확인 통과 필요
+- 보호된 브랜치로의 푸시 제한
+- 서명된 커밋 필요
+
+### 문제 해결
+
+#### 일반적인 CI/CD 문제
+
+**권한 오류**
+
+```bash
+# npm 권한 문제 수정
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# 또는 pnpm 사용 (권장)
+pnpm add -g pnpm-catalog-updates
+```
+
+**캐시 문제**
+
+```bash
+# CI 캐시 지우기
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+
+# PCU 캐시 지우기
+PCU_CACHE_ENABLED=false pcu check
+```
+
+**네트워크 타임아웃**
+
+```bash
+# 타임아웃 증가
+PCU_TIMEOUT=300000 pcu check
+
+# 동시 요청 감소
+PCU_CONCURRENCY=2 pcu update
+```
+
+### 모니터링 및 보고
+
+#### 대시보드 생성
+
+종속성 관리 대시보드를 생성하기 위해 CI/CD 플랫폼 네이티브 기능 사용:
+
+- **GitHub Actions**: Action 인사이트 및 종속성 그래프 사용
+- **GitLab CI**: 보안 대시보드 및 종속성 스캔 활용
+- **Jenkins**: HTML Publisher 플러그인 구성
+- **Azure DevOps**: 대시보드 및 분석 사용
+
+#### 알림 구성
+
+팀에게 정보를 제공하기 위한 적절한 알림 설정:
+
+```yaml
+# Slack 알림 예시 (GitHub Actions)
+- name: Slack 알림
+  if: failure()
+  uses: 8398a7/action-slack@v3
+  with:
+    status: failure
+    text: PCU 종속성 확인 실패
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+## Docker 통합
+
+### 컨테이너화된 PCU 워크플로우
+
+<CodeGroup>
+
+```dockerfile {{ title: 'Dockerfile.pcu' }}
+FROM node:18-alpine
+
+# pnpm과 PCU 설치
+RUN corepack enable
+RUN pnpm add -g pnpm-catalog-updates
+
+# 작업 디렉토리 설정
+WORKDIR /workspace
+
+# 패키지 파일 복사
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml .pcurc.json ./
+
+# 종속성 설치
+RUN pnpm install --frozen-lockfile
+
+# 환경 변수 설정
+ENV PCU_NO_COLOR=true
+ENV PCU_VERBOSE=true
+
+# 기본 명령
+CMD ["pcu", "--help"]
+```
+
+```yaml {{ title: 'docker-compose.yml' }}
+version: '3.8'
+
+services:
+  pcu-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-cache:/workspace/.pnpm-store
+    environment:
+      - PCU_CACHE_ENABLED=true
+      - PCU_OUTPUT_FORMAT=json
+    command: pcu check --format table
+
+  pcu-security:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+    command: pcu security --severity high
+
+volumes:
+  pnpm-cache:
+```
+
+</CodeGroup>
+
+이러한 CI/CD 통합 예시는 포괄적인 자동화된 종속성 관리 솔루션을 제공하여 프로젝트가 최신 상태를 유지하고 안전하게 유지되도록 보장합니다.

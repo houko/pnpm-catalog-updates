@@ -1,0 +1,1198 @@
+export const metadata = {
+  title: 'Configuración',
+  description:
+    'Aprende cómo configurar pnpm-catalog-updates para tu flujo de trabajo con configuraciones .pcurc.json, reglas de paquetes y opciones avanzadas.',
+};
+
+# Configuración
+
+Configura PCU para que coincida con tu flujo de trabajo y necesidades del proyecto. Aprende sobre archivos de configuración, reglas específicas de paquetes y configuraciones avanzadas. {{ className: 'lead' }}
+
+## Tipos de Archivos de Configuración
+
+PCU soporta múltiples formatos de archivos de configuración y ubicaciones para acomodar diferentes flujos de trabajo de desarrollo.
+
+### Archivos de Configuración Soportados
+
+PCU busca archivos de configuración en el siguiente orden (el primero encontrado gana):
+
+<Properties>
+  <Property name=".pcurc.json" type="JSON">
+    Archivo de configuración JSON principal en la raíz del proyecto
+  </Property>
+  <Property name=".pcurc.js" type="JavaScript">
+    Archivo de configuración JavaScript con soporte de configuración dinámica
+  </Property>
+  <Property name="pcu.config.js" type="JavaScript">
+    Nombre de archivo de configuración JavaScript alternativo
+  </Property>
+  <Property name="~/.pcurc.json" type="JSON">
+    Configuración global de usuario en el directorio home
+  </Property>
+  <Property name="package.json" type="JSON">
+    Configuración dentro de package.json bajo la clave "pcu"
+  </Property>
+</Properties>
+
+### Soporte de Configuración JavaScript
+
+Los archivos de configuración JavaScript permiten configuración dinámica basada en entorno, estructura del workspace u otras condiciones de tiempo de ejecución:
+
+<CodeGroup>
+
+```javascript {{ title: '.pcurc.js' }}
+module.exports = {
+  defaults: {
+    target: process.env.NODE_ENV === 'production' ? 'minor' : 'latest',
+    createBackup: true,
+  },
+  workspace: {
+    autoDiscover: true,
+    catalogMode: 'strict',
+  },
+  // Reglas de paquetes dinámicas basadas en estructura del workspace
+  packageRules: [
+    {
+      patterns: ['react*'],
+      target: 'minor',
+      requireConfirmation: process.env.CI !== 'true',
+    },
+  ],
+  // Configuración específica del entorno
+  ...(process.env.NODE_ENV === 'development' && {
+    ui: {
+      theme: 'modern',
+      progressBarStyle: 'fancy',
+    },
+  }),
+};
+```
+
+```javascript {{ title: 'pcu.config.js con Funciones' }}
+const fs = require('fs');
+const path = require('path');
+
+function getWorkspacePackages() {
+  const workspaceFile = path.join(__dirname, 'pnpm-workspace.yaml');
+  if (fs.existsSync(workspaceFile)) {
+    // Parsear paquetes del workspace dinámicamente
+    return ['packages/*', 'apps/*', 'tools/*'];
+  }
+  return ['packages/*'];
+}
+
+module.exports = {
+  workspace: {
+    packages: getWorkspacePackages(),
+    catalogMode: 'flexible',
+  },
+  packageRules: [
+    // Generar reglas basadas en paquetes existentes
+    ...fs.readdirSync('./packages').map((pkg) => ({
+      patterns: [`@myorg/${pkg}`],
+      target: 'minor',
+    })),
+  ],
+};
+```
+
+</CodeGroup>
+
+### Configuración en Package.json
+
+Para proyectos más simples, la configuración puede ser incrustada dentro de package.json:
+
+```json
+{
+  "name": "mi-proyecto",
+  "pcu": {
+    "defaults": {
+      "target": "minor",
+      "createBackup": true
+    },
+    "packageRules": [
+      {
+        "patterns": ["@types/*"],
+        "target": "latest",
+        "autoUpdate": true
+      }
+    ]
+  }
+}
+```
+
+### Validación de Configuración
+
+PCU automáticamente valida archivos de configuración y proporciona mensajes de error detallados para problemas comunes:
+
+#### Características de Validación
+
+- **Validación de Esquema JSON**: Asegura que todas las propiedades de configuración sean válidas
+- **Validación de Patrones**: Valida patrones glob y formatos de nombres de paquetes
+- **Verificación de Tipos**: Verifica tipos de datos correctos para todos los valores de configuración
+- **Detección de Conflictos**: Identifica reglas conflictivas y opciones de configuración
+- **Sistema de Sugerencias**: Proporciona sugerencias útiles para arreglar errores de configuración
+
+#### Ejemplos de Validación
+
+```bash
+# Validar configuración actual
+pcu workspace --validate
+
+# Errores de validación comunes con sugerencias:
+# ❌ Target inválido "lastest" en packageRules[0]
+#    💡 ¿Quisiste decir "latest"?
+#
+# ❌ Patrón "react+" es sintaxis glob inválida
+#    💡 Usa "react*" para hacer match con paquetes que empiecen con "react"
+#
+# ⚠️  Reglas conflictivas para el paquete "react"
+#    📝 La regla en índice 0 y 2 ambas hacen match con este paquete
+```
+
+## Referencia Completa del Archivo .pcurc.json
+
+PCU usa múltiples formatos de archivos de configuración, principalmente usando el archivo `.pcurc.json` en la raíz del proyecto para configuración. Puede crearse manualmente o usando `pcu init` para generar configuración por defecto.
+
+### Estructura Completa del Archivo de Configuración
+
+<CodeGroup>
+
+```json {{ title: 'Ejemplo de Configuración Completa' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "createBackup": false,
+    "interactive": false,
+    "dryRun": false,
+    "force": false,
+    "prerelease": false
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict",
+    "path": "./",
+    "packages": ["packages/*", "apps/*"]
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  },
+  "ui": {
+    "theme": "default",
+    "progressBars": true,
+    "progressBarStyle": "default",
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "update": {
+    "interactive": false,
+    "dryRunFirst": false,
+    "skipPrereleases": true,
+    "confirmMajorUpdates": true,
+    "batchSize": 10
+  },
+  "security": {
+    "autoFixVulnerabilities": false,
+    "allowMajorForSecurity": false,
+    "notifyOnSecurityUpdate": true,
+    "severityThreshold": "moderate"
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true,
+    "batchSize": 50
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache"
+  },
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "timeout": 30000,
+    "retries": 3
+  },
+  "include": ["*"],
+  "exclude": [],
+  "packageRules": [
+    {
+      "patterns": ["react*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "notification": {
+    "enabled": true,
+    "updateAvailable": true,
+    "securityAlerts": true
+  },
+  "logging": {
+    "level": "info",
+    "file": "./pcu.log",
+    "maxFiles": 5,
+    "maxSize": "10MB"
+  }
+}
+```
+
+```json {{ title: 'Ejemplo de Configuración Mínima' }}
+{
+  "defaults": {
+    "target": "minor"
+  },
+  "exclude": ["typescript", "@types/node"]
+}
+```
+
+</CodeGroup>
+
+### Descripción Detallada de Opciones de Configuración
+
+#### defaults - Configuraciones Predeterminadas
+
+<Properties>
+  <Property name="target" type="enum" default="latest">
+    Objetivo de actualización predeterminado: `latest` | `greatest` | `minor` | `patch` | `newest`
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Tiempo de espera para solicitudes de red (milisegundos)
+  </Property>
+  <Property name="createBackup" type="boolean" default="false">
+    Si crear archivos de respaldo antes de actualizar
+  </Property>
+  <Property name="interactive" type="boolean" default="false">
+    Si habilitar modo interactivo por defecto
+  </Property>
+  <Property name="dryRun" type="boolean" default="false">
+    Si habilitar modo de vista previa por defecto (no actualizar realmente)
+  </Property>
+  <Property name="force" type="boolean" default="false">
+    Si forzar actualizaciones (omitir advertencias)
+  </Property>
+  <Property name="prerelease" type="boolean" default="false">
+    Si incluir versiones de prelanzamiento
+  </Property>
+</Properties>
+
+#### workspace - Configuraciones del Workspace
+
+<Properties>
+  <Property name="autoDiscover" type="boolean" default="true">
+    Si descubrir automáticamente la estructura del workspace
+  </Property>
+  <Property name="catalogMode" type="enum" default="strict">
+    Modo del catálogo: `strict` | `loose` | `mixed`
+  </Property>
+  <Property name="path" type="string" default="./">
+    Ruta del directorio raíz del workspace
+  </Property>
+  <Property name="packages" type="string[]">
+    Array de patrones de coincidencia de directorios de paquetes (sobrescribe pnpm-workspace.yaml)
+  </Property>
+</Properties>
+
+#### output - Configuraciones de Salida
+
+<Properties>
+  <Property name="format" type="enum" default="table">
+    Formato de salida: `table` | `json` | `yaml` | `minimal`
+  </Property>
+  <Property name="color" type="boolean" default="true">
+    Si habilitar salida a color
+  </Property>
+  <Property name="verbose" type="boolean" default="false">
+    Si habilitar modo de salida detallado
+  </Property>
+</Properties>
+
+#### ui - Configuraciones de Interfaz de Usuario
+
+<Properties>
+  <Property name="theme" type="enum" default="default">
+    Tema de colores: `default` | `modern` | `minimal` | `neon`
+  </Property>
+  <Property name="progressBars" type="boolean" default="true">
+    Si mostrar barras de progreso
+  </Property>
+  <Property name="progressBarStyle" type="enum" default="default">
+    Estilo de barra de progreso: `default` | `gradient` | `fancy` | `minimal` | `rainbow` | `neon`
+  </Property>
+  <Property name="animations" type="boolean" default="true">
+    Si habilitar efectos de animación
+  </Property>
+  <Property name="colorScheme" type="enum" default="auto">
+    Esquema de colores: `auto` | `light` | `dark`
+  </Property>
+</Properties>
+
+## Filtrado de Paquetes
+
+Controla qué paquetes actualizar con patrones de incluir/excluir y reglas específicas de paquetes.
+
+<CodeGroup>
+
+```json {{ title: 'Filtrado Simple' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: 'Reglas de Paquetes' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Propiedades de Reglas de Paquetes
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    Patrones glob para hacer match con nombres de paquetes
+  </Property>
+  <Property name="target" type="enum">
+    Objetivo de actualización: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    Siempre preguntar antes de actualizar estos paquetes
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    Actualizar automáticamente sin confirmación
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    Paquetes que siguen la misma estrategia de actualización
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    Actualizar paquetes relacionados juntos
+  </Property>
+</Properties>
+
+## Configuración de Seguridad
+
+Configura el escaneo de vulnerabilidades de seguridad y correcciones automáticas.
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    Automáticamente verificar y corregir vulnerabilidades de seguridad
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    Permitir actualizaciones de versión mayor para correcciones de seguridad
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    Mostrar notificaciones en actualizaciones de seguridad
+  </Property>
+</Properties>
+
+## Configuración de Monorepo
+
+Configuraciones especiales para configuraciones de monorepo complejas con múltiples catálogos.
+
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
+
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    Paquetes que necesitan sincronización de versiones a través de múltiples catálogos
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    Orden de prioridad de catálogos para resolución de conflictos
+  </Property>
+</Properties>
+
+## Configuraciones Avanzadas
+
+Ajusta finamente el rendimiento y comportamiento con opciones de configuración avanzadas.
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    Número de solicitudes de red concurrentes
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Tiempo de espera de solicitud de red en milisegundos
+  </Property>
+  <Property name="retries" type="number" default="3">
+    Número de reintentos en fallo
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    Período de validez del cache (0 para deshabilitar caching)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    Automáticamente verificar actualizaciones de la herramienta PCU al iniciar. Se omite en entornos
+    CI. Muestra notificaciones de actualización e instrucciones de instalación cuando hay versiones
+    más nuevas disponibles.
+  </Property>
+</Properties>
+
+## Configuración de UI
+
+Personaliza la apariencia visual y configuraciones de interfaz de usuario.
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### Temas Disponibles
+
+- `default` - Colores balanceados para uso general
+- `modern` - Colores vibrantes para entornos de desarrollo
+- `minimal` - Limpio y simple para entornos de producción
+- `neon` - Colores de alto contraste para presentaciones
+
+### Estilos de Barra de Progreso
+
+PCU soporta 6 estilos diferentes de barras de progreso para retroalimentación visual mejorada durante operaciones:
+
+- `default` - Barra de progreso estándar con estilo básico
+- `gradient` - Barra de progreso con colores degradados para apariencia moderna
+- `fancy` - Barra de progreso mejorada con elementos decorativos
+- `minimal` - Indicador de progreso limpio y simple
+- `rainbow` - Barra de progreso multicolor para pantallas vibrantes
+- `neon` - Barra de progreso de alto contraste que coincide con el tema neón
+
+**Ejemplo de Configuración:**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**Uso en Línea de Comandos:**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## Prioridad de Configuración
+
+Las configuraciones se aplican en este orden de prioridad:
+
+1. **Flags de línea de comandos** (prioridad más alta)
+2. **Reglas específicas de paquetes** en `.pcurc.json`
+3. **Configuraciones generales** en `.pcurc.json`
+4. **Valores predeterminados** (prioridad más baja)
+
+<Note>
+  Los paquetes relacionados automáticamente heredan configuraciones de sus reglas de paquetes padre,
+  asegurando consistencia de versiones a través de paquetes del ecosistema.
+</Note>
+
+## Ejemplos
+
+### Ecosistema React
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### Proyecto TypeScript
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### Configuración Empresarial
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+---
+
+## Variables de Entorno
+
+Todas las opciones de CLI pueden configurarse vía variables de entorno para automatización y entornos CI/CD:
+
+<CodeGroup>
+
+```bash {{ title: 'Variables de Entorno Globales' }}
+# Configuraciones del workspace
+export PCU_WORKSPACE="/path/to/workspace"
+export PCU_VERBOSE=true
+export PCU_NO_COLOR=true
+
+# Configuración del registro
+export PCU_REGISTRY="https://npm.company.com/"
+export PCU_TIMEOUT=30000
+
+# Archivo de configuración
+export PCU_CONFIG="/path/to/.pcurc.json"
+```
+
+```bash {{ title: 'Variables Específicas de Comandos' }}
+# Comportamiento de Check/Update
+export PCU_OUTPUT_FORMAT=json
+export PCU_UPDATE_TARGET=minor
+export PCU_CATALOG=default
+
+# Opciones de actualización
+export PCU_INTERACTIVE=true
+export PCU_DRY_RUN=true
+export PCU_CREATE_BACKUP=true
+export PCU_FORCE=false
+
+# Filtrado
+export PCU_INCLUDE="react*,@types/*"
+export PCU_EXCLUDE="eslint*"
+export PCU_PRERELEASE=false
+```
+
+</CodeGroup>
+
+### Prioridad de Variables de Entorno
+
+Las fuentes de configuración se cargan en este orden (las posteriores sobrescriben las anteriores):
+
+1. **Valores predeterminados incorporados** (prioridad más baja)
+2. **Configuración global** (`~/.pcurc.json`)
+3. **Configuración del proyecto** (`.pcurc.json`)
+4. **Variables de entorno** (`PCU_*`)
+5. **Flags de línea de comandos** (prioridad más alta)
+
+---
+
+## Configuración de Registro
+
+PCU automáticamente lee archivos de configuración de NPM y PNPM para configuraciones de registro:
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc / .pnpmrc' }}
+# Registro predeterminado
+registry=https://registry.npmjs.org/
+
+# Registros con alcance
+@mycompany:registry=https://npm.mycompany.com/
+@types:registry=https://registry.npmjs.org/
+
+# Tokens de autenticación
+//npm.mycompany.com/:_authToken=${NPM_TOKEN}
+//registry.npmjs.org/:_authToken=${NPM_PUBLIC_TOKEN}
+
+# Autenticación legacy (si es necesario)
+//npm.mycompany.com/:username=myuser
+//npm.mycompany.com/:_password=base64encodedpassword
+//npm.mycompany.com/:email=user@company.com
+
+# Configuraciones SSL y proxy
+strict-ssl=true
+ca=/path/to/ca.pem
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+```
+
+```json {{ title: 'Sobrescritura de Registro PCU' }}
+{
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "scoped": {
+      "@mycompany": "https://npm.mycompany.com/",
+      "@types": "https://registry.npmjs.org/"
+    },
+    "auth": {
+      "npm.mycompany.com": {
+        "token": "${NPM_TOKEN}",
+        "type": "Bearer"
+      }
+    },
+    "timeout": 30000,
+    "retries": 3,
+    "userAgent": "pcu-custom/1.0.0"
+  }
+}
+```
+
+</CodeGroup>
+
+### Prioridad de Registro
+
+1. **Flag CLI `--registry`** (prioridad más alta)
+2. **Configuración PCU** (sección registry de `.pcurc.json`)
+3. **`.npmrc/.pnpmrc` del proyecto**
+4. **`.npmrc/.pnpmrc` global**
+5. **Registro NPM predeterminado** (prioridad más baja)
+
+---
+
+## Configuración de Cache Mejorado
+
+PCU incluye un sistema de cache avanzado para mejorar el rendimiento:
+
+<CodeGroup>
+
+```json {{ title: 'Configuración de Cache' }}
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "strategy": "lru"
+  }
+}
+```
+
+```bash {{ title: 'Gestión de Cache' }}
+# Limpiar todos los caches
+rm -rf ~/.pcu/cache
+
+# Mostrar información de cache en modo detallado
+pcu -c --verbose
+
+# Deshabilitar cache para una sola ejecución
+pcu -c --no-cache
+
+# Establecer directorio de cache personalizado
+export PCU_CACHE_DIR="/tmp/pcu-cache"
+```
+
+</CodeGroup>
+
+### Configuraciones de Cache
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Habilitar/deshabilitar sistema de cache
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    Tiempo de vida en milisegundos (1 hora por defecto)
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    Tamaño máximo de cache en bytes (50MB por defecto)
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    Número máximo de entradas de cache
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    Guardar cache en disco entre ejecuciones
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    Directorio para almacenamiento persistente de cache
+  </Property>
+  <Property name="strategy" type="enum" default="lru">
+    Estrategia de desalojo de cache: lru, fifo, lfu
+  </Property>
+</Properties>
+
+---
+
+## Configuración de Validación
+
+PCU incluye validación comprensiva con sugerencias útiles:
+
+<CodeGroup>
+
+```json {{ title: 'Configuración de Validación' }}
+{
+  "validation": {
+    "strict": true,
+    "warnOnRiskyUpdates": true,
+    "requireConfirmationFor": ["major"],
+    "suggestions": {
+      "enabled": true,
+      "includePerformanceTips": true,
+      "includeBestPractices": true
+    }
+  }
+}
+```
+
+```bash {{ title: 'Ejemplos de Validación' }}
+# Habilitar modo de validación estricto
+pcu -u --force  # Mostrará advertencias sobre falta de respaldo
+
+# Mostrar sugerencias de validación
+pcu -c --verbose  # Muestra consejos y sugerencias adicionales
+
+# Validar archivo de configuración
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json')))"
+```
+
+</CodeGroup>
+
+### Opciones de Validación
+
+<Properties>
+  <Property name="strict" type="boolean" default="false">
+    Habilitar modo de validación estricto con verificaciones adicionales
+  </Property>
+  <Property name="warnOnRiskyUpdates" type="boolean" default="true">
+    Mostrar advertencias para actualizaciones potencialmente riesgosas
+  </Property>
+  <Property name="requireConfirmationFor" type="array" default="[]">
+    Tipos de actualización que requieren confirmación: major, minor, patch
+  </Property>
+  <Property name="suggestions.enabled" type="boolean" default="true">
+    Habilitar sugerencias y consejos útiles
+  </Property>
+  <Property name="suggestions.includePerformanceTips" type="boolean" default="true">
+    Incluir sugerencias de optimización de rendimiento
+  </Property>
+  <Property name="suggestions.includeBestPractices" type="boolean" default="true">
+    Incluir recomendaciones de mejores prácticas
+  </Property>
+</Properties>
+
+---
+
+## Configuración de Modo Interactivo
+
+Configura prompts interactivos y experiencia de usuario:
+
+<CodeGroup>
+
+```json {{ title: 'Configuración Interactiva' }}
+{
+  "interactive": {
+    "enabled": true,
+    "pageSize": 15,
+    "showPackageDescriptions": true,
+    "showReleaseNotes": false,
+    "autoComplete": {
+      "enabled": true,
+      "fuzzyMatching": true,
+      "maxSuggestions": 10
+    },
+    "confirmations": {
+      "majorUpdates": true,
+      "forceUpdates": true,
+      "multiplePackages": false
+    }
+  }
+}
+```
+
+```bash {{ title: 'Ejemplos de Modo Interactivo' }}
+# Lanzar modo interactivo
+pcu -i
+
+# Interactivo con descripciones de paquetes
+pcu -i --verbose  # Muestra más detalles en selección interactiva
+
+# Usar selección interactiva de tema
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### Configuraciones Interactivas
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Habilitar capacidades de modo interactivo
+  </Property>
+  <Property name="pageSize" type="number" default="15">
+    Número de elementos mostrados por página en listas
+  </Property>
+  <Property name="showPackageDescriptions" type="boolean" default="false">
+    Mostrar descripciones de paquetes en listas de selección
+  </Property>
+  <Property name="showReleaseNotes" type="boolean" default="false">
+    Mostrar notas de lanzamiento para actualizaciones (requiere red)
+  </Property>
+  <Property name="autoComplete.enabled" type="boolean" default="true">
+    Habilitar autocompletado para nombres de paquetes
+  </Property>
+  <Property name="autoComplete.fuzzyMatching" type="boolean" default="true">
+    Habilitar coincidencia difusa para autocompletado
+  </Property>
+  <Property name="confirmations.majorUpdates" type="boolean" default="true">
+    Requerir confirmación para actualizaciones de versión mayor
+  </Property>
+</Properties>
+
+---
+
+## Configuración de Monorepo
+
+PCU proporciona características avanzadas específicamente diseñadas para monorepos grandes y gestión compleja de workspaces.
+
+### Sincronización de Versiones
+
+Mantén paquetes relacionados sincronizados a través de tu monorepo:
+
+<CodeGroup>
+
+```json {{ title: 'Configuración de Sincronización de Versiones' }}
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+          "strategy": "exact" // o "compatible", "latest"
+        },
+        {
+          "name": "testing-libraries",
+          "packages": ["jest", "@testing-library/*", "@types/jest"],
+          "strategy": "compatible"
+        }
+      ]
+    },
+    "catalogPriority": ["default", "react17", "node18"],
+    "crossWorkspaceDependencies": {
+      "analyze": true,
+      "enforce": "warn" // "error", "warn", "off"
+    }
+  }
+}
+```
+
+```json {{ title: 'Optimización de Workspace Grande' }}
+{
+  "monorepo": {
+    "performance": {
+      "batchSize": 50,
+      "concurrency": 15,
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true
+    },
+    "workspacePackages": {
+      "autoDiscover": true,
+      "includePrivate": false,
+      "excludePatterns": ["**/node_modules", "**/dist", "**/coverage"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### Gestión Avanzada de Workspace
+
+#### Sistema de Prioridad de Catálogos
+
+Define qué catálogos tienen precedencia cuando surgen conflictos:
+
+```json
+{
+  "catalogPriority": ["production", "default", "experimental"],
+  "catalogConflictResolution": "priority" // o "interactive", "error"
+}
+```
+
+#### Dependencias Cross-Workspace
+
+Analiza y gestiona dependencias entre paquetes del workspace:
+
+<Properties>
+  <Property name="analyze" type="boolean" default="false">
+    Analizar dependencias cross-workspace
+  </Property>
+  <Property name="enforce" type="enum" default="warn">
+    Cómo manejar desajustes de versión: error, warn, off
+  </Property>
+  <Property name="reportUnused" type="boolean" default="true">
+    Reportar paquetes en catálogos no usados por ningún paquete del workspace
+  </Property>
+  <Property name="validateVersions" type="boolean" default="true">
+    Validar que todos los paquetes del workspace usen versiones del catálogo
+  </Property>
+</Properties>
+
+### Reglas de Paquetes Específicas de Monorepo
+
+Crea reglas sofisticadas para diferentes áreas de tu monorepo:
+
+<CodeGroup>
+
+```json {{ title: 'Reglas de Paquetes de Monorepo' }}
+{
+  "packageRules": [
+    {
+      "name": "Paquetes de Frontend",
+      "patterns": ["react*", "@types/react*", "next*"],
+      "workspacePackages": ["apps/web", "apps/admin"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "name": "Dependencias de Backend",
+      "patterns": ["express*", "@types/express*", "fastify*"],
+      "workspacePackages": ["apps/api", "services/*"],
+      "target": "patch",
+      "autoUpdate": false
+    },
+    {
+      "name": "Herramientas de desarrollo",
+      "patterns": ["eslint*", "prettier", "typescript"],
+      "workspacePackages": ["*"], // Todos los paquetes
+      "target": "latest",
+      "autoUpdate": true,
+      "excludeFromProduction": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Configuración Específica de Workspace
+
+Configuración diferente para diferentes partes de tu monorepo:
+
+<CodeGroup>
+
+```json {{ title: 'Reglas Por Workspace' }}
+{
+  "workspaceRules": {
+    "apps/web": {
+      "defaults": {
+        "target": "minor",
+        "createBackup": true
+      },
+      "packageRules": [
+        {
+          "patterns": ["react*"],
+          "target": "patch"
+        }
+      ]
+    },
+    "packages/*": {
+      "defaults": {
+        "target": "latest",
+        "requireConfirmation": false
+      }
+    },
+    "tools/*": {
+      "defaults": {
+        "target": "latest",
+        "autoUpdate": true
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### Optimización de Rendimiento para Monorepos Grandes
+
+#### Configuración de Procesamiento por Lotes
+
+<Properties>
+  <Property name="batchSize" type="number" default="20">
+    Número de paquetes a procesar en cada lote
+  </Property>
+  <Property name="concurrency" type="number" default="5">
+    Número máximo de operaciones concurrentes
+  </Property>
+  <Property name="cacheWorkspaceStructure" type="boolean" default="true">
+    Cachear descubrimiento de paquetes del workspace entre ejecuciones
+  </Property>
+  <Property name="parallelCatalogProcessing" type="boolean" default="true">
+    Procesar múltiples catálogos en paralelo
+  </Property>
+</Properties>
+
+#### Gestión de Memoria
+
+```json
+{
+  "monorepo": {
+    "memoryOptimization": {
+      "streamingMode": true, // Procesar paquetes sin cargar todos en memoria
+      "maxMemoryUsage": "2GB", // Límite de memoria para workspaces grandes
+      "temporaryFileCleanup": "immediate" // "immediate", "session-end", "manual"
+    }
+  }
+}
+```
+
+### Validación de Monorepo
+
+Validación comprensiva para configuraciones complejas de workspace:
+
+#### Reglas de Validación
+
+<Properties>
+  <Property name="enforceWorkspaceProtocol" type="boolean" default="true">
+    Asegurar que se use el protocolo workspace: para dependencias internas
+  </Property>
+  <Property name="validateCatalogCoverage" type="boolean" default="true">
+    Asegurar que todas las dependencias estén cubiertas por catálogos
+  </Property>
+  <Property name="requireConsistentVersions" type="boolean" default="false">
+    Requerir que todos los paquetes del workspace usen la misma versión de dependencias compartidas
+  </Property>
+  <Property name="detectCircularDependencies" type="boolean" default="true">
+    Detectar dependencias circulares entre paquetes del workspace
+  </Property>
+</Properties>
+
+### Ejemplos de Uso para Monorepos
+
+#### Configuración de Monorepo Empresarial Grande
+
+```json
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "core-frontend",
+          "packages": ["react", "react-dom", "react-router", "@types/react*"],
+          "strategy": "exact"
+        },
+        {
+          "name": "ui-libraries",
+          "packages": ["@company/design-system", "@company/components"],
+          "strategy": "workspace"
+        }
+      ]
+    },
+    "performance": {
+      "batchSize": 100,
+      "concurrency": 20,
+      "streamingMode": true
+    },
+    "workspaceRules": {
+      "apps/*": { "target": "minor", "requireConfirmation": true },
+      "packages/*": { "target": "latest", "autoUpdate": true },
+      "tools/*": { "target": "latest", "autoUpdate": true }
+    }
+  }
+}
+```
+
+#### Configuración Optimizada para CI/CD
+
+```json
+{
+  "monorepo": {
+    "ci": {
+      "parallelCatalogProcessing": true,
+      "skipInteractivePrompts": true,
+      "generateReport": true,
+      "reportFormat": "json",
+      "exitOnError": true
+    },
+    "validation": {
+      "enforceWorkspaceProtocol": true,
+      "validateCatalogCoverage": true,
+      "failOnInconsistentVersions": true
+    }
+  }
+}
+```

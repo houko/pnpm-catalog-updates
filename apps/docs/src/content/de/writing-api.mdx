@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'API-Dokumentation schreiben',
+  description:
+    'Erstellen Sie umfassende API-Dokumentation mit Properties, Tags und spezialisierten Komponenten.',
+};
+
+# API-Dokumentation schreiben
+
+Erstellen Sie umfassende API-Dokumentation, die Entwickler lieben. Lernen Sie, Properties für Parameter, Tags für HTTP-Methoden, Libraries für SDK-Präsentation und spezialisierte Komponenten zu verwenden, die API-Referenzen klar und umsetzbar machen. {{ className: 'lead' }}
+
+## Properties-Listen
+
+Dokumentieren Sie API-Parameter mit `<Properties>` und `<Property>`:
+
+<Properties>
+  <Property name="id" type="string">
+    Eindeutiger Bezeichner für die Ressource. Wird automatisch generiert, wenn die Ressource erstellt wird.
+  </Property>
+
+<Property name="name" type="string">
+  Anzeigename der Ressource. Muss zwischen 1 und 100 Zeichen liegen.
+</Property>
+
+<Property name="email" type="string">
+  Gültige E-Mail-Adresse. Muss unter allen Benutzern eindeutig sein.
+</Property>
+
+  <Property name="created_at" type="timestamp">
+    ISO 8601-Zeitstempel, der angibt, wann die Ressource erstellt wurde.
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    Beschreibung des Parameters und seiner Verwendung.
+  </Property>
+</Properties>
+```
+
+## HTTP-Methoden-Tags
+
+Tags werden automatisch basierend auf HTTP-Methoden eingefärbt:
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">CUSTOM</Tag>
+  <Tag color="emerald">SUCCESS</Tag>
+  <Tag color="rose">ERROR</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">SUCCESS</Tag>
+```
+
+## Libraries-Komponenten
+
+### Vollständiges Library-Raster
+
+Präsentieren Sie alle offiziellen SDKs mit der `<Libraries>`-Komponente:
+
+<Libraries />
+
+```mdx
+<Libraries />
+```
+
+### Einzelne Library
+
+Verwenden Sie die `<Library>`-Komponente, um einzelne Libraries anzuzeigen:
+
+<Library language="node" />
+
+### Kompakte Libraries
+
+Für kleinere Räume verwenden Sie den kompakten Modus mit Beschreibungen:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+Oder ohne Beschreibungen für eine noch kompaktere Anzeige:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- Kompakte Libraries mit Beschreibungen -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- Kompakte Libraries ohne Beschreibungen -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Library-Komponenten-Optionen
+
+- **language**: Wählen Sie aus `php`, `ruby`, `node`, `python`, `go` (Standard: `node`)
+- **compact**: Verwenden Sie kleineres Styling (Standard: `false`)
+- **showDescription**: Beschreibungstext anzeigen/ausblenden (Standard: `true`)
+
+### Libraries-Anwendungsfälle
+
+- **`<Libraries />`**: Vollständige SDK-Übersichtsseiten, Einstiegsabschnitte
+- **`<Library />`**: Inline-Dokumentation, spezifische Sprachleitfäden
+- **`<Library compact />`**: Sidebar-Referenzen, kompakte Auflistungen
+
+## API Best Practices
+
+- Dokumentieren Sie immer alle Parameter mit Properties-Komponenten
+- Fügen Sie Beispiel-Requests und -Responses ein
+- Verwenden Sie ordnungsgemäße HTTP-Statuscodes mit Tags
+- Bieten Sie klare Fehlermeldungen
+- Schließen Sie Authentifizierungsanforderungen ein
+- Verwenden Sie Libraries-Komponente für SDK-Seiten
+- Halten Sie Properties-Listen fokussiert und gut organisiert
+
+## Nächste Schritte
+
+Vervollständigen Sie Ihre Dokumentationsreise mit [Erweiterte Features](/writing-advanced).

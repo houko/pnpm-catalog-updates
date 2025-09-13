@@ -1,0 +1,216 @@
+export const metadata = {
+  title: 'Fundamentos de Escritura',
+  description:
+    'Aprende los fundamentos de la escritura de documentación con formato Markdown, listas, enlaces y sintaxis básica.',
+};
+
+# Fundamentos de Escritura
+
+Domina los bloques de construcción fundamentales de la escritura de documentación. Esta guía cubre la sintaxis estándar de Markdown, opciones de formato y elementos básicos que usarás en cada documento. {{ className: 'lead' }}
+
+## Fundamentos de Markdown
+
+El formato estándar de Markdown es totalmente compatible y forma la base de toda la documentación:
+
+**Texto en negrita** para énfasis e importancia  
+_Texto en cursiva_ para énfasis sutil  
+`código en línea` para términos técnicos, comandos y fragmentos de código cortos
+
+Puedes combinar estos: **_negrita y cursiva_** o **negrita con `código`**
+
+## Formato de Texto
+
+### Énfasis y Texto Fuerte
+
+Usa asteriscos o guiones bajos para énfasis:
+
+```markdown
+_Esto es texto en cursiva_
+_Esto también es cursiva_
+
+**Esto es texto en negrita**
+**Esto también es negrita**
+
+**_Esto es negrita y cursiva_**
+```
+
+### Código y Términos Técnicos
+
+Para código en línea, variables o términos técnicos, usa tildes invertidas:
+
+```markdown
+Usa el comando `npm install` para instalar paquetes.
+Establece la variable `NODE_ENV` a `production`.
+El hook `useState` gestiona el estado del componente.
+```
+
+## Listas y Organización
+
+### Listas No Ordenadas
+
+Perfectas para listas de características, requisitos o cualquier elemento no secuencial:
+
+- Característica o punto principal
+- Otro elemento importante
+- Tercera consideración
+  - Sub-punto anidado
+  - Detalle sub-adicional
+- De vuelta al nivel principal
+
+### Listas Ordenadas
+
+Usa para instrucciones paso a paso, procedimientos o elementos priorizados:
+
+1. Primer paso en el proceso
+2. Segundo paso con detalles importantes
+3. Tercer paso
+   1. Sub-paso con instrucciones específicas
+   2. Otro sub-paso
+4. Paso final
+
+### Listas de Tareas
+
+Geniales para listas de verificación y seguimiento de progreso:
+
+- [x] Tarea completada
+- [x] Otro elemento terminado
+- [ ] Tarea pendiente
+- [ ] Mejora futura
+
+## Enlaces y Navegación
+
+### Enlaces Internos
+
+Enlaza a otras páginas en tu documentación:
+
+```markdown
+Consulta nuestra [Guía de Inicio Rápido](/quickstart) para instrucciones de configuración.
+Revisa la [Referencia de API](/api) para detalles completos de endpoints.
+```
+
+Ejemplos:
+
+- [Guía de Referencia de Comandos](/command-reference)
+- [Solución de Problemas](/troubleshooting)
+- [Documentación SDK](/sdks)
+
+### Enlaces Externos
+
+Enlaza a recursos externos:
+
+```markdown
+Visita [GitHub](https://github.com) para el código fuente.
+Lee la [documentación oficial](https://example.com/docs).
+```
+
+### Enlaces de Ancla
+
+Enlaza a secciones específicas dentro de páginas:
+
+```markdown
+Salta a la sección [Formato de Texto](#text-formatting) arriba.
+Ve [Mejores Prácticas](#best-practices) abajo.
+```
+
+## Encabezados y Estructura
+
+Crea una jerarquía de documento clara con niveles de encabezado apropiados:
+
+```markdown
+# Título de Página (H1 - usado automáticamente desde metadata)
+
+## Sección Principal (H2)
+
+### Subsección (H3)
+
+#### Sección de Detalle (H4)
+
+##### Sección Menor (H5)
+
+###### Sección Más Pequeña (H6)
+```
+
+### Mejores Prácticas de Encabezados
+
+- Usa H1 solo para título de página (manejado por metadata)
+- Comienza secciones con H2, subsecciones con H3
+- No saltes niveles de encabezado (no H2 → H4)
+- Mantén los encabezados descriptivos y escaneables
+- Usa formato de oración: "Empezando" no "Empezando"
+
+## Citas y Llamadas
+
+### Citas en Bloque
+
+Para citas importantes o referencias:
+
+> "La documentación es una carta de amor que escribes a tu futuro yo."  
+> — Damian Conway
+
+> **Nota Importante**: Esta es una cita destacada con contexto adicional que abarca múltiples líneas y proporciona información crucial.
+
+### Citas de Múltiples Párrafos
+
+> Este es el primer párrafo de una cita más larga.
+>
+> Este es el segundo párrafo que continúa el pensamiento con detalle adicional y contexto.
+
+## Reglas Horizontales
+
+Separa secciones principales con reglas horizontales:
+
+```markdown
+---
+```
+
+Crea una ruptura visual:
+
+---
+
+## Tablas
+
+Tablas simples para datos estructurados:
+
+| Característica | Básico | Pro       | Empresarial   |
+| -------------- | ------ | --------- | ------------- |
+| Usuarios       | 10     | 100       | Ilimitado     |
+| Almacenamiento | 1GB    | 10GB      | 100GB         |
+| Llamadas API   | 1,000  | 10,000    | Ilimitado     |
+| Soporte        | Email  | Prioridad | Teléfono 24/7 |
+
+### Alineación de Tablas
+
+Controla la alineación de columnas:
+
+| Alineado Izquierda | Alineado Centro | Alineado Derecha |
+| :----------------- | :-------------: | ---------------: |
+| Texto              |      Texto      |            Texto |
+| Más contenido      |  Más contenido  |    Más contenido |
+
+## Caracteres Especiales
+
+Usa barras invertidas para escapar caracteres especiales de Markdown:
+
+```markdown
+\*No cursiva\*
+\`No código\`
+\# No un encabezado
+```
+
+## Saltos de Línea y Espaciado
+
+- Termina líneas con dos espacios para saltos duros
+- Usa líneas vacías para separar párrafos
+- Usa `\` al final de línea para saltos en listas
+
+## Siguientes Pasos
+
+Una vez que hayas dominado estos fundamentos, explora:
+
+- [Escribiendo Componentes](/writing-components) - Elementos UI interactivos
+- [Escribiendo Código](/writing-code) - Bloques de código y resaltado de sintaxis
+- [Escribiendo Diseño](/writing-layout) - Diseños multi-columna y organización
+- [Escribiendo API](/writing-api) - Componentes de documentación API
+- [Escribiendo Avanzado](/writing-advanced) - Características avanzadas y mejores prácticas
+
+Estos fundamentos forman la base de toda gran documentación. Domínalos primero, luego construye sobre ellos con los componentes avanzados y técnicas cubiertas en las otras guías.

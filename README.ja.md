@@ -3,6 +3,8 @@
 pnpm ワークスペースカタログ依存関係をチェックおよび更新するための強力な CLI ツール。
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)にインスパイアされました。
 
+**📖 完全なドキュメント**: [https://pcu-cli.dev](https://pcu-cli.dev/ja)
+
 **📖 ドキュメント言語**: [English](README.md) | [中文](README.zh-CN.md) |
 [日本語](README.ja.md)
 
@@ -19,11 +21,11 @@ pnpm ワークスペースカタログ依存関係をチェックおよび更新
   **インタラクティブモード**: 直感的なインターフェースで更新する依存関係を選択
 - 📊 **影響分析**: カタログの変更がどのパッケージに影響するかを理解
 - 🔒
-  **安全な更新**: ドライラン モードとバックアップ オプションで安全な依存関係更新
+  **安全な更新**: ドライランモードとバックアップオプションで安全な依存関係更新
 - ⚡ **高パフォーマンス**: 並列 API クエリとインテリジェントキャッシング
 - 🛡️ **セキュリティ対応**: 組み込みのセキュリティ脆弱性スキャン
 - 🎨
-  **美しい UI**: 強化されたプログレスバー、6種類のビジュアルスタイル、カラーテーマ、インタラクティブプロンプト
+  **美しい UI**: 強化されたプログレスバー、カラーテーマ、インタラクティブプロンプト
 - 🌈
   **プログレスバースタイル**: グラデーション、ファンシー、ミニマル、レインボー、ネオン、ブロックスタイルから選択
 - 🎭
@@ -31,393 +33,69 @@ pnpm ワークスペースカタログ依存関係をチェックおよび更新
 - 📈
   **リアルタイムプログレス**: 速度インジケーターと時間推定付きのライブ進行状況追跡
 - 🔄 **スマートバージョンチェック**: --version コマンドによる自動更新通知
-- 🔧 **設定可能**: 柔軟な設定オプションと更新戦略
 - 🔐 **プライベートレジストリ対応**: `.npmrc` と `.pnpmrc`
-  設定ファイルを自動的に読み取り、スコープ付きレジストリと認証をサポート
-- 📦
-  **マルチレジストリ対応**: 異なるパッケージスコープに異なるレジストリを使用（例：GitHub
-  Packages、プライベート npm レジストリ）
+  設定ファイルを自動的に読み取り
+- 📦 **マルチレジストリ対応**: 異なるパッケージスコープに異なるレジストリを使用
+- 🔧 **設定可能**: 柔軟な設定オプションと更新戦略
+
+**➡️ [すべての機能と詳細を見る](https://pcu-cli.dev/ja)**
 
 ## 🚀 クイックスタート
+
+### インストール
+
+```bash
+# グローバルインストール（推奨）
+npm install -g pcu
+
+# または npx を使用
+npx pnpm-catalog-updates
+```
+
+### 基本的な使用法
 
 ```bash
 # 新しいPNPMワークスペースとPCU設定を初期化
 pcu init
 
-# または既存のワークスペースで更新をチェック
+# 既存のワークスペースで更新をチェック
 pcu -c
+
+# インタラクティブ更新モード
+pcu -i
 ```
 
 ![画像](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
-### インストール
+**➡️ [完全なインストールと使用ガイド](https://pcu-cli.dev/ja/quickstart)**
 
-```bash
-# グローバルインストール
-npm install -g pnpm-catalog-updates
-# または
-npm install -g pcu
+## 📖 ドキュメント
 
-# または npx で使用
-npx pnpm-catalog-updates
-# または
-npx pcu
-
-# または短いエイリアスを使用
-pcu
-```
-
-### 基本的な使い方
-
-```bash
-# PNPMワークスペースとPCU設定を初期化
-pcu init
-
-# 更新をクイックチェック
-pcu -c
-
-# クイック更新（インタラクティブ）
-pcu -i
-
-# クイック更新（ドライラン）
-pcu -u -d
-
-# ワークスペース情報を取得
-pcu -s
-```
-
-### よく使うコマンド
-
-| コマンド   | 説明                               | 例                        |
-| ---------- | ---------------------------------- | ------------------------- |
-| `pcu init` | ワークスペースと設定を初期化       | `pcu init --verbose`      |
-| `pcu -c`   | 更新をチェック                     | `pcu -c --catalog node18` |
-| `pcu -i`   | 依存関係を更新（インタラクティブ） | `pcu -i -b`               |
-| `pcu -a`   | 影響を分析                         | `pcu -a default react`    |
-| `pcu -s`   | ワークスペース情報                 | `pcu -s --validate`       |
-| `pcu -t`   | カラーテーマを設定                 | `pcu -t --set modern`     |
-| `pcu -h`   | ヘルプを表示                       | `pcu -h update`           |
-
-## 📖 完全な使用ガイド
-
-### すべてのコマンドとショートカット
-
-| フルコマンド    | ショートカット | 説明                                 |
-| --------------- | -------------- | ------------------------------------ |
-| `pcu init`      | `pcu i`        | PNPMワークスペースとPCU設定を初期化  |
-| `pcu check`     | `pcu -c`       | 期限切れのカタログ依存関係をチェック |
-| `pcu update`    | `pcu -u`       | カタログ依存関係を更新               |
-| `pcu analyze`   | `pcu -a`       | 依存関係更新の影響を分析             |
-| `pcu workspace` | `pcu -s`       | ワークスペース情報と検証を表示       |
-| `pcu theme`     | `pcu -t`       | カラーテーマとUI設定を設定           |
-| `pcu help`      | `pcu -h`       | ヘルプ情報を表示                     |
-
-### コマンド
-
-#### `pcu init` / `pcu i`
-
-PCU設定でPNPMワークスペース環境を完全に初期化します。
-
-```bash
-pcu init [オプション]
-pcu i [オプション]
-
-オプション：
-  --force                  既存の設定ファイルを上書き
-  --create-workspace       PNPMワークスペース構造が不足している場合に作成（デフォルト：true）
-  --no-create-workspace    PNPMワークスペース構造の作成をスキップ
-  -w, --workspace <パス>   ワークスペースディレクトリ（デフォルト：カレントディレクトリ）
-  -v, --verbose            詳細情報を表示
-  --no-color               カラー出力を無効にする
-
-説明：
-  次の内容で完全なPNPMワークスペース環境を作成します：
-  - 適切なデフォルトを持つ基本の.pcurc.json設定ファイル
-  - ワークスペースルートのpackage.json（存在しない場合）
-  - pnpm-workspace.yaml設定（存在しない場合）
-  - packages/ディレクトリ構造（存在しない場合）
-
-  設定には、React、TypeScript、ESLint、その他の
-  一般的な依存関係の適切なセキュリティ設定付きのパッケージ更新ルールが含まれます。
-
-例：
-  pcu init                           # カレントディレクトリで完全なワークスペースを初期化
-  pcu init --workspace ./my-project  # 特定のディレクトリで初期化
-  pcu init --force                   # 既存の設定を上書き
-  pcu init --no-create-workspace     # .pcurc.json設定のみ作成
-
-作成されるファイル：
-  .pcurc.json           パッケージルールと設定を含むPCU設定
-  package.json          ワークスペースルートのpackage.json（存在しない場合）
-  pnpm-workspace.yaml   PNPMワークスペース設定（存在しない場合）
-  packages/             ワークスペースパッケージ用のディレクトリ（存在しない場合）
-```
-
-#### `pcu check` / `pcu -c` / `pcu chk`
-
-pnpm ワークスペースカタログで期限切れの依存関係をチェックします。
-
-```bash
-pcu check [オプション]
-pcu -c [オプション]
-pcu chk [オプション]
-
-オプション：
-  --catalog <名前>      特定のカタログのみチェック
-  -f, --format <タイプ>   出力形式：table、json、yaml、minimal（デフォルト：table）
-                        - table：色と詳細情報付きのリッチテーブル形式
-                        - minimal：シンプルな npm-check-updates スタイル（パッケージ → バージョン）
-                        - json：プログラム使用用の JSON 出力
-                        - yaml：設定ファイル用の YAML 出力
-  -t, --target <タイプ>   更新対象：latest、greatest、minor、patch、newest（デフォルト：latest）
-  --prerelease          プレリリースバージョンを含める
-  --include <パターン>   パターンに一致するパッケージを含める
-  --exclude <パターン>   パターンに一致するパッケージを除外
-  -w, --workspace <パス> ワークスペースディレクトリ（デフォルト：カレントディレクトリ）
-  -v, --verbose         詳細情報を表示
-```
-
-#### `pcu update` / `pcu -u`
-
-カタログ依存関係を新しいバージョンに更新します。
-
-```bash
-pcu update [オプション]
-pcu -u [オプション]
-pcu u [オプション]
-
-オプション：
-  -i, --interactive     更新を選択するインタラクティブモード
-  -d, --dry-run         ファイルに書き込まずに変更をプレビュー
-  -t, --target <タイプ>   更新対象：latest、greatest、minor、patch、newest（デフォルト：latest）
-  --catalog <名前>      特定のカタログのみ更新
-  --include <パターン>   パターンに一致するパッケージを含める
-  --exclude <パターン>   パターンに一致するパッケージを除外
-  --force               リスクがあっても更新を強制
-  --prerelease          プレリリースバージョンを含める
-  -b, --create-backup   更新前にバックアップファイルを作成
-  -f, --format <タイプ>   出力形式：table、json、yaml、minimal（デフォルト：table）
-                        - table：色と詳細情報付きのリッチテーブル形式
-                        - minimal：シンプルな npm-check-updates スタイル（パッケージ → バージョン）
-                        - json：プログラム使用用の JSON 出力
-                        - yaml：設定ファイル用の YAML 出力
-  -w, --workspace <パス> ワークスペースディレクトリ（デフォルト：カレントディレクトリ）
-  -v, --verbose         詳細情報を表示
-```
-
-#### `pcu analyze` / `pcu -a`
-
-特定の依存関係を更新する影響を分析します。
-
-```bash
-pcu analyze <カタログ> <パッケージ> [バージョン]
-pcu -a <カタログ> <パッケージ> [バージョン]
-pcu a <カタログ> <パッケージ> [バージョン]
-
-引数：
-  カタログ               カタログ名（例：'default'、'react17'）
-  パッケージ             パッケージ名（例：'react'、'@types/node'）
-  バージョン             新しいバージョン（オプション、デフォルトは最新）
-
-オプション：
-  -f, --format <タイプ>   出力形式：table、json、yaml、minimal（デフォルト：table）
-  -w, --workspace <パス> ワークスペースディレクトリ（デフォルト：カレントディレクトリ）
-  -v, --verbose         詳細情報を表示
-
-例：
-  pcu analyze default react
-  pcu a default react 18.3.0
-  pcu -a react17 @types/react
-```
-
-#### `pcu workspace` / `pcu -s`
-
-ワークスペース情報と検証を表示します。
-
-```bash
-pcu workspace [オプション]
-pcu -s [オプション]
-pcu w [オプション]
-
-オプション：
-  --validate            ワークスペース設定を検証
-  -s, --stats           ワークスペース統計を表示
-  -f, --format <タイプ>   出力形式：table、json、yaml、minimal（デフォルト：table）
-  -w, --workspace <パス> ワークスペースディレクトリ（デフォルト：カレントディレクトリ）
-  -v, --verbose         詳細情報を表示
-
-例：
-  pcu workspace           # 基本的なワークスペース情報を表示
-  pcu -s --stats         # 詳細な統計を表示
-  pcu w --validate       # ワークスペース設定を検証
-```
-
-#### `pcu help` / `pcu -h`
-
-ヘルプ情報を表示します。
-
-```bash
-pcu help [コマンド]
-pcu -h [コマンド]
-
-例：
-  pcu help              # 一般的なヘルプを表示
-  pcu help update       # update コマンドのヘルプを表示
-  pcu -h check          # check コマンドのヘルプを表示
-```
-
-#### `pcu theme` / `pcu -t`
-
-カラーテーマとUIの外観を設定します。
-
-```bash
-pcu theme [オプション]
-pcu -t [オプション]
-
-オプション：
-  -s, --set <テーマ>     カラーテーマを設定：default、modern、minimal、neon
-  -l, --list            利用可能なすべてのテーマを一覧表示
-  -i, --interactive     インタラクティブテーマ設定ウィザード
-
-例：
-  pcu theme             # 現在のテーマ情報を表示
-  pcu -t --list         # 利用可能なすべてのテーマを一覧表示
-  pcu theme --set modern # モダンテーマに設定
-  pcu -t --interactive  # テーマ設定ウィザードを起動
-```
-
-**利用可能なテーマ：**
-
-- `default` - 一般的な使用に適したバランスの取れた色
-- `modern` - 開発環境に適した鮮やかな色
-- `minimal` - 本番環境に適したクリーンでシンプル
-- `neon` - プレゼンテーションに適した高コントラスト色
-
-### グローバルオプション
-
-これらのオプションはすべてのコマンドで動作します：
-
-```bash
--w, --workspace <パス>   ワークスペースディレクトリパス
--v, --verbose            詳細ロギングを有効にする
---no-color               カラー出力を無効にする
--V, --version            バージョン番号を出力
--h, --help               コマンドのヘルプを表示
-```
-
-### 一般的な使用パターン
-
-```bash
-# 新しいワークスペースを初期化
-pcu init                          # 完全なワークスペース構造を作成
-pcu init --no-create-workspace    # .pcurc.json設定のみ作成
-
-# 更新をクイックチェック
-pcu -c
-
-# シンプルな出力でチェック（npm-check-updates ライク）
-pcu -c --format minimal
-
-# バックアップ付きのインタラクティブ更新
-pcu -i -b
-
-# マイナーおよびパッチバージョンのみ更新
-pcu -u --target minor
-
-# 特定のカタログをチェック
-pcu -c --catalog node18
-
-# 特定のパッケージを除外して更新
-pcu -u --exclude "eslint*"
-
-# 詳細出力付きドライラン
-pcu -u -d -v
-
-# シンプルな出力形式で更新
-pcu -u --format minimal
-
-# 更新前に影響を分析
-pcu -a default react
-pcu -u --catalog default --include react
-
-# ワークスペース設定を検証
-pcu -s --validate
-
-# テーマのカスタマイズ
-pcu -t --list                # 利用可能なテーマを一覧表示
-pcu -t --set modern         # モダンテーマに設定
-pcu -t --interactive        # インタラクティブテーマ設定
-```
-
-### 設定
-
-プロジェクトルートに `.pcurc.json` ファイルを作成します：
-
-```json
-{
-  "defaults": {
-    "target": "latest",
-    "timeout": 30000,
-    "parallel": 5
-  },
-  "workspace": {
-    "autoDiscover": true,
-    "catalogMode": "strict"
-  },
-  "update": {
-    "interactive": true,
-    "dryRunFirst": true,
-    "skipPrereleases": false
-  },
-  "output": {
-    "format": "table",
-    "color": true,
-    "verbose": false
-  }
-}
-```
+**➡️ [完全なコマンドリファレンス](https://pcu-cli.dev/ja/command-reference)**  
+**➡️ [設定ガイド](https://pcu-cli.dev/ja/configuration)**  
+**➡️ [例と使用例](https://pcu-cli.dev/ja/examples)**
 
 ## 📁 プロジェクト構造
 
-このプロジェクトはドメイン駆動設計 (DDD) の原則に従います：
+このプロジェクトは、クリーンなアーキテクチャでpnpm
+monorepoとして組織されています：
 
 ```text
-src/
-├── cli/                    # CLI インターフェース層
-│   ├── commands/           # コマンドハンドラー
-│   ├── options/            # オプションパーサー
-│   ├── formatters/         # 出力フォーマッター
-│   └── validators/         # 入力検証
-├── application/            # アプリケーションサービス
-│   ├── services/           # アプリケーションサービス
-│   ├── handlers/           # コマンドハンドラー
-│   └── mappers/            # データマッパー
-├── domain/                 # ドメインモデル
-│   ├── entities/           # ドメインエンティティ
-│   ├── value-objects/      # 値オブジェクト
-│   ├── aggregates/         # 集約ルート
-│   ├── services/           # ドメインサービス
-│   └── repositories/       # リポジトリインターフェース
-├── infrastructure/         # インフラストラクチャ層
-│   ├── repositories/       # リポジトリ実装
-│   ├── external-services/  # 外部サービスクライアント
-│   └── file-system/        # ファイルシステム操作
-├── adapters/               # アダプター層
-│   ├── registry/           # パッケージレジストリアダプター
-│   └── package-managers/   # パッケージマネージャーアダプター
-└── common/                 # 共通ユーティリティ
-    ├── types/              # 型定義
-    ├── utils/              # ユーティリティ関数
-    ├── config/             # 設定
-    └── logger/             # ロギング
+├── apps/
+│   └── cli/                    # CLI アプリケーション
+└── packages/
+    ├── core/                   # コアビジネスロジック
+    └── utils/                  # 共有ユーティリティ
 ```
+
+**➡️ [詳細なアーキテクチャガイド](https://pcu-cli.dev/ja/development)**
 
 ## 🧪 開発
 
 ### 前提条件
 
-- Node.js >= 18.0.0
-- pnpm >= 8.15.0
+- Node.js >= 22.0.0
+- pnpm >= 10.0.0
 
 ### セットアップ
 
@@ -429,65 +107,14 @@ cd pnpm-catalog-updates
 # 依存関係をインストール
 pnpm install
 
-# プロジェクトをビルド
+# ビルドして実行
 pnpm build
-
-# テストを実行
-pnpm test
-
-# 開発モードで実行
 pnpm dev --help
 ```
 
-### スクリプト
+**➡️ [完全な開発ガイド](https://pcu-cli.dev/ja/development)**
 
-```bash
-# 開発
-pnpm dev                    # 開発モードで実行
-pnpm build                  # プロジェクトをビルド
-pnpm build:watch           # ウォッチモードでビルド
-
-# テスト
-pnpm test                   # ユニットテストを実行
-pnpm test:watch            # ウォッチモードでテストを実行
-pnpm test:coverage         # カバレッジ付きでテストを実行
-pnpm test:e2e              # E2E テストを実行
-
-# コード品質
-pnpm lint                   # コードをリント
-pnpm lint:fix              # リントの問題を修正
-pnpm format                 # コードをフォーマット
-pnpm typecheck             # 型チェック
-
-# ユーティリティ
-pnpm clean                  # ビルド成果物をクリーン
-```
-
-### テスト
-
-プロジェクトは包括的なテスト戦略を使用します：
-
-- **ユニットテスト**：個々のコンポーネントを隔離してテスト
-- **インテグレーションテスト**：コンポーネント間の相互作用をテスト
-- **E2E テスト**：完全な CLI ワークフローをテスト
-
-```bash
-# すべてのテストを実行
-pnpm test
-
-# カバレッジ付きでテストを実行
-pnpm test:coverage
-
-# E2E テストを実行
-pnpm test:e2e
-
-# ウォッチモードでテストを実行
-pnpm test:watch
-```
-
-## 📊 使用例
-
-### 基本的なワークスペース
+## 📊 設定例
 
 ```yaml
 # pnpm-workspace.yaml
@@ -496,92 +123,53 @@ packages:
 
 catalog:
   react: ^18.2.0
-  lodash: ^4.17.21
-  typescript: ^5.0.0
-```
-
-### マルチカタログ設定
-
-```yaml
-# pnpm-workspace.yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-
-catalog:
-  # デフォルトカタログ
-  react: ^18.2.0
   typescript: ^5.0.0
 
 catalogs:
-  # レガシーバージョン
   react17:
     react: ^17.0.2
-    @types/react: ^17.0.62
-
-  # 最新バージョン
-  latest:
-    react: ^18.2.0
-    typescript: ^5.2.0
 ```
-
-### package.json での使用
 
 ```json
+// .pcurc.json
 {
-  "dependencies": {
-    "react": "catalog:",
-    "lodash": "catalog:",
-    "legacy-lib": "catalog:react17"
-  }
+  "defaults": {
+    "target": "latest"
+  },
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor"
+    }
+  ]
 }
 ```
+
+**➡️ [設定例とテンプレート](https://pcu-cli.dev/ja/examples)**
 
 ## 🤝 貢献
 
 貢献を歓迎します！詳細については、[貢献ガイド](CONTRIBUTING.md)をご覧ください。
 
-### 開発ワークフロー
-
-1. リポジトリをフォーク
-2. 機能ブランチを作成：`git checkout -b feature/amazing-feature`
-3. 変更を加える
-4. 変更に対するテストを追加
-5. すべてのテストが通過することを確認：`pnpm test`
-6. コードをリント：`pnpm lint:fix`
-7. 変更をコミット：`git commit -m 'feat: add amazing feature'`
-8. ブランチにプッシュ：`git push origin feature/amazing-feature`
-9. プルリクエストを開く
-
-### コミットメッセージ規約
-
-[Conventional Commits](https://conventionalcommits.org/)を使用します：
-
-- `feat`: 新機能
-- `fix`: バグ修正
-- `docs`: ドキュメントのみの変更
-- `style`: コードの意味に影響しない変更
-- `refactor`: バグを修正せず、機能を追加しないコード変更
-- `test`: 不足しているテストの追加または既存テストの修正
-- `chore`: ビルドプロセスまたは補助ツールへの変更
+**➡️ [開発セットアップとガイドライン](https://pcu-cli.dev/ja/development)**
 
 ## 📄 ライセンス
 
-このプロジェクトは MIT ライセンスの下でライセンスされています - 詳細については、[LICENSE](LICENSE)ファイルをご覧ください。
+このプロジェクトはMITライセンスの下でライセンスされています - 詳細については[LICENSE](LICENSE)ファイルをご覧ください。
 
 ## 🙏 謝辞
 
 - [npm-check-updates](https://github.com/raineorshine/npm-check-updates)にインスパイアされました
-- pnpm コミュニティへの愛を込めて構築されました
-- すべての貢献者とユーザーの皆様に感謝します
+- pnpmコミュニティへの愛をもって構築
+- すべての貢献者とユーザーに感謝
 
 ## 📞 サポート
 
-- 📖 [ドキュメント](https://github.com/houko/pnpm-catalog-updates#readme)
-- 🐛 [イシュートラッカー](https://github.com/houko/pnpm-catalog-updates/issues)
+- 📖 [完全なドキュメント](https://pcu-cli.dev/ja)
+- 🐛 [課題トラッカー](https://github.com/houko/pnpm-catalog-updates/issues)
 - 💬
   [ディスカッション](https://github.com/houko/pnpm-catalog-updates/discussions)
 
 ---
 
-pnpm コミュニティへの愛を込めて ❤️
+pnpmコミュニティのために❤️で作られました

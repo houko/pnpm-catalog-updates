@@ -1,0 +1,700 @@
+export const metadata = {
+  title: 'Optimización de Rendimiento',
+  description:
+    'Optimiza el rendimiento de PCU para monorepos grandes, mejora la velocidad de ejecución y reduce el consumo de recursos.',
+};
+
+# Optimización de Rendimiento
+
+Maximiza el rendimiento de PCU para monorepos grandes, workspaces complejos y entornos con recursos limitados. {{ className: 'lead' }}
+
+## Entendiendo el Rendimiento de PCU
+
+El rendimiento de PCU depende de varios factores:
+
+- **Latencia de red**: Tiempos de respuesta del registro y ancho de banda
+- **Tamaño del workspace**: Número de paquetes y dependencias
+- **Eficiencia de caché**: Tasas de acierto y optimización de almacenamiento
+- **Recursos del sistema**: CPU, memoria y E/S de disco
+- **Configuración**: Configuraciones de concurrencia y valores de timeout
+
+### Perfilado de Rendimiento
+
+Habilita monitoreo detallado de rendimiento:
+
+```bash
+# Habilitar perfilado de rendimiento
+export PCU_PROFILE=true
+export DEBUG=pcu:performance,pcu:network,pcu:cache
+
+# Ejecutar con información de tiempo
+time pcu check --verbose
+```
+
+**Análisis de Salida de Ejemplo:**
+
+```
+Análisis de dependencias: 2.3s
+Solicitudes de red: 4.1s (45 solicitudes)
+Operaciones de caché: 0.8s (12 aciertos, 33 fallos)
+E/S de archivos: 1.2s
+Ejecución total: 8.4s
+```
+
+## Optimización de Configuración
+
+### Configuraciones de Concurrencia
+
+Optimiza las operaciones concurrentes para tu entorno:
+
+```json
+{
+  "concurrency": 3,
+  "timeout": 45000,
+  "advanced": {
+    "batchSize": 8,
+    "maxRetries": 2,
+    "retryDelay": 1000
+  }
+}
+```
+
+**Directrices de Concurrencia:**
+
+- **Proyectos pequeños (menos de 20 paquetes)**: `concurrency: 5-8`
+- **Proyectos medianos (20-100 paquetes)**: `concurrency: 3-5`
+- **Proyectos grandes (más de 100 paquetes)**: `concurrency: 1-3`
+- **Entornos CI/CD**: `concurrency: 2-3`
+
+### Gestión de Memoria
+
+**Optimización de Memoria de Node.js:**
+
+```bash
+# Aumentar tamaño de heap para monorepos grandes
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# Habilitar optimización de recolección de basura
+export NODE_OPTIONS="--max-old-space-size=4096 --optimize-for-size"
+
+# Para workspaces extremadamente grandes
+export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=128"
+```
+
+**Configuración de Memoria de PCU:**
+
+```json
+{
+  "advanced": {
+    "memoryOptimization": true,
+    "maxConcurrentAnalysis": 10,
+    "streamProcessing": true,
+    "gcInterval": 1000
+  }
+}
+```
+
+## Estrategias de Caché
+
+### Optimización de Caché Local
+
+**Configuración de Caché:**
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 500,
+    "compression": true,
+    "strategy": "lru"
+  }
+}
+```
+
+**Variables de Entorno:**
+
+```bash
+# Habilitar caché persistente
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_DIR="~/.pcu-cache"
+export PCU_CACHE_TTL=7200  # 2 horas
+export PCU_CACHE_MAX_SIZE=1000  # 1GB
+```
+
+### Comandos de Gestión de Caché
+
+```bash
+# Verificar estadísticas de caché
+pcu cache --stats
+
+# Limpiar entradas de caché obsoletas
+pcu cache --clean
+
+# Calentar caché para ejecuciones posteriores más rápidas
+pcu cache --warm
+
+# Resetear caché completamente
+pcu cache --reset
+```
+
+### Integración de Caché CI/CD
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+- name: Cachear Datos de PCU
+  uses: actions/cache@v4
+  with:
+    path: |
+      ~/.pcu-cache
+      node_modules/.cache/pcu
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml', 'packages/*/package.json') }}
+    restore-keys: |
+      pcu-cache-${{ runner.os }}-
+      pcu-cache-
+
+- name: Verificación Optimizada de PCU
+  run: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CONCURRENCY=3
+    pcu check --timeout 60000
+```
+
+```yaml {{ title: 'GitLab CI' }}
+cache:
+  key:
+    files:
+      - pnpm-workspace.yaml
+      - packages/*/package.json
+  paths:
+    - .pcu-cache/
+    - node_modules/.cache/pcu/
+
+performance_check:
+  script:
+    - export PCU_CACHE_ENABLED=true
+    - export PCU_CACHE_DIR="./.pcu-cache"
+    - pcu check --concurrency 2 --timeout 45000
+```
+
+```yaml {{ title: 'Azure DevOps' }}
+- task: Cache@2
+  inputs:
+    key: 'pcu | "$(Agent.OS)" | pnpm-workspace.yaml | packages/*/package.json'
+    restoreKeys: |
+      pcu | "$(Agent.OS)"
+      pcu
+    path: $(Pipeline.Workspace)/.pcu-cache
+
+- script: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CACHE_DIR="$(Pipeline.Workspace)/.pcu-cache"
+    pcu check --concurrency 2
+```
+
+</CodeGroup>
+
+## Optimización de Red
+
+### Configuración de Registro
+
+**Optimizar Selección de Registro:**
+
+```bash
+# Usar registros geográficamente cercanos
+export PCU_REGISTRY="https://registry-asia.npmjs.org/"  # Para Asia
+export PCU_REGISTRY="https://registry-eu.npmjs.org/"   # Para Europa
+
+# Configuración de proxy corporativo
+export HTTP_PROXY="http://proxy.company.com:8080"
+export HTTPS_PROXY="http://proxy.company.com:8080"
+export NO_PROXY="localhost,127.0.0.1,*.company.com"
+```
+
+**Optimización de Conexión:**
+
+```json
+{
+  "network": {
+    "timeout": 30000,
+    "retries": 3,
+    "retryDelay": 2000,
+    "keepAlive": true,
+    "maxSockets": 15,
+    "maxFreeSockets": 10
+  }
+}
+```
+
+### Gestión de Ancho de Banda
+
+```bash
+# Reducir solicitudes de red paralelas para conexiones lentas
+pcu check --concurrency 1 --timeout 90000
+
+# Habilitar compresión de solicitudes
+export PCU_COMPRESS_REQUESTS=true
+
+# Agrupar solicitudes más pequeñas
+export PCU_BATCH_REQUESTS=true
+export PCU_BATCH_SIZE=5
+```
+
+## Estrategias para Monorepos Grandes
+
+### Segmentación de Workspace
+
+**Organizar Workspaces Grandes:**
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/frontend/*'
+  - 'apps/backend/*'
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'tools/*'
+
+catalog:
+  # Dependencias centrales
+  react: ^18.2.0
+  typescript: ^5.0.0
+
+catalogs:
+  # Catálogo específico de frontend
+  frontend:
+    next: ^13.4.0
+    tailwindcss: ^3.3.0
+
+  # Catálogo específico de backend
+  backend:
+    express: ^4.18.0
+    prisma: ^5.0.0
+```
+
+**Procesamiento Selectivo:**
+
+```bash
+# Procesar por categorías con límites
+pcu check --include "@company/ui-*" --limit 10
+pcu check --include "@company/api-*" --limit 15
+pcu check --include "@company/tools-*" --limit 5
+
+# Actualizaciones progresivas
+pcu update --include "@types/*" --target latest
+pcu update --include "eslint*" --target minor
+pcu update --include "react*" --target patch --require-confirmation
+```
+
+### Procesamiento Incremental
+
+**Actualizaciones Escalonadas:**
+
+```json
+{
+  "strategies": {
+    "incremental": {
+      "enabled": true,
+      "batchSize": 20,
+      "delayBetweenBatches": 5000,
+      "pauseOnErrors": true
+    }
+  }
+}
+```
+
+**Flujos de Trabajo de Procesamiento:**
+
+<CodeGroup>
+
+```bash {{ title: 'Dependencias de Desarrollo' }}
+# Fase 1: Herramientas de desarrollo (actualizaciones seguras)
+pcu update --include "@types/*,eslint*,prettier*" --target latest
+
+# Fase 2: Herramientas de build (solo actualizaciones menores)
+pcu update --include "webpack*,babel*,rollup*" --target minor
+
+# Fase 3: Frameworks de testing (actualizaciones de parche)
+pcu update --include "jest*,vitest*,playwright*" --target patch
+```
+
+```bash {{ title: 'Dependencias de Producción' }}
+# Fase 1: Actualizaciones de seguridad de parche
+pcu security --auto-fix --severity high
+
+# Fase 2: Actualizaciones de características menores con confirmación
+pcu update --target minor --require-confirmation --exclude "react*,vue*"
+
+# Fase 3: Actualizaciones mayores (interactivo)
+pcu update --target latest --interactive --limit 5
+```
+
+</CodeGroup>
+
+## Gestión de Memoria y Recursos
+
+### Perfilado de Memoria
+
+**Monitorear Uso de Memoria:**
+
+```bash
+# Habilitar monitoreo de memoria
+export NODE_OPTIONS="--inspect --max-old-space-size=4096"
+export PCU_MEMORY_PROFILING=true
+
+# Ejecutar con seguimiento de memoria
+pcu check --profile-memory
+```
+
+**Técnicas de Optimización de Memoria:**
+
+```json
+{
+  "advanced": {
+    "streamProcessing": true,
+    "lazyLoading": true,
+    "memoryThreshold": 0.8,
+    "gcIntensity": "high",
+    "objectPooling": true
+  }
+}
+```
+
+### Optimización de E/S de Disco
+
+**Configuraciones SSD vs HDD:**
+
+```bash
+# Optimizado para SSD (acceso aleatorio más rápido)
+export PCU_IO_STRATEGY="random"
+export PCU_CACHE_STRATEGY="frequent"
+
+# Optimizado para HDD (acceso secuencial)
+export PCU_IO_STRATEGY="sequential"
+export PCU_CACHE_STRATEGY="batch"
+```
+
+**Caché del Sistema de Archivos:**
+
+```json
+{
+  "fileSystem": {
+    "watchFiles": false,
+    "bufferSize": 65536,
+    "asyncIO": true,
+    "preloadMetadata": true
+  }
+}
+```
+
+## Monitoreo de Rendimiento
+
+### Recolección de Métricas
+
+**Métricas Integradas:**
+
+```bash
+# Generar reporte de rendimiento
+pcu check --metrics --output metrics.json
+
+# Dashboard de rendimiento
+pcu dashboard --metrics
+```
+
+**Monitoreo Personalizado:**
+
+```bash
+# Integración con sistemas de monitoreo
+export PCU_METRICS_ENDPOINT="https://metrics.company.com/pcu"
+export PCU_METRICS_INTERVAL=30000
+
+pcu check --send-metrics
+```
+
+### Benchmarking
+
+**Benchmarks de Rendimiento:**
+
+<CodeGroup>
+
+```bash {{ title: 'Medición de Base' }}
+#!/bin/bash
+# benchmark-pcu.sh
+
+echo "=== Benchmark de Rendimiento de PCU ==="
+echo "Workspace: $(pwd)"
+echo "Paquetes: $(find packages -name package.json | wc -l)"
+echo "Versión de Node: $(node --version)"
+echo
+
+# Limpiar caché para comparación justa
+pcu cache --reset
+
+# Ejecución caliente
+echo "Ejecución caliente..."
+time pcu check > /dev/null 2>&1
+
+# Ejecución fría
+pcu cache --reset
+echo "Ejecución fría..."
+time pcu check --verbose | tee benchmark-results.txt
+```
+
+```javascript {{ title: 'Análisis de Rendimiento' }}
+// analyze-performance.js
+const fs = require('fs');
+const metrics = JSON.parse(fs.readFileSync('metrics.json', 'utf8'));
+
+const analysis = {
+  totalTime: metrics.endTime - metrics.startTime,
+  networkTime: metrics.network.totalTime,
+  cacheHitRate: metrics.cache.hits / (metrics.cache.hits + metrics.cache.misses),
+  packagesPerSecond: metrics.packages.total / (metrics.totalTime / 1000),
+  memoryPeak: metrics.memory.peak,
+  recommendations: [],
+};
+
+// Generar recomendaciones
+if (analysis.cacheHitRate < 0.7) {
+  analysis.recommendations.push('Considerar aumentar TTL de caché');
+}
+
+if (analysis.networkTime > analysis.totalTime * 0.5) {
+  analysis.recommendations.push('Latencia de red detectada, considerar optimización de registro');
+}
+
+console.log(JSON.stringify(analysis, null, 2));
+```
+
+</CodeGroup>
+
+### Guía de Ajuste de Rendimiento
+
+**Optimización Paso a Paso:**
+
+1. **Medición de Base**
+
+   ```bash
+   pcu check --metrics --profile > baseline.txt
+   ```
+
+2. **Habilitar Caché**
+
+   ```bash
+   export PCU_CACHE_ENABLED=true
+   pcu check --metrics --profile > cached.txt
+   ```
+
+3. **Optimizar Concurrencia**
+
+   ```bash
+   # Probar diferentes niveles de concurrencia
+   for c in 1 2 3 5 8; do
+     echo "Probando concurrencia: $c"
+     time pcu check --concurrency $c > /dev/null 2>&1
+   done
+   ```
+
+4. **Optimización de Red**
+
+   ```bash
+   export PCU_REGISTRY="https://registry-eu.npmjs.org/"
+   pcu check --metrics --profile > optimized.txt
+   ```
+
+5. **Ajuste de Memoria**
+   ```bash
+   export NODE_OPTIONS="--max-old-space-size=2048"
+   pcu check --metrics --profile > memory-tuned.txt
+   ```
+
+## Solución de Problemas de Rendimiento
+
+### Problemas Comunes de Rendimiento
+
+**Solicitudes de Red Lentas:**
+
+```bash
+# Diagnosticar problemas de red
+export DEBUG=pcu:network
+pcu check --verbose
+
+# Probar conectividad del registro
+curl -w "@curl-format.txt" -o /dev/null -s "https://registry.npmjs.org/react"
+
+# Registro alternativo
+export PCU_REGISTRY="https://registry.yarnpkg.com/"
+```
+
+**Problemas de Memoria:**
+
+```bash
+# Monitorear uso de memoria
+export NODE_OPTIONS="--inspect --max-old-space-size=8192"
+pcu check --profile-memory
+
+# Reducir huella de memoria
+export PCU_STREAM_PROCESSING=true
+export PCU_LAZY_LOADING=true
+```
+
+**Problemas de Caché:**
+
+```bash
+# Verificar salud del caché
+pcu cache --verify
+
+# Reconstruir caché corrupto
+pcu cache --rebuild
+
+# Estadísticas de caché
+pcu cache --stats --verbose
+```
+
+### Detección de Regresión de Rendimiento
+
+**Pruebas Automatizadas de Rendimiento:**
+
+```yaml
+# .github/workflows/performance.yml
+name: Prueba de Regresión de Rendimiento
+
+on:
+  pull_request:
+    paths: ['packages/**', 'pnpm-workspace.yaml']
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prueba de Rendimiento Base
+        run: |
+          git checkout main
+          pcu cache --reset
+          time pcu check --metrics > baseline.json
+
+      - name: Prueba de Rendimiento de PR
+        run: |
+          git checkout ${{ github.head_ref }}
+          pcu cache --reset
+          time pcu check --metrics > pr.json
+
+      - name: Comparar Rendimiento
+        run: |
+          node scripts/compare-performance.js baseline.json pr.json
+```
+
+## Optimizaciones Específicas por Entorno
+
+### Desarrollo Local
+
+**Configuración de Máquina de Desarrollador:**
+
+```bash
+# ~/.bashrc o ~/.zshrc
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# Optimización específica del proyecto
+alias pcu-fast="pcu check --concurrency 5 --limit 20"
+alias pcu-full="pcu check --concurrency 2"
+```
+
+### Entornos CI/CD
+
+**Optimización para Diferentes Proveedores de CI:**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+# Optimizado para runners de 2 núcleos
+env:
+  PCU_CONCURRENCY: 2
+  PCU_TIMEOUT: 60000
+  PCU_CACHE_ENABLED: true
+  NODE_OPTIONS: '--max-old-space-size=3072'
+
+steps:
+  - name: Optimizar PCU
+    run: |
+      # Pre-calentar resolución DNS
+      nslookup registry.npmjs.org
+
+      # Configurar para la red de GitHub
+      export PCU_REGISTRY="https://registry.npmjs.org/"
+      pcu check --timeout 45000
+```
+
+```yaml {{ title: 'GitLab CI (Docker)' }}
+variables:
+  PCU_CONCURRENCY: '1'
+  PCU_CACHE_ENABLED: 'true'
+  NODE_OPTIONS: '--max-old-space-size=2048'
+
+before_script:
+  # Optimizaciones de contenedor Docker
+  - export PCU_CACHE_DIR="/cache/.pcu"
+  - mkdir -p /cache/.pcu
+
+performance_check:
+  cache:
+    - key: pcu-cache
+    - paths: ['/cache/.pcu/']
+  script:
+    - pcu check --concurrency 1 --timeout 120000
+```
+
+</CodeGroup>
+
+### Despliegues de Producción
+
+**Configuración de Grado de Producción:**
+
+```json
+{
+  "production": true,
+  "concurrency": 1,
+  "timeout": 300000,
+  "retries": 5,
+  "cache": {
+    "enabled": true,
+    "ttl": 86400,
+    "persistent": true
+  },
+  "security": {
+    "strictMode": true,
+    "verifyChecksums": true
+  }
+}
+```
+
+---
+
+## Lista de Verificación de Rendimiento
+
+### Mejoras Rápidas
+
+1. Habilitar caché persistente: `export PCU_CACHE_ENABLED=true`
+2. Optimizar concurrencia para tu entorno
+3. Usar registros geográficamente cercanos
+4. Aumentar tamaño de heap de Node.js para proyectos grandes
+5. Habilitar compresión de solicitudes y keep-alive
+
+### Optimizaciones Avanzadas
+
+1. Implementar estrategias de caché CI/CD
+2. Configurar segmentación de workspace para monorepos grandes
+3. Configurar monitoreo de rendimiento y alertas
+4. Optimizar gestión de memoria para operaciones sostenidas
+5. Implementar flujos de trabajo de procesamiento incremental
+
+### Monitoreo y Mantenimiento
+
+1. Benchmarking regular de rendimiento
+2. Monitoreo de salud del caché
+3. Medición de latencia de red
+4. Perfilado de uso de memoria
+5. Detección de regresión de rendimiento

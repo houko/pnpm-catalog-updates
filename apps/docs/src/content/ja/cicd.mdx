@@ -1,0 +1,649 @@
+export const metadata = {
+  title: 'CI/CD統合',
+  description:
+    'PCUを継続的インテグレーションおよびデプロイメントパイプラインに統合し、自動化された依存関係管理を実現します。',
+};
+
+# CI/CD統合
+
+PCUを継続的インテグレーションおよびデプロイメントパイプラインに統合します。PCUは既存のCI/CDワークフローにシームレスに統合でき、GitHub Actions、GitLab CI、Jenkins、Azure DevOpsなどのプラットフォームをサポートします。{{ className: 'lead' }}
+
+## GitHub Actions統合
+
+### 基本的な依存関係チェックワークフロー
+
+<CodeGroup>
+
+```yaml {{ title: '基本的な依存関係チェック' }}
+name: PCU Dependency Check
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: 依存関係のインストール
+        run: pnpm install
+
+      - name: PCUのインストール
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: 更新のチェック
+        run: pcu -c --format table
+
+      - name: セキュリティスキャン
+        run: pcu security --severity high
+```
+
+```yaml {{ title: '高度な更新ワークフロー' }}
+name: PCU高度なワークフロー
+
+on:
+  schedule:
+    - cron: '0 8 * * MON' # 毎週月曜日午前8時
+  workflow_dispatch:
+    inputs:
+      update_target:
+        description: '更新対象'
+        required: false
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - latest
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: 依存関係のインストール
+        run: pnpm install
+
+      - name: PCUのインストール
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: Gitの設定
+        run: |
+          git config user.name "PCU Bot"
+          git config user.email "pcu-bot@github-actions.com"
+
+      - name: 更新のチェック
+        id: check-updates
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: セキュリティスキャン
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu security --format json --severity critical > security.json
+          if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+            echo "❌ 重大なセキュリティ脆弱性を発見"
+            exit 1
+          fi
+
+      - name: 依存関係の更新
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: |
+          pcu -u --target ${{ github.event.inputs.update_target || 'minor' }} --create-backup
+
+      - name: テストの実行
+        if: steps.check-updates.outputs.updates-available == 'true'
+        run: pnpm test
+
+      - name: プルリクエストの作成
+        if: steps.check-updates.outputs.updates-available == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: カタログ依存関係の更新'
+          title: "🔄 週次依存関係更新 (${{ github.event.inputs.update_target || 'minor' }})"
+          body: |
+            ## 📦 依存関係更新
+
+            このPRはPCUによって生成されたカタログ依存関係の更新を含みます。
+
+            ### 変更内容
+            - 対象：`${{ github.event.inputs.update_target || 'minor' }}`
+            - セキュリティスキャン：✅ 通過
+            - テスト：✅ 通過
+
+            ### レビューチェックリスト
+            - [ ] 破壊的変更の確認
+            - [ ] 重要なユーザーパスのテスト
+            - [ ] 必要に応じてドキュメントの更新
+
+            ---
+            *PCUボットによって生成 🤖*
+          branch: pcu/weekly-updates
+          labels: |
+            dependencies
+            automated
+```
+
+</CodeGroup>
+
+## GitLab CI統合
+
+PCU依存関係管理のためのGitLab CIパイプライン：
+
+<CodeGroup>
+
+```yaml {{ title: '.gitlab-ci.yml' }}
+stages:
+  - check
+  - security
+  - update
+
+variables:
+  PNPM_CACHE_FOLDER: .pnpm-store
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store
+
+before_script:
+  - corepack enable
+  - pnpm config set store-dir $PNPM_CACHE_FOLDER
+  - pnpm install
+  - pnpm add -g pnpm-catalog-updates
+
+dependency-check:
+  stage: check
+  script:
+    - pcu -c --format table
+    - pcu workspace --validate
+  artifacts:
+    reports:
+      junit: dependency-report.xml
+  only:
+    - merge_requests
+    - main
+
+security-scan:
+  stage: security
+  script:
+    - pcu security --format json --severity moderate > security.json
+    - |
+      if [ -s security.json ] && [ "$(cat security.json | jq length)" -gt 0 ]; then
+        echo "セキュリティ脆弱性を発見："
+        cat security.json | jq '.'
+        exit 1
+      fi
+  artifacts:
+    reports:
+      security: security.json
+  only:
+    - merge_requests
+    - main
+
+weekly-update:
+  stage: update
+  script:
+    - git config user.name "PCU Bot"
+    - git config user.email "pcu@gitlab.com"
+    - pcu -c --format json > updates.json
+    - |
+      if [ -s updates.json ]; then
+        pcu -u --target minor --create-backup
+        git add .
+        git commit -m "chore: 週次依存関係更新"
+        git push origin HEAD:pcu/weekly-updates
+      fi
+  only:
+    - schedules
+  variables:
+    GIT_STRATEGY: clone
+```
+
+</CodeGroup>
+
+## Jenkinsパイプライン統合
+
+エンタープライズ級依存関係管理のためのJenkinsパイプライン：
+
+<CodeGroup>
+
+```groovy {{ title: 'Jenkinsfile' }}
+pipeline {
+    agent any
+
+    tools {
+        nodejs '18'
+    }
+
+    environment {
+        PNPM_HOME = "${env.WORKSPACE}/.pnpm"
+        PATH = "${env.PNPM_HOME}:${env.PATH}"
+    }
+
+    stages {
+        stage('環境設定') {
+            steps {
+                sh 'corepack enable'
+                sh 'pnpm install'
+                sh 'pnpm add -g pnpm-catalog-updates'
+            }
+        }
+
+        stage('依存関係チェック') {
+            steps {
+                sh 'pcu -c --format json > dependency-check.json'
+
+                script {
+                    def updates = readJSON file: 'dependency-check.json'
+                    if (updates.size() > 0) {
+                        env.HAS_UPDATES = 'true'
+                        echo "${updates.size()} 個のパッケージで更新が必要"
+                    } else {
+                        env.HAS_UPDATES = 'false'
+                        echo "利用可能な更新はありません"
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check.json'
+                }
+            }
+        }
+
+        stage('セキュリティスキャン') {
+            when {
+                environment name: 'HAS_UPDATES', value: 'true'
+            }
+            steps {
+                sh 'pcu security --format json --severity high > security-report.json'
+
+                script {
+                    def securityReport = readJSON file: 'security-report.json'
+                    if (securityReport.vulnerabilities && securityReport.vulnerabilities.size() > 0) {
+                        error "重大なセキュリティ脆弱性を発見：${securityReport.vulnerabilities.size()}"
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.',
+                        reportFiles: 'security-report.json',
+                        reportName: 'Security Report'
+                    ])
+                }
+            }
+        }
+
+        stage('依存関係の更新') {
+            when {
+                allOf {
+                    environment name: 'HAS_UPDATES', value: 'true'
+                    branch 'main'
+                }
+            }
+            steps {
+                sh 'pcu -u --target minor --create-backup'
+                sh 'pnpm test'
+
+                script {
+                    sh '''
+                        git config user.name "Jenkins PCU"
+                        git config user.email "jenkins@company.com"
+                        git add .
+                        git commit -m "chore: 自動依存関係更新 [skip ci]"
+                    '''
+
+                    // マージリクエスト（GitLab）またはプルリクエスト（GitHub）の作成
+                    sh '''
+                        git push origin HEAD:pcu/automated-updates-${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+
+        success {
+            echo 'PCU依存関係チェックが正常に完了しました'
+        }
+
+        failure {
+            emailext (
+                subject: "PCU依存関係チェック失敗 - ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "依存関係チェックが失敗しました。コンソール出力を確認してください。",
+                to: "${env.CHANGE_AUTHOR_EMAIL}"
+            )
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Azure DevOpsパイプライン
+
+PCU統合のためのAzure DevOpsパイプライン：
+
+<CodeGroup>
+
+```yaml {{ title: 'azure-pipelines.yml' }}
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: '0 8 * * 1'
+    displayName: 週次依存関係チェック
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PNPM_CACHE_FOLDER: $(Pipeline.Workspace)/.pnpm-store
+
+stages:
+  - stage: DependencyCheck
+    displayName: '依存関係チェック'
+    jobs:
+      - job: CheckUpdates
+        displayName: '更新のチェック'
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
+              path: $(PNPM_CACHE_FOLDER)
+            displayName: pnpmキャッシュ
+
+          - script: |
+              corepack enable
+              pnpm config set store-dir $(PNPM_CACHE_FOLDER)
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: 'PNPMとPCUの設定'
+
+          - script: |
+              pcu -c --format json > $(Agent.TempDirectory)/updates.json
+              pcu workspace --validate
+            displayName: '依存関係のチェック'
+
+          - script: |
+              pcu security --format json --severity moderate > $(Agent.TempDirectory)/security.json
+            displayName: 'セキュリティスキャン'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-results.xml'
+              failTaskOnFailedTests: true
+            displayName: 'セキュリティ結果の公開'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Agent.TempDirectory)'
+              artifactName: 'dependency-reports'
+            displayName: 'アーティファクトの公開'
+
+  - stage: UpdateDependencies
+    displayName: '依存関係の更新'
+    condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: UpdateCatalog
+        displayName: 'カタログ依存関係の更新'
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              corepack enable
+              pnpm install
+              pnpm add -g pnpm-catalog-updates
+            displayName: '環境設定'
+
+          - script: |
+              pcu -u --target minor --create-backup
+              pnpm test
+            displayName: '更新とテスト'
+
+          - script: |
+              git config user.name "Azure DevOps PCU"
+              git config user.email "azuredevops@company.com"
+              git add .
+              git commit -m "chore: Azure DevOps自動依存関係更新"
+              git push origin HEAD:refs/heads/pcu/azure-updates-$(Build.BuildNumber)
+            displayName: '変更のコミット'
+```
+
+</CodeGroup>
+
+## 汎用CI/CDベストプラクティス
+
+### 環境変数の設定
+
+すべてのCI/CDプラットフォームでPCUの動作を最適化するために、これらの環境変数を設定してください：
+
+```bash
+# コア設定
+PCU_NO_COLOR=true              # カラー出力を無効化
+PCU_CHECK_UPDATES=false        # CIでPCU更新チェックを無効化
+PCU_VERBOSE=true               # 詳細ログを有効化
+PCU_OUTPUT_FORMAT=json         # 解析しやすいJSON出力を使用
+
+# キャッシュ設定
+PCU_CACHE_ENABLED=true         # パフォーマンス向上のためキャッシュを有効化
+PCU_CACHE_TTL=1800000         # 30分のキャッシュTTL
+
+# セキュリティ設定
+PCU_SECURITY_SEVERITY=high     # 高重要度の脆弱性をチェック
+PCU_AUTO_FIX=false            # CIで修正を手動制御
+
+# パフォーマンス設定
+PCU_TIMEOUT=120000            # 2分のタイムアウト
+PCU_RETRIES=3                 # ネットワークリクエストのリトライ回数
+PCU_CONCURRENCY=5             # 並行リクエスト制限
+```
+
+### セキュリティ考慮事項
+
+#### アクセストークン管理
+
+CI/CD環境でアクセストークンを安全に管理してください：
+
+```yaml
+# GitHub Actions
+- name: Gitの設定
+  run: |
+    git config user.name "PCU Bot"
+    git config user.email "bot@company.com"
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# GitLab CI
+script:
+  - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+```
+
+#### ブランチ保護戦略
+
+メインブランチへの直接プッシュを防ぐためのブランチ保護設定：
+
+- プルリクエストレビューの必須化
+- ステータスチェック通過の必須化
+- 保護されたブランチへのプッシュ制限
+- 署名済みコミットの必須化
+
+### トラブルシューティング
+
+#### 一般的なCI/CDの問題
+
+**権限エラー**
+
+```bash
+# npm権限問題の修正
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# またはpnpmを使用（推奨）
+pnpm add -g pnpm-catalog-updates
+```
+
+**キャッシュの問題**
+
+```bash
+# CIキャッシュのクリア
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+
+# PCUキャッシュのクリア
+PCU_CACHE_ENABLED=false pcu check
+```
+
+**ネットワークタイムアウト**
+
+```bash
+# タイムアウト時間の増加
+PCU_TIMEOUT=300000 pcu check
+
+# 並行リクエストの削減
+PCU_CONCURRENCY=2 pcu update
+```
+
+### 監視とレポート
+
+#### ダッシュボードの作成
+
+CI/CDプラットフォームのネイティブ機能を使用して依存関係管理ダッシュボードを作成：
+
+- **GitHub Actions**: Action insightsと依存関係グラフを使用
+- **GitLab CI**: Security Dashboardと依存関係スキャンを活用
+- **Jenkins**: HTML Publisherプラグインを設定
+- **Azure DevOps**: DashboardsとAnalyticsを使用
+
+#### 通知設定
+
+チームに情報を提供するための適切な通知を設定：
+
+```yaml
+# Slack通知の例（GitHub Actions）
+- name: Slack通知
+  if: failure()
+  uses: 8398a7/action-slack@v3
+  with:
+    status: failure
+    text: PCU依存関係チェック失敗
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+## Docker統合
+
+### コンテナ化されたPCUワークフロー
+
+<CodeGroup>
+
+```dockerfile {{ title: 'Dockerfile.pcu' }}
+FROM node:18-alpine
+
+# pnpmとPCUのインストール
+RUN corepack enable
+RUN pnpm add -g pnpm-catalog-updates
+
+# 作業ディレクトリの設定
+WORKDIR /workspace
+
+# packageファイルのコピー
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml .pcurc.json ./
+
+# 依存関係のインストール
+RUN pnpm install --frozen-lockfile
+
+# 環境変数の設定
+ENV PCU_NO_COLOR=true
+ENV PCU_VERBOSE=true
+
+# デフォルトコマンド
+CMD ["pcu", "--help"]
+```
+
+```yaml {{ title: 'docker-compose.yml' }}
+version: '3.8'
+
+services:
+  pcu-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+      - pnpm-cache:/workspace/.pnpm-store
+    environment:
+      - PCU_CACHE_ENABLED=true
+      - PCU_OUTPUT_FORMAT=json
+    command: pcu check --format table
+
+  pcu-security:
+    build:
+      context: .
+      dockerfile: Dockerfile.pcu
+    volumes:
+      - .:/workspace
+    command: pcu security --severity high
+
+volumes:
+  pnpm-cache:
+```
+
+</CodeGroup>
+
+これらのCI/CD統合例は、包括的な自動化された依存関係管理ソリューションを提供し、プロジェクトが常に最新で安全な依存関係を維持することを保証します。

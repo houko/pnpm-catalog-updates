@@ -1,0 +1,276 @@
+export const metadata = {
+  title: 'Escribiendo Código',
+  description:
+    'Domina los bloques de código, resaltado de sintaxis y ejemplos multi-lenguaje con componentes CodeGroup.',
+};
+
+# Escribiendo Código
+
+Domina el arte de presentar código en tu documentación. Aprende a usar resaltado de sintaxis, crear ejemplos multi-lenguaje y organizar bloques de código efectivamente para ayudar a los desarrolladores a entender e implementar tus soluciones. {{ className: 'lead' }}
+
+## Bloques de Código Individuales
+
+Bloques de código básicos con resaltado de sintaxis automático:
+
+```javascript
+// Ejemplo de JavaScript con resaltado de sintaxis
+const greeting = 'Hello, World!';
+console.log(greeting);
+```
+
+El bloque de código JavaScript de arriba se crea usando la siguiente sintaxis MDX:
+
+````mdx
+```javascript
+const greeting = 'Hello, World!';
+console.log(greeting);
+```
+````
+
+**Ejemplo de Python:**
+
+```python
+# Ejemplo de Python
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+```
+
+Sintaxis MDX del bloque de código Python:
+
+````mdx
+```python
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+```
+````
+
+**Comandos Bash/Shell:**
+
+```bash
+# Comandos Bash/Shell
+npm install @example/package
+pnpm add dependency
+```
+
+Sintaxis MDX del bloque de código Bash:
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## CodeGroup para Múltiples Lenguajes
+
+Usa `<CodeGroup>` para mostrar el mismo ejemplo en diferentes lenguajes:
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+El grupo de código multi-lenguaje de arriba se crea usando la siguiente sintaxis MDX:
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## Ejemplos de Endpoints API
+
+Para documentación de API, usa etiquetas de métodos HTTP:
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+El ejemplo de endpoint API de arriba se crea usando la siguiente sintaxis MDX, nota los atributos `tag` y `label`:
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### Títulos de Bloques de Código
+
+También puedes agregar títulos a bloques de código individuales:
+
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## Lenguajes Soportados
+
+Nuestros bloques de código soportan resaltado de sintaxis para muchos lenguajes de programación, incluyendo pero no limitado a:
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Scripts Shell**: `bash`, `shell`, `sh`
+- **Otros lenguajes**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**Ejemplo:**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+Sintaxis MDX del bloque de código JSON:
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**Comparación de código (Diff):**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Sintaxis MDX del bloque de código Diff:
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## Mejores Prácticas
+
+- Siempre especifica el lenguaje para resaltado de sintaxis
+- Usa títulos descriptivos para diferenciar ejemplos de código
+- Incluye ejemplos completos y ejecutables
+- Mantén los ejemplos concisos pero funcionales
+- Usa formato y estilo consistentes
+- Ordena las pestañas de lenguaje en CodeGroup por frecuencia de uso
+
+## Siguientes Pasos
+
+Continúa con [Componentes de Diseño](/writing-layout) para organizar tu contenido efectivamente.

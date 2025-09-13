@@ -1,0 +1,276 @@
+export const metadata = {
+  title: 'Writing Code',
+  description:
+    'Master code blocks, syntax highlighting, and multi-language examples with CodeGroup components.',
+};
+
+# Writing Code
+
+Master the art of presenting code in your documentation. Learn to use syntax highlighting, create multi-language examples, and organize code blocks effectively to help developers understand and implement your solutions. {{ className: 'lead' }}
+
+## Single Code Blocks
+
+Basic code blocks with automatic syntax highlighting:
+
+```javascript
+// JavaScript example with syntax highlighting
+const greeting = 'Hello, World!';
+console.log(greeting);
+```
+
+The JavaScript code block above is created using the following MDX syntax:
+
+````mdx
+```javascript
+const greeting = 'Hello, World!';
+console.log(greeting);
+```
+````
+
+**Python example:**
+
+```python
+# Python example
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+```
+
+Python code block MDX syntax:
+
+````mdx
+```python
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+```
+````
+
+**Bash/Shell commands:**
+
+```bash
+# Bash/Shell commands
+npm install @example/package
+pnpm add dependency
+```
+
+Bash code block MDX syntax:
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## CodeGroup for Multiple Languages
+
+Use `<CodeGroup>` to show the same example in different languages:
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+The multi-language code group above is created using the following MDX syntax:
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## API Endpoint Examples
+
+For API documentation, use HTTP method tags:
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+The API endpoint example above is created using the following MDX syntax, note the `tag` and `label` attributes:
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### Code Block Titles
+
+You can also add titles to individual code blocks:
+
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## Supported Languages
+
+Our code blocks support syntax highlighting for many programming languages, including but not limited to:
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Shell scripts**: `bash`, `shell`, `sh`
+- **Other languages**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**Example:**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+JSON code block MDX syntax:
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**Code comparison (Diff):**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Diff code block MDX syntax:
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## Best Practices
+
+- Always specify the language for syntax highlighting
+- Use descriptive titles to differentiate code examples
+- Include complete, runnable examples
+- Keep examples concise but functional
+- Use consistent formatting and style
+- Order language tabs in CodeGroup by usage frequency
+
+## Next Steps
+
+Continue with [Layout Components](/writing-layout) to organize your content effectively.

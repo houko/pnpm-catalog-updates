@@ -1,0 +1,794 @@
+export const metadata = {
+  title: 'Troubleshooting',
+  description:
+    'Common issues and solutions when using pnpm-catalog-updates. Error messages, debugging tips, and troubleshooting guides.',
+};
+
+# Troubleshooting
+
+Common issues and solutions to help you resolve problems with PCU. Find answers to frequently encountered errors and debugging tips. {{ className: 'lead' }}
+
+## Common Errors
+
+### Workspace Not Found
+
+**Error Message:**
+
+```
+Error: No pnpm workspace found in the current directory
+```
+
+**Cause:** PCU couldn't locate a `pnpm-workspace.yaml` file or detect a valid pnpm workspace structure.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Initialize Workspace' }}
+# Create a new pnpm workspace
+pcu init
+
+# Or manually create pnpm-workspace.yaml
+echo "packages:
+  - 'packages/*'" > pnpm-workspace.yaml
+```
+
+```bash {{ title: 'Specify Workspace Path' }}
+# Run PCU from workspace root
+cd /path/to/workspace/root
+pcu -c
+
+# Or specify workspace directory
+pcu -c --workspace /path/to/workspace
+```
+
+</CodeGroup>
+
+---
+
+### No Catalog Dependencies
+
+**Error Message:**
+
+```
+No catalog dependencies found in workspace
+```
+
+**Cause:** Your workspace doesn't use pnpm catalog dependencies.
+
+**Solutions:**
+
+<CodeGroup>
+
+```yaml {{ title: 'Add Catalog to pnpm-workspace.yaml' }}
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+  typescript: ^5.0.0
+  lodash: ^4.17.21
+```
+
+```json {{ title: 'Use Catalog in package.json' }}
+{
+  "name": "my-package",
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "lodash": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+### Registry Access Issues
+
+**Error Message:**
+
+```
+Error: getaddrinfo ENOTFOUND registry.npmjs.org
+```
+
+**Cause:** Network connectivity issues or registry access problems.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Network Troubleshooting' }}
+# Check network connectivity
+ping registry.npmjs.org
+
+# Test with increased timeout
+pcu -c --timeout 60000
+
+# Reduce concurrent requests
+pcu -c --concurrency 2
+```
+
+```ini {{ title: 'Configure Registry (.npmrc)' }}
+# Use different registry
+registry=https://registry.npmjs.org/
+
+# For corporate networks
+registry=https://your-corporate-registry.com/
+strict-ssl=false
+```
+
+</CodeGroup>
+
+---
+
+### Authentication Errors
+
+**Error Message:**
+
+```
+Error: 401 Unauthorized - authentication required
+```
+
+**Cause:** Missing or invalid authentication tokens for private registries.
+
+**Solutions:**
+
+<CodeGroup>
+
+```ini {{ title: 'Configure Auth (.npmrc)' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+# Or use legacy auth
+//npm.private-registry.com/:username=myuser
+//npm.private-registry.com/:_password=base64password
+//npm.private-registry.com/:email=my.email@example.com
+```
+
+```bash {{ title: 'Set Environment Variable' }}
+export NPM_TOKEN=your_token_here
+pcu -c
+```
+
+</CodeGroup>
+
+---
+
+### Configuration File Errors
+
+**Error Message:**
+
+```
+Error: Invalid configuration in .pcurc.json
+```
+
+**Cause:** Malformed JSON or invalid configuration options.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Validate Configuration' }}
+# Check JSON syntax
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8')))"
+
+# Regenerate configuration
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+```json {{ title: 'Minimal Valid Config' }}
+{
+  "defaults": {
+    "target": "latest"
+  },
+  "output": {
+    "format": "table"
+  }
+}
+```
+
+</CodeGroup>
+
+## Debugging
+
+### Enable Verbose Logging
+
+<CodeGroup>
+
+```bash {{ title: 'Verbose Output' }}
+# Enable verbose logging
+pcu -c --verbose
+
+# Debug mode with environment variable
+DEBUG=pcu:* pcu -c
+
+# Specific debug modules
+DEBUG=pcu:core,pcu:registry pcu -c
+```
+
+```bash {{ title: 'Output to File' }}
+# Save debug output
+pcu -c --verbose > debug.log 2>&1
+
+# Check the log file
+cat debug.log | grep -i error
+```
+
+</CodeGroup>
+
+### Workspace Validation
+
+<CodeGroup>
+
+```bash {{ title: 'Validate Workspace' }}
+# Check workspace configuration
+pcu -s --validate
+
+# Get detailed workspace info
+pcu -s --stats --verbose
+```
+
+```bash {{ title: 'Manual Validation' }}
+# Check pnpm-workspace.yaml exists
+ls -la pnpm-workspace.yaml
+
+# Verify catalog syntax
+pnpm exec -- pnpm list --depth=0
+```
+
+</CodeGroup>
+
+## Performance Issues
+
+### Slow Network Requests
+
+**Symptoms:** PCU takes a long time to check for updates
+
+**Solutions:**
+
+<CodeGroup>
+
+```json {{ title: 'Optimize Configuration' }}
+{
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 30000,
+    "retries": 2,
+    "cacheValidityMinutes": 120
+  }
+}
+```
+
+```bash {{ title: 'Cache Management' }}
+# Clear cache if stale
+rm -rf ~/.pcu/cache
+
+# Disable cache for debugging
+pcu -c --no-cache
+```
+
+</CodeGroup>
+
+### High Memory Usage
+
+**Symptoms:** PCU consumes excessive memory with large workspaces
+
+**Solutions:**
+
+<CodeGroup>
+
+```json {{ title: 'Memory Optimization' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 10
+  }
+}
+```
+
+```bash {{ title: 'Process Management' }}
+# Monitor memory usage
+top -p $(pgrep node)
+
+# Use Node.js memory flags
+node --max-old-space-size=4096 $(which pcu) -c
+```
+
+</CodeGroup>
+
+## Environment Issues
+
+### Node.js Version Compatibility
+
+**Error Message:**
+
+```
+Error: Unsupported Node.js version
+```
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Check Version' }}
+node --version  # Should be >= 18.0.0
+
+# Install compatible version
+nvm install 20
+nvm use 20
+```
+
+```bash {{ title: 'Update Node.js' }}
+# Using nvm
+nvm install --lts
+nvm use --lts
+
+# Verify installation
+node --version
+npm --version
+```
+
+</CodeGroup>
+
+### pnpm Version Issues
+
+**Error Message:**
+
+```
+Error: pnpm command not found
+```
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Install pnpm' }}
+# Install latest pnpm
+npm install -g pnpm@latest
+
+# Verify installation
+pnpm --version  # Should be >= 8.0.0
+```
+
+```bash {{ title: 'Alternative Installation' }}
+# Using Corepack (recommended)
+corepack enable
+corepack prepare pnpm@latest --activate
+
+# Direct download
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+</CodeGroup>
+
+## Windows-Specific Issues
+
+### Path Separator Issues
+
+**Error Message:**
+
+```
+Error: Cannot resolve workspace path
+```
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Use Forward Slashes' }}
+# Use forward slashes in paths
+pcu -c --workspace ./my/workspace
+
+# Or use PowerShell
+pwsh -c "pcu -c"
+```
+
+```json {{ title: 'Windows Configuration' }}
+{
+  "workspace": {
+    "pathSeparator": "/"
+  }
+}
+```
+
+</CodeGroup>
+
+### Permission Errors
+
+**Error Message:**
+
+```
+Error: EPERM: operation not permitted
+```
+
+**Solutions:**
+
+<CodeGroup>
+
+```cmd {{ title: 'Run as Administrator' }}
+# Run Command Prompt as Administrator
+runas /user:Administrator cmd
+
+# Or use PowerShell as Administrator
+Start-Process powershell -Verb RunAs
+```
+
+```bash {{ title: 'Fix Permissions' }}
+# Fix npm permissions
+npm config set cache ~/.npm-cache
+npm config set prefix ~/npm-global
+```
+
+</CodeGroup>
+
+## Getting Help
+
+### Diagnostic Information
+
+When reporting issues, include this diagnostic information:
+
+<CodeGroup>
+
+```bash {{ title: 'System Info' }}
+# PCU version
+pcu --version
+
+# Node.js and pnpm versions
+node --version
+pnpm --version
+
+# Operating system
+uname -a  # Linux/macOS
+systeminfo  # Windows
+```
+
+```bash {{ title: 'Configuration Info' }}
+# Show current configuration
+cat .pcurc.json
+
+# Workspace validation
+pcu -s --validate --verbose
+
+# Debug output
+DEBUG=pcu:* pcu -c --verbose
+```
+
+</CodeGroup>
+
+### Support Channels
+
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Questions**: [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 📖 **Documentation**: Check this documentation for detailed guides
+- 🔧 **Feature Requests**: Use GitHub Issues with the enhancement label
+
+### Issue Template
+
+When reporting bugs, please include:
+
+1. **PCU version** and **command used**
+2. **Error message** (full output with `--verbose`)
+3. **Environment** (OS, Node.js, pnpm versions)
+4. **Workspace structure** (pnpm-workspace.yaml, package.json)
+5. **Configuration** (.pcurc.json, .npmrc if relevant)
+6. **Steps to reproduce** the issue
+7. **Expected vs actual behavior**
+
+## Security Command Issues
+
+### Snyk Integration Problems
+
+**Error Message:**
+
+```
+Error: Snyk CLI not found
+```
+
+**Cause:** Snyk CLI is not installed but `--snyk` flag is used.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Install Snyk CLI' }}
+# Install Snyk globally
+npm install -g snyk
+
+# Authenticate with Snyk
+snyk auth
+
+# Test Snyk installation
+snyk --version
+```
+
+```bash {{ title: 'Run without Snyk' }}
+# Use only npm audit (default)
+pcu security
+
+# Explicitly disable Snyk
+pcu security --no-snyk
+```
+
+</CodeGroup>
+
+### Security Fix Failures
+
+**Error Message:**
+
+```
+Error: Unable to automatically fix vulnerabilities
+```
+
+**Cause:** Some vulnerabilities require manual intervention or major version updates.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Manual Security Fixes' }}
+# Review vulnerabilities first
+pcu security --format json > security.json
+
+# Try automated fix
+pcu security --fix-vulns
+
+# Manual package updates if needed
+pcu -u --include "vulnerable-package"
+```
+
+```bash {{ title: 'Force Major Updates for Security' }}
+# Allow major updates for security fixes
+pcu security --fix-vulns --allow-major-security
+
+# Check impact before applying
+pcu -a default vulnerable-package
+```
+
+</CodeGroup>
+
+---
+
+### Theme Command Issues
+
+**Error Message:**
+
+```
+Error: Theme 'custom-theme' not found
+```
+
+**Cause:** Trying to set a theme that doesn't exist.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'List Available Themes' }}
+# See all available themes
+pcu theme --list
+
+# Use interactive theme selection
+pcu theme --interactive
+```
+
+```bash {{ title: 'Reset to Default Theme' }}
+# Reset to default theme
+pcu theme --set default
+
+# Or delete theme configuration
+rm ~/.pcu/theme.json
+```
+
+</CodeGroup>
+
+---
+
+### Interactive Mode Issues
+
+**Error Message:**
+
+```
+Error: Interactive mode not supported in this environment
+```
+
+**Cause:** Running PCU in a non-interactive environment (CI, pipe, etc.).
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Non-Interactive Alternatives' }}
+# Use dry-run to preview changes
+pcu -u --dry-run
+
+# Use specific targets instead of interactive
+pcu -u --target minor
+
+# Use configuration file for automation
+pcu -u --config .pcurc.json
+```
+
+```bash {{ title: 'Force Interactive Mode' }}
+# Force TTY for interactive mode
+script -c "pcu -i" /dev/null
+
+# Use specific terminal
+TERM=xterm pcu -i
+```
+
+</CodeGroup>
+
+## Command-Specific Issues
+
+### Analyze Command Issues
+
+**Error Message:**
+
+```
+Error: Package 'react' not found in catalog 'nonexistent'
+```
+
+**Cause:** Analyzing a package that doesn't exist in the specified catalog.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Check Available Catalogs' }}
+# List workspace catalogs
+pcu workspace --stats
+
+# Check if package exists in default catalog
+pcu -a default react
+
+# List all packages in catalog
+pcu -c --catalog specific-catalog
+```
+
+```bash {{ title: 'Verify Package Names' }}
+# Search for similar package names
+pcu -c --include "*react*"
+
+# Check package exists in registry
+npm view react versions --json
+```
+
+</CodeGroup>
+
+### Update Command Failures
+
+**Error Message:**
+
+```
+Error: Failed to update package.json files
+```
+
+**Cause:** File permission issues or workspace structure problems.
+
+**Solutions:**
+
+<CodeGroup>
+
+```bash {{ title: 'Check Permissions' }}
+# Check file permissions
+ls -la pnpm-workspace.yaml
+find packages -name "package.json" -exec ls -la {} \;
+
+# Fix permissions if needed
+chmod u+w pnpm-workspace.yaml
+chmod u+w packages/*/package.json
+```
+
+```bash {{ title: 'Workspace Validation' }}
+# Validate workspace first
+pcu workspace --validate
+
+# Use backup flag for safety
+pcu -u --create-backup
+
+# Test with dry-run
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+## Advanced Debugging
+
+### Memory Leak Investigation
+
+**Symptoms:** PCU process memory keeps growing during operation
+
+**Debug Steps:**
+
+<CodeGroup>
+
+```bash {{ title: 'Memory Monitoring' }}
+# Monitor memory usage
+watch -n 1 'ps aux | grep pcu'
+
+# Use Node.js memory profiling
+node --inspect $(which pcu) -c
+
+# Enable garbage collection logging
+node --trace-gc $(which pcu) -c
+```
+
+```bash {{ title: 'Large Workspace Debugging' }}
+# Process in smaller batches
+pcu -c --batch-size 10
+
+# Reduce concurrency
+pcu -c --concurrency 1
+
+# Enable memory optimization
+node --optimize-for-size $(which pcu) -c
+```
+
+</CodeGroup>
+
+### Registry Response Issues
+
+**Symptoms:** Inconsistent results or timeout errors
+
+**Debug Steps:**
+
+<CodeGroup>
+
+```bash {{ title: 'Registry Debugging' }}
+# Test registry connectivity
+curl -I https://registry.npmjs.org/
+
+# Check registry response time
+time npm view react versions
+
+# Use alternative registries
+npm config set registry https://registry.npmmirror.com/
+```
+
+```bash {{ title: 'Network Diagnostics' }}
+# Trace network requests
+DEBUG=pcu:registry pcu -c
+
+# Monitor network activity
+netstat -an | grep :443
+
+# Test with different timeouts
+pcu -c --timeout 5000
+pcu -c --timeout 30000
+```
+
+</CodeGroup>
+
+### Configuration Inheritance Issues
+
+**Symptoms:** Configuration not being applied as expected
+
+**Debug Steps:**
+
+<CodeGroup>
+
+```bash {{ title: 'Config Resolution' }}
+# Check config file locations
+ls -la .pcurc.json
+ls -la ~/.pcurc.json
+ls -la ~/.config/pcu/config.json
+
+# Debug config loading
+DEBUG=pcu:config pcu -c --verbose
+
+# Show effective configuration
+pcu config --show-effective
+```
+
+```bash {{ title: 'Config Validation' }}
+# Validate config syntax
+node -pe "JSON.parse(require('fs').readFileSync('.pcurc.json'))"
+
+# Test with minimal config
+echo '{"defaults":{"target":"latest"}}' > test.pcurc.json
+pcu -c --config test.pcurc.json
+```
+
+</CodeGroup>

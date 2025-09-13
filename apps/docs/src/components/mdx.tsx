@@ -1,13 +1,29 @@
+import { Link } from '@/i18n/navigation'
 import clsx from 'clsx'
-import Link from 'next/link'
 
 import { Feedback } from '@/components/Feedback'
 import { Heading } from '@/components/Heading'
 import { Prose } from '@/components/Prose'
+import { isValidRoute } from '@/utils/routing'
 
 export const a = Link
 export { Button } from '@/components/Button'
 export { Code as code, CodeGroup, Pre as pre } from '@/components/Code'
+export { Guides } from '@/components/Guides'
+export { Libraries } from '@/components/Libraries'
+export { Library } from '@/components/Library'
+export { Resources } from '@/components/Resources'
+export { Tag } from '@/components/Tag'
+
+// Common icons
+export { BellIcon } from '@/components/icons/BellIcon'
+export { BookIcon } from '@/components/icons/BookIcon'
+export { ChatBubbleIcon } from '@/components/icons/ChatBubbleIcon'
+export { CheckIcon } from '@/components/icons/CheckIcon'
+export { CogIcon } from '@/components/icons/CogIcon'
+export { EnvelopeIcon } from '@/components/icons/EnvelopeIcon'
+export { UserIcon } from '@/components/icons/UserIcon'
+export { UsersIcon } from '@/components/icons/UsersIcon'
 
 export function wrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +33,38 @@ export function wrapper({ children }: { children: React.ReactNode }) {
         <Feedback />
       </footer>
     </article>
+  )
+}
+
+// Resource component for use in MDX
+export function Resource({
+  href,
+  title,
+  description,
+}: {
+  href: string
+  title: string
+  description: string
+}) {
+  const validHref = isValidRoute(href) ? href : undefined
+
+  return (
+    <div className="relative flex flex-col rounded-2xl border border-zinc-200 p-6 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600">
+      <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+        {validHref ? (
+          <Link href={validHref}>
+            <span className="absolute inset-0 rounded-2xl" />
+            {title}
+          </Link>
+        ) : (
+          <span>
+            <span className="absolute inset-0 cursor-not-allowed rounded-2xl" />
+            {title}
+          </span>
+        )}
+      </h3>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
+    </div>
   )
 }
 
@@ -44,8 +92,8 @@ function InfoIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 export function Note({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-6 flex gap-2.5 rounded-2xl border border-emerald-500/20 bg-emerald-50/50 p-4 text-sm/6 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:text-emerald-200 dark:[--tw-prose-links-hover:var(--color-emerald-300)] dark:[--tw-prose-links:var(--color-white)]">
-      <InfoIcon className="mt-1 h-4 w-4 flex-none fill-emerald-500 stroke-white dark:fill-emerald-200/20 dark:stroke-emerald-200" />
+    <div className="my-6 flex gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-50/50 p-4 text-sm/6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-200 dark:[--tw-prose-links-hover:var(--color-amber-300)] dark:[--tw-prose-links:var(--color-white)]">
+      <InfoIcon className="mt-1 h-4 w-4 flex-none fill-amber-500 stroke-white dark:fill-amber-200/20 dark:stroke-amber-200" />
       <div className="[&>:first-child]:mt-0 [&>:last-child]:mb-0">{children}</div>
     </div>
   )

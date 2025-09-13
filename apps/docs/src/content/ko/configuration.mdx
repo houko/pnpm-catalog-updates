@@ -1,0 +1,1336 @@
+export const metadata = {
+  title: '구성',
+  description:
+    '.pcurc.json 설정, 패키지 규칙 및 고급 옵션으로 pnpm-catalog-updates를 워크플로우에 맞게 구성하는 방법을 알아보세요.',
+};
+
+# 구성
+
+PCU를 워크플로우와 프로젝트 요구사항에 맞게 구성하세요. 구성 파일, 패키지별 규칙 및 고급 설정에 대해 알아보세요. {{ className: 'lead' }}
+
+## 구성 파일 유형
+
+PCU는 다양한 개발 워크플로우를 수용하기 위해 여러 구성 파일 형식과 위치를 지원합니다.
+
+### 지원되는 구성 파일
+
+PCU는 다음 순서로 구성 파일을 검색합니다 (처음 발견된 것이 우선):
+
+<Properties>
+  <Property name=".pcurc.json" type="JSON">
+    프로젝트 루트의 기본 JSON 구성 파일
+  </Property>
+  <Property name=".pcurc.js" type="JavaScript">
+    동적 구성 지원이 있는 JavaScript 구성 파일
+  </Property>
+  <Property name="pcu.config.js" type="JavaScript">
+    대안 JavaScript 구성 파일명
+  </Property>
+  <Property name="~/.pcurc.json" type="JSON">
+    홈 디렉토리의 전역 사용자 구성
+  </Property>
+  <Property name="package.json" type="JSON">
+    package.json 내 "pcu" 키 아래 구성
+  </Property>
+</Properties>
+
+### JavaScript 구성 지원
+
+JavaScript 구성 파일은 환경, 작업공간 구조 또는 기타 런타임 조건에 따른 동적 구성을 가능하게 합니다:
+
+<CodeGroup>
+
+```javascript {{ title: '.pcurc.js' }}
+module.exports = {
+  defaults: {
+    target: process.env.NODE_ENV === 'production' ? 'minor' : 'latest',
+    createBackup: true,
+  },
+  workspace: {
+    autoDiscover: true,
+    catalogMode: 'strict',
+  },
+  // 작업공간 구조에 따른 동적 패키지 규칙
+  packageRules: [
+    {
+      patterns: ['react*'],
+      target: 'minor',
+      requireConfirmation: process.env.CI !== 'true',
+    },
+  ],
+  // 환경별 구성
+  ...(process.env.NODE_ENV === 'development' && {
+    ui: {
+      theme: 'modern',
+      progressBarStyle: 'fancy',
+    },
+  }),
+};
+```
+
+```javascript {{ title: '함수가 있는 pcu.config.js' }}
+const fs = require('fs');
+const path = require('path');
+
+function getWorkspacePackages() {
+  const workspaceFile = path.join(__dirname, 'pnpm-workspace.yaml');
+  if (fs.existsSync(workspaceFile)) {
+    // 작업공간 패키지를 동적으로 파싱
+    return ['packages/*', 'apps/*', 'tools/*'];
+  }
+  return ['packages/*'];
+}
+
+module.exports = {
+  workspace: {
+    packages: getWorkspacePackages(),
+    catalogMode: 'flexible',
+  },
+  packageRules: [
+    // 기존 패키지를 기반으로 규칙 생성
+    ...fs.readdirSync('./packages').map((pkg) => ({
+      patterns: [`@myorg/${pkg}`],
+      target: 'minor',
+    })),
+  ],
+};
+```
+
+</CodeGroup>
+
+### Package.json 구성
+
+간단한 프로젝트의 경우 구성을 package.json 내에 포함할 수 있습니다:
+
+```json
+{
+  "name": "my-project",
+  "pcu": {
+    "defaults": {
+      "target": "minor",
+      "createBackup": true
+    },
+    "packageRules": [
+      {
+        "patterns": ["@types/*"],
+        "target": "latest",
+        "autoUpdate": true
+      }
+    ]
+  }
+}
+```
+
+### 구성 유효성 검사
+
+PCU는 구성 파일을 자동으로 유효성 검사하고 일반적인 문제에 대한 자세한 오류 메시지를 제공합니다:
+
+#### 유효성 검사 기능
+
+- **JSON 스키마 유효성 검사**: 모든 구성 속성이 유효한지 확인
+- **패턴 유효성 검사**: Glob 패턴과 패키지 이름 형식 검증
+- **타입 검사**: 모든 구성 값의 올바른 데이터 타입 확인
+- **충돌 감지**: 충돌하는 규칙과 구성 옵션 식별
+- **제안 시스템**: 구성 오류 수정을 위한 유용한 제안 제공
+
+#### 유효성 검사 예제
+
+```bash
+# 현재 구성 검증
+pcu workspace --validate
+
+# 제안과 함께 나타나는 일반적인 유효성 검사 오류:
+# ❌ packageRules[0]에서 잘못된 target "lastest"
+#    💡 "latest"를 의미하셨나요?
+#
+# ❌ 패턴 "react+"는 잘못된 glob 구문입니다
+#    💡 "react"로 시작하는 패키지를 매칭하려면 "react*"를 사용하세요
+#
+# ⚠️  패키지 "react"에 대한 충돌하는 규칙
+#    📝 인덱스 0과 2의 규칙이 모두 이 패키지와 일치합니다
+```
+
+## .pcurc.json 구성 파일 완전 참조
+
+PCU는 여러 구성 파일 형식을 사용하며, 주로 프로젝트 루트 디렉토리의 `.pcurc.json` 파일로 구성됩니다. 수동으로 생성하거나 `pcu init`을 사용하여 기본 구성을 생성할 수 있습니다.
+
+### 완전한 구성 파일 구조
+
+<CodeGroup>
+
+```json {{ title: '완전한 구성 예제' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "createBackup": false,
+    "interactive": false,
+    "dryRun": false,
+    "force": false,
+    "prerelease": false
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict",
+    "path": "./",
+    "packages": ["packages/*", "apps/*"]
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  },
+  "ui": {
+    "theme": "default",
+    "progressBars": true,
+    "progressBarStyle": "default",
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "update": {
+    "interactive": false,
+    "dryRunFirst": false,
+    "skipPrereleases": true,
+    "confirmMajorUpdates": true,
+    "batchSize": 10
+  },
+  "security": {
+    "autoFixVulnerabilities": false,
+    "allowMajorForSecurity": false,
+    "notifyOnSecurityUpdate": true,
+    "severityThreshold": "moderate"
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true,
+    "batchSize": 50
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache"
+  },
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "timeout": 30000,
+    "retries": 3
+  },
+  "include": ["*"],
+  "exclude": [],
+  "packageRules": [
+    {
+      "patterns": ["react*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "notification": {
+    "enabled": true,
+    "updateAvailable": true,
+    "securityAlerts": true
+  },
+  "logging": {
+    "level": "info",
+    "file": "./pcu.log",
+    "maxFiles": 5,
+    "maxSize": "10MB"
+  }
+}
+```
+
+```json {{ title: '최소 구성 예제' }}
+{
+  "defaults": {
+    "target": "minor"
+  },
+  "exclude": ["typescript", "@types/node"]
+}
+```
+
+</CodeGroup>
+
+### 구성 옵션 상세 설명
+
+#### defaults 기본 설정
+
+<Properties>
+  <Property name="target" type="enum" default="latest">
+    기본 업데이트 대상: `latest` | `greatest` | `minor` | `patch` | `newest`
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    네트워크 요청 타임아웃 시간 (밀리초)
+  </Property>
+  <Property name="createBackup" type="boolean" default="false">
+    업데이트 전 백업 파일 생성 여부
+  </Property>
+  <Property name="interactive" type="boolean" default="false">
+    기본적으로 대화형 모드 활성화 여부
+  </Property>
+  <Property name="dryRun" type="boolean" default="false">
+    기본적으로 미리보기 모드 활성화 여부 (실제 업데이트 안 함)
+  </Property>
+  <Property name="force" type="boolean" default="false">
+    강제 업데이트 여부 (경고 건너뛰기)
+  </Property>
+  <Property name="prerelease" type="boolean" default="false">
+    프리릴리즈 버전 포함 여부
+  </Property>
+</Properties>
+
+#### workspace 작업공간 설정
+
+<Properties>
+  <Property name="autoDiscover" type="boolean" default="true">
+    작업공간 구조 자동 탐지 여부
+  </Property>
+  <Property name="catalogMode" type="enum" default="strict">
+    카탈로그 모드: `strict` | `loose` | `mixed`
+  </Property>
+  <Property name="path" type="string" default="./">
+    작업공간 루트 디렉토리 경로
+  </Property>
+  <Property name="packages" type="string[]">
+    패키지 디렉토리 매칭 패턴 배열 (pnpm-workspace.yaml 덮어씀)
+  </Property>
+</Properties>
+
+#### output 출력 설정
+
+<Properties>
+  <Property name="format" type="enum" default="table">
+    출력 형식: `table` | `json` | `yaml` | `minimal`
+  </Property>
+  <Property name="color" type="boolean" default="true">
+    컬러 출력 활성화 여부
+  </Property>
+  <Property name="verbose" type="boolean" default="false">
+    상세 출력 모드 활성화 여부
+  </Property>
+</Properties>
+
+#### ui 사용자 인터페이스 설정
+
+<Properties>
+  <Property name="theme" type="enum" default="default">
+    색상 테마: `default` | `modern` | `minimal` | `neon`
+  </Property>
+  <Property name="progressBars" type="boolean" default="true">
+    진행률 표시줄 표시 여부
+  </Property>
+  <Property name="progressBarStyle" type="enum" default="default">
+    진행률 표시줄 스타일: `default` | `gradient` | `fancy` | `minimal` | `rainbow` | `neon`
+  </Property>
+  <Property name="animations" type="boolean" default="true">
+    애니메이션 효과 활성화 여부
+  </Property>
+  <Property name="colorScheme" type="enum" default="auto">
+    색상 체계: `auto` | `light` | `dark`
+  </Property>
+</Properties>
+
+#### update 업데이트 동작 설정
+
+<Properties>
+  <Property name="interactive" type="boolean" default="false">
+    업데이트 시 기본적으로 대화형 모드 활성화 여부
+  </Property>
+  <Property name="dryRunFirst" type="boolean" default="false">
+    먼저 미리보기를 실행한 후 적용할지 묻는지 여부
+  </Property>
+  <Property name="skipPrereleases" type="boolean" default="true">
+    프리릴리즈 버전 건너뛰기 여부
+  </Property>
+  <Property name="confirmMajorUpdates" type="boolean" default="true">
+    메이저 버전 업데이트 시 확인 필요 여부
+  </Property>
+  <Property name="batchSize" type="number" default="10">
+    배치 처리할 패키지 수
+  </Property>
+</Properties>
+
+#### security 보안 설정
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean" default="false">
+    보안 취약점 자동 수정 여부
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean" default="false">
+    보안 수정을 위한 메이저 버전 업데이트 허용 여부
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean" default="true">
+    보안 업데이트 시 알림 여부
+  </Property>
+  <Property name="severityThreshold" type="enum" default="moderate">
+    보안 경고 수준 임계값: `low` | `moderate` | `high` | `critical`
+  </Property>
+</Properties>
+
+#### advanced 고급 설정
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    동시 네트워크 요청 수
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    네트워크 요청 타임아웃 시간 (밀리초)
+  </Property>
+  <Property name="retries" type="number" default="3">
+    실패 시 재시도 횟수
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    캐시 유효 기간 (분, 0은 캐시 비활성화)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    시작 시 PCU 도구 업데이트 확인 여부
+  </Property>
+  <Property name="batchSize" type="number" default="50">
+    배치 처리할 최대 패키지 수
+  </Property>
+</Properties>
+
+#### cache 캐시 설정
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    캐시 시스템 활성화 여부
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    캐시 생존 시간 (밀리초)
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    최대 캐시 크기 (바이트, 기본값 50MB)
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    최대 캐시 항목 수
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    디스크에 캐시 지속 여부
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    캐시 디렉토리 경로
+  </Property>
+</Properties>
+
+#### registry 레지스트리 설정
+
+<Properties>
+  <Property name="default" type="string" default="https://registry.npmjs.org/">
+    기본 NPM 레지스트리 URL
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    레지스트리 요청 타임아웃 시간 (밀리초)
+  </Property>
+  <Property name="retries" type="number" default="3">
+    레지스트리 요청 재시도 횟수
+  </Property>
+</Properties>
+
+#### 패키지 필터링 설정
+
+<Properties>
+  <Property name="include" type="string[]" default="['*']">
+    포함할 패키지명 매칭 패턴 배열
+  </Property>
+  <Property name="exclude" type="string[]" default="[]">
+    제외할 패키지명 매칭 패턴 배열
+  </Property>
+</Properties>
+
+#### notification 알림 설정
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    알림 기능 활성화 여부
+  </Property>
+  <Property name="updateAvailable" type="boolean" default="true">
+    업데이트 가능 시 알림 여부
+  </Property>
+  <Property name="securityAlerts" type="boolean" default="true">
+    보안 경고 시 알림 여부
+  </Property>
+</Properties>
+
+#### logging 로그 설정
+
+<Properties>
+  <Property name="level" type="enum" default="info">
+    로그 수준: `error` | `warn` | `info` | `debug` | `trace`
+  </Property>
+  <Property name="file" type="string">
+    로그 파일 경로 (선택사항)
+  </Property>
+  <Property name="maxFiles" type="number" default="5">
+    최대 로그 파일 수
+  </Property>
+  <Property name="maxSize" type="string" default="10MB">
+    개별 로그 파일 최대 크기
+  </Property>
+</Properties>
+
+## 패키지 필터링
+
+include/exclude 패턴과 패키지별 규칙으로 업데이트할 패키지를 제어하세요.
+
+<CodeGroup>
+
+```json {{ title: '간단한 필터링' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: '패키지 규칙' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 패키지 규칙 속성
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    패키지 이름 매칭을 위한 Glob 패턴
+  </Property>
+  <Property name="target" type="enum">
+    업데이트 대상: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    이 패키지들을 업데이트하기 전 항상 확인 요청
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    확인 없이 자동 업데이트
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    동일한 업데이트 전략을 따르는 패키지들
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    관련 패키지들을 함께 업데이트
+  </Property>
+</Properties>
+
+## 보안 구성
+
+보안 취약점 스캔 및 자동 수정을 구성하세요.
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    보안 취약점 자동 확인 및 수정
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    보안 수정을 위한 메이저 버전 업그레이드 허용
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    보안 업데이트 시 알림 표시
+  </Property>
+</Properties>
+
+## 모노레포 구성
+
+여러 카탈로그를 가진 복잡한 모노레포 설정을 위한 특별 설정.
+
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
+
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    여러 카탈로그에서 버전 동기화가 필요한 패키지들
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    충돌 해결을 위한 카탈로그 우선순위 순서
+  </Property>
+</Properties>
+
+## 고급 설정
+
+고급 구성 옵션으로 성능과 동작을 세밀하게 조정하세요.
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    동시 네트워크 요청 수
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    네트워크 요청 타임아웃 (밀리초)
+  </Property>
+  <Property name="retries" type="number" default="3">
+    실패 시 재시도 횟수
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    캐시 유효 기간 (0은 캐싱 비활성화)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    시작 시 PCU 도구 업데이트 자동 확인. CI 환경에서는 건너뜀. 새 버전이 사용 가능할 때 업데이트
+    알림과 설치 지침을 표시합니다.
+  </Property>
+</Properties>
+
+## UI 구성
+
+시각적 모양과 사용자 인터페이스 설정을 사용자 정의하세요.
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### 사용 가능한 테마
+
+- `default` - 일반적인 사용을 위한 균형잡힌 색상
+- `modern` - 개발 환경을 위한 생생한 색상
+- `minimal` - 프로덕션 환경을 위한 깔끔하고 간단한 색상
+- `neon` - 프레젠테이션을 위한 높은 대비 색상
+
+### 진행률 표시줄 스타일
+
+PCU는 작업 중 향상된 시각적 피드백을 위해 6가지 다른 진행률 표시줄 스타일을 지원합니다:
+
+- `default` - 기본 스타일의 표준 진행률 표시줄
+- `gradient` - 모던한 외관을 위한 그라데이션 색상 진행률 표시줄
+- `fancy` - 장식 요소가 있는 향상된 진행률 표시줄
+- `minimal` - 깔끔하고 간단한 진행률 지시기
+- `rainbow` - 생생한 디스플레이를 위한 다색 진행률 표시줄
+- `neon` - 네온 테마에 맞는 높은 대비 진행률 표시줄
+
+**구성 예제:**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**명령줄 사용법:**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## 구성 우선순위
+
+구성 설정은 다음 우선순위 순서로 적용됩니다:
+
+1. **명령줄 플래그** (최고 우선순위)
+2. **패키지별 규칙** in `.pcurc.json`
+3. **일반 설정** in `.pcurc.json`
+4. **기본값** (최저 우선순위)
+
+<Note>
+  관련 패키지들은 자동으로 상위 패키지 규칙에서 설정을 상속받아 생태계 패키지들 간의 버전 일관성을
+  보장합니다.
+</Note>
+
+## 예제
+
+### React 생태계
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScript 프로젝트
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### 엔터프라이즈 설정
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+---
+
+## 환경 변수
+
+모든 CLI 옵션은 자동화 및 CI/CD 환경을 위해 환경 변수를 통해 구성할 수 있습니다:
+
+<CodeGroup>
+
+```bash {{ title: '전역 환경 변수' }}
+# 작업공간 설정
+export PCU_WORKSPACE="/path/to/workspace"
+export PCU_VERBOSE=true
+export PCU_NO_COLOR=true
+
+# 레지스트리 구성
+export PCU_REGISTRY="https://npm.company.com/"
+export PCU_TIMEOUT=30000
+
+# 구성 파일
+export PCU_CONFIG="/path/to/.pcurc.json"
+```
+
+```bash {{ title: '명령어별 변수' }}
+# 확인/업데이트 동작
+export PCU_OUTPUT_FORMAT=json
+export PCU_UPDATE_TARGET=minor
+export PCU_CATALOG=default
+
+# 업데이트 옵션
+export PCU_INTERACTIVE=true
+export PCU_DRY_RUN=true
+export PCU_CREATE_BACKUP=true
+export PCU_FORCE=false
+
+# 필터링
+export PCU_INCLUDE="react*,@types/*"
+export PCU_EXCLUDE="eslint*"
+export PCU_PRERELEASE=false
+```
+
+</CodeGroup>
+
+### 환경 변수 우선순위
+
+구성 소스는 다음 순서로 로드됩니다 (나중 것이 이전 것을 덮어씀):
+
+1. **내장 기본값** (최저 우선순위)
+2. **전역 구성** (`~/.pcurc.json`)
+3. **프로젝트 구성** (`.pcurc.json`)
+4. **환경 변수** (`PCU_*`)
+5. **명령줄 플래그** (최고 우선순위)
+
+---
+
+## 레지스트리 구성
+
+PCU는 레지스트리 설정을 위해 NPM 및 PNPM 구성 파일을 자동으로 읽습니다:
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc / .pnpmrc' }}
+# 기본 레지스트리
+registry=https://registry.npmjs.org/
+
+# 스코프 레지스트리
+@mycompany:registry=https://npm.mycompany.com/
+@types:registry=https://registry.npmjs.org/
+
+# 인증 토큰
+//npm.mycompany.com/:_authToken=${NPM_TOKEN}
+//registry.npmjs.org/:_authToken=${NPM_PUBLIC_TOKEN}
+
+# 레거시 인증 (필요한 경우)
+//npm.mycompany.com/:username=myuser
+//npm.mycompany.com/:_password=base64encodedpassword
+//npm.mycompany.com/:email=user@company.com
+
+# SSL 및 프록시 설정
+strict-ssl=true
+ca=/path/to/ca.pem
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+```
+
+```json {{ title: 'PCU 레지스트리 재정의' }}
+{
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "scoped": {
+      "@mycompany": "https://npm.mycompany.com/",
+      "@types": "https://registry.npmjs.org/"
+    },
+    "auth": {
+      "npm.mycompany.com": {
+        "token": "${NPM_TOKEN}",
+        "type": "Bearer"
+      }
+    },
+    "timeout": 30000,
+    "retries": 3,
+    "userAgent": "pcu-custom/1.0.0"
+  }
+}
+```
+
+</CodeGroup>
+
+### 레지스트리 우선순위
+
+1. **CLI `--registry` 플래그** (최고 우선순위)
+2. **PCU 구성** (`.pcurc.json` 레지스트리 섹션)
+3. **프로젝트 `.npmrc/.pnpmrc`**
+4. **전역 `.npmrc/.pnpmrc`**
+5. **기본 NPM 레지스트리** (최저 우선순위)
+
+---
+
+## 향상된 캐싱 구성
+
+PCU는 성능 향상을 위한 고급 캐싱 시스템을 포함합니다:
+
+<CodeGroup>
+
+```json {{ title: '캐시 구성' }}
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "strategy": "lru"
+  }
+}
+```
+
+```bash {{ title: '캐시 관리' }}
+# 모든 캐시 지우기
+rm -rf ~/.pcu/cache
+
+# 상세 모드에서 캐시 정보 표시
+pcu -c --verbose
+
+# 단일 실행을 위해 캐싱 비활성화
+pcu -c --no-cache
+
+# 사용자 정의 캐시 디렉토리 설정
+export PCU_CACHE_DIR="/tmp/pcu-cache"
+```
+
+</CodeGroup>
+
+### 캐시 설정
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    캐싱 시스템 활성화/비활성화
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    밀리초 단위 생존 시간 (기본값 1시간)
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    바이트 단위 최대 캐시 크기 (기본값 50MB)
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    최대 캐시 항목 수
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    실행 간 캐시를 디스크에 저장
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    지속적인 캐시 저장을 위한 디렉토리
+  </Property>
+  <Property name="strategy" type="enum" default="lru">
+    캐시 축출 전략: lru, fifo, lfu
+  </Property>
+</Properties>
+
+---
+
+## 유효성 검사 구성
+
+PCU는 유용한 제안과 함께 포괄적인 유효성 검사를 포함합니다:
+
+<CodeGroup>
+
+```json {{ title: '유효성 검사 구성' }}
+{
+  "validation": {
+    "strict": true,
+    "warnOnRiskyUpdates": true,
+    "requireConfirmationFor": ["major"],
+    "suggestions": {
+      "enabled": true,
+      "includePerformanceTips": true,
+      "includeBestPractices": true
+    }
+  }
+}
+```
+
+```bash {{ title: '유효성 검사 예제' }}
+# 엄격한 유효성 검사 모드 활성화
+pcu -u --force  # 백업 부족에 대한 경고 표시
+
+# 유효성 검사 제안 표시
+pcu -c --verbose  # 추가 팁과 제안 표시
+
+# 구성 파일 유효성 검사
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json')))"
+```
+
+</CodeGroup>
+
+### 유효성 검사 옵션
+
+<Properties>
+  <Property name="strict" type="boolean" default="false">
+    추가 검사가 있는 엄격한 유효성 검사 모드 활성화
+  </Property>
+  <Property name="warnOnRiskyUpdates" type="boolean" default="true">
+    잠재적으로 위험한 업데이트에 대한 경고 표시
+  </Property>
+  <Property name="requireConfirmationFor" type="array" default="[]">
+    확인이 필요한 업데이트 유형: major, minor, patch
+  </Property>
+  <Property name="suggestions.enabled" type="boolean" default="true">
+    유용한 제안과 팁 활성화
+  </Property>
+  <Property name="suggestions.includePerformanceTips" type="boolean" default="true">
+    성능 최적화 제안 포함
+  </Property>
+  <Property name="suggestions.includeBestPractices" type="boolean" default="true">
+    모범 사례 권장사항 포함
+  </Property>
+</Properties>
+
+---
+
+## 대화형 모드 구성
+
+대화형 프롬프트와 사용자 경험을 구성하세요:
+
+<CodeGroup>
+
+```json {{ title: '대화형 구성' }}
+{
+  "interactive": {
+    "enabled": true,
+    "pageSize": 15,
+    "showPackageDescriptions": true,
+    "showReleaseNotes": false,
+    "autoComplete": {
+      "enabled": true,
+      "fuzzyMatching": true,
+      "maxSuggestions": 10
+    },
+    "confirmations": {
+      "majorUpdates": true,
+      "forceUpdates": true,
+      "multiplePackages": false
+    }
+  }
+}
+```
+
+```bash {{ title: '대화형 모드 예제' }}
+# 대화형 모드 실행
+pcu -i
+
+# 패키지 설명과 함께 대화형 모드
+pcu -i --verbose  # 대화형 선택에서 더 자세한 내용 표시
+
+# 대화형 테마 선택 사용
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### 대화형 설정
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    대화형 모드 기능 활성화
+  </Property>
+  <Property name="pageSize" type="number" default="15">
+    목록에서 페이지당 표시되는 항목 수
+  </Property>
+  <Property name="showPackageDescriptions" type="boolean" default="false">
+    선택 목록에서 패키지 설명 표시
+  </Property>
+  <Property name="showReleaseNotes" type="boolean" default="false">
+    업데이트에 대한 릴리스 노트 표시 (네트워크 필요)
+  </Property>
+  <Property name="autoComplete.enabled" type="boolean" default="true">
+    패키지 이름 자동 완성 활성화
+  </Property>
+  <Property name="autoComplete.fuzzyMatching" type="boolean" default="true">
+    자동 완성을 위한 퍼지 매칭 활성화
+  </Property>
+  <Property name="confirmations.majorUpdates" type="boolean" default="true">
+    메이저 버전 업데이트에 대한 확인 요구
+  </Property>
+</Properties>
+
+---
+
+## 모노레포 구성
+
+PCU는 대규모 모노레포와 복잡한 작업공간 관리를 위해 특별히 설계된 고급 기능을 제공합니다.
+
+### 버전 동기화
+
+모노레포 전체에서 관련 패키지를 동기화된 상태로 유지하세요:
+
+<CodeGroup>
+
+```json {{ title: '버전 동기화 구성' }}
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+          "strategy": "exact" // 또는 "compatible", "latest"
+        },
+        {
+          "name": "testing-libraries",
+          "packages": ["jest", "@testing-library/*", "@types/jest"],
+          "strategy": "compatible"
+        }
+      ]
+    },
+    "catalogPriority": ["default", "react17", "node18"],
+    "crossWorkspaceDependencies": {
+      "analyze": true,
+      "enforce": "warn" // "error", "warn", "off"
+    }
+  }
+}
+```
+
+```json {{ title: '대규모 작업공간 최적화' }}
+{
+  "monorepo": {
+    "performance": {
+      "batchSize": 50,
+      "concurrency": 15,
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true
+    },
+    "workspacePackages": {
+      "autoDiscover": true,
+      "includePrivate": false,
+      "excludePatterns": ["**/node_modules", "**/dist", "**/coverage"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 고급 작업공간 관리
+
+#### 카탈로그 우선순위 시스템
+
+충돌이 발생할 때 어떤 카탈로그가 우선하는지 정의하세요:
+
+```json
+{
+  "catalogPriority": ["production", "default", "experimental"],
+  "catalogConflictResolution": "priority" // 또는 "interactive", "error"
+}
+```
+
+#### 작업공간 간 종속성
+
+작업공간 패키지 간의 종속성을 분석하고 관리하세요:
+
+<Properties>
+  <Property name="analyze" type="boolean" default="false">
+    작업공간 간 종속성 분석
+  </Property>
+  <Property name="enforce" type="enum" default="warn">
+    버전 불일치 처리 방법: error, warn, off
+  </Property>
+  <Property name="reportUnused" type="boolean" default="true">
+    어떤 작업공간 패키지에서도 사용되지 않는 카탈로그 내 패키지 보고
+  </Property>
+  <Property name="validateVersions" type="boolean" default="true">
+    모든 작업공간 패키지가 카탈로그 버전을 사용하는지 검증
+  </Property>
+</Properties>
+
+### 모노레포별 패키지 규칙
+
+모노레포의 다양한 영역에 대한 정교한 규칙을 생성하세요:
+
+<CodeGroup>
+
+```json {{ title: '모노레포 패키지 규칙' }}
+{
+  "packageRules": [
+    {
+      "name": "Frontend packages",
+      "patterns": ["react*", "@types/react*", "next*"],
+      "workspacePackages": ["apps/web", "apps/admin"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "name": "Backend dependencies",
+      "patterns": ["express*", "@types/express*", "fastify*"],
+      "workspacePackages": ["apps/api", "services/*"],
+      "target": "patch",
+      "autoUpdate": false
+    },
+    {
+      "name": "Development tools",
+      "patterns": ["eslint*", "prettier", "typescript"],
+      "workspacePackages": ["*"], // 모든 패키지
+      "target": "latest",
+      "autoUpdate": true,
+      "excludeFromProduction": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 작업공간별 구성
+
+모노레포의 다른 부분에 대한 다른 구성:
+
+<CodeGroup>
+
+```json {{ title: '작업공간별 규칙' }}
+{
+  "workspaceRules": {
+    "apps/web": {
+      "defaults": {
+        "target": "minor",
+        "createBackup": true
+      },
+      "packageRules": [
+        {
+          "patterns": ["react*"],
+          "target": "patch"
+        }
+      ]
+    },
+    "packages/*": {
+      "defaults": {
+        "target": "latest",
+        "requireConfirmation": false
+      }
+    },
+    "tools/*": {
+      "defaults": {
+        "target": "latest",
+        "autoUpdate": true
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 대규모 모노레포를 위한 성능 최적화
+
+#### 배치 처리 구성
+
+<Properties>
+  <Property name="batchSize" type="number" default="20">
+    각 배치에서 처리할 패키지 수
+  </Property>
+  <Property name="concurrency" type="number" default="5">
+    최대 동시 작업 수
+  </Property>
+  <Property name="cacheWorkspaceStructure" type="boolean" default="true">
+    실행 간 작업공간 패키지 탐색 캐시
+  </Property>
+  <Property name="parallelCatalogProcessing" type="boolean" default="true">
+    여러 카탈로그를 병렬로 처리
+  </Property>
+</Properties>
+
+#### 메모리 관리
+
+```json
+{
+  "monorepo": {
+    "memoryOptimization": {
+      "streamingMode": true, // 모든 패키지를 메모리에 로드하지 않고 처리
+      "maxMemoryUsage": "2GB", // 대규모 작업공간을 위한 메모리 제한
+      "temporaryFileCleanup": "immediate" // "immediate", "session-end", "manual"
+    }
+  }
+}
+```
+
+### 모노레포 유효성 검사
+
+복잡한 작업공간 설정을 위한 포괄적인 유효성 검사:
+
+#### 유효성 검사 규칙
+
+<Properties>
+  <Property name="enforceWorkspaceProtocol" type="boolean" default="true">
+    내부 종속성에 workspace: 프로토콜 사용 보장
+  </Property>
+  <Property name="validateCatalogCoverage" type="boolean" default="true">
+    모든 종속성이 카탈로그로 커버되는지 확인
+  </Property>
+  <Property name="requireConsistentVersions" type="boolean" default="false">
+    모든 작업공간 패키지가 공유 종속성의 동일한 버전을 사용하도록 요구
+  </Property>
+  <Property name="detectCircularDependencies" type="boolean" default="true">
+    작업공간 패키지 간 순환 종속성 탐지
+  </Property>
+</Properties>
+
+### 모노레포 사용 예제
+
+#### 대규모 엔터프라이즈 모노레포 설정
+
+```json
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "core-frontend",
+          "packages": ["react", "react-dom", "react-router", "@types/react*"],
+          "strategy": "exact"
+        },
+        {
+          "name": "ui-libraries",
+          "packages": ["@company/design-system", "@company/components"],
+          "strategy": "workspace"
+        }
+      ]
+    },
+    "performance": {
+      "batchSize": 100,
+      "concurrency": 20,
+      "streamingMode": true
+    },
+    "workspaceRules": {
+      "apps/*": { "target": "minor", "requireConfirmation": true },
+      "packages/*": { "target": "latest", "autoUpdate": true },
+      "tools/*": { "target": "latest", "autoUpdate": true }
+    }
+  }
+}
+```
+
+#### CI/CD 최적화 구성
+
+```json
+{
+  "monorepo": {
+    "ci": {
+      "parallelCatalogProcessing": true,
+      "skipInteractivePrompts": true,
+      "generateReport": true,
+      "reportFormat": "json",
+      "exitOnError": true
+    },
+    "validation": {
+      "enforceWorkspaceProtocol": true,
+      "validateCatalogCoverage": true,
+      "failOnInconsistentVersions": true
+    }
+  }
+}
+```

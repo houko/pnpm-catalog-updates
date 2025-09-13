@@ -1,0 +1,1020 @@
+export const metadata = {
+  title: '故障排除',
+  description:
+    '使用 pnpm-catalog-updates 时的常见问题和解决方案。错误消息、调试技巧和故障排除指南。',
+};
+
+# 故障排除
+
+常见问题和解决方案，帮助您解决 PCU 的问题。查找常见错误的答案和调试技巧。{{ className: 'lead' }}
+
+## 常见错误
+
+### 未找到工作空间
+
+**错误消息：**
+
+```
+Error: No pnpm workspace found in the current directory
+```
+
+**原因：** PCU 无法找到 `pnpm-workspace.yaml` 文件或检测到有效的 pnpm 工作空间结构。
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '初始化工作空间' }}
+# 创建新的 pnpm 工作空间
+pcu init
+
+# 或手动创建 pnpm-workspace.yaml
+echo "packages:
+  - 'packages/*'" > pnpm-workspace.yaml
+```
+
+```bash {{ title: '指定工作空间路径' }}
+# 从工作空间根目录运行 PCU
+cd /path/to/workspace/root
+pcu -c
+
+# 或指定工作空间目录
+pcu -c --workspace /path/to/workspace
+```
+
+</CodeGroup>
+
+---
+
+### 无目录依赖
+
+**错误消息：**
+
+```
+No catalog dependencies found in workspace
+```
+
+**原因：** 您的工作空间未使用 pnpm 目录依赖。
+
+**解决方案：**
+
+<CodeGroup>
+
+```yaml {{ title: '向 pnpm-workspace.yaml 添加目录' }}
+packages:
+  - 'packages/*'
+
+catalog:
+  react: ^18.2.0
+  typescript: ^5.0.0
+  lodash: ^4.17.21
+```
+
+```json {{ title: '在 package.json 中使用目录' }}
+{
+  "name": "my-package",
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "lodash": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+### 注册表访问问题
+
+**错误消息：**
+
+```
+Error: getaddrinfo ENOTFOUND registry.npmjs.org
+```
+
+**原因：** 网络连接问题或注册表访问问题。
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '网络故障排除' }}
+# 检查网络连接
+ping registry.npmjs.org
+
+# 使用增加的超时测试
+pcu -c --timeout 60000
+
+# 减少并发请求
+pcu -c --concurrency 2
+```
+
+```ini {{ title: '配置注册表 (.npmrc)' }}
+# 使用不同注册表
+registry=https://registry.npmjs.org/
+
+# 企业网络
+registry=https://your-corporate-registry.com/
+strict-ssl=false
+```
+
+</CodeGroup>
+
+---
+
+### 身份验证错误
+
+**错误消息：**
+
+```
+Error: 401 Unauthorized - authentication required
+```
+
+**原因：** 私有注册表缺少或无效的身份验证令牌。
+
+**解决方案：**
+
+<CodeGroup>
+
+```ini {{ title: '配置身份验证 (.npmrc)' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+# 或使用传统身份验证
+//npm.private-registry.com/:username=myuser
+//npm.private-registry.com/:_password=base64password
+//npm.private-registry.com/:email=my.email@example.com
+```
+
+```bash {{ title: '设置环境变量' }}
+export NPM_TOKEN=your_token_here
+pcu -c
+```
+
+</CodeGroup>
+
+---
+
+### 配置文件错误
+
+**错误消息：**
+
+```
+Error: Invalid configuration in .pcurc.json
+```
+
+**原因：** JSON 格式错误或无效配置选项。
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '验证配置' }}
+# 检查 JSON 语法
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json', 'utf8')))"
+
+# 重新生成配置
+mv .pcurc.json .pcurc.json.backup
+pcu init --force
+```
+
+```json {{ title: '最小有效配置' }}
+{
+  "defaults": {
+    "target": "latest"
+  },
+  "output": {
+    "format": "table"
+  }
+}
+```
+
+</CodeGroup>
+
+## 调试
+
+### 启用详细日志
+
+<CodeGroup>
+
+```bash {{ title: '详细输出' }}
+# 启用详细日志
+pcu -c --verbose
+
+# 使用环境变量调试模式
+DEBUG=pcu:* pcu -c
+
+# 特定调试模块
+DEBUG=pcu:core,pcu:registry pcu -c
+```
+
+```bash {{ title: '输出到文件' }}
+# 保存调试输出
+pcu -c --verbose > debug.log 2>&1
+
+# 检查日志文件
+cat debug.log | grep -i error
+```
+
+</CodeGroup>
+
+### 工作空间验证
+
+<CodeGroup>
+
+```bash {{ title: '验证工作空间' }}
+# 检查工作空间配置
+pcu -s --validate
+
+# 获取详细工作空间信息
+pcu -s --stats --verbose
+```
+
+```bash {{ title: '手动验证' }}
+# 检查 pnpm-workspace.yaml 是否存在
+ls -la pnpm-workspace.yaml
+
+# 验证目录语法
+pnpm exec -- pnpm list --depth=0
+```
+
+</CodeGroup>
+
+## 性能问题
+
+### 网络请求缓慢
+
+**症状：** PCU 检查更新需要很长时间
+
+**解决方案：**
+
+<CodeGroup>
+
+```json {{ title: '优化配置' }}
+{
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 30000,
+    "retries": 2,
+    "cacheValidityMinutes": 120
+  }
+}
+```
+
+```bash {{ title: '缓存管理' }}
+# 如果缓存过时则清除
+rm -rf ~/.pcu/cache
+
+# 禁用缓存用于调试
+pcu -c --no-cache
+```
+
+</CodeGroup>
+
+### 高内存使用
+
+**症状：** PCU 在大型工作空间中消耗过多内存
+
+**解决方案：**
+
+<CodeGroup>
+
+```json {{ title: '内存优化' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 10
+  }
+}
+```
+
+```bash {{ title: '进程管理' }}
+# 监控内存使用
+top -p $(pgrep node)
+
+# 使用 Node.js 内存标志
+node --max-old-space-size=4096 $(which pcu) -c
+```
+
+</CodeGroup>
+
+## 环境问题
+
+### Node.js 版本兼容性
+
+**错误消息：**
+
+```
+Error: Unsupported Node.js version
+```
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '检查版本' }}
+node --version  # 应该是 >= 18.0.0
+
+# 安装兼容版本
+nvm install 20
+nvm use 20
+```
+
+```bash {{ title: '更新 Node.js' }}
+# 使用 nvm
+nvm install --lts
+nvm use --lts
+
+# 验证安装
+node --version
+npm --version
+```
+
+</CodeGroup>
+
+### pnpm 版本问题
+
+**错误消息：**
+
+```
+Error: pnpm command not found
+```
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '安装 pnpm' }}
+# 安装最新 pnpm
+npm install -g pnpm@latest
+
+# 验证安装
+pnpm --version  # 应该是 >= 8.0.0
+```
+
+```bash {{ title: '替代安装' }}
+# 使用 Corepack（推荐）
+corepack enable
+corepack prepare pnpm@latest --activate
+
+# 直接下载
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+</CodeGroup>
+
+## Windows 特定问题
+
+### 路径分隔符问题
+
+**错误消息：**
+
+```
+Error: Cannot resolve workspace path
+```
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '使用正斜杠' }}
+# 在路径中使用正斜杠
+pcu -c --workspace ./my/workspace
+
+# 或使用 PowerShell
+pwsh -c "pcu -c"
+```
+
+```json {{ title: 'Windows 配置' }}
+{
+  "workspace": {
+    "pathSeparator": "/"
+  }
+}
+```
+
+</CodeGroup>
+
+### 权限错误
+
+**错误消息：**
+
+```
+Error: EPERM: operation not permitted
+```
+
+**解决方案：**
+
+<CodeGroup>
+
+```cmd {{ title: '以管理员身份运行' }}
+# 以管理员身份运行命令提示符
+runas /user:Administrator cmd
+
+# 或以管理员身份使用 PowerShell
+Start-Process powershell -Verb RunAs
+```
+
+```bash {{ title: '修复权限' }}
+# 修复 npm 权限
+npm config set cache ~/.npm-cache
+npm config set prefix ~/npm-global
+```
+
+</CodeGroup>
+
+## 获取帮助
+
+### 诊断信息
+
+报告问题时，请包含此诊断信息：
+
+<CodeGroup>
+
+```bash {{ title: '系统信息' }}
+# PCU 版本
+pcu --version
+
+# Node.js 和 pnpm 版本
+node --version
+pnpm --version
+
+# 操作系统
+uname -a  # Linux/macOS
+systeminfo  # Windows
+```
+
+```bash {{ title: '配置信息' }}
+# 显示当前配置
+cat .pcurc.json
+
+# 工作空间验证
+pcu -s --validate --verbose
+
+# 调试输出
+DEBUG=pcu:* pcu -c --verbose
+```
+
+</CodeGroup>
+
+### 支持渠道
+
+- 🐛 **错误报告**：[GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **问题**：[GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 📖 **文档**：查看此文档获取详细指南
+- 🔧 **功能请求**：使用带增强标签的 GitHub Issues
+
+### 问题模板
+
+报告错误时，请包含：
+
+1. **PCU 版本**和**使用的命令**
+2. **错误消息**（带 `--verbose` 的完整输出）
+3. **环境**（操作系统、Node.js、pnpm 版本）
+4. **工作空间结构**（pnpm-workspace.yaml、package.json）
+5. **配置**（.pcurc.json、.npmrc 如果相关）
+6. **重现问题的步骤**
+7. **预期与实际行为**
+
+---
+
+## 高级故障排除
+
+### 复杂依赖冲突
+
+**错误场景：**
+
+```
+Error: Cannot resolve peer dependencies
+└─ react@18.2.0
+├─ react-dom@17.0.2 (peer dependency conflict)
+└─ @types/react@17.0.62 (version mismatch)
+```
+
+**症状：** 更新后出现版本冲突，应用无法启动
+
+**完整诊断过程：**
+
+<CodeGroup>
+
+```bash {{ title: '步骤1：分析冲突' }}
+# 检查当前依赖树
+pnpm ls --depth=2 | grep -E "(react|@types)"
+
+# 分析特定包的影响
+pcu analyze default react 18.3.0
+
+# 查看哪些包依赖有问题的版本
+pnpm why react-dom@17.0.2
+```
+
+```bash {{ title: '步骤2：查找根因' }}
+# 检查所有package.json中的React相关依赖
+find . -name "package.json" -exec grep -l "react" {} \;
+
+# 显示详细冲突信息
+pnpm install --dry-run --verbose
+```
+
+```bash {{ title: '步骤3：修复冲突' }}
+# 创建备份
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+
+# 统一更新React生态系统
+pcu update --include "react*,@types/react*" --target minor --interactive
+
+# 验证修复
+pnpm install
+pnpm list --depth=1 | grep react
+```
+
+</CodeGroup>
+
+### CI/CD 环境故障
+
+**错误场景：**
+
+```
+Error: EACCES permission denied, open '/home/runner/.pcu/cache'
+Exit code: 126 in GitHub Actions
+```
+
+**症状：** CI/CD中PCU运行失败，本地工作正常
+
+**解决方案：**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions修复' }}
+- name: 设置PCU权限
+  run: |
+    # 确保缓存目录权限正确
+    mkdir -p ~/.pcu/cache
+    chmod 755 ~/.pcu/cache
+
+    # 设置CI环境变量
+    export PCU_NO_COLOR=true
+    export PCU_CACHE_ENABLED=false  # 禁用缓存避免权限问题
+
+    # 运行PCU
+    pcu check --verbose
+```
+
+```bash {{ title: '诊断CI环境' }}
+# 检查环境信息
+echo "Node: $(node --version)"
+echo "PNPM: $(pnpm --version)"
+echo "PCU: $(pcu --version)"
+echo "Workspace: $(pwd)"
+echo "User: $(whoami)"
+echo "Permissions: $(ls -la ~/.pcu/ 2>/dev/null || echo 'Cache dir not found')"
+
+# 测试基本功能
+pcu workspace --validate --verbose
+```
+
+</CodeGroup>
+
+### 大型monorepo性能问题
+
+**错误场景：**
+
+```
+Error: JavaScript heap out of memory
+FATAL ERROR: Reached heap limit Allocation failed
+```
+
+**症状：** 在包含100+包的monorepo中PCU崩溃
+
+**优化方案：**
+
+<CodeGroup>
+
+```json {{ title: '性能配置优化' }}
+{
+  "advanced": {
+    "concurrency": 2,
+    "batchSize": 5,
+    "timeout": 120000,
+    "retries": 1,
+    "maxMemory": "4GB"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 104857600,
+    "maxEntries": 1000
+  }
+}
+```
+
+```bash {{ title: '内存管理策略' }}
+# 增加Node.js内存限制
+export NODE_OPTIONS="--max-old-space-size=8192"
+
+# 分批处理大型工作空间
+pcu check --catalog default --include "@company/*"
+pcu check --catalog default --include "@other/*"
+
+# 监控内存使用
+while true; do
+  ps aux | grep pcu | grep -v grep
+  sleep 2
+done &
+
+pcu check --verbose
+```
+
+</CodeGroup>
+
+### 私有注册表认证问题
+
+**错误场景：**
+
+```
+Error: 403 Forbidden - access denied to package @company/private-lib
+HTTP 403: You must be logged in to access this package
+```
+
+**症状：** 无法访问私有包，公共包工作正常
+
+**完整解决流程：**
+
+<CodeGroup>
+
+```bash {{ title: '诊断认证状态' }}
+# 检查当前认证状态
+npm whoami --registry https://npm.company.com
+
+# 测试注册表连接
+curl -I https://npm.company.com/-/whoami \
+  -H "Authorization: Bearer $NPM_TOKEN"
+
+# 验证.npmrc配置
+cat .npmrc | grep -E "(registry|authToken)"
+```
+
+```ini {{ title: '修复认证配置' }}
+# .npmrc正确配置格式
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+
+# 公共包仍使用默认注册表
+registry=https://registry.npmjs.org/
+
+# 确保环境变量设置
+# export NPM_TOKEN=your_actual_token_here
+```
+
+```bash {{ title: '验证和测试' }}
+# 重新登录私有注册表
+npm login --registry https://npm.company.com --auth-type web
+
+# 测试私有包访问
+npm view @company/private-lib --registry https://npm.company.com
+
+# 确认PCU可以访问
+pcu check --include "@company/*" --verbose
+```
+
+</CodeGroup>
+
+### 安全扫描误报处理
+
+**错误场景：**
+
+```
+🚨 发现严重安全漏洞 in lodash@4.17.20
+CVE-2021-23337: Command Injection
+实际上：项目不使用受影响的模板功能
+```
+
+**症状：** 安全扫描报告漏洞，但实际不影响项目
+
+**处理策略：**
+
+<CodeGroup>
+
+```json {{ title: '配置安全审计例外' }}
+{
+  "security": {
+    "ignoredVulnerabilities": ["CVE-2021-23337"],
+    "ignoredPackages": ["lodash@4.17.20"],
+    "customAuditConfig": {
+      "low": "ignore",
+      "moderate": "warn",
+      "high": "error",
+      "critical": "error"
+    }
+  }
+}
+```
+
+```bash {{ title: '详细漏洞分析' }}
+# 获取详细漏洞信息
+pcu security --severity all --format json > security-full.json
+
+# 分析具体漏洞影响
+npm audit --audit-level=none --json | jq '.vulnerabilities'
+
+# 查看包的实际使用情况
+pnpm why lodash
+find . -name "*.js" -o -name "*.ts" | xargs grep -l "lodash" | head -10
+```
+
+</CodeGroup>
+
+### 网络环境故障排除
+
+**错误场景：**
+
+```
+Error: connect ETIMEDOUT 104.16.21.35:443
+Error: socket hang up
+Error: Request timeout after 30000ms
+```
+
+**症状：** 企业网络环境下频繁超时，代理问题
+
+**解决方案：**
+
+<CodeGroup>
+
+```bash {{ title: '网络诊断' }}
+# 测试注册表连接
+curl -I https://registry.npmjs.org --connect-timeout 10
+
+# 检查代理设置
+echo "HTTP_PROXY: $HTTP_PROXY"
+echo "HTTPS_PROXY: $HTTPS_PROXY"
+echo "NO_PROXY: $NO_PROXY"
+
+# 测试DNS解析
+nslookup registry.npmjs.org
+dig registry.npmjs.org A +short
+```
+
+```ini {{ title: '代理配置' }}
+# .npmrc 代理配置
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+strict-ssl=false
+
+# 企业CA证书
+cafile=/etc/ssl/certs/company-ca.pem
+```
+
+```json {{ title: 'PCU网络优化' }}
+{
+  "advanced": {
+    "timeout": 120000,
+    "retries": 5,
+    "concurrency": 1,
+    "userAgent": "pcu/company-internal"
+  },
+  "proxy": {
+    "enabled": true,
+    "url": "http://proxy.company.com:8080",
+    "auth": {
+      "username": "${PROXY_USER}",
+      "password": "${PROXY_PASS}"
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 版本约束冲突
+
+**错误场景：**
+
+```
+Cannot resolve version constraints:
+- Package A requires react@^17.0.0
+- Package B requires react@^18.0.0
+- Catalog specifies react@^18.2.0
+```
+
+**症状：** 工作空间中包的版本要求冲突
+
+**解决策略：**
+
+<CodeGroup>
+
+```bash {{ title: '冲突分析' }}
+# 找出所有版本约束
+find . -name "package.json" -exec jq -r '.dependencies.react // empty' {} \; | sort | uniq -c
+
+# 分析每个包的要求
+for pkg in packages/*/package.json; do
+  echo "=== $pkg ==="
+  jq '.dependencies.react // empty' "$pkg"
+done
+```
+
+```yaml {{ title: '多目录策略' }}
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+
+catalog:
+  # 默认最新版本
+  react: ^18.2.0
+  react-dom: ^18.2.0
+
+catalogs:
+  # 兼容旧版本的包
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+```
+
+```bash {{ title: '渐进式升级' }}
+# 1. 识别需要保持旧版本的包
+pcu analyze default react 18.2.0
+
+# 2. 将这些包移到兼容目录
+# 在package.json中：
+# "react": "catalog:react17"
+
+# 3. 逐步升级
+pcu update --catalog react17 --target minor
+```
+
+</CodeGroup>
+
+## 恢复程序
+
+### 更新失败回滚
+
+当更新导致问题时的完整恢复流程：
+
+<CodeGroup>
+
+```bash {{ title: '自动回滚' }}
+# 如果启用了备份（推荐）
+if [ -f "pnpm-workspace.yaml.backup" ]; then
+  echo "发现备份，开始回滚..."
+
+  # 恢复工作空间配置
+  cp pnpm-workspace.yaml.backup pnpm-workspace.yaml
+
+  # 清理并重新安装
+  rm -rf node_modules packages/*/node_modules
+  pnpm install
+
+  # 验证回滚
+  pcu workspace --validate
+  echo "✅ 回滚完成"
+else
+  echo "❌ 未找到备份文件"
+fi
+```
+
+```bash {{ title: '手动恢复' }}
+# 使用Git恢复（如果在版本控制中）
+git status
+git restore pnpm-workspace.yaml
+git restore packages/*/package.json
+
+# 清理锁定文件
+rm pnpm-lock.yaml
+pnpm install
+
+# 验证恢复
+pnpm run test
+```
+
+</CodeGroup>
+
+### 损坏缓存修复
+
+当PCU缓存损坏导致问题：
+
+<CodeGroup>
+
+```bash {{ title: '完全缓存重置' }}
+# 停止所有PCU进程
+pkill -f pcu
+
+# 清除所有缓存
+rm -rf ~/.pcu/cache
+rm -rf ~/.npm/_cacache
+rm -rf ~/.pnpm-store
+
+# 重新初始化
+pcu workspace --validate
+pcu check --verbose
+```
+
+```bash {{ title: '选择性缓存清理' }}
+# 仅清除特定类型的缓存
+rm -rf ~/.pcu/cache/registry  # NPM注册表缓存
+rm -rf ~/.pcu/cache/workspace  # 工作空间缓存
+rm -rf ~/.pcu/cache/security   # 安全扫描缓存
+
+# 强制重新检查
+PCU_CACHE_ENABLED=false pcu check
+```
+
+</CodeGroup>
+
+### 工作空间损坏修复
+
+当工作空间配置损坏：
+
+<CodeGroup>
+
+```bash {{ title: '配置验证和修复' }}
+# 备份当前配置
+cp pnpm-workspace.yaml pnpm-workspace.yaml.broken
+cp .pcurc.json .pcurc.json.broken 2>/dev/null || true
+
+# 重新生成配置
+pcu init --force
+
+# 手动合并必要的自定义配置
+echo "请检查并合并以下自定义配置："
+echo "=== 旧的工作空间配置 ==="
+cat pnpm-workspace.yaml.broken
+echo "=== 新的工作空间配置 ==="
+cat pnpm-workspace.yaml
+```
+
+```bash {{ title: '包结构修复' }}
+# 验证所有包的结构
+for pkg in packages/*/; do
+  if [ ! -f "$pkg/package.json" ]; then
+    echo "❌ 缺少 package.json: $pkg"
+  else
+    echo "✅ 检查通过: $pkg"
+    # 验证JSON格式
+    node -e "JSON.parse(require('fs').readFileSync('$pkg/package.json'))"
+  fi
+done
+
+# 重新链接工作空间
+pnpm install
+```
+
+</CodeGroup>
+
+## 日志分析和监控
+
+### 实时问题诊断
+
+<CodeGroup>
+
+```bash {{ title: '实时日志监控' }}
+# 启动详细日志模式
+DEBUG=pcu:*,pnpm:* pcu check --verbose 2>&1 | tee pcu-debug.log
+
+# 在另一个终端监控日志
+tail -f pcu-debug.log | grep -E "(ERROR|WARN|TIMEOUT)"
+
+# 分析网络请求
+DEBUG=pcu:registry pcu check 2>&1 | grep -E "(request|response)"
+```
+
+```bash {{ title: '性能监控' }}
+# 监控PCU进程性能
+#!/bin/bash
+echo "时间,CPU%,内存MB,网络连接" > pcu-monitor.csv
+
+while pgrep -x pcu > /dev/null; do
+  PID=$(pgrep -x pcu)
+  CPU=$(ps -p $PID -o pcpu --no-headers)
+  MEM=$(ps -p $PID -o rss --no-headers)
+  MEM_MB=$((MEM / 1024))
+  CONN=$(netstat -an | grep :443 | wc -l)
+
+  echo "$(date '+%H:%M:%S'),$CPU,$MEM_MB,$CONN" >> pcu-monitor.csv
+  sleep 1
+done
+```
+
+</CodeGroup>
+
+### 问题模式识别
+
+<CodeGroup>
+
+```bash {{ title: '常见错误模式搜索' }}
+# 分析日志中的错误模式
+grep -E "(ENOTFOUND|ETIMEDOUT|ECONNRESET)" pcu-debug.log | wc -l
+grep -E "(403|404|500)" pcu-debug.log | sort | uniq -c
+grep -E "memory.*exceeded" pcu-debug.log
+
+# 生成错误统计报告
+echo "=== PCU 错误统计 ==="
+echo "网络错误: $(grep -c "ENET\|TIMEOUT" pcu-debug.log)"
+echo "权限错误: $(grep -c "403\|401\|EACCES" pcu-debug.log)"
+echo "内存错误: $(grep -c "memory\|heap" pcu-debug.log)"
+echo "配置错误: $(grep -c "Invalid.*config" pcu-debug.log)"
+```
+
+</CodeGroup>
+
+这些高级故障排除指南应该能帮助您解决PCU使用中遇到的复杂问题。如果问题仍然存在，请按照"获取帮助"部分的指导收集诊断信息并寻求支持。

@@ -4,6 +4,8 @@ A powerful CLI tool to check and update pnpm workspace catalog dependencies,
 inspired by
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
+**📖 Full Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
+
 **📖 Documentation Languages**: [English](README.md) | [中文](README.zh-CN.md) |
 [日本語](README.ja.md)
 
@@ -25,8 +27,8 @@ inspired by
   updates
 - ⚡ **High Performance**: Parallel API queries and intelligent caching
 - 🛡️ **Security Aware**: Built-in security vulnerability scanning
-- 🎨 **Beautiful UI**: Enhanced progress bars with 6 visual styles, color
-  themes, and interactive prompts
+- 🎨 **Beautiful UI**: Enhanced progress bars, color themes, and interactive
+  prompts
 - 🌈 **Progress Bar Styles**: Choose from gradient, fancy, minimal, rainbow,
   neon, or blocks styles
 - 🎭 **Customizable Themes**: Multiple color themes (default, modern, minimal,
@@ -35,450 +37,48 @@ inspired by
   time estimates
 - 🔄 **Smart Version Check**: Automatic update notifications with --version
   command
-- 🔧 **Configurable**: Flexible configuration options and update strategies
 - 🔐 **Private Registry Support**: Automatically reads `.npmrc` and `.pnpmrc`
-  configurations for scoped registries and authentication
+  configurations
 - 📦 **Multi-Registry**: Supports different registries for different package
-  scopes (e.g., GitHub Packages, private npm registries)
+  scopes
+- 🔧 **Configurable**: Flexible configuration options and update strategies
+
+**➡️ [See all features and details](https://pcu-cli.dev/en)**
 
 ## 🚀 Quick Start
-
-```bash
-# Initialize a new PNPM workspace with PCU configuration
-pcu init
-
-# Or check for updates in existing workspace
-pcu -c
-```
-
-![Image](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
 ### Installation
 
 ```bash
-# Global installation
-npm install -g pnpm-catalog-updates
-# or
+# Global installation (recommended)
 npm install -g pcu
 
 # Or use with npx
 npx pnpm-catalog-updates
-# or
-npx pcu
-
-# Or use the short alias
-pcu
 ```
 
 ### Basic Usage
 
 ```bash
-# Initialize PNPM workspace and PCU configuration
+# Initialize a new PNPM workspace with PCU configuration
 pcu init
 
-# Quick check for updates
+# Check for updates in existing workspace
 pcu -c
 
-# Quick update (interactive)
+# Interactive update mode
 pcu -i
-
-# Quick update (dry run)
-pcu -u -d
-
-# Get workspace info
-pcu -s
 ```
 
-### Common Commands
+![Image](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
-| Command    | Description                            | Example                   |
-| ---------- | -------------------------------------- | ------------------------- |
-| `pcu init` | Initialize workspace and configuration | `pcu init --verbose`      |
-| `pcu -c`   | Check for updates                      | `pcu -c --catalog node18` |
-| `pcu -i`   | Update dependencies (interactive)      | `pcu -i -b`               |
-| `pcu -a`   | Analyze impact                         | `pcu -a default react`    |
-| `pcu -s`   | Workspace info                         | `pcu -s --validate`       |
-| `pcu -t`   | Configure color theme                  | `pcu -t --set modern`     |
-| `pcu -h`   | Show help                              | `pcu -h update`           |
+**➡️ [Complete Installation & Usage Guide](https://pcu-cli.dev/en/quickstart)**
 
-## 📖 Complete Usage Guide
+## 📖 Documentation
 
-### All Commands & Shortcuts
-
-| Full Command    | Shorthand | Description                                     |
-| --------------- | --------- | ----------------------------------------------- |
-| `pcu init`      | `pcu i`   | Initialize PNPM workspace and PCU configuration |
-| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies         |
-| `pcu update`    | `pcu -u`  | Update catalog dependencies                     |
-| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates            |
-| `pcu workspace` | `pcu -s`  | Show workspace information and validation       |
-| `pcu theme`     | `pcu -t`  | Configure color themes and UI settings          |
-| `pcu help`      | `pcu -h`  | Display help information                        |
-
-### Commands
-
-#### `pcu init` / `pcu i`
-
-Initialize a complete PNPM workspace environment with PCU configuration.
-
-```bash
-pcu init [options]
-pcu i [options]
-
-Options:
-  --force                  Overwrite existing configuration file
-  --create-workspace       Create PNPM workspace structure if missing (default: true)
-  --no-create-workspace    Skip creating PNPM workspace structure
-  -w, --workspace <path>   Workspace directory (default: current directory)
-  -v, --verbose            Show detailed information
-  --no-color               Disable colored output
-
-Description:
-  Creates a complete PNPM workspace environment with:
-  - Basic .pcurc.json configuration file with sensible defaults
-  - package.json for workspace root (if missing)
-  - pnpm-workspace.yaml configuration (if missing)
-  - packages/ directory structure (if missing)
-
-  The configuration includes package update rules for React, TypeScript,
-  ESLint, and other common dependencies with appropriate security settings.
-
-Examples:
-  pcu init                           # Initialize complete workspace in current directory
-  pcu init --workspace ./my-project  # Initialize in specific directory
-  pcu init --force                   # Overwrite existing configuration
-  pcu init --no-create-workspace     # Only create .pcurc.json configuration
-
-Files Created:
-  .pcurc.json           PCU configuration with package rules and settings
-  package.json          Workspace root package.json (if missing)
-  pnpm-workspace.yaml   PNPM workspace configuration (if missing)
-  packages/             Directory for workspace packages (if missing)
-```
-
-#### `pcu check` / `pcu -c` / `pcu chk`
-
-Check for outdated dependencies in your pnpm workspace catalogs.
-
-```bash
-pcu check [options]
-pcu -c [options]
-pcu chk [options]
-
-Options:
-  --catalog <name>      Check specific catalog only
-  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
-                        - table: Rich table format with colors and details
-                        - minimal: Simple npm-check-updates style (package → version)
-                        - json: JSON output for programmatic use
-                        - yaml: YAML output for configuration files
-  -t, --target <type>   Update target: latest, greatest, minor, patch, newest (default: latest)
-  --prerelease          Include prerelease versions
-  --include <pattern>   Include packages matching pattern
-  --exclude <pattern>   Exclude packages matching pattern
-  -w, --workspace <path> Workspace directory (default: current directory)
-  -v, --verbose         Show detailed information
-```
-
-#### `pcu update` / `pcu -u`
-
-Update catalog dependencies to newer versions.
-
-```bash
-pcu update [options]
-pcu -u [options]
-pcu u [options]
-
-Options:
-  -i, --interactive     Interactive mode to choose updates
-  -d, --dry-run         Preview changes without writing files
-  -t, --target <type>   Update target: latest, greatest, minor, patch, newest (default: latest)
-  --catalog <name>      Update specific catalog only
-  --include <pattern>   Include packages matching pattern
-  --exclude <pattern>   Exclude packages matching pattern
-  --force               Force updates even if risky
-  --prerelease          Include prerelease versions
-  -b, --create-backup   Create backup files before updating
-  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
-                        - table: Rich table format with colors and details
-                        - minimal: Simple npm-check-updates style (package → version)
-                        - json: JSON output for programmatic use
-                        - yaml: YAML output for configuration files
-  -w, --workspace <path> Workspace directory (default: current directory)
-  -v, --verbose         Show detailed information
-```
-
-#### `pcu analyze` / `pcu -a`
-
-Analyze the impact of updating a specific dependency.
-
-```bash
-pcu analyze <catalog> <package> [version]
-pcu -a <catalog> <package> [version]
-pcu a <catalog> <package> [version]
-
-Arguments:
-  catalog               Catalog name (e.g., 'default', 'react17')
-  package               Package name (e.g., 'react', '@types/node')
-  version               New version (optional, defaults to latest)
-
-Options:
-  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
-  -w, --workspace <path> Workspace directory (default: current directory)
-  -v, --verbose         Show detailed information
-
-Examples:
-  pcu analyze default react
-  pcu a default react 18.3.0
-  pcu -a react17 @types/react
-```
-
-#### `pcu workspace` / `pcu -s`
-
-Show workspace information and validation.
-
-```bash
-pcu workspace [options]
-pcu -s [options]
-pcu w [options]
-
-Options:
-  --validate            Validate workspace configuration
-  -s, --stats           Show workspace statistics
-  -f, --format <type>   Output format: table, json, yaml, minimal (default: table)
-  -w, --workspace <path> Workspace directory (default: current directory)
-  -v, --verbose         Show detailed information
-
-Examples:
-  pcu workspace           # Show basic workspace info
-  pcu -s --stats         # Show detailed statistics
-  pcu w --validate       # Validate workspace configuration
-```
-
-#### `pcu help` / `pcu -h`
-
-Display help information.
-
-```bash
-pcu help [command]
-pcu -h [command]
-
-Examples:
-  pcu help              # Show general help
-  pcu help update       # Show help for update command
-  pcu -h check          # Show help for check command
-```
-
-#### `pcu theme` / `pcu -t`
-
-Configure color themes and UI appearance.
-
-```bash
-pcu theme [options]
-pcu -t [options]
-
-Options:
-  -s, --set <theme>     Set color theme: default, modern, minimal, neon
-  -l, --list            List all available themes
-  -i, --interactive     Interactive theme configuration wizard
-
-Examples:
-  pcu theme             # Show current theme info
-  pcu -t --list         # List all available themes
-  pcu theme --set modern # Set to modern theme
-  pcu -t --interactive  # Launch theme configuration wizard
-```
-
-**Available Themes:**
-
-- `default` - Balanced colors for general use
-- `modern` - Vibrant colors for development environments
-- `minimal` - Clean and simple for production environments
-- `neon` - High contrast colors for presentations
-
-### Global Options
-
-These options work with all commands:
-
-```bash
--w, --workspace <path>   Workspace directory path
--v, --verbose            Enable verbose logging
---no-color               Disable colored output
--V, --version            Output the version number
--h, --help               Display help for command
-```
-
-### Common Usage Patterns
-
-```bash
-# Initialize new workspace
-pcu init                          # Create complete workspace structure
-pcu init --no-create-workspace    # Only create .pcurc.json configuration
-
-# Quick check for updates
-pcu -c
-
-# Check with simple output (like npm-check-updates)
-pcu -c --format minimal
-
-# Interactive update with backup
-pcu -i -b
-
-# Update only minor and patch versions
-pcu -u --target minor
-
-# Check specific catalog
-pcu -c --catalog node18
-
-# Update excluding certain packages
-pcu -u --exclude "eslint*"
-
-# Dry run with verbose output
-pcu -u -d -v
-
-# Update with simple output format
-pcu -u --format minimal
-
-# Analyze impact before updating
-pcu -a default react
-pcu -u --catalog default --include react
-
-# Validate workspace configuration
-pcu -s --validate
-
-# Theme customization
-pcu -t --list                # List available themes
-pcu -t --set modern         # Set modern theme
-pcu -t --interactive        # Interactive theme setup
-```
-
-### Configuration
-
-Create a `.pcurc.json` file (PCU configuration file) in your project root:
-
-```json
-{
-  "defaults": {
-    "target": "latest",
-    "timeout": 30000,
-    "parallel": 5
-  },
-  "workspace": {
-    "autoDiscover": true,
-    "catalogMode": "strict"
-  },
-  "update": {
-    "interactive": true,
-    "dryRunFirst": true,
-    "skipPrereleases": false
-  },
-  "output": {
-    "format": "table",
-    "color": true,
-    "verbose": false
-  },
-  "ui": {
-    "theme": "default",
-    "progressBars": true,
-    "animations": true
-  }
-}
-```
-
-#### Package Filtering Configuration
-
-You can also configure package-specific update rules by creating a `.pcurc.json`
-(PCU configuration file) with filtering options:
-
-```json
-{
-  // Exclude packages you never want to update
-  "exclude": ["typescript", "@types/node", "react", "react-dom"],
-
-  // Only update specific packages (optional - if not specified, all packages are considered)
-  "include": ["lodash*", "chalk", "commander"],
-
-  // Package-specific update rules
-  "packageRules": [
-    {
-      "patterns": ["react", "react-dom"],
-      "target": "minor", // Only minor updates for React
-      "requireConfirmation": true, // Always ask before updating
-      "relatedPackages": ["@types/react", "@types/react-dom"] // Related packages automatically follow same strategy
-    },
-    {
-      "patterns": ["vue"],
-      "target": "minor",
-      "relatedPackages": ["@vue/compiler-sfc", "@vue/runtime-core"] // Vue ecosystem packages
-    },
-    {
-      "patterns": ["@types/node"],
-      "target": "minor", // Conservative updates for Node.js type definitions
-      "requireConfirmation": true
-    },
-    {
-      "patterns": ["@types/*"],
-      "target": "latest", // Other type definitions can update more freely
-      "autoUpdate": true
-    },
-    {
-      "patterns": ["eslint*", "prettier"],
-      "target": "minor", // Minor updates for dev tools
-      "groupUpdate": true // Update related packages together
-    }
-  ],
-
-  // Security configuration
-  "security": {
-    "autoFixVulnerabilities": true, // Automatically check and fix security vulnerabilities
-    "allowMajorForSecurity": true, // Allow major version upgrades for security fixes
-    "notifyOnSecurityUpdate": true // Show notifications on security updates
-  },
-
-  // Advanced configuration
-  "advanced": {
-    "concurrency": 5, // Number of concurrent network requests (default: 5)
-    "timeout": 30000, // Network request timeout in ms (default: 30000)
-    "retries": 3, // Number of retries on failure (default: 3)
-    "cacheValidityMinutes": 60, // Cache validity period in minutes (default: 60, set to 0 to disable caching)
-    "checkForUpdates": true // Check for tool updates on startup (default: true)
-  },
-
-  // Monorepo configuration
-  "monorepo": {
-    "syncVersions": ["react", "react-dom"], // Packages that need version sync across multiple catalogs
-    "catalogPriority": ["default", "latest", "react17"] // Catalog priority order
-  },
-
-  // Override defaults
-  "defaults": {
-    "target": "minor",
-    "createBackup": true
-  }
-}
-```
-
-**Related Packages Feature**: `relatedPackages` allows related packages to
-automatically follow the same version strategy
-
-- When you configure `react` with `target: "minor"`, `@types/react` will
-  automatically apply the same strategy
-- Avoid manually duplicating update rules for related packages
-- Ensures version consistency across ecosystem packages
-
-**Configuration priority**: relatedPackages > direct pattern matching > CLI
-options > default configuration
-
-**Priority Examples**:
-
-```bash
-@types/react → matches react rule's relatedPackages → uses "minor" strategy
-@types/node → matches @types/node specific rule → uses "minor" strategy
-@types/lodash → matches @types/* general rule → uses "latest" strategy
-```
-
-**Pattern matching**: Supports glob patterns like `react*`, `@types/*`,
-`eslint*`
+**➡️ [Complete Command Reference](https://pcu-cli.dev/en/command-reference)**  
+**➡️ [Configuration Guide](https://pcu-cli.dev/en/configuration)**  
+**➡️ [Examples & Use Cases](https://pcu-cli.dev/en/examples)**
 
 ## 📁 Project Structure
 
@@ -487,39 +87,12 @@ This project is organized as a pnpm monorepo with clean architecture:
 ```text
 ├── apps/
 │   └── cli/                    # CLI application
-│       ├── src/                # CLI source code
-│       │   ├── cli/            # CLI interface layer
-│       │   │   ├── commands/   # Command handlers
-│       │   │   ├── formatters/ # Output formatters & progress bars
-│       │   │   ├── interactive/# Interactive prompts & UI
-│       │   │   ├── themes/     # Color themes & styling
-│       │   │   └── validators/ # Input validation
-│       │   └── index.ts        # CLI entry point
-│       ├── bin/                # Executable binaries
-│       └── scripts/            # Build scripts
-├── packages/
-│   ├── core/                   # Core business logic
-│   │   ├── src/                # Core source code
-│   │   │   ├── application/    # Application services
-│   │   │   ├── domain/         # Domain model (DDD)
-│   │   │   │   ├── entities/   # Domain entities
-│   │   │   │   ├── value-objects/ # Value objects
-│   │   │   │   └── repositories/  # Repository interfaces
-│   │   │   └── infrastructure/ # Infrastructure layer
-│   │   │       ├── repositories/ # Repository implementations
-│   │   │       ├── external-services/ # External API clients
-│   │   │       └── file-system/ # File system operations
-│   │   └── dist/               # Built core package
-│   └── utils/                  # Shared utilities
-│       ├── src/                # Utils source code
-│       │   ├── config/         # Configuration management
-│       │   ├── error-handling/ # Error handling utilities
-│       │   ├── logger/         # Logging utilities
-│       │   ├── types/          # Type definitions
-│       │   └── utils/          # Common utilities
-│       └── dist/               # Built utils package
-└── scripts/                    # Build and deployment scripts
+└── packages/
+    ├── core/                   # Core business logic
+    └── utils/                  # Shared utilities
 ```
+
+**➡️ [Detailed Architecture Guide](https://pcu-cli.dev/en/development)**
 
 ## 🧪 Development
 
@@ -538,65 +111,14 @@ cd pnpm-catalog-updates
 # Install dependencies
 pnpm install
 
-# Build the project
+# Build and run
 pnpm build
-
-# Run tests
-pnpm test
-
-# Run in development mode
 pnpm dev --help
 ```
 
-### Scripts
+**➡️ [Complete Development Guide](https://pcu-cli.dev/en/development)**
 
-```bash
-# Development
-pnpm dev                    # Run in development mode
-pnpm build                  # Build the project
-pnpm build:watch           # Build in watch mode
-
-# Testing
-pnpm test                   # Run unit tests
-pnpm test:watch            # Run tests in watch mode
-pnpm test:coverage         # Run tests with coverage
-pnpm test:e2e              # Run E2E tests
-
-# Code Quality
-pnpm lint                   # Lint code
-pnpm lint:fix              # Fix linting issues
-pnpm format                 # Format code
-pnpm typecheck             # Type checking
-
-# Utilities
-pnpm clean                  # Clean build artifacts
-```
-
-### Testing
-
-The project uses a comprehensive testing strategy:
-
-- **Unit Tests**: Test individual components in isolation
-- **Integration Tests**: Test component interactions
-- **E2E Tests**: Test the complete CLI workflow
-
-```bash
-# Run all tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Run E2E tests
-pnpm test:e2e
-
-# Run tests in watch mode
-pnpm test:watch
-```
-
-## 📊 Examples
-
-### Basic Workspace
+## 📊 Configuration Example
 
 ```yaml
 # pnpm-workspace.yaml
@@ -605,75 +127,36 @@ packages:
 
 catalog:
   react: ^18.2.0
-  lodash: ^4.17.21
-  typescript: ^5.0.0
-```
-
-### Multi-Catalog Setup
-
-```yaml
-# pnpm-workspace.yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-
-catalog:
-  # Default catalog
-  react: ^18.2.0
   typescript: ^5.0.0
 
 catalogs:
-  # Legacy versions
   react17:
     react: ^17.0.2
-    @types/react: ^17.0.62
-
-  # Latest versions
-  latest:
-    react: ^18.2.0
-    typescript: ^5.2.0
 ```
-
-### Usage in package.json
 
 ```json
+// .pcurc.json
 {
-  "dependencies": {
-    "react": "catalog:",
-    "lodash": "catalog:",
-    "legacy-lib": "catalog:react17"
-  }
+  "defaults": {
+    "target": "latest"
+  },
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor"
+    }
+  ]
 }
 ```
+
+**➡️ [Configuration Examples & Templates](https://pcu-cli.dev/en/examples)**
 
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
 for details.
 
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Add tests for your changes
-5. Ensure all tests pass: `pnpm test`
-6. Lint your code: `pnpm lint:fix`
-7. Commit your changes: `git commit -m 'feat: add amazing feature'`
-8. Push to the branch: `git push origin feature/amazing-feature`
-9. Open a Pull Request
-
-### Commit Message Convention
-
-We use [Conventional Commits](https://conventionalcommits.org/):
-
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation only changes
-- `style`: Changes that do not affect the meaning of the code
-- `refactor`: A code change that neither fixes a bug nor adds a feature
-- `test`: Adding missing tests or correcting existing tests
-- `chore`: Changes to the build process or auxiliary tools
+**➡️ [Development Setup & Guidelines](https://pcu-cli.dev/en/development)**
 
 ## 📄 License
 
@@ -689,7 +172,7 @@ for details.
 
 ## 📞 Support
 
-- 📖 [Documentation](https://github.com/houko/pnpm-catalog-updates#readme)
+- 📖 [Full Documentation](https://pcu-cli.dev/en)
 - 🐛 [Issue Tracker](https://github.com/houko/pnpm-catalog-updates/issues)
 - 💬 [Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
 

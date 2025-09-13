@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react'
 import { createStore, useStore, type StoreApi } from 'zustand'
 
-import { remToPx } from '@/lib/remToPx'
+import { remToPx } from '@/utils/remToPx'
 
 export interface Section {
   id: string

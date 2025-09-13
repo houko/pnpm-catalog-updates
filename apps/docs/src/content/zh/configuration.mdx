@@ -1,0 +1,1035 @@
+export const metadata = {
+  title: '配置',
+  description:
+    '学习如何使用 .pcurc.json 设置、包规则和高级选项为您的工作流配置 pnpm-catalog-updates。',
+};
+
+# 配置
+
+配置 PCU 以匹配您的工作流和项目需求。了解配置文件、包特定规则和高级设置。{{ className: 'lead' }}
+
+## 配置文件类型
+
+PCU 支持多种配置文件格式和位置以适应不同的开发工作流。
+
+### 支持的配置文件
+
+PCU 按以下顺序搜索配置文件（找到第一个生效）：
+
+<Properties>
+  <Property name=".pcurc.json" type="JSON">
+    项目根目录中的主要 JSON 配置文件
+  </Property>
+  <Property name=".pcurc.js" type="JavaScript">
+    支持动态配置的 JavaScript 配置文件
+  </Property>
+  <Property name="pcu.config.js" type="JavaScript">
+    替代的 JavaScript 配置文件名
+  </Property>
+  <Property name="~/.pcurc.json" type="JSON">
+    主目录中的全局用户配置
+  </Property>
+  <Property name="package.json" type="JSON">
+    package.json 中的 "pcu" 键下的配置
+  </Property>
+</Properties>
+
+### JavaScript 配置支持
+
+JavaScript 配置文件支持基于环境、工作空间结构或其他运行时条件的动态配置：
+
+<CodeGroup>
+
+```javascript {{ title: '.pcurc.js' }}
+module.exports = {
+  defaults: {
+    target: process.env.NODE_ENV === 'production' ? 'minor' : 'latest',
+    createBackup: true,
+  },
+  workspace: {
+    autoDiscover: true,
+    catalogMode: 'strict',
+  },
+  // 基于工作空间结构的动态包规则
+  packageRules: [
+    {
+      patterns: ['react*'],
+      target: 'minor',
+      requireConfirmation: process.env.CI !== 'true',
+    },
+  ],
+  // 环境特定配置
+  ...(process.env.NODE_ENV === 'development' && {
+    ui: {
+      theme: 'modern',
+      progressBarStyle: 'fancy',
+    },
+  }),
+};
+```
+
+```javascript {{ title: '带函数的 pcu.config.js' }}
+const fs = require('fs');
+const path = require('path');
+
+function getWorkspacePackages() {
+  const workspaceFile = path.join(__dirname, 'pnpm-workspace.yaml');
+  if (fs.existsSync(workspaceFile)) {
+    // 动态解析工作空间包
+    return ['packages/*', 'apps/*', 'tools/*'];
+  }
+  return ['packages/*'];
+}
+
+module.exports = {
+  workspace: {
+    packages: getWorkspacePackages(),
+    catalogMode: 'flexible',
+  },
+  packageRules: [
+    // 基于现有包生成规则
+    ...fs.readdirSync('./packages').map((pkg) => ({
+      patterns: [`@myorg/${pkg}`],
+      target: 'minor',
+    })),
+  ],
+};
+```
+
+</CodeGroup>
+
+### Package.json 配置
+
+对于简单项目，配置可以嵌入到 package.json 中：
+
+```json
+{
+  "name": "my-project",
+  "pcu": {
+    "defaults": {
+      "target": "minor",
+      "createBackup": true
+    },
+    "packageRules": [
+      {
+        "patterns": ["@types/*"],
+        "target": "latest",
+        "autoUpdate": true
+      }
+    ]
+  }
+}
+```
+
+### 配置验证
+
+PCU 自动验证配置文件并为常见问题提供详细的错误消息：
+
+#### 验证功能
+
+- **JSON 模式验证**：确保所有配置属性有效
+- **模式验证**：验证通配符模式和包名称格式
+- **类型检查**：验证所有配置值的正确数据类型
+- **冲突检测**：识别冲突的规则和配置选项
+- **建议系统**：为修复配置错误提供有用建议
+
+#### 验证示例
+
+```bash
+# 验证当前配置
+pcu workspace --validate
+
+# 常见验证错误及建议：
+# ❌ packageRules[0] 中无效的目标 "lastest"
+#    💡 您是否想要 "latest"？
+#
+# ❌ 模式 "react+" 是无效的通配符语法
+#    💡 使用 "react*" 匹配以 "react" 开头的包
+#
+# ⚠️  包 "react" 存在冲突规则
+#    📝 索引 0 和 2 的规则都匹配此包
+```
+
+<CodeGroup>
+
+```json {{ title: '基本配置' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "parallel": 5
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+```json {{ title: '高级配置' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "update": {
+    "interactive": true,
+    "dryRunFirst": true,
+    "skipPrereleases": false
+  },
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60
+  }
+}
+```
+
+</CodeGroup>
+
+## 包过滤
+
+使用包含/排除模式和包特定规则控制要更新的包。
+
+<CodeGroup>
+
+```json {{ title: '简单过滤' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: '包规则' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 包规则属性
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    匹配包名称的通配符模式
+  </Property>
+  <Property name="target" type="enum">
+    更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    更新这些包前总是询问
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    无需确认自动更新
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    遵循相同更新策略的包
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    将相关包一起更新
+  </Property>
+</Properties>
+
+## 安全配置
+
+配置安全漏洞扫描和自动修复。
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    自动检查和修复安全漏洞
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    允许安全修复的主版本升级
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    安全更新时显示通知
+  </Property>
+</Properties>
+
+## 高级设置
+
+使用高级配置选项微调性能和行为。
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    并发网络请求数量
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    网络请求超时时间（毫秒）
+  </Property>
+  <Property name="retries" type="number" default="3">
+    失败时重试次数
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    缓存有效期（设为 0 禁用缓存）
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    启动时自动检查PCU工具更新。在CI环境中会跳过检查。有新版本时会显示更新通知和安装说明。
+  </Property>
+</Properties>
+
+## UI 配置
+
+自定义视觉外观和用户界面设置。
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### 可用主题
+
+- `default` - 通用使用的平衡颜色
+- `modern` - 开发环境的活泼颜色
+- `minimal` - 生产环境的简洁风格
+- `neon` - 演示的高对比度颜色
+
+### 进度条样式
+
+PCU 支持 6 种不同的进度条样式，为操作期间提供增强的视觉反馈：
+
+- `default` - 基本样式的标准进度条
+- `gradient` - 现代外观的渐变色进度条
+- `fancy` - 带装饰元素的增强进度条
+- `minimal` - 简洁的进度指示器
+- `rainbow` - 活泼显示的多彩进度条
+- `neon` - 匹配霓虹主题的高对比度进度条
+
+**配置示例：**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**命令行使用：**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## 配置优先级
+
+配置设置按以下优先级顺序应用：
+
+1. **命令行标志**（最高优先级）
+2. `.pcurc.json` 中的**包特定规则**
+3. `.pcurc.json` 中的**常规设置**
+4. **默认值**（最低优先级）
+
+<Note>相关包自动继承其父包规则的设置，确保生态系统包间的版本一致性。</Note>
+
+## 示例
+
+### React 生态系统
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScript 项目
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### 企业设置
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+---
+
+## 环境变量
+
+所有 CLI 选项都可以通过环境变量进行配置，以适应自动化和 CI/CD 环境：
+
+<CodeGroup>
+
+```bash {{ title: '全局环境变量' }}
+# 工作空间设置
+export PCU_WORKSPACE="/path/to/workspace"
+export PCU_VERBOSE=true
+export PCU_NO_COLOR=true
+
+# 注册表配置
+export PCU_REGISTRY="https://npm.company.com/"
+export PCU_TIMEOUT=30000
+
+# 配置文件
+export PCU_CONFIG="/path/to/.pcurc.json"
+```
+
+```bash {{ title: '命令特定变量' }}
+# 检查/更新行为
+export PCU_OUTPUT_FORMAT=json
+export PCU_UPDATE_TARGET=minor
+export PCU_CATALOG=default
+
+# 更新选项
+export PCU_INTERACTIVE=true
+export PCU_DRY_RUN=true
+export PCU_CREATE_BACKUP=true
+export PCU_FORCE=false
+
+# 过滤
+export PCU_INCLUDE="react*,@types/*"
+export PCU_EXCLUDE="eslint*"
+export PCU_PRERELEASE=false
+```
+
+</CodeGroup>
+
+### 环境变量优先级
+
+配置源按以下顺序加载（后者覆盖前者）：
+
+1. **内置默认值**（最低优先级）
+2. **全局配置**（`~/.pcurc.json`）
+3. **项目配置**（`.pcurc.json`）
+4. **环境变量**（`PCU_*`）
+5. **命令行标志**（最高优先级）
+
+---
+
+## 注册表配置
+
+PCU 自动读取 NPM 和 PNPM 配置文件的注册表设置：
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc / .pnpmrc' }}
+# 默认注册表
+registry=https://registry.npmjs.org/
+
+# 作用域注册表
+@mycompany:registry=https://npm.mycompany.com/
+@types:registry=https://registry.npmjs.org/
+
+# 认证令牌
+//npm.mycompany.com/:_authToken=${NPM_TOKEN}
+//registry.npmjs.org/:_authToken=${NPM_PUBLIC_TOKEN}
+
+# 传统认证（如果需要）
+//npm.mycompany.com/:username=myuser
+//npm.mycompany.com/:_password=base64encodedpassword
+//npm.mycompany.com/:email=user@company.com
+
+# SSL 和代理设置
+strict-ssl=true
+ca=/path/to/ca.pem
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+```
+
+```json {{ title: 'PCU 注册表覆盖' }}
+{
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "scoped": {
+      "@mycompany": "https://npm.mycompany.com/",
+      "@types": "https://registry.npmjs.org/"
+    },
+    "auth": {
+      "npm.mycompany.com": {
+        "token": "${NPM_TOKEN}",
+        "type": "Bearer"
+      }
+    },
+    "timeout": 30000,
+    "retries": 3,
+    "userAgent": "pcu-custom/1.0.0"
+  }
+}
+```
+
+</CodeGroup>
+
+### 注册表优先级
+
+1. **CLI `--registry` 标志**（最高优先级）
+2. **PCU 配置**（`.pcurc.json` 注册表部分）
+3. **项目 `.npmrc/.pnpmrc`**
+4. **全局 `.npmrc/.pnpmrc`**
+5. **默认 NPM 注册表**（最低优先级）
+
+---
+
+## 增强缓存配置
+
+PCU 包含先进的缓存系统以提高性能：
+
+<CodeGroup>
+
+```json {{ title: '缓存配置' }}
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "strategy": "lru"
+  }
+}
+```
+
+```bash {{ title: '缓存管理' }}
+# 清除所有缓存
+rm -rf ~/.pcu/cache
+
+# 在详细模式下显示缓存信息
+pcu -c --verbose
+
+# 单次运行禁用缓存
+pcu -c --no-cache
+
+# 设置自定义缓存目录
+export PCU_CACHE_DIR="/tmp/pcu-cache"
+```
+
+</CodeGroup>
+
+### 缓存设置
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    启用/禁用缓存系统
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    生存时间（毫秒）（默认1小时）
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    最大缓存大小（字节）（默认50MB）
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    最大缓存条目数
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    在运行之间将缓存保存到磁盘
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    持久缓存存储目录
+  </Property>
+  <Property name="strategy" type="enum" default="lru">
+    缓存驱逐策略：lru、fifo、lfu
+  </Property>
+</Properties>
+
+---
+
+## 验证配置
+
+PCU 包含带有有用建议的全面验证：
+
+<CodeGroup>
+
+```json {{ title: '验证配置' }}
+{
+  "validation": {
+    "strict": true,
+    "warnOnRiskyUpdates": true,
+    "requireConfirmationFor": ["major"],
+    "suggestions": {
+      "enabled": true,
+      "includePerformanceTips": true,
+      "includeBestPractices": true
+    }
+  }
+}
+```
+
+```bash {{ title: '验证示例' }}
+# 启用严格验证模式
+pcu -u --force  # 将显示缺少备份的警告
+
+# 显示验证建议
+pcu -c --verbose  # 显示附加提示和建议
+
+# 验证配置文件
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json')))"
+```
+
+</CodeGroup>
+
+### 验证选项
+
+<Properties>
+  <Property name="strict" type="boolean" default="false">
+    启用带有附加检查的严格验证模式
+  </Property>
+  <Property name="warnOnRiskyUpdates" type="boolean" default="true">
+    对潜在风险更新显示警告
+  </Property>
+  <Property name="requireConfirmationFor" type="array" default="[]">
+    需要确认的更新类型：major、minor、patch
+  </Property>
+  <Property name="suggestions.enabled" type="boolean" default="true">
+    启用有用的建议和提示
+  </Property>
+  <Property name="suggestions.includePerformanceTips" type="boolean" default="true">
+    包含性能优化建议
+  </Property>
+  <Property name="suggestions.includeBestPractices" type="boolean" default="true">
+    包含最佳实践建议
+  </Property>
+</Properties>
+
+---
+
+## 交互模式配置
+
+配置交互式提示和用户体验：
+
+<CodeGroup>
+
+```json {{ title: '交互配置' }}
+{
+  "interactive": {
+    "enabled": true,
+    "pageSize": 15,
+    "showPackageDescriptions": true,
+    "showReleaseNotes": false,
+    "autoComplete": {
+      "enabled": true,
+      "fuzzyMatching": true,
+      "maxSuggestions": 10
+    },
+    "confirmations": {
+      "majorUpdates": true,
+      "forceUpdates": true,
+      "multiplePackages": false
+    }
+  }
+}
+```
+
+```bash {{ title: '交互模式示例' }}
+# 启动交互模式
+pcu -i
+
+# 带包描述的交互模式
+pcu -i --verbose  # 在交互选择中显示更多详细信息
+
+# 使用交互主题选择
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### 交互设置
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    启用交互模式功能
+  </Property>
+  <Property name="pageSize" type="number" default="15">
+    列表中每页显示的项目数
+  </Property>
+  <Property name="showPackageDescriptions" type="boolean" default="false">
+    在选择列表中显示包描述
+  </Property>
+  <Property name="showReleaseNotes" type="boolean" default="false">
+    显示更新的发布说明（需要网络）
+  </Property>
+  <Property name="autoComplete.enabled" type="boolean" default="true">
+    启用包名称自动完成
+  </Property>
+  <Property name="autoComplete.fuzzyMatching" type="boolean" default="true">
+    启用自动完成的模糊匹配
+  </Property>
+  <Property name="confirmations.majorUpdates" type="boolean" default="true">
+    主版本更新需要确认
+  </Property>
+</Properties>
+
+---
+
+## Monorepo 配置
+
+PCU 为大型 monorepo 和复杂工作空间管理提供专门设计的高级功能。
+
+### 版本同步
+
+在您的 monorepo 中保持相关包的同步：
+
+<CodeGroup>
+
+```json {{ title: '版本同步配置' }}
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+          "strategy": "exact" // 或 "compatible", "latest"
+        },
+        {
+          "name": "testing-libraries",
+          "packages": ["jest", "@testing-library/*", "@types/jest"],
+          "strategy": "compatible"
+        }
+      ]
+    },
+    "catalogPriority": ["default", "react17", "node18"],
+    "crossWorkspaceDependencies": {
+      "analyze": true,
+      "enforce": "warn" // "error", "warn", "off"
+    }
+  }
+}
+```
+
+```json {{ title: '大型工作空间优化' }}
+{
+  "monorepo": {
+    "performance": {
+      "batchSize": 50,
+      "concurrency": 15,
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true
+    },
+    "workspacePackages": {
+      "autoDiscover": true,
+      "includePrivate": false,
+      "excludePatterns": ["**/node_modules", "**/dist", "**/coverage"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 高级工作空间管理
+
+#### 目录优先级系统
+
+定义冲突出现时哪些目录优先：
+
+```json
+{
+  "catalogPriority": ["production", "default", "experimental"],
+  "catalogConflictResolution": "priority" // 或 "interactive", "error"
+}
+```
+
+#### 跨工作空间依赖
+
+分析和管理工作空间包之间的依赖关系：
+
+<Properties>
+  <Property name="analyze" type="boolean" default="false">
+    分析跨工作空间依赖关系
+  </Property>
+  <Property name="enforce" type="enum" default="warn">
+    如何处理版本不匹配：error、warn、off
+  </Property>
+  <Property name="reportUnused" type="boolean" default="true">
+    报告目录中未被任何工作空间包使用的包
+  </Property>
+  <Property name="validateVersions" type="boolean" default="true">
+    验证所有工作空间包都使用目录版本
+  </Property>
+</Properties>
+
+### Monorepo 特定包规则
+
+为您的 monorepo 的不同区域创建复杂的规则：
+
+<CodeGroup>
+
+```json {{ title: 'Monorepo 包规则' }}
+{
+  "packageRules": [
+    {
+      "name": "前端包",
+      "patterns": ["react*", "@types/react*", "next*"],
+      "workspacePackages": ["apps/web", "apps/admin"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "name": "后端依赖",
+      "patterns": ["express*", "@types/express*", "fastify*"],
+      "workspacePackages": ["apps/api", "services/*"],
+      "target": "patch",
+      "autoUpdate": false
+    },
+    {
+      "name": "开发工具",
+      "patterns": ["eslint*", "prettier", "typescript"],
+      "workspacePackages": ["*"], // 所有包
+      "target": "latest",
+      "autoUpdate": true,
+      "excludeFromProduction": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### 工作空间特定配置
+
+为您的 monorepo 的不同部分使用不同的配置：
+
+<CodeGroup>
+
+```json {{ title: '每个工作空间规则' }}
+{
+  "workspaceRules": {
+    "apps/web": {
+      "defaults": {
+        "target": "minor",
+        "createBackup": true
+      },
+      "packageRules": [
+        {
+          "patterns": ["react*"],
+          "target": "patch"
+        }
+      ]
+    },
+    "packages/*": {
+      "defaults": {
+        "target": "latest",
+        "requireConfirmation": false
+      }
+    },
+    "tools/*": {
+      "defaults": {
+        "target": "latest",
+        "autoUpdate": true
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 大型 Monorepo 的性能优化
+
+#### 批处理配置
+
+<Properties>
+  <Property name="batchSize" type="number" default="20">
+    每批处理的包数量
+  </Property>
+  <Property name="concurrency" type="number" default="5">
+    最大并发操作数
+  </Property>
+  <Property name="cacheWorkspaceStructure" type="boolean" default="true">
+    在运行之间缓存工作空间包发现
+  </Property>
+  <Property name="parallelCatalogProcessing" type="boolean" default="true">
+    并行处理多个目录
+  </Property>
+</Properties>
+
+#### 内存管理
+
+```json
+{
+  "monorepo": {
+    "memoryOptimization": {
+      "streamingMode": true, // 处理包而不将所有包加载到内存
+      "maxMemoryUsage": "2GB", // 大型工作空间的内存限制
+      "temporaryFileCleanup": "immediate" // "immediate", "session-end", "manual"
+    }
+  }
+}
+```
+
+### Monorepo 验证
+
+复杂工作空间设置的全面验证：
+
+#### 验证规则
+
+<Properties>
+  <Property name="enforceWorkspaceProtocol" type="boolean" default="true">
+    确保内部依赖使用 workspace: 协议
+  </Property>
+  <Property name="validateCatalogCoverage" type="boolean" default="true">
+    确保所有依赖都被目录覆盖
+  </Property>
+  <Property name="requireConsistentVersions" type="boolean" default="false">
+    要求所有工作空间包对共享依赖使用相同版本
+  </Property>
+  <Property name="detectCircularDependencies" type="boolean" default="true">
+    检测工作空间包之间的循环依赖
+  </Property>
+</Properties>
+
+### Monorepo 使用示例
+
+#### 大型企业 Monorepo 设置
+
+```json
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "core-frontend",
+          "packages": ["react", "react-dom", "react-router", "@types/react*"],
+          "strategy": "exact"
+        },
+        {
+          "name": "ui-libraries",
+          "packages": ["@company/design-system", "@company/components"],
+          "strategy": "workspace"
+        }
+      ]
+    },
+    "performance": {
+      "batchSize": 100,
+      "concurrency": 20,
+      "streamingMode": true
+    },
+    "workspaceRules": {
+      "apps/*": { "target": "minor", "requireConfirmation": true },
+      "packages/*": { "target": "latest", "autoUpdate": true },
+      "tools/*": { "target": "latest", "autoUpdate": true }
+    }
+  }
+}
+```
+
+#### CI/CD 优化配置
+
+```json
+{
+  "monorepo": {
+    "ci": {
+      "parallelCatalogProcessing": true,
+      "skipInteractivePrompts": true,
+      "generateReport": true,
+      "reportFormat": "json",
+      "exitOnError": true
+    },
+    "validation": {
+      "enforceWorkspaceProtocol": true,
+      "validateCatalogCoverage": true,
+      "failOnInconsistentVersions": true
+    }
+  }
+}
+```

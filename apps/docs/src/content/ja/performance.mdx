@@ -1,0 +1,700 @@
+export const metadata = {
+  title: 'パフォーマンス最適化',
+  description:
+    '大規模モノレポ向けに PCU パフォーマンスを最適化し、実行速度を向上させ、リソース消費を削減します。',
+};
+
+# パフォーマンス最適化
+
+大規模モノレポ、複雑なワークスペース、リソース制約のある環境で PCU パフォーマンスを最大化します。{{ className: 'lead' }}
+
+## PCU パフォーマンスの理解
+
+PCU パフォーマンスは以下の要因に依存します：
+
+- **ネットワーク遅延**：レジストリ応答時間と帯域幅
+- **ワークスペースサイズ**：パッケージと依存関係の数
+- **キャッシュ効率**：ヒット率とストレージ最適化
+- **システムリソース**：CPU、メモリ、ディスク I/O
+- **設定**：並行性設定とタイムアウト値
+
+### パフォーマンス分析
+
+詳細なパフォーマンス監視を有効にします：
+
+```bash
+# パフォーマンス分析を有効化
+export PCU_PROFILE=true
+export DEBUG=pcu:performance,pcu:network,pcu:cache
+
+# 実行して時間情報を表示
+time pcu check --verbose
+```
+
+**出力分析例：**
+
+```
+依存関係分析: 2.3s
+ネットワークリクエスト: 4.1s (45リクエスト)
+キャッシュ操作: 0.8s (12ヒット, 33ミス)
+ファイル I/O: 1.2s
+総実行時間: 8.4s
+```
+
+## 設定最適化
+
+### 並行性設定
+
+環境に最適化された並行操作：
+
+```json
+{
+  "concurrency": 3,
+  "timeout": 45000,
+  "advanced": {
+    "batchSize": 8,
+    "maxRetries": 2,
+    "retryDelay": 1000
+  }
+}
+```
+
+**並行性ガイドライン：**
+
+- **小規模プロジェクト（< 20パッケージ）**：`concurrency: 5-8`
+- **中規模プロジェクト（20-100パッケージ）**：`concurrency: 3-5`
+- **大規模プロジェクト（100+パッケージ）**：`concurrency: 1-3`
+- **CI/CD 環境**：`concurrency: 2-3`
+
+### メモリ管理
+
+**Node.js メモリ最適化：**
+
+```bash
+# 大規模モノレポのヒープサイズを増加
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# ガベージコレクション最適化を有効化
+export NODE_OPTIONS="--max-old-space-size=4096 --optimize-for-size"
+
+# 極大ワークスペース用
+export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=128"
+```
+
+**PCU メモリ設定：**
+
+```json
+{
+  "advanced": {
+    "memoryOptimization": true,
+    "maxConcurrentAnalysis": 10,
+    "streamProcessing": true,
+    "gcInterval": 1000
+  }
+}
+```
+
+## キャッシュ戦略
+
+### ローカルキャッシュ最適化
+
+**キャッシュ設定：**
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 500,
+    "compression": true,
+    "strategy": "lru"
+  }
+}
+```
+
+**環境変数：**
+
+```bash
+# 永続キャッシュを有効化
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_DIR="~/.pcu-cache"
+export PCU_CACHE_TTL=7200  # 2時間
+export PCU_CACHE_MAX_SIZE=1000  # 1GB
+```
+
+### キャッシュ管理コマンド
+
+```bash
+# キャッシュ統計を確認
+pcu cache --stats
+
+# 期限切れキャッシュエントリをクリーンアップ
+pcu cache --clean
+
+# 後続実行を高速化するためキャッシュを暖気
+pcu cache --warm
+
+# キャッシュを完全にリセット
+pcu cache --reset
+```
+
+### CI/CD キャッシュ統合
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+- name: PCU データをキャッシュ
+  uses: actions/cache@v4
+  with:
+    path: |
+      ~/.pcu-cache
+      node_modules/.cache/pcu
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml', 'packages/*/package.json') }}
+    restore-keys: |
+      pcu-cache-${{ runner.os }}-
+      pcu-cache-
+
+- name: 最適化された PCU チェック
+  run: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CONCURRENCY=3
+    pcu check --timeout 60000
+```
+
+```yaml {{ title: 'GitLab CI' }}
+cache:
+  key:
+    files:
+      - pnpm-workspace.yaml
+      - packages/*/package.json
+  paths:
+    - .pcu-cache/
+    - node_modules/.cache/pcu/
+
+performance_check:
+  script:
+    - export PCU_CACHE_ENABLED=true
+    - export PCU_CACHE_DIR="./.pcu-cache"
+    - pcu check --concurrency 2 --timeout 45000
+```
+
+```yaml {{ title: 'Azure DevOps' }}
+- task: Cache@2
+  inputs:
+    key: 'pcu | "$(Agent.OS)" | pnpm-workspace.yaml | packages/*/package.json'
+    restoreKeys: |
+      pcu | "$(Agent.OS)"
+      pcu
+    path: $(Pipeline.Workspace)/.pcu-cache
+
+- script: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CACHE_DIR="$(Pipeline.Workspace)/.pcu-cache"
+    pcu check --concurrency 2
+```
+
+</CodeGroup>
+
+## ネットワーク最適化
+
+### レジストリ設定
+
+**レジストリ選択の最適化：**
+
+```bash
+# 地理的に近いレジストリを使用
+export PCU_REGISTRY="https://registry-asia.npmjs.org/"  # アジア
+export PCU_REGISTRY="https://registry-eu.npmjs.org/"   # ヨーロッパ
+
+# 企業プロキシ設定
+export HTTP_PROXY="http://proxy.company.com:8080"
+export HTTPS_PROXY="http://proxy.company.com:8080"
+export NO_PROXY="localhost,127.0.0.1,*.company.com"
+```
+
+**接続最適化：**
+
+```json
+{
+  "network": {
+    "timeout": 30000,
+    "retries": 3,
+    "retryDelay": 2000,
+    "keepAlive": true,
+    "maxSockets": 15,
+    "maxFreeSockets": 10
+  }
+}
+```
+
+### 帯域幅管理
+
+```bash
+# 低速接続で並行ネットワークリクエストを削減
+pcu check --concurrency 1 --timeout 90000
+
+# リクエスト圧縮を有効化
+export PCU_COMPRESS_REQUESTS=true
+
+# 小さなリクエストをバッチ処理
+export PCU_BATCH_REQUESTS=true
+export PCU_BATCH_SIZE=5
+```
+
+## 大規模モノレポ戦略
+
+### ワークスペース分割
+
+**大規模ワークスペースの整理：**
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/frontend/*'
+  - 'apps/backend/*'
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'tools/*'
+
+catalog:
+  # コア依存関係
+  react: ^18.2.0
+  typescript: ^5.0.0
+
+catalogs:
+  # フロントエンド固有カタログ
+  frontend:
+    next: ^13.4.0
+    tailwindcss: ^3.3.0
+
+  # バックエンド固有カタログ
+  backend:
+    express: ^4.18.0
+    prisma: ^5.0.0
+```
+
+**選択的処理：**
+
+```bash
+# カテゴリ別に処理を制限
+pcu check --include "@company/ui-*" --limit 10
+pcu check --include "@company/api-*" --limit 15
+pcu check --include "@company/tools-*" --limit 5
+
+# 段階的更新
+pcu update --include "@types/*" --target latest
+pcu update --include "eslint*" --target minor
+pcu update --include "react*" --target patch --require-confirmation
+```
+
+### 増分処理
+
+**段階的更新：**
+
+```json
+{
+  "strategies": {
+    "incremental": {
+      "enabled": true,
+      "batchSize": 20,
+      "delayBetweenBatches": 5000,
+      "pauseOnErrors": true
+    }
+  }
+}
+```
+
+**処理ワークフロー：**
+
+<CodeGroup>
+
+```bash {{ title: '開発依存関係' }}
+# フェーズ 1：開発ツール（セキュリティ更新）
+pcu update --include "@types/*,eslint*,prettier*" --target latest
+
+# フェーズ 2：ビルドツール（マイナー更新のみ）
+pcu update --include "webpack*,babel*,rollup*" --target minor
+
+# フェーズ 3：テストフレームワーク（パッチ更新）
+pcu update --include "jest*,vitest*,playwright*" --target patch
+```
+
+```bash {{ title: '本番依存関係' }}
+# フェーズ 1：パッチセキュリティ更新
+pcu security --auto-fix --severity high
+
+# フェーズ 2：確認が必要なマイナー機能更新
+pcu update --target minor --require-confirmation --exclude "react*,vue*"
+
+# フェーズ 3：メジャー更新（インタラクティブ）
+pcu update --target latest --interactive --limit 5
+```
+
+</CodeGroup>
+
+## メモリとリソース管理
+
+### メモリ分析
+
+**メモリ使用量の監視：**
+
+```bash
+# メモリ監視を有効化
+export NODE_OPTIONS="--inspect --max-old-space-size=4096"
+export PCU_MEMORY_PROFILING=true
+
+# メモリを追跡しながら実行
+pcu check --profile-memory
+```
+
+**メモリ最適化技術：**
+
+```json
+{
+  "advanced": {
+    "streamProcessing": true,
+    "lazyLoading": true,
+    "memoryThreshold": 0.8,
+    "gcIntensity": "high",
+    "objectPooling": true
+  }
+}
+```
+
+### ディスク I/O 最適化
+
+**SSD vs HDD 設定：**
+
+```bash
+# SSD 最適化（高速ランダムアクセス）
+export PCU_IO_STRATEGY="random"
+export PCU_CACHE_STRATEGY="frequent"
+
+# HDD 最適化（シーケンシャルアクセス）
+export PCU_IO_STRATEGY="sequential"
+export PCU_CACHE_STRATEGY="batch"
+```
+
+**ファイルシステムキャッシュ：**
+
+```json
+{
+  "fileSystem": {
+    "watchFiles": false,
+    "bufferSize": 65536,
+    "asyncIO": true,
+    "preloadMetadata": true
+  }
+}
+```
+
+## パフォーマンス監視
+
+### メトリクス収集
+
+**内蔵メトリクス：**
+
+```bash
+# パフォーマンスレポートを生成
+pcu check --metrics --output metrics.json
+
+# パフォーマンスダッシュボード
+pcu dashboard --metrics
+```
+
+**カスタム監視：**
+
+```bash
+# 監視システムと統合
+export PCU_METRICS_ENDPOINT="https://metrics.company.com/pcu"
+export PCU_METRICS_INTERVAL=30000
+
+pcu check --send-metrics
+```
+
+### ベンチマーク
+
+**パフォーマンスベンチマーク：**
+
+<CodeGroup>
+
+```bash {{ title: 'ベースライン測定' }}
+#!/bin/bash
+# benchmark-pcu.sh
+
+echo "=== PCU パフォーマンスベンチマーク ==="
+echo "ワークスペース: $(pwd)"
+echo "パッケージ数: $(find packages -name package.json | wc -l)"
+echo "Node バージョン: $(node --version)"
+echo
+
+# 公正な比較のためキャッシュをクリア
+pcu cache --reset
+
+# ホットラン
+echo "ホットラン..."
+time pcu check > /dev/null
+
+# コールドラン
+pcu cache --reset
+echo "コールドラン..."
+time pcu check --verbose | tee benchmark-results.txt
+```
+
+```javascript {{ title: 'パフォーマンス分析' }}
+// analyze-performance.js
+const fs = require('fs');
+const metrics = JSON.parse(fs.readFileSync('metrics.json', 'utf8'));
+
+const analysis = {
+  totalTime: metrics.endTime - metrics.startTime,
+  networkTime: metrics.network.totalTime,
+  cacheHitRate: metrics.cache.hits / (metrics.cache.hits + metrics.cache.misses),
+  packagesPerSecond: metrics.packages.total / (metrics.totalTime / 1000),
+  memoryPeak: metrics.memory.peak,
+  recommendations: [],
+};
+
+// 推奨事項を生成
+if (analysis.cacheHitRate < 0.7) {
+  analysis.recommendations.push('キャッシュ TTL の増加を検討');
+}
+
+if (analysis.networkTime > analysis.totalTime * 0.5) {
+  analysis.recommendations.push('ネットワーク遅延が検出されました、レジストリ設定の最適化を検討');
+}
+
+console.log(JSON.stringify(analysis, null, 2));
+```
+
+</CodeGroup>
+
+### パフォーマンスチューニングガイド
+
+**段階的最適化：**
+
+1. **ベースライン測定**
+
+   ```bash
+   pcu check --metrics --profile > baseline.txt
+   ```
+
+2. **キャッシュを有効化**
+
+   ```bash
+   export PCU_CACHE_ENABLED=true
+   pcu check --metrics --profile > cached.txt
+   ```
+
+3. **並行性を最適化**
+
+   ```bash
+   # 異なる並行レベルをテスト
+   for c in 1 2 3 5 8; do
+     echo "並行性をテスト: $c"
+     time pcu check --concurrency $c > /dev/null 2>&1
+   done
+   ```
+
+4. **ネットワーク最適化**
+
+   ```bash
+   export PCU_REGISTRY="https://registry-eu.npmjs.org/"
+   pcu check --metrics --profile > optimized.txt
+   ```
+
+5. **メモリチューニング**
+   ```bash
+   export NODE_OPTIONS="--max-old-space-size=2048"
+   pcu check --metrics --profile > memory-tuned.txt
+   ```
+
+## パフォーマンス問題のトラブルシューティング
+
+### 一般的なパフォーマンス問題
+
+**低速ネットワークリクエスト：**
+
+```bash
+# ネットワーク問題を診断
+export DEBUG=pcu:network
+pcu check --verbose
+
+# レジストリ接続性をテスト
+curl -w "@curl-format.txt" -o /dev/null -s "https://registry.npmjs.org/react"
+
+# 代替レジストリ
+export PCU_REGISTRY="https://registry.yarnpkg.com/"
+```
+
+**メモリ問題：**
+
+```bash
+# メモリ使用量を監視
+export NODE_OPTIONS="--inspect --max-old-space-size=8192"
+pcu check --profile-memory
+
+# メモリ占有量を削減
+export PCU_STREAM_PROCESSING=true
+export PCU_LAZY_LOADING=true
+```
+
+**キャッシュ問題：**
+
+```bash
+# キャッシュの正常性を確認
+pcu cache --verify
+
+# 破損したキャッシュを再構築
+pcu cache --rebuild
+
+# キャッシュ統計
+pcu cache --stats --verbose
+```
+
+### パフォーマンス回帰検出
+
+**自動パフォーマンステスト：**
+
+```yaml
+# .github/workflows/performance.yml
+name: パフォーマンス回帰テスト
+
+on:
+  pull_request:
+    paths: ['packages/**', 'pnpm-workspace.yaml']
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ベースラインパフォーマンステスト
+        run: |
+          git checkout main
+          pcu cache --reset
+          time pcu check --metrics > baseline.json
+
+      - name: PR パフォーマンステスト
+        run: |
+          git checkout ${{ github.head_ref }}
+          pcu cache --reset
+          time pcu check --metrics > pr.json
+
+      - name: パフォーマンス比較
+        run: |
+          node scripts/compare-performance.js baseline.json pr.json
+```
+
+## 環境固有の最適化
+
+### ローカル開発
+
+**開発マシン設定：**
+
+```bash
+# ~/.bashrc または ~/.zshrc
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# プロジェクト固有の最適化
+alias pcu-fast="pcu check --concurrency 5 --limit 20"
+alias pcu-full="pcu check --concurrency 2"
+```
+
+### CI/CD 環境
+
+**異なる CI プロバイダーの最適化：**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+# デュアルコアランナー用に最適化
+env:
+  PCU_CONCURRENCY: 2
+  PCU_TIMEOUT: 60000
+  PCU_CACHE_ENABLED: true
+  NODE_OPTIONS: '--max-old-space-size=3072'
+
+steps:
+  - name: PCU を最適化
+    run: |
+      # DNS 解決を暖気
+      nslookup registry.npmjs.org
+
+      # GitHub ネットワーク用に設定
+      export PCU_REGISTRY="https://registry.npmjs.org/"
+      pcu check --timeout 45000
+```
+
+```yaml {{ title: 'GitLab CI (Docker)' }}
+variables:
+  PCU_CONCURRENCY: '1'
+  PCU_CACHE_ENABLED: 'true'
+  NODE_OPTIONS: '--max-old-space-size=2048'
+
+before_script:
+  # Docker コンテナ最適化
+  - export PCU_CACHE_DIR="/cache/.pcu"
+  - mkdir -p /cache/.pcu
+
+performance_check:
+  cache:
+    - key: pcu-cache
+    - paths: ['/cache/.pcu/']
+  script:
+    - pcu check --concurrency 1 --timeout 120000
+```
+
+</CodeGroup>
+
+### 本番デプロイメント
+
+**本番レベル設定：**
+
+```json
+{
+  "production": true,
+  "concurrency": 1,
+  "timeout": 300000,
+  "retries": 5,
+  "cache": {
+    "enabled": true,
+    "ttl": 86400,
+    "persistent": true
+  },
+  "security": {
+    "strictMode": true,
+    "verifyChecksums": true
+  }
+}
+```
+
+---
+
+## パフォーマンスチェックリスト
+
+### クイック改善
+
+1. 永続キャッシュを有効化：`export PCU_CACHE_ENABLED=true`
+2. 環境に合わせて並行性を最適化
+3. 地理的に近いレジストリを使用
+4. 大規模プロジェクト用に Node.js ヒープサイズを増加
+5. リクエスト圧縮とキープアライブを有効化
+
+### 高度な最適化
+
+1. CI/CD キャッシュ戦略を実装
+2. 大規模モノレポ用にワークスペース分割を設定
+3. パフォーマンス監視とアラートを設定
+4. 継続運用のためのメモリ管理を最適化
+5. 増分処理ワークフローを実装
+
+### 監視とメンテナンス
+
+1. 定期的なパフォーマンスベンチマーク
+2. キャッシュ正常性監視
+3. ネットワーク遅延測定
+4. メモリ使用量分析
+5. パフォーマンス回帰検出

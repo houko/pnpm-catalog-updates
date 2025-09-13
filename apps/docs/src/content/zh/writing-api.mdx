@@ -1,0 +1,142 @@
+export const metadata = {
+  title: 'API文档写作',
+  description: '使用Properties、Tags和专门的组件创建全面的API文档。',
+};
+
+# API文档写作
+
+创建开发者喜爱的全面API文档。学习使用Properties记录参数、Tags标记HTTP方法、Libraries展示SDK，以及使API参考清晰可操作的专门组件。 {{ className: 'lead' }}
+
+## 属性列表
+
+使用`<Properties>`和`<Property>`记录API参数：
+
+<Properties>
+  <Property name="id" type="string">
+    资源的唯一标识符。创建资源时自动生成。
+  </Property>
+
+<Property name="name" type="string">
+  资源的显示名称。必须在1到100个字符之间。
+</Property>
+
+<Property name="email" type="string">
+  有效的电子邮件地址。在所有用户中必须唯一。
+</Property>
+
+  <Property name="created_at" type="timestamp">
+    ISO 8601时间戳，表示资源的创建时间。
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    参数的描述和用法。
+  </Property>
+</Properties>
+```
+
+## HTTP方法标签
+
+标签根据HTTP方法自动着色：
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">自定义</Tag>
+  <Tag color="emerald">成功</Tag>
+  <Tag color="rose">错误</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">成功</Tag>
+```
+
+## Libraries组件
+
+### 完整库网格
+
+使用`<Libraries>`组件展示所有官方SDK：
+
+<Libraries />
+
+```mdx
+<Libraries />
+```
+
+### 单个库
+
+使用`<Library>`组件显示单个库：
+
+<Library language="node" />
+
+### 紧凑库展示
+
+在较小空间中，使用带描述的紧凑模式：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+或者无描述的更紧凑展示：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- 带描述的紧凑库 -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- 无描述的紧凑库 -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Library组件选项
+
+- **language**: 可选择 `php`, `ruby`, `node`, `python`, `go` (默认: `node`)
+- **compact**: 使用紧凑样式 (默认: `false`)
+- **showDescription**: 显示/隐藏描述文本 (默认: `true`)
+
+### Libraries使用场景
+
+- **`<Libraries />`**: 完整SDK概览页面，入门部分
+- **`<Library />`**: 内联文档，特定语言指南
+- **`<Library compact />`**: 侧边栏参考，紧凑列表
+
+## API最佳实践
+
+- 始终使用Properties组件记录所有参数
+- 包含示例请求和响应
+- 使用Tags标记适当的HTTP状态码
+- 提供清晰的错误消息
+- 包含身份验证要求
+- SDK页面使用Libraries组件
+- 保持Properties列表专注且组织良好
+
+## 下一步
+
+使用[高级功能](/writing-advanced)完成您的文档之旅。

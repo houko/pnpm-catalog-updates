@@ -1,0 +1,524 @@
+export const metadata = {
+  title: '모범 사례',
+  description: '팀 환경과 기업 워크플로우에서 PCU를 효과적으로 사용하는 모범 사례.',
+};
+
+# 모범 사례
+
+팀 환경, 기업 워크플로우 및 프로덕션 시스템에서 PCU를 효과적으로 사용하는 방법을 알아보세요. {{ className: 'lead' }}
+
+## 팀 협업
+
+### 공유 구성
+
+`.pcurc.json`을 버전 관리에 커밋하여 팀 구성원 간에 PCU 구성을 일관되게 유지하세요:
+
+```json
+{
+  "target": "minor",
+  "concurrency": 3,
+  "timeout": 60000,
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "exclude": ["legacy-*", "deprecated-*"]
+}
+```
+
+### 코드 리뷰 가이드라인
+
+**리뷰 전 체크리스트:**
+
+1. `pcu check --dry-run`을 실행하여 변경 사항 미리보기
+2. 주요 버전 업데이트에서 Breaking Changes가 없는지 확인
+3. 종속성 업데이트 후 핵심 기능 테스트
+4. 업데이트된 패키지의 CHANGELOG 파일 검토
+
+**리뷰 프로세스:**
+
+1. **보안 우선**: 보안 관련 종속성 업데이트는 항상 즉시 검토
+2. **관련 업데이트 일괄 처리**: 관련 패키지(예: React 생태계)를 단일 PR로 그룹화
+3. **이유 문서화**: 버전 고정이나 제외에 대한 근거 포함
+4. **테스트 커버리지**: 종속성 업데이트 병합 전 충분한 테스트 보장
+
+### 커뮤니케이션 표준
+
+종속성 업데이트 시 명확한 커밋 메시지 사용:
+
+```bash
+# 좋은 커밋 메시지
+feat(deps): React를 v18.3.0으로 업데이트하여 성능 향상
+security(deps): lodash 취약점 CVE-2021-23337 패치
+chore(deps): 개발 종속성을 최신 버전으로 업데이트
+
+# 나쁜 커밋 메시지
+update packages
+fix deps
+bump versions
+```
+
+## 기업 사용
+
+### 거버넌스 및 컴플라이언스
+
+**종속성 승인 프로세스:**
+
+1. **보안 스캔**: 모든 업데이트는 보안 감사를 통과해야 함
+2. **라이선스 컴플라이언스**: 내부 정책과 라이선스 호환성 확인
+3. **안정성 요구사항**: 프로덕션 환경에서 LTS 버전 선호
+4. **변경 관리**: 기존 변경 승인 프로세스 준수
+
+**기업용 구성:**
+
+```json
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "security": {
+    "autoFix": false,
+    "severityThreshold": "moderate",
+    "ignoredVulnerabilities": [],
+    "customAuditConfig": {
+      "low": "warn",
+      "moderate": "error",
+      "high": "error",
+      "critical": "error"
+    }
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "exclude": false,
+      "requireApproval": true,
+      "maxMajorUpdates": 0
+    }
+  ]
+}
+```
+
+### 프라이빗 레지스트리 통합
+
+프라이빗 레지스트리가 있는 기업 환경에서 PCU 구성:
+
+```ini
+# .npmrc (워크스페이스 루트)
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+registry=https://npm.company.com/
+
+# 공개 패키지 폴백
+@types:registry=https://registry.npmjs.org/
+```
+
+**환경 변수:**
+
+```bash
+export NPM_TOKEN=your_company_token
+export PCU_CACHE_ENABLED=true
+export PCU_TIMEOUT=120000
+export PCU_CONCURRENCY=2
+```
+
+### 감사 추적 및 보고
+
+종속성 변경 사항의 포괄적인 기록 유지:
+
+```bash
+# 종속성 보고서 생성
+pcu check --format json > dependency-report.json
+pcu security --format json > security-report.json
+
+# CI/CD 파이프라인에 포함
+- name: 종속성 보고서 생성
+  run: |
+    pcu check --format json > artifacts/deps-$(date +%Y%m%d).json
+    pcu security --format json > artifacts/security-$(date +%Y%m%d).json
+```
+
+## 릴리스 워크플로우
+
+### 시맨틱 버전 통합
+
+종속성 업데이트를 릴리스 주기와 맞춤:
+
+**프리 릴리스 단계:**
+
+```bash
+# 적용하지 않고 업데이트 확인
+pcu check --target patch --dry-run
+
+# 동결 기간 동안 패치 버전만 업데이트
+pcu update --target patch --exclude "major-framework-*"
+```
+
+**릴리스 준비:**
+
+```bash
+# 최신 안정 버전으로 업데이트
+pcu update --target minor --exclude "experimental-*"
+
+# 종속성 변경 사항과 함께 릴리스 노트 생성
+pcu analyze default react 18.3.0 >> RELEASE_NOTES.md
+```
+
+**릴리스 후:**
+
+```bash
+# 주요 버전을 포함한 최신 버전으로 업데이트
+pcu update --target latest --interactive
+```
+
+### 스테이징 환경 테스트
+
+**프로덕션 전 유효성 검사:**
+
+<CodeGroup>
+
+```bash {{ title: '스테이징 파이프라인' }}
+# 스테이징에서 종속성 업데이트
+pcu update --target minor --create-backup
+
+# 포괄적인 테스트 실행
+npm run test:integration
+npm run test:e2e
+npm run test:performance
+
+# 문제가 발견되면 롤백
+pcu restore-backup
+```
+
+```yaml {{ title: 'GitHub Actions' }}
+name: 종속성 테스트
+on:
+  schedule:
+    - cron: '0 2 * * 1' # 매주 월요일 오전 2시
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 종속성 업데이트
+        run: pcu update --target minor --dry-run
+
+      - name: 업데이트된 종속성 테스트
+        run: |
+          npm ci
+          npm run test:all
+          npm run build
+```
+
+</CodeGroup>
+
+## 보안 모범 사례
+
+### 취약점 관리
+
+**즉시 응답 PCU:**
+
+1. **치명적/높음 심각도**: 24시간 내 업데이트
+2. **보통 심각도**: 1주일 내 업데이트
+3. **낮음 심각도**: 다음 정기 업데이트 주기에 포함
+
+```bash
+# 보안 수정사항 우선 처리
+pcu security --severity critical --auto-fix
+pcu security --severity high --fix-vulns --require-confirmation
+
+# 정기적인 보안 감사
+pcu security --format json --output security-audit.json
+```
+
+### 종속성 유효성 검사
+
+**보안 구성:**
+
+```json
+{
+  "security": {
+    "enableSnyk": true,
+    "autoFix": false,
+    "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+    "blockedPackages": ["colors", "faker"],
+    "trustedSources": ["@company/*", "@types/*"],
+    "customAuditConfig": {
+      "skipLevels": [],
+      "excludeDevDependencies": false
+    }
+  }
+}
+```
+
+**수동 보안 검토:**
+
+- 첫 사용 전 모든 새 종속성 검토
+- 패키지 유지 관리자 및 다운로드 횟수 감사
+- 패키지 진위성 및 서명 확인
+- 종속성 체인의 알려진 보안 문제 확인
+
+### 접근 제어
+
+**토큰 관리:**
+
+```bash
+# 최소 권한을 가진 스코프 토큰 사용
+NPM_TOKEN=npm_[REDACTED]_readonly_access_only
+
+# 정기적으로 토큰 회전(분기별)
+# 보안 자격 증명 관리 시스템에 토큰 저장
+# 버전 관리에 토큰 커밋 금지
+```
+
+## 성능 최적화
+
+### 캐싱 전략
+
+**로컬 개발:**
+
+```bash
+# 지속적인 캐싱 활성화
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600  # 1시간
+export PCU_CACHE_MAX_SIZE=100  # 100 MB
+```
+
+**CI/CD 최적화:**
+
+```yaml
+- name: PCU 데이터 캐시
+  uses: actions/cache@v3
+  with:
+    path: ~/.pcu-cache
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml') }}
+
+- name: 최적화된 PCU 실행
+  run: |
+    export PCU_CACHE_ENABLED=true
+    pcu check --concurrency 5 --timeout 30000
+```
+
+### 대형 모노레포 처리
+
+**100+ 패키지용 구성:**
+
+```json
+{
+  "concurrency": 2,
+  "timeout": 120000,
+  "batchSize": 10,
+  "advanced": {
+    "memoryOptimization": true,
+    "parallelCatalogs": false,
+    "incrementalUpdates": true
+  }
+}
+```
+
+**선택적 처리:**
+
+```bash
+# 카테고리별 처리
+pcu check --include "@company/ui-*" --limit 20
+pcu check --include "@company/api-*" --limit 20
+pcu check --include "@types/*" --target latest
+
+# 대형 작업에 필터링 사용
+pcu update --include "react*" --exclude "*-experimental"
+```
+
+### 네트워크 최적화
+
+**레지스트리 구성:**
+
+```bash
+# 지리적으로 가까운 더 빠른 레지스트리 사용
+export PCU_REGISTRY=https://registry-asia.npmjs.org/
+export PCU_TIMEOUT=60000
+export PCU_MAX_RETRIES=3
+```
+
+## 오류 처리 및 복구
+
+### 일반적인 오류 해결
+
+**네트워크 문제:**
+
+```bash
+# 느린 연결을 위해 타임아웃 증가
+PCU_TIMEOUT=120000 pcu check
+
+# 대체 레지스트리 사용
+PCU_REGISTRY=https://registry.npmjs.org/ pcu check
+
+# 네트워크 문제 디버깅 활성화
+DEBUG=pcu:network pcu check
+```
+
+**메모리 문제:**
+
+```bash
+# Node.js 메모리 제한 증가
+NODE_OPTIONS="--max-old-space-size=8192" pcu check
+
+# 메모리 제약 환경에서 동시성 감소
+pcu check --concurrency 1
+```
+
+### 백업 및 복구
+
+**주요 업데이트 전 백업 생성:**
+
+```bash
+# 자동 백업 생성
+pcu update --create-backup --target minor
+
+# 수동 백업
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+cp -r packages/*/package.json backups/
+
+# 백업에서 복원
+pcu restore-backup --timestamp 2024-01-15T10:30:00Z
+```
+
+**버전 롤백 전략:**
+
+```bash
+# 특정 패키지 롤백
+pcu rollback react 18.2.0
+pcu rollback @types/node 20.5.0
+
+# 전체 카탈로그 롤백
+git checkout HEAD~1 pnpm-workspace.yaml
+pnpm install
+```
+
+### 모니터링 및 알림
+
+**CI/CD 통합:**
+
+```yaml
+- name: 종속성 상태 확인
+  run: |
+    set -e
+    pcu check --format json > check-results.json
+
+    # 결과 분석 및 알림 설정
+    if grep -q "critical" check-results.json; then
+      echo "::error::치명적인 종속성 문제 발견"
+      exit 1
+    fi
+
+- name: 보안 모니터링
+  run: |
+    pcu security --format json > security-results.json
+
+    # 높음/치명적 취약점 알림
+    CRITICAL_COUNT=$(jq '.vulnerabilities.critical // 0' security-results.json)
+    if [ "$CRITICAL_COUNT" -gt 0 ]; then
+      # 모니터링 시스템에 알림 전송
+      curl -X POST "$SLACK_WEBHOOK" -d '{"text":"🚨 치명적인 보안 취약점 발견"}'
+    fi
+```
+
+## 통합 패턴
+
+### IDE 및 에디터 통합
+
+**VS Code 구성:**
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "PCU_CACHE_ENABLED": "true"
+  },
+  "tasks.json": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "PCU 확인",
+        "type": "shell",
+        "command": "pcu check --interactive",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}
+```
+
+### 자동화 스크립트
+
+**Package.json 스크립트:**
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update:patch": "pcu update --target patch",
+    "deps:update:minor": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --fix-vulns",
+    "deps:analyze": "pcu analyze default",
+    "prerelease": "npm run deps:check && npm run deps:security"
+  }
+}
+```
+
+**Git 훅 통합:**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+
+# 커밋 전 종속성 문제 확인
+if command -v pcu &> /dev/null; then
+  pcu check --format json > /dev/null || {
+    echo "⚠️  종속성 문제가 감지되었습니다. 자세한 내용은 'pcu check'를 실행하세요."
+    exit 1
+  }
+fi
+```
+
+---
+
+## 빠른 참조 체크리스트
+
+### 일일 워크플로우
+
+1. 보안 업데이트 확인: `pcu security`
+2. 오래된 종속성 검토: `pcu check --limit 10`
+3. 패치 버전 업데이트: `pcu update --target patch`
+
+### 주간 워크플로우
+
+1. 포괄적인 종속성 확인: `pcu check`
+2. 마이너 버전 업데이트: `pcu update --target minor --interactive`
+3. 제외 규칙 검토 및 업데이트
+4. 팀 검토용 종속성 보고서 생성
+
+### 월간 워크플로우
+
+1. 주요 버전 업데이트 검토: `pcu check --target latest`
+2. 개발 종속성 업데이트: `pcu update --dev`
+3. 종속성 라이선스 및 컴플라이언스 감사
+4. PCU 구성 검토 및 최적화
+5. 사용하지 않는 종속성 정리
+
+### 릴리스 전
+
+1. 전체 종속성 감사 실행: `pcu security --comprehensive`
+2. 백업 생성: `pcu update --create-backup`
+3. 스테이징 환경에서 테스트
+4. 종속성 변경 사항과 함께 릴리스 노트 생성

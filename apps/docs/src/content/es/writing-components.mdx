@@ -1,0 +1,258 @@
+export const metadata = {
+  title: 'Escribiendo Componentes',
+  description:
+    'Aprende a usar componentes UI interactivos como Notes, Buttons y otros elementos para mejorar tu documentación.',
+};
+
+# Escribiendo Componentes
+
+Mejora tu documentación con componentes UI interactivos. Aprende a usar Notes para información importante, Buttons para acciones y otros elementos que hacen tus documentos más atractivos y funcionales. {{ className: 'lead' }}
+
+## Notas y Llamadas
+
+El componente `<Note>` es perfecto para resaltar información importante, advertencias o consejos a los que los lectores deben prestar especial atención.
+
+### Uso Básico de Note
+
+<Note>
+  Este es un componente de nota básico. Automáticamente estiliza el contenido con un tema esmeralda
+  y un ícono de información, haciendo que la información importante se destaque del texto regular.
+</Note>
+
+```mdx
+<Note>Este es un componente de nota básico con información importante.</Note>
+```
+
+### Notes con Contenido Rico
+
+Las Notes soportan formato completo de Markdown, incluyendo **texto en negrita**, _texto en cursiva_, `código en línea`, e incluso [enlaces a otras páginas](/writing-basics).
+
+<Note>
+  **Requisito de Configuración Importante**: Antes de proceder, asegúrate de tener: - Node.js
+  versión 18 o superior instalado - Acceso al repositorio del proyecto - Credenciales de API válidas
+  configuradas Consulta la [Guía de Referencia de Comandos](/command-reference) para la
+  configuración de credenciales.
+</Note>
+
+```mdx
+<Note>
+  **Requisito de Configuración Importante**: Antes de proceder, asegúrate de tener: - Node.js
+  versión 18 o superior instalado - Acceso al repositorio del proyecto - Credenciales de API válidas
+  configuradas Consulta la [Guía de Referencia de Comandos](/command-reference) para la
+  configuración de credenciales.
+</Note>
+```
+
+### Notes de Múltiples Párrafos
+
+<Note>
+  Este es el primer párrafo de una nota más larga que contiene múltiples piezas de información relacionada.
+
+Este segundo párrafo continúa el pensamiento con contexto adicional. Puedes incluir tantos párrafos como necesites para explicar completamente el concepto.
+
+Recuerda que las buenas notas son concisas pero completas, proporcionando la información justa para ayudar a los lectores a entender la importancia del mensaje.
+
+</Note>
+
+```mdx
+<Note>
+  Primer párrafo con información inicial.
+
+Segundo párrafo con contexto adicional y detalles.
+
+Párrafo final con resumen o siguientes pasos.
+
+</Note>
+```
+
+## Botones y Acciones
+
+El componente `<Button>` crea elementos de llamada a la acción que guían a los usuarios hacia enlaces importantes o siguientes pasos.
+
+### Variantes de Botones
+
+#### Botones Rellenos
+
+Usar para acciones primarias y las llamadas a la acción más importantes:
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Aprende Sobre Componentes de Código
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Aprende Sobre Componentes de Código
+  </Button>
+</div>
+```
+
+#### Botones de Contorno
+
+Perfectos para acciones secundarias y rutas alternativas:
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explora Componentes de Diseño
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explora Componentes de Diseño
+  </Button>
+</div>
+```
+
+#### Botones de Texto
+
+Enlaces sutiles que se mezclan con el contenido mientras aún se destacan:
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Volver a lo Básico
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Volver a lo Básico
+  </Button>
+</div>
+```
+
+### Flechas de Botones
+
+Los botones soportan flechas direccionales para indicar navegación:
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Sección Anterior
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Siguiente Sección
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Sección Anterior
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Siguiente Sección
+  </Button>
+</div>
+```
+
+### Mejores Prácticas de Botones
+
+- **Usar con moderación**: Demasiados botones reducen su efectividad
+- **Palabras de acción claras**: "Comenzar", "Aprender Más", "Ver Documentación"
+- **Jerarquía lógica**: Relleno para primario, contorno para secundario, texto para terciario
+- **Flechas direccionales**: Izquierda para "atrás/anterior", derecha para "adelante/siguiente"
+- **Envolver en not-prose**: Siempre usar el envoltorio `<div className="not-prose">`
+
+## Contexto de Estilo de Componentes
+
+### El Envoltorio not-prose
+
+Algunos componentes necesitan escapar del estilo de prosa predeterminado. Siempre envuelve estos componentes:
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    Tu Texto de Botón
+  </Button>
+</div>
+```
+
+Componentes que **requieren** `not-prose`:
+
+- Todos los componentes `<Button>`
+- Elementos de diseño personalizados
+- Widgets interactivos
+- Componentes con estilo complejo
+
+Componentes que **funcionan sin** `not-prose`:
+
+- Componentes `<Note>` (estilo autocontenido)
+- Elementos estándar de Markdown
+- Componentes basados en texto
+
+### Múltiples Componentes
+
+Al mostrar múltiples componentes juntos:
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    Guía de Documentación API
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Características Avanzadas
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    Revisar lo Básico
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    Guía de Documentación API
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Características Avanzadas
+  </Button>
+</div>
+```
+
+## Accesibilidad de Componentes
+
+Todos los componentes están construidos con accesibilidad en mente:
+
+- **HTML Semántico**: Elementos apropiados de botón y enlace
+- **Etiquetas ARIA**: Soporte para lectores de pantalla donde sea necesario
+- **Navegación por Teclado**: Accesibilidad completa por teclado
+- **Gestión de Foco**: Indicadores de foco claros
+- **Contraste de Color**: Esquemas de color compatibles con WCAG
+
+## Cuándo Usar Cada Componente
+
+### Usar Notes Cuando:
+
+- Resaltar información crítica
+- Advertir sobre problemas potenciales
+- Proporcionar consejos útiles o contexto
+- Explicar prerrequisitos o requisitos
+- Llamar la atención sobre cambios importantes
+
+### Usar Buttons Cuando:
+
+- Guiar hacia siguientes pasos lógicos
+- Enlazar a recursos externos
+- Crear momentos claros de llamada a la acción
+- Navegación entre secciones principales
+- Resaltar acciones primarias
+
+### Evitar el Sobreuso:
+
+- No usar notas para cada párrafo
+- Limitar botones a 1-2 por sección
+- Reservar componentes para contenido verdaderamente importante
+- Dejar que el texto regular y Markdown lleven la mayor parte del contenido
+
+## Siguientes Pasos
+
+Ahora que entiendes los componentes UI, explora:
+
+- [Escribiendo Código](/writing-code) - Resaltado de sintaxis y bloques de código
+- [Escribiendo Diseño](/writing-layout) - Diseños multi-columna y organización
+- [Escribiendo API](/writing-api) - Componentes de documentación API
+- [Escribiendo Avanzado](/writing-advanced) - Características avanzadas y metadatos
+
+Domina estos elementos interactivos para crear documentación que no solo informe sino que guíe y enganche a tus lectores efectivamente.

@@ -1,0 +1,154 @@
+export const metadata = {
+  title: "Mise en Page d'Écriture",
+  description:
+    'Créez des mises en page multi-colonnes sophistiquées et organisez le contenu avec Row, Col et le positionnement collant.',
+};
+
+# Mise en Page d'Écriture
+
+Créez des mises en page sophistiquées qui améliorent la lisibilité et l'expérience utilisateur. Apprenez à utiliser les composants Row et Col pour les designs multi-colonnes, le positionnement collant et l'organisation efficace du contenu. {{ className: 'lead' }}
+
+## Mise en Page à Deux Colonnes
+
+Utilisez `<Row>` et `<Col>` pour du contenu côte à côte :
+
+<Row>
+  <Col>
+    **Colonne de Gauche**
+    
+    Ce contenu apparaît dans la colonne de gauche. Parfait pour les explications, descriptions ou informations complémentaires.
+    
+    - Point clé un
+    - Détail important
+    - Contexte supplémentaire
+  </Col>
+  
+  <Col>
+    **Colonne de Droite**
+    
+    ```javascript
+    // Colonne de droite avec code
+    const exemple = {
+      fonctionnalité: "multi-colonne",
+      bénéfice: "meilleure organisation"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Contenu de colonne gauche avec explications.</Col>
+
+  <Col>Contenu de colonne droite avec exemples.</Col>
+</Row>
+```
+
+## Mise en Page Colonne Collante
+
+Faites rester le contenu collé pendant le défilement :
+
+<Row>
+  <Col>
+    **Contenu Défilant**
+    
+    Ceci est du contenu régulier qui défile normalement. Vous pouvez mettre de longues explications ici que les utilisateurs feront défiler pour lire complètement.
+    
+    Cette colonne contient le récit principal ou les informations détaillées qui nécessitent un défilement pour être consommées entièrement.
+  </Col>
+  
+  <Col sticky>
+    **Référence Collante**
+    
+    ```json
+    {
+      "statut": "collant",
+      "position": "fixe",
+      "défilement": "indépendant"
+    }
+    ```
+    
+    Ceci reste visible pendant que vous défilez.
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Contenu défilant régulier ici.</Col>
+
+  <Col sticky>Cette colonne reste fixe pendant le défilement.</Col>
+</Row>
+```
+
+## Composant Guides
+
+Affichez une grille de liens de guide en utilisant le composant `<Guides>` :
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+Le composant Guides montre un ensemble prédéfini de guides de documentation avec des liens et des descriptions. Parfait pour les pages d'aperçu et les sections de démarrage.
+
+## Composant Resources
+
+Présentez les principales catégories de ressources avec des cartes animées :
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+Le composant Resources affiche des cartes de ressources animées avec des icônes et des descriptions. Idéal pour les pages d'accueil principales et les sections d'aperçu API.
+
+## Icônes
+
+Utilisez des icônes individuelles pour la décoration en ligne ou des mises en page personnalisées :
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### Icônes Disponibles
+
+- `<UserIcon />` - Utilisateur unique
+- `<UsersIcon />` - Utilisateurs multiples
+- `<EnvelopeIcon />` - Messages/email
+- `<ChatBubbleIcon />` - Conversations
+- `<BookIcon />` - Documentation
+- `<CheckIcon />` - Succès/achèvement
+- `<BellIcon />` - Notifications
+- `<CogIcon />` - Paramètres/configuration
+
+## Meilleures Pratiques de Mise en Page
+
+- Utilisez des mises en page à deux colonnes pour du contenu complémentaire
+- Les colonnes collantes fonctionnent mieux pour le matériel de référence
+- Gardez les colonnes équilibrées en longueur de contenu
+- Assurez-vous de la responsivité mobile (les colonnes s'empilent sur les petits écrans)
+- Utilisez Guides pour les pages d'aperçu de documentation
+- Utilisez Resources pour les vitrines de catégories API
+- Les icônes fonctionnent bien avec les classes Tailwind personnalisées pour les couleurs et le dimensionnement
+
+## Étapes Suivantes
+
+Continuez avec [Documentation API](/writing-api) pour les composants spécialisés.

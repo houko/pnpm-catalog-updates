@@ -1,0 +1,153 @@
+export const metadata = {
+  title: '布局写作',
+  description: '使用Row、Col和粘性定位创建复杂的多列布局和组织内容。',
+};
+
+# 布局写作
+
+创建提升可读性和用户体验的复杂布局。学习使用Row和Col组件进行多列设计、粘性定位和有效的内容组织。 {{ className: 'lead' }}
+
+## 双栏布局
+
+使用`<Row>`和`<Col>`实现并排内容：
+
+<Row>
+  <Col>
+    **左栏**
+    
+    此内容出现在左栏中。非常适合解释、描述或补充信息。
+    
+    - 关键点一
+    - 重要细节
+    - 附加上下文
+  </Col>
+  
+  <Col>
+    **右栏**
+    
+    ```javascript
+    // 右栏放置代码示例
+    const example = {
+      feature: "多列布局",
+      benefit: "更好的组织"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>左栏内容，包含解释说明。</Col>
+
+  <Col>右栏内容，包含示例代码。</Col>
+</Row>
+```
+
+## 粘性栏布局
+
+让内容在滚动时保持粘性：
+
+<Row>
+  <Col>
+    **滚动内容**
+    
+    这是正常滚动的常规内容。您可以在这里放置用户需要滚动阅读的长解释。
+    
+    此栏包含需要滚动才能完整消费的主要叙述或详细信息。
+  </Col>
+  
+  <Col sticky>
+    **粘性参考**
+    
+    ```json
+    {
+      "status": "粘性",
+      "position": "固定",
+      "scroll": "独立"
+    }
+    ```
+    
+    这在您滚动时保持可见。
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>这里是常规滚动内容。</Col>
+
+  <Col sticky>此栏在滚动时保持固定。</Col>
+</Row>
+```
+
+## Guides组件
+
+使用`<Guides>`组件显示指南链接网格：
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+Guides组件显示预定义的文档指南集合，包含链接和描述。非常适合概览页面和入门部分。
+
+## Resources组件
+
+使用动画卡片展示主要资源类别：
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+Resources组件显示带有图标和描述的动画资源卡片。非常适合主要登录页面和API概览部分。
+
+## 图标
+
+使用单独的图标进行内联装饰或自定义布局：
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### 可用图标
+
+- `<UserIcon />` - 单个用户
+- `<UsersIcon />` - 多个用户
+- `<EnvelopeIcon />` - 消息/邮件
+- `<ChatBubbleIcon />` - 对话
+- `<BookIcon />` - 文档
+- `<CheckIcon />` - 成功/完成
+- `<BellIcon />` - 通知
+- `<CogIcon />` - 设置/配置
+
+## 布局最佳实践
+
+- 对补充内容使用双栏布局
+- 粘性栏最适合参考资料
+- 保持栏的内容长度平衡
+- 确保移动端响应式（小屏幕上栏会堆叠）
+- 文档概览页面使用Guides组件
+- API类别展示使用Resources组件
+- 图标配合自定义Tailwind类可实现颜色和尺寸控制
+
+## 下一步
+
+继续阅读[API文档](/writing-api)了解专门的组件。

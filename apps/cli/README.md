@@ -7,6 +7,8 @@
 
 A powerful CLI tool for managing pnpm workspace catalog dependencies with ease.
 
+**📖 Complete Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
+
 ## Quick Start
 
 ### Installation
@@ -19,7 +21,7 @@ npm install -g pcu
 pnpm add -g pcu
 
 # Or use legacy package name
-npm install -g pnpm-catalog-updates
+npm install -g pcu
 ```
 
 ### Usage
@@ -53,84 +55,14 @@ pcu -s
 
 ![PCU Showcase](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
-## Commands
+**➡️
+[Complete Command Reference & Examples](https://pcu-cli.dev/en/command-reference)**
 
-| Command         | Shorthand | Description                                     |
-| --------------- | --------- | ----------------------------------------------- |
-| `pcu check`     | `pcu -c`  | Check for outdated catalog dependencies         |
-| `pcu update`    | `pcu -u`  | Update catalog dependencies                     |
-| `pcu analyze`   | `pcu -a`  | Analyze impact of dependency updates            |
-| `pcu workspace` | `pcu -s`  | Show workspace information and validation       |
-| `pcu init`      |           | Initialize workspace with catalog configuration |
-| `pcu help`      | `pcu -h`  | Display help information                        |
+## Links
 
-## Common Examples
-
-```bash
-# Interactive update with backup
-pcu update --interactive --backup
-
-# Update only minor versions
-pcu update --target minor
-
-# Check specific catalog
-pcu check --catalog node18
-
-# Analyze before updating
-pcu analyze default react
-
-# Validate workspace
-pcu workspace --validate
-
-# Dry run update
-pcu update --dry-run
-```
-
-## Options
-
-### Global Options
-
-- `--help, -h`: Show help
-- `--version, -v`: Show version
-- `--verbose`: Enable verbose logging
-- `--quiet`: Suppress non-error output
-
-### Update Options
-
-- `--interactive, -i`: Interactive mode
-- `--dry-run, -d`: Show what would be updated without making changes
-- `--backup, -b`: Create backup before updating
-- `--target <level>`: Update target (patch|minor|major|latest)
-- `--catalog <name>`: Target specific catalog
-
-## Configuration
-
-Create a `.pcurc.json` file in your project root:
-
-```json
-{
-  "catalogs": ["default", "node18", "dev"],
-  "updateTarget": "minor",
-  "backup": true,
-  "interactive": false
-}
-```
-
-## Requirements
-
-- Node.js >= 22.0.0
-- pnpm workspace with catalog configuration
-- pnpm-workspace.yaml with catalog entries
-
-## Documentation
-
-For complete documentation, visit:
-[pnpm-catalog-updates](https://github.com/houko/pnpm-catalog-updates#readme)
-
-## Contributing
-
-Found a bug or want to contribute? Visit our
-[GitHub repository](https://github.com/houko/pnpm-catalog-updates).
+- 📖 [Complete Documentation](https://pcu-cli.dev/en)
+- 🐛 [Report Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 [GitHub Repository](https://github.com/houko/pnpm-catalog-updates)
 
 ## License
 

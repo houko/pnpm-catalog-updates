@@ -1,0 +1,276 @@
+export const metadata = {
+  title: 'Code schreiben',
+  description:
+    'Meistern Sie Code-Blöcke, Syntax-Highlighting und mehrsprachige Beispiele mit CodeGroup-Komponenten.',
+};
+
+# Code schreiben
+
+Meistern Sie die Kunst, Code in Ihrer Dokumentation zu präsentieren. Lernen Sie, Syntax-Highlighting zu verwenden, mehrsprachige Beispiele zu erstellen und Code-Blöcke effektiv zu organisieren, um Entwicklern beim Verstehen und Implementieren Ihrer Lösungen zu helfen. {{ className: 'lead' }}
+
+## Einzelne Code-Blöcke
+
+Grundlegende Code-Blöcke mit automatischem Syntax-Highlighting:
+
+```javascript
+// JavaScript-Beispiel mit Syntax-Highlighting
+const greeting = 'Hallo, Welt!';
+console.log(greeting);
+```
+
+Der obige JavaScript-Code-Block wird mit der folgenden MDX-Syntax erstellt:
+
+````mdx
+```javascript
+const greeting = 'Hallo, Welt!';
+console.log(greeting);
+```
+````
+
+**Python-Beispiel:**
+
+```python
+# Python-Beispiel
+def greet(name):
+    return f"Hallo, {name}!"
+
+print(greet("Welt"))
+```
+
+Python Code-Block MDX-Syntax:
+
+````mdx
+```python
+def greet(name):
+    return f"Hallo, {name}!"
+
+print(greet("Welt"))
+```
+````
+
+**Bash/Shell-Befehle:**
+
+```bash
+# Bash/Shell-Befehle
+npm install @example/package
+pnpm add dependency
+```
+
+Bash Code-Block MDX-Syntax:
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## CodeGroup für mehrere Sprachen
+
+Verwenden Sie `<CodeGroup>`, um dasselbe Beispiel in verschiedenen Sprachen zu zeigen:
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+Die obige mehrsprachige Code-Gruppe wird mit der folgenden MDX-Syntax erstellt:
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## API-Endpoint-Beispiele
+
+Für API-Dokumentation verwenden Sie HTTP-Methoden-Tags:
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Max Mustermann", "email": "max@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Max Mustermann',
+    email: 'max@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+Das obige API-Endpoint-Beispiel wird mit der folgenden MDX-Syntax erstellt, beachten Sie die `tag`- und `label`-Attribute:
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Max Mustermann", "email": "max@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Max Mustermann',
+    email: 'max@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### Code-Block-Titel
+
+Sie können auch Titel zu einzelnen Code-Blöcken hinzufügen:
+
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## Unterstützte Sprachen
+
+Unsere Code-Blöcke unterstützen Syntax-Highlighting für viele Programmiersprachen, einschließlich aber nicht beschränkt auf:
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Shell-Skripte**: `bash`, `shell`, `sh`
+- **Andere Sprachen**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**Beispiel:**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+JSON Code-Block MDX-Syntax:
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**Code-Vergleich (Diff):**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Diff Code-Block MDX-Syntax:
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## Best Practices
+
+- Geben Sie immer die Sprache für Syntax-Highlighting an
+- Verwenden Sie beschreibende Titel, um Code-Beispiele zu unterscheiden
+- Fügen Sie vollständige, ausführbare Beispiele ein
+- Halten Sie Beispiele prägnant aber funktional
+- Verwenden Sie konsistente Formatierung und Stil
+- Ordnen Sie Sprach-Tabs in CodeGroup nach Verwendungshäufigkeit
+
+## Nächste Schritte
+
+Fahren Sie fort mit [Layout-Komponenten](/writing-layout), um Ihren Inhalt effektiv zu organisieren.

@@ -1,0 +1,154 @@
+export const metadata = {
+  title: 'Escribiendo Diseño',
+  description:
+    'Crea diseños multi-columna sofisticados y organiza contenido con Row, Col y posicionamiento sticky.',
+};
+
+# Escribiendo Diseño
+
+Crea diseños sofisticados que mejoren la legibilidad y experiencia del usuario. Aprende a usar componentes Row y Col para diseños multi-columna, posicionamiento sticky y organización efectiva de contenido. {{ className: 'lead' }}
+
+## Diseño de Dos Columnas
+
+Usa `<Row>` y `<Col>` para contenido lado a lado:
+
+<Row>
+  <Col>
+    **Columna Izquierda**
+    
+    Este contenido aparece en la columna izquierda. Perfecto para explicaciones, descripciones o información complementaria.
+    
+    - Punto clave uno
+    - Detalle importante
+    - Contexto adicional
+  </Col>
+  
+  <Col>
+    **Columna Derecha**
+    
+    ```javascript
+    // Columna derecha con código
+    const example = {
+      feature: "multi-column",
+      benefit: "better organization"
+    };
+    ```
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Contenido de columna izquierda con explicaciones.</Col>
+
+  <Col>Contenido de columna derecha con ejemplos.</Col>
+</Row>
+```
+
+## Diseño de Columna Sticky
+
+Haz que el contenido se mantenga al hacer scroll:
+
+<Row>
+  <Col>
+    **Contenido con Scroll**
+    
+    Este es contenido regular que hace scroll normalmente. Puedes poner explicaciones largas aquí que los usuarios tendrán que scrollear para leer completamente.
+    
+    Esta columna contiene la narrativa principal o información detallada que requiere scroll para consumir totalmente.
+  </Col>
+  
+  <Col sticky>
+    **Referencia Sticky**
+    
+    ```json
+    {
+      "status": "sticky",
+      "position": "fixed",
+      "scroll": "independent"
+    }
+    ```
+    
+    Esto se mantiene visible mientras haces scroll.
+  </Col>
+</Row>
+
+```mdx
+<Row>
+  <Col>Contenido de scroll regular aquí.</Col>
+
+  <Col sticky>Esta columna se mantiene fija mientras haces scroll.</Col>
+</Row>
+```
+
+## Componente Guides
+
+Muestra una cuadrícula de enlaces de guías usando el componente `<Guides>`:
+
+<Guides />
+
+```mdx
+<Guides />
+```
+
+El componente Guides muestra un conjunto predefinido de guías de documentación con enlaces y descripciones. Perfecto para páginas de resumen y secciones de inicio.
+
+## Componente Resources
+
+Muestra categorías principales de recursos con tarjetas animadas:
+
+<Resources />
+
+```mdx
+<Resources />
+```
+
+El componente Resources muestra tarjetas de recursos animadas con íconos y descripciones. Genial para páginas de destino principales y secciones de resumen de API.
+
+## Íconos
+
+Usa íconos individuales para decoración en línea o diseños personalizados:
+
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+  <BookIcon className="h-6 w-6 text-red-600" />
+  <CheckIcon className="h-6 w-6 text-emerald-600" />
+  <BellIcon className="h-6 w-6 text-yellow-600" />
+  <CogIcon className="h-6 w-6 text-gray-600" />
+</div>
+
+```mdx
+<div className="not-prose flex gap-4 items-center">
+  <UserIcon className="h-6 w-6 text-blue-600" />
+  <UsersIcon className="h-6 w-6 text-green-600" />
+  <EnvelopeIcon className="h-6 w-6 text-purple-600" />
+  <ChatBubbleIcon className="h-6 w-6 text-orange-600" />
+</div>
+```
+
+### Íconos Disponibles
+
+- `<UserIcon />` - Usuario único
+- `<UsersIcon />` - Múltiples usuarios
+- `<EnvelopeIcon />` - Mensajes/email
+- `<ChatBubbleIcon />` - Conversaciones
+- `<BookIcon />` - Documentación
+- `<CheckIcon />` - Éxito/completado
+- `<BellIcon />` - Notificaciones
+- `<CogIcon />` - Configuración/ajustes
+
+## Mejores Prácticas de Diseño
+
+- Usa diseños de dos columnas para contenido complementario
+- Las columnas sticky funcionan mejor para material de referencia
+- Mantén las columnas balanceadas en longitud de contenido
+- Asegura responsividad móvil (las columnas se apilan en pantallas pequeñas)
+- Usa Guides para páginas de resumen de documentación
+- Usa Resources para showcases de categorías de API
+- Los íconos funcionan bien con clases personalizadas de Tailwind para colores y tamaños
+
+## Siguientes Pasos
+
+Continúa con [Documentación de API](/writing-api) para componentes especializados.

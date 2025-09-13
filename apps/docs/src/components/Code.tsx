@@ -71,7 +71,7 @@ function CopyButton({ code }: { code: string }) {
       className={clsx(
         'group/button text-2xs absolute right-4 top-3.5 overflow-hidden rounded-full py-1 pl-2 pr-3 font-medium opacity-0 backdrop-blur-sm transition focus:opacity-100 group-hover:opacity-100',
         copied
-          ? 'bg-emerald-400/10 ring-1 ring-inset ring-emerald-400/20'
+          ? 'bg-amber-400/10 ring-1 ring-inset ring-amber-400/20'
           : 'hover:bg-white/7.5 dark:bg-white/2.5 bg-white/5 dark:hover:bg-white/5'
       )}
       onClick={() => {
@@ -93,7 +93,7 @@ function CopyButton({ code }: { code: string }) {
       <span
         aria-hidden={!copied}
         className={clsx(
-          'pointer-events-none absolute inset-0 flex items-center justify-center text-emerald-400 transition duration-300',
+          'pointer-events-none absolute inset-0 flex items-center justify-center text-amber-400 transition duration-300',
           !copied && 'translate-y-1.5 opacity-0'
         )}
       >
@@ -132,25 +132,55 @@ function CodePanel({
   label?: string
   code?: string
 }) {
-  let child = Children.only(children)
+  let extractedCode = code
+  let extractedTag = tag
+  let extractedLabel = label
 
-  if (isValidElement(child)) {
-    const props = child.props as { tag?: string; label?: string; code?: string }
-    tag = props.tag ?? tag
-    label = props.label ?? label
-    code = props.code ?? code
+  // Try to extract from single child first (original behavior)
+  try {
+    let child = Children.only(children)
+    if (isValidElement(child)) {
+      const props = child.props as { tag?: string; label?: string; code?: string }
+      extractedTag = props.tag ?? extractedTag
+      extractedLabel = props.label ?? extractedLabel
+      extractedCode = props.code ?? extractedCode
+    }
+  } catch {
+    // If Children.only fails, try to extract code from text content
+    const extractTextFromChildren = (node: React.ReactNode): string => {
+      if (typeof node === 'string') {
+        return node
+      }
+      if (Array.isArray(node)) {
+        return node.map(extractTextFromChildren).join('')
+      }
+      if (
+        isValidElement(node) &&
+        node.props &&
+        typeof node.props === 'object' &&
+        'children' in node.props
+      ) {
+        const props = node.props as { children?: React.ReactNode }
+        return extractTextFromChildren(props.children)
+      }
+      return ''
+    }
+
+    if (!extractedCode) {
+      extractedCode = extractTextFromChildren(children)
+    }
   }
 
-  if (!code) {
+  if (!extractedCode) {
     throw new Error('`CodePanel` requires a `code` prop, or a child with a `code` prop.')
   }
 
   return (
     <div className="dark:bg-white/2.5 group">
-      <CodePanelHeader tag={tag} label={label} />
+      <CodePanelHeader tag={extractedTag} label={extractedLabel} />
       <div className="relative">
         <pre className="overflow-x-auto p-4 text-xs text-white">{children}</pre>
-        <CopyButton code={code} />
+        <CopyButton code={extractedCode} />
       </div>
     </div>
   )
@@ -181,7 +211,7 @@ function CodeGroupHeader({
               className={clsx(
                 'data-selected:not-data-focus:outline-hidden border-b py-3 transition',
                 childIndex === selectedIndex
-                  ? 'border-emerald-500 text-emerald-400'
+                  ? 'border-amber-500 text-amber-400'
                   : 'border-transparent text-zinc-400 hover:text-zinc-300'
               )}
             >

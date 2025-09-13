@@ -1,0 +1,525 @@
+export const metadata = {
+  title: 'Meilleures Pratiques',
+  description:
+    "Meilleures pratiques pour utiliser PCU efficacement dans les environnements d'équipe et les flux de travail d'entreprise.",
+};
+
+# Meilleures Pratiques
+
+Apprenez à utiliser PCU efficacement dans les environnements d'équipe, les flux de travail d'entreprise et les systèmes de production. {{ className: 'lead' }}
+
+## Collaboration d'Équipe
+
+### Configuration Partagée
+
+Maintenez la cohérence de votre configuration PCU entre les membres de l'équipe en versionnant votre `.pcurc.json` :
+
+```json
+{
+  "target": "minor",
+  "concurrency": 3,
+  "timeout": 60000,
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "exclude": ["legacy-*", "deprecated-*"]
+}
+```
+
+### Directives de Révision de Code
+
+**Liste de contrôle pré-révision :**
+
+1. Exécutez `pcu check --dry-run` pour prévisualiser les changements
+2. Vérifiez qu'il n'y a pas de changements cassants dans les mises à jour de version majeure
+3. Testez les fonctionnalités critiques après les mises à jour de dépendances
+4. Examinez les fichiers CHANGELOG des packages mis à jour
+
+**Processus de révision :**
+
+1. **Sécurité d'abord** : Examinez toujours immédiatement les mises à jour de dépendances liées à la sécurité
+2. **Grouper les mises à jour liées** : Regroupez les packages connexes (ex. écosystème React) dans des PR uniques
+3. **Documenter les raisons** : Incluez la justification des épinglages de versions ou exclusions
+4. **Couverture de tests** : Assurez-vous d'une couverture de tests adéquate avant de fusionner les mises à jour de dépendances
+
+### Standards de Communication
+
+Utilisez des messages de commit clairs lors de la mise à jour des dépendances :
+
+```bash
+# Bons messages de commit
+feat(deps): mise à jour React vers v18.3.0 pour de meilleures performances
+security(deps): correctif vulnérabilité lodash CVE-2021-23337
+chore(deps): mise à jour des dépendances de développement vers les dernières versions
+
+# Mauvais messages de commit
+update packages
+fix deps
+bump versions
+```
+
+## Usage d'Entreprise
+
+### Gouvernance et Conformité
+
+**Processus d'approbation des dépendances :**
+
+1. **Scan de sécurité** : Toutes les mises à jour doivent passer les audits de sécurité
+2. **Conformité des licences** : Vérifiez la compatibilité des licences avec les politiques internes
+3. **Exigences de stabilité** : Préférez les versions LTS dans les environnements de production
+4. **Gestion des changements** : Suivez les processus d'approbation des changements établis
+
+**Configuration pour l'entreprise :**
+
+```json
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "security": {
+    "autoFix": false,
+    "severityThreshold": "moderate",
+    "ignoredVulnerabilities": [],
+    "customAuditConfig": {
+      "low": "warn",
+      "moderate": "error",
+      "high": "error",
+      "critical": "error"
+    }
+  },
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "exclude": false,
+      "requireApproval": true,
+      "maxMajorUpdates": 0
+    }
+  ]
+}
+```
+
+### Intégration de Registre Privé
+
+Configurez PCU pour les environnements d'entreprise avec des registres privés :
+
+```ini
+# .npmrc (racine de l'espace de travail)
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+registry=https://npm.company.com/
+
+# Fallback pour les packages publics
+@types:registry=https://registry.npmjs.org/
+```
+
+**Variables d'environnement :**
+
+```bash
+export NPM_TOKEN=your_company_token
+export PCU_CACHE_ENABLED=true
+export PCU_TIMEOUT=120000
+export PCU_CONCURRENCY=2
+```
+
+### Piste d'Audit et Rapports
+
+Maintenez des enregistrements complets des changements de dépendances :
+
+```bash
+# Générer des rapports de dépendances
+pcu check --format json > dependency-report.json
+pcu security --format json > security-report.json
+
+# Inclure dans le pipeline CI/CD
+- name: Générer Rapport de Dépendances
+  run: |
+    pcu check --format json > artifacts/deps-$(date +%Y%m%d).json
+    pcu security --format json > artifacts/security-$(date +%Y%m%d).json
+```
+
+## Flux de Travail de Release
+
+### Intégration du Versioning Sémantique
+
+Alignez les mises à jour de dépendances avec votre cycle de release :
+
+**Phase pré-release :**
+
+```bash
+# Vérifier les mises à jour sans les appliquer
+pcu check --target patch --dry-run
+
+# Mettre à jour seulement les versions de patch durant le gel
+pcu update --target patch --exclude "major-framework-*"
+```
+
+**Préparation de la release :**
+
+```bash
+# Mettre à jour vers les dernières versions stables
+pcu update --target minor --exclude "experimental-*"
+
+# Générer les notes de release avec les changements de dépendances
+pcu analyze default react 18.3.0 >> RELEASE_NOTES.md
+```
+
+**Post-release :**
+
+```bash
+# Mettre à jour vers les dernières versions incluant les versions majeures
+pcu update --target latest --interactive
+```
+
+### Tests d'Environnement de Staging
+
+**Validation pré-production :**
+
+<CodeGroup>
+
+```bash {{ title: 'Pipeline de Staging' }}
+# Mettre à jour les dépendances en staging
+pcu update --target minor --create-backup
+
+# Exécuter des tests complets
+npm run test:integration
+npm run test:e2e
+npm run test:performance
+
+# Rollback si des problèmes sont trouvés
+pcu restore-backup
+```
+
+```yaml {{ title: 'GitHub Actions' }}
+name: Tests de Dépendances
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Hebdomadaire Lundi 2h du matin
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mettre à jour les Dépendances
+        run: pcu update --target minor --dry-run
+
+      - name: Tester les Dépendances Mises à jour
+        run: |
+          npm ci
+          npm run test:all
+          npm run build
+```
+
+</CodeGroup>
+
+## Meilleures Pratiques de Sécurité
+
+### Gestion des Vulnérabilités
+
+**Réponse immédiate PCU :**
+
+1. **Sévérité critique/élevée** : Mise à jour sous 24 heures
+2. **Sévérité modérée** : Mise à jour sous 1 semaine
+3. **Sévérité faible** : Inclure dans le prochain cycle de mise à jour régulier
+
+```bash
+# Prioriser les correctifs de sécurité
+pcu security --severity critical --auto-fix
+pcu security --severity high --fix-vulns --require-confirmation
+
+# Audits de sécurité réguliers
+pcu security --format json --output security-audit.json
+```
+
+### Validation des Dépendances
+
+**Configuration de sécurité :**
+
+```json
+{
+  "security": {
+    "enableSnyk": true,
+    "autoFix": false,
+    "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+    "blockedPackages": ["colors", "faker"],
+    "trustedSources": ["@company/*", "@types/*"],
+    "customAuditConfig": {
+      "skipLevels": [],
+      "excludeDevDependencies": false
+    }
+  }
+}
+```
+
+**Révisions de sécurité manuelles :**
+
+- Examinez toutes les nouvelles dépendances avant la première utilisation
+- Auditez les mainteneurs de packages et les compteurs de téléchargement
+- Vérifiez l'authenticité et les signatures des packages
+- Vérifiez les problèmes de sécurité connus dans les chaînes de dépendances
+
+### Contrôle d'Accès
+
+**Gestion des tokens :**
+
+```bash
+# Utilisez des tokens scopés avec des permissions minimales
+NPM_TOKEN=npm_[REDACTED]_readonly_access_only
+
+# Effectuez une rotation des tokens régulièrement (trimestriellement)
+# Stockez les tokens dans des systèmes de gestion d'identifiants sécurisés
+# Ne commitez jamais les tokens dans le contrôle de version
+```
+
+## Optimisation des Performances
+
+### Stratégies de Cache
+
+**Développement local :**
+
+```bash
+# Activer le cache persistant
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600  # 1 heure
+export PCU_CACHE_MAX_SIZE=100  # 100 MB
+```
+
+**Optimisation CI/CD :**
+
+```yaml
+- name: Cache PCU Data
+  uses: actions/cache@v3
+  with:
+    path: ~/.pcu-cache
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml') }}
+
+- name: Exécution PCU Optimisée
+  run: |
+    export PCU_CACHE_ENABLED=true
+    pcu check --concurrency 5 --timeout 30000
+```
+
+### Gestion des Gros Monorepos
+
+**Configuration pour 100+ packages :**
+
+```json
+{
+  "concurrency": 2,
+  "timeout": 120000,
+  "batchSize": 10,
+  "advanced": {
+    "memoryOptimization": true,
+    "parallelCatalogs": false,
+    "incrementalUpdates": true
+  }
+}
+```
+
+**Traitement sélectif :**
+
+```bash
+# Traiter par catégories
+pcu check --include "@company/ui-*" --limit 20
+pcu check --include "@company/api-*" --limit 20
+pcu check --include "@types/*" --target latest
+
+# Utiliser le filtrage pour les grosses opérations
+pcu update --include "react*" --exclude "*-experimental"
+```
+
+### Optimisation Réseau
+
+**Configuration de registre :**
+
+```bash
+# Utilisez des registres plus rapides géographiquement proches de votre localisation
+export PCU_REGISTRY=https://registry-asia.npmjs.org/
+export PCU_TIMEOUT=60000
+export PCU_MAX_RETRIES=3
+```
+
+## Gestion d'Erreurs et Récupération
+
+### Résolution d'Erreurs Courantes
+
+**Problèmes réseau :**
+
+```bash
+# Augmenter les timeouts pour les connexions lentes
+PCU_TIMEOUT=120000 pcu check
+
+# Utiliser des registres alternatifs
+PCU_REGISTRY=https://registry.npmjs.org/ pcu check
+
+# Activer le débogage pour les problèmes réseau
+DEBUG=pcu:network pcu check
+```
+
+**Problèmes de mémoire :**
+
+```bash
+# Augmenter la limite mémoire de Node.js
+NODE_OPTIONS="--max-old-space-size=8192" pcu check
+
+# Réduire la concurrence pour les environnements à mémoire contrainte
+pcu check --concurrency 1
+```
+
+### Sauvegarde et Récupération
+
+**Créer des sauvegardes avant les mises à jour majeures :**
+
+```bash
+# Création automatique de sauvegarde
+pcu update --create-backup --target minor
+
+# Sauvegarde manuelle
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+cp -r packages/*/package.json backups/
+
+# Restaurer depuis la sauvegarde
+pcu restore-backup --timestamp 2024-01-15T10:30:00Z
+```
+
+**Stratégie de rollback de version :**
+
+```bash
+# Rollback de packages spécifiques
+pcu rollback react 18.2.0
+pcu rollback @types/node 20.5.0
+
+# Rollback du catalogue entier
+git checkout HEAD~1 pnpm-workspace.yaml
+pnpm install
+```
+
+### Monitoring et Alertes
+
+**Intégration CI/CD :**
+
+```yaml
+- name: Contrôle de Santé des Dépendances
+  run: |
+    set -e
+    pcu check --format json > check-results.json
+
+    # Parser les résultats et définir les alertes
+    if grep -q "critical" check-results.json; then
+      echo "::error::Problèmes de dépendances critiques trouvés"
+      exit 1
+    fi
+
+- name: Monitoring de Sécurité
+  run: |
+    pcu security --format json > security-results.json
+
+    # Alerte sur les vulnérabilités élevées/critiques
+    CRITICAL_COUNT=$(jq '.vulnerabilities.critical // 0' security-results.json)
+    if [ "$CRITICAL_COUNT" -gt 0 ]; then
+      # Envoyer une alerte au système de monitoring
+      curl -X POST "$SLACK_WEBHOOK" -d '{"text":"🚨 Vulnérabilités de sécurité critiques trouvées"}'
+    fi
+```
+
+## Patterns d'Intégration
+
+### Intégration IDE et Éditeur
+
+**Configuration VS Code :**
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "PCU_CACHE_ENABLED": "true"
+  },
+  "tasks.json": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "PCU Check",
+        "type": "shell",
+        "command": "pcu check --interactive",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Scripts d'Automatisation
+
+**Scripts Package.json :**
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update:patch": "pcu update --target patch",
+    "deps:update:minor": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --fix-vulns",
+    "deps:analyze": "pcu analyze default",
+    "prerelease": "npm run deps:check && npm run deps:security"
+  }
+}
+```
+
+**Intégration Git Hooks :**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+
+# Vérifier les problèmes de dépendances avant commit
+if command -v pcu &> /dev/null; then
+  pcu check --format json > /dev/null || {
+    echo "⚠️  Problèmes de dépendances détectés. Exécutez 'pcu check' pour les détails."
+    exit 1
+  }
+fi
+```
+
+---
+
+## Liste de Contrôle de Référence Rapide
+
+### Flux de Travail Quotidien
+
+1. Vérifier les mises à jour de sécurité : `pcu security`
+2. Examiner les dépendances obsolètes : `pcu check --limit 10`
+3. Mettre à jour les versions de patch : `pcu update --target patch`
+
+### Flux de Travail Hebdomadaire
+
+1. Vérification complète des dépendances : `pcu check`
+2. Mettre à jour les versions mineures : `pcu update --target minor --interactive`
+3. Examiner et mettre à jour les règles d'exclusion
+4. Générer des rapports de dépendances pour révision d'équipe
+
+### Flux de Travail Mensuel
+
+1. Examiner les mises à jour de versions majeures : `pcu check --target latest`
+2. Mettre à jour les dépendances de développement : `pcu update --dev`
+3. Auditer les licences de dépendances et la conformité
+4. Examiner et optimiser la configuration PCU
+5. Nettoyer les dépendances inutilisées
+
+### Avant les Releases
+
+1. Exécuter un audit complet des dépendances : `pcu security --comprehensive`
+2. Créer une sauvegarde : `pcu update --create-backup`
+3. Tester en environnement de staging
+4. Générer les notes de release avec les changements de dépendances

@@ -1,0 +1,198 @@
+{
+  "Navigation": {
+    "quickstart": "Schnellstart",
+    "command-reference": "Befehlsreferenz",
+    "configuration": "Konfiguration",
+    "examples": "Beispiele",
+    "development": "Entwicklung",
+    "cicd": "CI/CD Integration",
+    "faq": "FAQ",
+    "best-practices": "Best Practices",
+    "performance": "Performance",
+    "migration": "Migrationsanleitung",
+    "troubleshooting": "Fehlerbehebung",
+    "writing-basics": "Schreibgrundlagen",
+    "writing-components": "Komponenten Schreiben",
+    "writing-code": "Code Schreiben",
+    "writing-layout": "Layout Schreiben",
+    "writing-api": "API Schreiben",
+    "writing-advanced": "Fortgeschrittenes Schreiben"
+  },
+  "Common": {
+    "language": "Sprache",
+    "english": "English",
+    "chinese": "中文",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "german": "Deutsch",
+    "french": "Français",
+    "korean": "한국어",
+    "documentation": "Dokumentation",
+    "getStarted": "Erste Schritte",
+    "gettingStarted": "Erste Schritte",
+    "guidesAndExamples": "Anleitungen & Beispiele",
+    "writingDocumentation": "Dokumentation Schreiben",
+    "api": "Befehle",
+    "support": "Hilfe",
+    "guides": "Anleitungen",
+    "writing": "Dokumentation Schreiben",
+    "resources": "Ressourcen",
+    "introduction": "Einführung"
+  },
+  "Home": {
+    "title": "PCU Dokumentation",
+    "description": "Ein leistungsstarkes CLI-Tool für die Verwaltung von pnpm Workspace Catalog Abhängigkeiten",
+    "heroTitle": "Verwalten Sie Ihre pnpm Catalogs mit Leichtigkeit",
+    "heroDescription": "PCU hilft Ihnen dabei, Abhängigkeiten in Ihren pnpm Workspace Catalogs effizient zu überprüfen, zu aktualisieren und zu analysieren.",
+    "exploreSdks": "Befehlsreferenz anzeigen",
+    "gettingStartedTitle": "Erste Schritte",
+    "gettingStartedDesc": "PCU ist ein Dependency-Management-Tool, das speziell für pnpm Workspaces entwickelt wurde. Es hilft dabei, veraltete Abhängigkeiten zu überprüfen, Versionen stapelweise zu aktualisieren und Ihre Catalog-Konfiguration zu optimieren.",
+    "getApiKey": "Installation starten"
+  },
+  "NotFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Entschuldigung, wir konnten die gesuchte Seite nicht finden.",
+    "backButton": "Zurück zur Dokumentation"
+  },
+  "WritingGuide": {
+    "title": "Leitfaden zum Schreiben von Dokumentation",
+    "description": "Vollständiger Leitfaden zum Schreiben von Dokumentation mit allen unterstützten MDX-Komponenten und -Funktionen."
+  },
+  "Feedback": {
+    "question": "War diese Seite hilfreich?",
+    "yes": "Ja",
+    "no": "Nein",
+    "thanks": "Danke für Ihr Feedback!"
+  },
+  "Search": {
+    "placeholder": "Etwas suchen...",
+    "noResults": "Nichts gefunden für",
+    "tryAgain": "Bitte versuchen Sie es erneut."
+  },
+  "Quickstart": {
+    "title": "Schnellstart",
+    "description": "Diese Anleitung hilft Ihnen dabei, PCU schnell zu installieren und zu konfigurieren, um mit der Verwaltung Ihrer pnpm-Katalog-Abhängigkeiten zu beginnen.",
+    "installTitle": "PCU installieren",
+    "installDesc": "PCU kann global über npm, yarn oder pnpm installiert werden. Wir empfehlen die Verwendung von pnpm für Konsistenz.",
+    "configTitle": "Arbeitsbereich konfigurieren",
+    "configDesc": "Stellen Sie in Ihrem pnpm-Arbeitsbereich-Stammverzeichnis sicher, dass Sie eine ordnungsgemäße Katalog-Konfiguration haben.",
+    "firstRunTitle": "Erster Lauf",
+    "firstRunDesc": "Führen Sie PCU aus, um den Status der Abhängigkeiten in Ihrem Arbeitsbereich zu überprüfen.",
+    "nextStepsTitle": "Wie geht es weiter?",
+    "nextStepsDesc": "Jetzt, da Sie PCU installiert und Ihre erste Überprüfung durchgeführt haben. Hier sind einige nützliche nächsten Schritte:",
+    "checkDeps": "Auf veraltete Abhängigkeiten prüfen",
+    "updateCatalogs": "Katalog-Konfiguration aktualisieren",
+    "learnCommands": "Alle verfügbaren Befehle lernen"
+  },
+  "CommandReference": {
+    "title": "Befehlsreferenz",
+    "description": "Vollständige Referenzdokumentation für alle PCU-Befehle."
+  },
+  "Configuration": {
+    "title": "Konfiguration",
+    "description": "Erfahren Sie, wie Sie PCU an Ihren Entwicklungsworkflow anpassen."
+  },
+  "Examples": {
+    "title": "Beispiele",
+    "description": "Erfahren Sie, wie Sie PCU verwenden, um Ihre Projektabhängigkeiten zu verwalten und zu aktualisieren."
+  },
+  "Development": {
+    "title": "Entwicklung",
+    "description": "Best Practices für die Verwendung von PCU in Teamumgebungen."
+  },
+  "Troubleshooting": {
+    "title": "Fehlerbehebung",
+    "description": "Lösungen für häufige Probleme und Fehler."
+  },
+  "CICD": {
+    "title": "CI/CD-Integration",
+    "description": "Integrieren Sie PCU in Ihre Continuous Integration und Deployment-Pipelines."
+  },
+  "BestPractices": {
+    "title": "Best Practices",
+    "description": "Best Practices für die effektive Nutzung von PCU in Teamumgebungen und Unternehmensworkflows."
+  },
+  "Performance": {
+    "title": "Performance-Optimierung",
+    "description": "Optimieren Sie die PCU-Performance für große Monorepos, verbessern Sie die Ausführungsgeschwindigkeit und reduzieren Sie den Ressourcenverbrauch."
+  },
+  "Migration": {
+    "title": "Migrationsanleitung",
+    "description": "Migrieren Sie von anderen Dependency-Management-Tools zu PCU und stellen Sie Ihr Team auf die effektive Nutzung von pnpm-Katalogen um."
+  },
+  "FAQ": {
+    "title": "Häufig gestellte Fragen",
+    "description": "Häufig gestellte Fragen zu PCU. Finden Sie schnelle Antworten auf häufige Fragen und Probleme."
+  },
+  "QuickstartPage": {
+    "title": "Schnellstart",
+    "description": "Diese Anleitung hilft Ihnen, PCU schnell zu installieren und zu konfigurieren, um mit der Verwaltung Ihrer pnpm-Katalog-Abhängigkeiten zu beginnen.",
+    "intro": "Diese Anleitung hilft Ihnen, PCU schnell zu installieren und zu konfigurieren, um mit der Verwaltung Ihrer pnpm-Katalog-Abhängigkeiten zu beginnen. Wir werden behandeln, wie Sie das Tool installieren, Ihren Arbeitsbereich konfigurieren und Ihre erste Abhängigkeitsprüfung durchführen.",
+    "noteText": "Bevor Sie mit PCU beginnen, stellen Sie sicher, dass Ihr Projekt pnpm als Paketmanager verwendet und Arbeitsbereiche konfiguriert hat. Sie finden die Arbeitsbereich-Konfiguration in der Datei pnpm-workspace.yaml im Stammverzeichnis Ihres Projekts.",
+    "chooseInstallTitle": "Installationsmethode Wählen",
+    "chooseInstallDesc": "Vor Ihrer ersten Überprüfung müssen Sie wählen, wie Sie PCU installieren. Neben der traditionellen npm-Globalinstallation unterstützt PCU auch die Installation über pnpm, yarn und temporäre Ausführung über npx. Die folgenden Beispiele zeigen, wie Sie PCU installieren:",
+    "installGlobal": "# PCU global installieren",
+    "installPnpm": "# PCU mit pnpm installieren",
+    "installYarn": "# PCU mit yarn installieren",
+    "installNpx": "# Temporär mit npx ausführen",
+    "checkCommandsLink": "Alle verfügbaren Befehle anzeigen",
+    "firstCheckTitle": "Erste Überprüfung Durchführen",
+    "firstCheckDesc": "Nach der Wahl einer Installationsmethode können Sie Ihre erste Abhängigkeitsprüfung in Ihrem pnpm-Arbeitsbereich durchführen. Die folgenden Beispiele zeigen, wie Sie PCU ausführen, um veraltete Abhängigkeiten zu überprüfen und standardmäßig die ersten 10 Ergebnisse anzuzeigen:",
+    "checkOutdated": "Auf veraltete Abhängigkeiten prüfen",
+    "checkSpecific": "Updates für spezifische Pakete prüfen",
+    "checkWorkspace": "Gesamten Arbeitsbereich prüfen",
+    "updateCatalog": "Katalog-Konfiguration aktualisieren",
+    "readDocsLink": "Dokumentation zur Abhängigkeitsverwaltung lesen",
+    "nextStepsTitle": "Wie geht es weiter?",
+    "nextStepsDesc": "Großartig! Sie haben jetzt PCU installiert und Ihre erste Abhängigkeitsprüfung durchgeführt. Hier sind einige nützliche Links, um mehr PCU-Features zu erkunden:",
+    "getCatalogLink": "Katalog-Konfiguration vom pnpm-Arbeitsbereich abrufen",
+    "checkDependenciesLink": "Dokumentation zur Abhängigkeitsverwaltung anzeigen",
+    "learnErrorsLink": "Über PCU-Fehlerbehandlung lernen"
+  },
+  "Guides": {
+    "title": "Anleitungen",
+    "readMore": "Mehr lesen",
+    "commandReference": {
+      "name": "Befehlsreferenz",
+      "description": "Vollständige Referenz für alle PCU-Befehle und ihre Optionen."
+    },
+    "configuration": {
+      "name": "Konfiguration",
+      "description": "Lernen Sie, wie Sie PCU für Ihren Workflow und Ihre Projektanforderungen konfigurieren."
+    },
+    "troubleshooting": {
+      "name": "Fehlerbehebung",
+      "description": "Häufige Probleme und Lösungen bei der Arbeit mit PCU und Abhängigkeiten."
+    },
+    "examples": {
+      "name": "Beispiele",
+      "description": "Praktische Beispiele und Anwendungsfälle für die Verwaltung von Katalog-Abhängigkeiten."
+    }
+  },
+  "Resources": {
+    "title": "Ressourcen",
+    "configuration": {
+      "name": "Konfiguration",
+      "description": "Erfahren Sie mehr über PCU-Konfigurationsoptionen und wie Sie Ihr Setup für verschiedene Workflows anpassen."
+    },
+    "examples": {
+      "name": "Beispiele",
+      "description": "Erkunden Sie praktische Beispiele und häufige Anwendungsfälle für die Verwaltung von Abhängigkeiten mit PCU."
+    },
+    "troubleshooting": {
+      "name": "Fehlerbehebung",
+      "description": "Häufige Probleme und Lösungen bei der Verwendung von PCU. Fehlermeldungen, Debugging-Tipps und Fehlerbehebungsanleitungen."
+    },
+    "development": {
+      "name": "Entwicklung",
+      "description": "Lernen Sie über Entwicklungsworkflows, Beitragsrichtlinien und erweiterte PCU-Nutzungsmuster."
+    }
+  },
+  "Footer": {
+    "previous": "Zurück",
+    "next": "Weiter",
+    "copyright": "{year} pnpm-catalog-updates. Alle Rechte vorbehalten.",
+    "followGitHub": "Folgen Sie uns auf GitHub",
+    "joinDiscord": "Treten Sie unserem Discord-Server bei"
+  }
+}

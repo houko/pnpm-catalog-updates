@@ -1,0 +1,138 @@
+export const metadata = {
+  title: '快速开始',
+  description:
+    '几分钟内开始使用 pnpm-catalog-updates。学习如何安装、初始化和更新您的 pnpm 工作空间目录依赖。',
+};
+
+# 快速开始
+
+几分钟内开始使用 pnpm-catalog-updates。本指南将引导您完成安装、初始化和第一次依赖更新。{{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates 专为使用目录依赖的 pnpm 工作空间而设计。开始之前请确保您有一个 pnpm
+  工作空间。
+</Note>
+
+## 安装
+
+选择您首选的安装方法：
+
+<CodeGroup>
+
+```bash {{ title: '全局安装' }}
+npm install -g pcu
+# 或
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (无需安装)' }}
+npx pnpm-catalog-updates
+# 或
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## 初始化工作空间
+
+如果您还没有 pnpm 工作空间，PCU 可以为您创建一个：
+
+```bash
+pcu init
+```
+
+此命令创建：
+
+- `.pcurc.json` - PCU 配置文件
+- `package.json` - 工作空间根 package.json（如果缺失）
+- `pnpm-workspace.yaml` - PNPM 工作空间配置（如果缺失）
+- `packages/` - 工作空间包目录（如果缺失）
+
+## 第一次更新检查
+
+检查过时的目录依赖：
+
+```bash
+pcu -c
+```
+
+这将显示一个美观的表格，包含：
+
+- 目录中的当前版本
+- 最新可用版本
+- 包名称和更新类型
+- 彩色编码的紧急程度指示器
+
+## 交互式更新
+
+使用交互式界面更新依赖：
+
+```bash
+pcu -i
+```
+
+这让您可以：
+
+- ✅ 选择要更新的依赖
+- 🎯 选择特定版本
+- 📊 查看影响分析
+- 🔒 自动创建备份
+
+## 常用命令
+
+以下是最常用的命令：
+
+| 命令       | 描述           | 示例                       |
+| ---------- | -------------- | -------------------------- |
+| `pcu init` | 初始化工作空间 | `pcu init --verbose`       |
+| `pcu -c`   | 检查更新       | `pcu -c --catalog default` |
+| `pcu -i`   | 交互式更新     | `pcu -i -b`                |
+| `pcu -u`   | 更新依赖       | `pcu -u --target minor`    |
+| `pcu -a`   | 分析影响       | `pcu -a default react`     |
+
+## 下一步
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="命令参考"
+    description="所有 PCU 命令和选项的完整指南。"
+  />
+  <Resource href="/configuration" title="配置" description="学习如何为您的工作流程配置 PCU。" />
+  <Resource href="/examples" title="示例" description="实际示例和用例。" />
+  <Resource href="/development" title="开发" description="设置 PCU 进行开发和贡献。" />
+</Resources>
+
+## 入门清单
+
+按照此清单在您的项目中运行 PCU：
+
+1. **安装 PCU** - 选择全局安装或使用 npx
+2. **初始化工作空间** - 运行 `pcu init` 进行首次设置
+3. **检查更新** - 使用 `pcu -c` 查看可用更新
+4. **配置设置** - 根据需要自定义 `.pcurc.json`
+5. **更新依赖** - 使用交互模式 `pcu -i` 进行安全更新
+6. **设置自动化** - 考虑 CI/CD 集成以进行定期检查
+
+## 基本命令快速参考
+
+| 命令           | 用途         | 使用时机          |
+| -------------- | ------------ | ----------------- |
+| `pcu init`     | 设置工作空间 | 首次设置，新项目  |
+| `pcu -c`       | 检查更新     | 日常开发，CI 检查 |
+| `pcu -i`       | 交互式更新   | 安全手动更新      |
+| `pcu -u`       | 批量更新     | 自动更新，CI/CD   |
+| `pcu security` | 安全扫描     | 发布前，定期审核  |
+
+## 后续步骤
+
+一旦您设置了 PCU，探索这些高级功能：
+
+- **[配置](/configuration)** - 为您的特定工作流程自定义 PCU
+- **[安全扫描](/command-reference#pcu-security)** - 集成漏洞扫描
+- **[Monorepo 管理](/configuration#monorepo-configuration)** - 高级工作空间功能
+- **[CI/CD 集成](/examples)** - 在您的流水线中自动化依赖更新

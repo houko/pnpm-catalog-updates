@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'APIドキュメントライティング',
+  description:
+    'Properties、Tags、および専用コンポーネントを使用して包括的なAPIドキュメントを作成します。',
+};
+
+# APIドキュメントライティング
+
+開発者に愛される包括的なAPIドキュメントを作成します。Propertiesを使用してパラメータを記録し、TagsでHTTPメソッドをマークし、LibrariesでSDKを表示し、APIリファレンスを明確で実行可能にする専用コンポーネントを学びます。 {{ className: 'lead' }}
+
+## プロパティリスト
+
+`<Properties>`と`<Property>`を使用してAPIパラメータを記録：
+
+<Properties>
+  <Property name="id" type="string">
+    リソースの一意識別子。リソース作成時に自動生成されます。
+  </Property>
+
+<Property name="name" type="string">
+  リソースの表示名。1文字から100文字の間である必要があります。
+</Property>
+
+<Property name="email" type="string">
+  有効なメールアドレス。すべてのユーザー間で一意である必要があります。
+</Property>
+
+  <Property name="created_at" type="timestamp">
+    リソースの作成時間を表すISO 8601タイムスタンプ。
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    パラメータの説明と使用法。
+  </Property>
+</Properties>
+```
+
+## HTTPメソッドタグ
+
+タグはHTTPメソッドに基づいて自動的に色付けされます：
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">カスタム</Tag>
+  <Tag color="emerald">成功</Tag>
+  <Tag color="rose">エラー</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">成功</Tag>
+```
+
+## Librariesコンポーネント
+
+### 完全なライブラリグリッド
+
+`<Libraries>`コンポーネントを使用してすべての公式SDKを表示：
+
+<Libraries />
+
+```mdx
+<Libraries />
+```
+
+### 単一ライブラリ
+
+`<Library>`コンポーネントを使用して単一のライブラリを表示：
+
+<Library language="node" />
+
+### コンパクトライブラリ表示
+
+小さなスペースでは、説明付きのコンパクトモードを使用：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+または説明なしのより密なコンパクト表示：
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- 説明付きコンパクトライブラリ -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- 説明なしコンパクトライブラリ -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Libraryコンポーネントオプション
+
+- **language**: `php`, `ruby`, `node`, `python`, `go` から選択 (デフォルト: `node`)
+- **compact**: コンパクトスタイルを使用 (デフォルト: `false`)
+- **showDescription**: 説明テキストの表示/非表示 (デフォルト: `true`)
+
+### Libraries使用シナリオ
+
+- **`<Libraries />`**: 完全なSDK概要ページ、入門セクション
+- **`<Library />`**: インラインドキュメント、特定言語ガイド
+- **`<Library compact />`**: サイドバーリファレンス、コンパクトリスト
+
+## APIベストプラクティス
+
+- 常にPropertiesコンポーネントですべてのパラメータを記録
+- サンプルリクエストとレスポンスを含める
+- Tagsを使用して適切なHTTPステータスコードをマーク
+- 明確なエラーメッセージを提供
+- 認証要件を含める
+- SDKページにはLibrariesコンポーネントを使用
+- Propertiesリストを集中的かつ整理された状態に保つ
+
+## 次のステップ
+
+[高度な機能](/writing-advanced)を使用してドキュメントの旅を完了しましょう。

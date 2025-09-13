@@ -1,0 +1,1336 @@
+export const metadata = {
+  title: 'Konfiguration',
+  description:
+    'Lernen Sie, wie Sie pnpm-catalog-updates für Ihren Workflow mit .pcurc.json-Einstellungen, Paketregeln und erweiterten Optionen konfigurieren.',
+};
+
+# Konfiguration
+
+Konfigurieren Sie PCU für Ihren Workflow und Ihre Projektanforderungen. Lernen Sie über Konfigurationsdateien, paketspezifische Regeln und erweiterte Einstellungen. {{ className: 'lead' }}
+
+## Konfigurationsdateitypen
+
+PCU unterstützt mehrere Konfigurationsdateiformate und -standorte, um verschiedene Entwicklungsworkflows zu berücksichtigen.
+
+### Unterstützte Konfigurationsdateien
+
+PCU sucht nach Konfigurationsdateien in der folgenden Reihenfolge (erste gefundene gewinnt):
+
+<Properties>
+  <Property name=".pcurc.json" type="JSON">
+    Primäre JSON-Konfigurationsdatei im Projektverzeichnis
+  </Property>
+  <Property name=".pcurc.js" type="JavaScript">
+    JavaScript-Konfigurationsdatei mit dynamischer Konfigurationsunterstützung
+  </Property>
+  <Property name="pcu.config.js" type="JavaScript">
+    Alternative JavaScript-Konfigurationsdateiname
+  </Property>
+  <Property name="~/.pcurc.json" type="JSON">
+    Globale Benutzerkonfiguration im Home-Verzeichnis
+  </Property>
+  <Property name="package.json" type="JSON">
+    Konfiguration innerhalb von package.json unter dem "pcu"-Schlüssel
+  </Property>
+</Properties>
+
+### JavaScript-Konfigurationsunterstützung
+
+JavaScript-Konfigurationsdateien ermöglichen dynamische Konfiguration basierend auf Umgebung, Workspace-Struktur oder anderen Laufzeitbedingungen:
+
+<CodeGroup>
+
+```javascript {{ title: '.pcurc.js' }}
+module.exports = {
+  defaults: {
+    target: process.env.NODE_ENV === 'production' ? 'minor' : 'latest',
+    createBackup: true,
+  },
+  workspace: {
+    autoDiscover: true,
+    catalogMode: 'strict',
+  },
+  // Dynamische Paketregeln basierend auf Workspace-Struktur
+  packageRules: [
+    {
+      patterns: ['react*'],
+      target: 'minor',
+      requireConfirmation: process.env.CI !== 'true',
+    },
+  ],
+  // Umgebungsspezifische Konfiguration
+  ...(process.env.NODE_ENV === 'development' && {
+    ui: {
+      theme: 'modern',
+      progressBarStyle: 'fancy',
+    },
+  }),
+};
+```
+
+```javascript {{ title: 'pcu.config.js mit Funktionen' }}
+const fs = require('fs');
+const path = require('path');
+
+function getWorkspacePackages() {
+  const workspaceFile = path.join(__dirname, 'pnpm-workspace.yaml');
+  if (fs.existsSync(workspaceFile)) {
+    // Workspace-Pakete dynamisch parsen
+    return ['packages/*', 'apps/*', 'tools/*'];
+  }
+  return ['packages/*'];
+}
+
+module.exports = {
+  workspace: {
+    packages: getWorkspacePackages(),
+    catalogMode: 'flexible',
+  },
+  packageRules: [
+    // Regeln basierend auf vorhandenen Paketen generieren
+    ...fs.readdirSync('./packages').map((pkg) => ({
+      patterns: [`@myorg/${pkg}`],
+      target: 'minor',
+    })),
+  ],
+};
+```
+
+</CodeGroup>
+
+### Package.json-Konfiguration
+
+Für einfachere Projekte kann die Konfiguration in package.json eingebettet werden:
+
+```json
+{
+  "name": "my-project",
+  "pcu": {
+    "defaults": {
+      "target": "minor",
+      "createBackup": true
+    },
+    "packageRules": [
+      {
+        "patterns": ["@types/*"],
+        "target": "latest",
+        "autoUpdate": true
+      }
+    ]
+  }
+}
+```
+
+### Konfigurationsvalidierung
+
+PCU validiert Konfigurationsdateien automatisch und bietet detaillierte Fehlermeldungen für häufige Probleme:
+
+#### Validierungsfeatures
+
+- **JSON-Schema-Validierung**: Stellt sicher, dass alle Konfigurationseigenschaften gültig sind
+- **Pattern-Validierung**: Validiert Glob-Patterns und Paketnamenformate
+- **Typprüfung**: Überprüft korrekte Datentypen für alle Konfigurationswerte
+- **Konflikterkennung**: Identifiziert widersprüchliche Regeln und Konfigurationsoptionen
+- **Vorschlagssystem**: Bietet hilfreiche Vorschläge zur Behebung von Konfigurationsfehlern
+
+#### Validierungsbeispiele
+
+```bash
+# Aktuelle Konfiguration validieren
+pcu workspace --validate
+
+# Häufige Validierungsfehler mit Vorschlägen:
+# ❌ Invalid target "lastest" in packageRules[0]
+#    💡 Did you mean "latest"?
+#
+# ❌ Pattern "react+" is invalid glob syntax
+#    💡 Use "react*" for matching packages starting with "react"
+#
+# ⚠️  Conflicting rules for package "react"
+#    📝 Rule at index 0 and 2 both match this package
+```
+
+## .pcurc.json Konfigurationsdatei Vollständige Referenz
+
+PCU verwendet mehrere Konfigurationsdateiformate, hauptsächlich die `.pcurc.json`-Datei im Projektverzeichnis. Diese kann manuell erstellt oder mit `pcu init` generiert werden.
+
+### Vollständige Konfigurationsdateistruktur
+
+<CodeGroup>
+
+```json {{ title: 'Vollständiges Konfigurationsbeispiel' }}
+{
+  "defaults": {
+    "target": "latest",
+    "timeout": 30000,
+    "createBackup": false,
+    "interactive": false,
+    "dryRun": false,
+    "force": false,
+    "prerelease": false
+  },
+  "workspace": {
+    "autoDiscover": true,
+    "catalogMode": "strict",
+    "path": "./",
+    "packages": ["packages/*", "apps/*"]
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  },
+  "ui": {
+    "theme": "default",
+    "progressBars": true,
+    "progressBarStyle": "default",
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "update": {
+    "interactive": false,
+    "dryRunFirst": false,
+    "skipPrereleases": true,
+    "confirmMajorUpdates": true,
+    "batchSize": 10
+  },
+  "security": {
+    "autoFixVulnerabilities": false,
+    "allowMajorForSecurity": false,
+    "notifyOnSecurityUpdate": true,
+    "severityThreshold": "moderate"
+  },
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true,
+    "batchSize": 50
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache"
+  },
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "timeout": 30000,
+    "retries": 3
+  },
+  "include": ["*"],
+  "exclude": [],
+  "packageRules": [
+    {
+      "patterns": ["react*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ],
+  "notification": {
+    "enabled": true,
+    "updateAvailable": true,
+    "securityAlerts": true
+  },
+  "logging": {
+    "level": "info",
+    "file": "./pcu.log",
+    "maxFiles": 5,
+    "maxSize": "10MB"
+  }
+}
+```
+
+```json {{ title: 'Minimale Konfiguration' }}
+{
+  "defaults": {
+    "target": "minor"
+  },
+  "exclude": ["typescript", "@types/node"]
+}
+```
+
+</CodeGroup>
+
+### Detaillierte Konfigurationsoptionen
+
+#### defaults Standardeinstellungen
+
+<Properties>
+  <Property name="target" type="enum" default="latest">
+    Standard-Update-Ziel: `latest` | `greatest` | `minor` | `patch` | `newest`
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Netzwerk-Request-Timeout (Millisekunden)
+  </Property>
+  <Property name="createBackup" type="boolean" default="false">
+    Backup-Datei vor Update erstellen
+  </Property>
+  <Property name="interactive" type="boolean" default="false">
+    Interaktiven Modus standardmäßig aktivieren
+  </Property>
+  <Property name="dryRun" type="boolean" default="false">
+    Vorschaumodus standardmäßig aktivieren (keine tatsächlichen Updates)
+  </Property>
+  <Property name="force" type="boolean" default="false">
+    Updates erzwingen (Warnungen überspringen)
+  </Property>
+  <Property name="prerelease" type="boolean" default="false">
+    Prerelease-Versionen einbeziehen
+  </Property>
+</Properties>
+
+#### workspace Workspace-Einstellungen
+
+<Properties>
+  <Property name="autoDiscover" type="boolean" default="true">
+    Workspace-Struktur automatisch erkennen
+  </Property>
+  <Property name="catalogMode" type="enum" default="strict">
+    Katalogmodus: `strict` | `loose` | `mixed`
+  </Property>
+  <Property name="path" type="string" default="./">
+    Workspace-Root-Verzeichnispfad
+  </Property>
+  <Property name="packages" type="string[]">
+    Paketverzeichnis-Übereinstimmungsmuster-Array (überschreibt pnpm-workspace.yaml)
+  </Property>
+</Properties>
+
+#### output Ausgabeeinstellungen
+
+<Properties>
+  <Property name="format" type="enum" default="table">
+    Ausgabeformat: `table` | `json` | `yaml` | `minimal`
+  </Property>
+  <Property name="color" type="boolean" default="true">
+    Farbige Ausgabe aktivieren
+  </Property>
+  <Property name="verbose" type="boolean" default="false">
+    Ausführlichen Ausgabemodus aktivieren
+  </Property>
+</Properties>
+
+#### ui Benutzeroberflächen-Einstellungen
+
+<Properties>
+  <Property name="theme" type="enum" default="default">
+    Farbthema: `default` | `modern` | `minimal` | `neon`
+  </Property>
+  <Property name="progressBars" type="boolean" default="true">
+    Fortschrittsbalken anzeigen
+  </Property>
+  <Property name="progressBarStyle" type="enum" default="default">
+    Fortschrittsbalken-Stil: `default` | `gradient` | `fancy` | `minimal` | `rainbow` | `neon`
+  </Property>
+  <Property name="animations" type="boolean" default="true">
+    Animationseffekte aktivieren
+  </Property>
+  <Property name="colorScheme" type="enum" default="auto">
+    Farbschema: `auto` | `light` | `dark`
+  </Property>
+</Properties>
+
+#### update Update-Verhalten-Einstellungen
+
+<Properties>
+  <Property name="interactive" type="boolean" default="false">
+    Beim Update standardmäßig interaktiven Modus aktivieren
+  </Property>
+  <Property name="dryRunFirst" type="boolean" default="false">
+    Zuerst Vorschau ausführen, dann fragen ob anwenden
+  </Property>
+  <Property name="skipPrereleases" type="boolean" default="true">
+    Prerelease-Versionen überspringen
+  </Property>
+  <Property name="confirmMajorUpdates" type="boolean" default="true">
+    Major-Version-Updates bestätigen lassen
+  </Property>
+  <Property name="batchSize" type="number" default="10">
+    Batch-Verarbeitung Paketanzahl
+  </Property>
+</Properties>
+
+#### security Sicherheitseinstellungen
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean" default="false">
+    Sicherheitslücken automatisch beheben
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean" default="false">
+    Major-Version-Updates für Sicherheitsfixes erlauben
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean" default="true">
+    Bei Sicherheitsupdates benachrichtigen
+  </Property>
+  <Property name="severityThreshold" type="enum" default="moderate">
+    Sicherheitswarnstufen-Schwellenwert: `low` | `moderate` | `high` | `critical`
+  </Property>
+</Properties>
+
+#### advanced Erweiterte Einstellungen
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    Anzahl gleichzeitiger Netzwerk-Requests
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Netzwerk-Request-Timeout (Millisekunden)
+  </Property>
+  <Property name="retries" type="number" default="3">
+    Anzahl Wiederholungsversuche bei Fehlern
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    Cache-Gültigkeitsdauer (Minuten, 0 deaktiviert Cache)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    Beim Start nach PCU-Tool-Updates suchen
+  </Property>
+  <Property name="batchSize" type="number" default="50">
+    Maximale Batch-Verarbeitung Paketanzahl
+  </Property>
+</Properties>
+
+#### cache Cache-Einstellungen
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Cache-System aktivieren
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    Cache-Lebensdauer (Millisekunden)
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    Maximale Cache-Größe (Bytes, Standard 50MB)
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    Maximale Cache-Einträge
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    Cache auf Festplatte persistieren
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    Cache-Verzeichnispfad
+  </Property>
+</Properties>
+
+#### registry Registry-Einstellungen
+
+<Properties>
+  <Property name="default" type="string" default="https://registry.npmjs.org/">
+    Standard-NPM-Registry-URL
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Registry-Request-Timeout (Millisekunden)
+  </Property>
+  <Property name="retries" type="number" default="3">
+    Registry-Request-Wiederholungsversuche
+  </Property>
+</Properties>
+
+#### Paketfilter-Einstellungen
+
+<Properties>
+  <Property name="include" type="string[]" default="['*']">
+    Einzuschließende Paketnamen-Übereinstimmungsmuster-Array
+  </Property>
+  <Property name="exclude" type="string[]" default="[]">
+    Auszuschließende Paketnamen-Übereinstimmungsmuster-Array
+  </Property>
+</Properties>
+
+#### notification Benachrichtigungseinstellungen
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Benachrichtigungsfunktion aktivieren
+  </Property>
+  <Property name="updateAvailable" type="boolean" default="true">
+    Bei verfügbaren Updates benachrichtigen
+  </Property>
+  <Property name="securityAlerts" type="boolean" default="true">
+    Bei Sicherheitswarnungen benachrichtigen
+  </Property>
+</Properties>
+
+#### logging Protokollierungseinstellungen
+
+<Properties>
+  <Property name="level" type="enum" default="info">
+    Protokoll-Level: `error` | `warn` | `info` | `debug` | `trace`
+  </Property>
+  <Property name="file" type="string">
+    Protokolldateipfad (optional)
+  </Property>
+  <Property name="maxFiles" type="number" default="5">
+    Maximale Anzahl Protokolldateien
+  </Property>
+  <Property name="maxSize" type="string" default="10MB">
+    Maximale Größe einzelner Protokolldateien
+  </Property>
+</Properties>
+
+## Paketfilterung
+
+Kontrollieren Sie, welche Pakete mit Include-/Exclude-Patterns und paketspezifischen Regeln aktualisiert werden sollen.
+
+<CodeGroup>
+
+```json {{ title: 'Einfache Filterung' }}
+{
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "include": ["lodash*", "chalk", "commander"]
+}
+```
+
+```json {{ title: 'Paketregeln' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom"]
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "prettier"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Paketregeln-Eigenschaften
+
+<Properties>
+  <Property name="patterns" type="string[]" required>
+    Glob-Pattern zur Übereinstimmung mit Paketnamen
+  </Property>
+  <Property name="target" type="enum">
+    Update-Ziel: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="requireConfirmation" type="boolean">
+    Immer vor dem Update dieser Pakete fragen
+  </Property>
+  <Property name="autoUpdate" type="boolean">
+    Automatisch ohne Bestätigung aktualisieren
+  </Property>
+  <Property name="relatedPackages" type="string[]">
+    Pakete, die der gleichen Update-Strategie folgen
+  </Property>
+  <Property name="groupUpdate" type="boolean">
+    Verwandte Pakete zusammen aktualisieren
+  </Property>
+</Properties>
+
+## Sicherheitskonfiguration
+
+Konfigurieren Sie Sicherheitslücken-Scanning und automatische Korrekturen.
+
+```json
+{
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  }
+}
+```
+
+<Properties>
+  <Property name="autoFixVulnerabilities" type="boolean">
+    Sicherheitslücken automatisch prüfen und beheben
+  </Property>
+  <Property name="allowMajorForSecurity" type="boolean">
+    Major-Version-Upgrades für Sicherheitsfixes erlauben
+  </Property>
+  <Property name="notifyOnSecurityUpdate" type="boolean">
+    Benachrichtigungen bei Sicherheitsupdates anzeigen
+  </Property>
+</Properties>
+
+## Monorepo-Konfiguration
+
+Spezielle Einstellungen für komplexe Monorepo-Setups mit mehreren Katalogen.
+
+```json
+{
+  "monorepo": {
+    "syncVersions": ["react", "react-dom"],
+    "catalogPriority": ["default", "latest", "react17"]
+  }
+}
+```
+
+<Properties>
+  <Property name="syncVersions" type="string[]">
+    Pakete, die Versionssynchronisation über mehrere Kataloge hinweg benötigen
+  </Property>
+  <Property name="catalogPriority" type="string[]">
+    Katalog-Prioritätsreihenfolge für Konfliktlösung
+  </Property>
+</Properties>
+
+## Erweiterte Einstellungen
+
+Optimieren Sie Performance und Verhalten mit erweiterten Konfigurationsoptionen.
+
+```json
+{
+  "advanced": {
+    "concurrency": 5,
+    "timeout": 30000,
+    "retries": 3,
+    "cacheValidityMinutes": 60,
+    "checkForUpdates": true
+  }
+}
+```
+
+<Properties>
+  <Property name="concurrency" type="number" default="5">
+    Anzahl gleichzeitiger Netzwerk-Requests
+  </Property>
+  <Property name="timeout" type="number" default="30000">
+    Netzwerk-Request-Timeout in Millisekunden
+  </Property>
+  <Property name="retries" type="number" default="3">
+    Anzahl Wiederholungsversuche bei Fehlern
+  </Property>
+  <Property name="cacheValidityMinutes" type="number" default="60">
+    Cache-Gültigkeitsdauer (0 deaktiviert Caching)
+  </Property>
+  <Property name="checkForUpdates" type="boolean" default="true">
+    Beim Start automatisch nach PCU-Tool-Updates suchen. Übersprungen in CI-Umgebungen. Zeigt
+    Update-Benachrichtigungen und Installationsanweisungen an, wenn neuere Versionen verfügbar sind.
+  </Property>
+</Properties>
+
+## UI-Konfiguration
+
+Passen Sie das visuelle Erscheinungsbild und die Benutzeroberflächen-Einstellungen an.
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient",
+    "animations": true
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+### Verfügbare Themes
+
+- `default` - Ausgewogene Farben für allgemeine Nutzung
+- `modern` - Lebendige Farben für Entwicklungsumgebungen
+- `minimal` - Sauber und einfach für Produktionsumgebungen
+- `neon` - Hohe Kontrastfarben für Präsentationen
+
+### Fortschrittsbalken-Stile
+
+PCU unterstützt 6 verschiedene Fortschrittsbalken-Stile für verbessertes visuelles Feedback während Operationen:
+
+- `default` - Standard-Fortschrittsbalken mit Basis-Styling
+- `gradient` - Farbverlauf-Fortschrittsbalken für modernes Erscheinungsbild
+- `fancy` - Verbesserter Fortschrittsbalken mit dekorativen Elementen
+- `minimal` - Sauberer und einfacher Fortschrittsindikator
+- `rainbow` - Mehrfarbiger Fortschrittsbalken für lebendige Anzeigen
+- `neon` - Hochkontrast-Fortschrittsbalken passend zum Neon-Theme
+
+**Konfigurationsbeispiel:**
+
+```json
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "progressBarStyle": "gradient"
+  }
+}
+```
+
+**Kommandozeilen-Nutzung:**
+
+```bash
+pcu check --progress-style fancy
+pcu update --progress-style rainbow
+pcu security --progress-style neon
+```
+
+## Konfigurationspriorität
+
+Konfigurationseinstellungen werden in dieser Prioritätsreihenfolge angewendet:
+
+1. **Kommandozeilen-Flags** (höchste Priorität)
+2. **Paketspezifische Regeln** in `.pcurc.json`
+3. **Allgemeine Einstellungen** in `.pcurc.json`
+4. **Standardwerte** (niedrigste Priorität)
+
+<Note>
+  Verwandte Pakete erben automatisch Einstellungen von ihren übergeordneten Paketregeln, wodurch
+  Versionskonsistenz über Ökosystem-Pakete hinweg sichergestellt wird.
+</Note>
+
+## Beispiele
+
+### React-Ökosystem
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": ["@types/react", "@types/react-dom", "react-router-dom"]
+    }
+  ]
+}
+```
+
+### TypeScript-Projekt
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+### Enterprise-Setup
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  },
+  "ui": {
+    "theme": "minimal",
+    "progressBars": true,
+    "progressBarStyle": "minimal"
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"]
+}
+```
+
+---
+
+## Umgebungsvariablen
+
+Alle CLI-Optionen können über Umgebungsvariablen für Automatisierung und CI/CD-Umgebungen konfiguriert werden:
+
+<CodeGroup>
+
+```bash {{ title: 'Globale Umgebungsvariablen' }}
+# Workspace-Einstellungen
+export PCU_WORKSPACE="/path/to/workspace"
+export PCU_VERBOSE=true
+export PCU_NO_COLOR=true
+
+# Registry-Konfiguration
+export PCU_REGISTRY="https://npm.company.com/"
+export PCU_TIMEOUT=30000
+
+# Konfigurationsdatei
+export PCU_CONFIG="/path/to/.pcurc.json"
+```
+
+```bash {{ title: 'Befehlsspezifische Variablen' }}
+# Check/Update-Verhalten
+export PCU_OUTPUT_FORMAT=json
+export PCU_UPDATE_TARGET=minor
+export PCU_CATALOG=default
+
+# Update-Optionen
+export PCU_INTERACTIVE=true
+export PCU_DRY_RUN=true
+export PCU_CREATE_BACKUP=true
+export PCU_FORCE=false
+
+# Filterung
+export PCU_INCLUDE="react*,@types/*"
+export PCU_EXCLUDE="eslint*"
+export PCU_PRERELEASE=false
+```
+
+</CodeGroup>
+
+### Umgebungsvariablen-Priorität
+
+Konfigurationsquellen werden in dieser Reihenfolge geladen (spätere überschreiben frühere):
+
+1. **Eingebaute Standardwerte** (niedrigste Priorität)
+2. **Globale Konfiguration** (`~/.pcurc.json`)
+3. **Projektkonfiguration** (`.pcurc.json`)
+4. **Umgebungsvariablen** (`PCU_*`)
+5. **Kommandozeilen-Flags** (höchste Priorität)
+
+---
+
+## Registry-Konfiguration
+
+PCU liest automatisch NPM- und PNPM-Konfigurationsdateien für Registry-Einstellungen:
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc / .pnpmrc' }}
+# Standard-Registry
+registry=https://registry.npmjs.org/
+
+# Scoped Registries
+@mycompany:registry=https://npm.mycompany.com/
+@types:registry=https://registry.npmjs.org/
+
+# Authentication-Token
+//npm.mycompany.com/:_authToken=${NPM_TOKEN}
+//registry.npmjs.org/:_authToken=${NPM_PUBLIC_TOKEN}
+
+# Legacy-Authentifizierung (falls benötigt)
+//npm.mycompany.com/:username=myuser
+//npm.mycompany.com/:_password=base64encodedpassword
+//npm.mycompany.com/:email=user@company.com
+
+# SSL- und Proxy-Einstellungen
+strict-ssl=true
+ca=/path/to/ca.pem
+proxy=http://proxy.company.com:8080
+https-proxy=http://proxy.company.com:8080
+```
+
+```json {{ title: 'PCU Registry-Überschreibung' }}
+{
+  "registry": {
+    "default": "https://registry.npmjs.org/",
+    "scoped": {
+      "@mycompany": "https://npm.mycompany.com/",
+      "@types": "https://registry.npmjs.org/"
+    },
+    "auth": {
+      "npm.mycompany.com": {
+        "token": "${NPM_TOKEN}",
+        "type": "Bearer"
+      }
+    },
+    "timeout": 30000,
+    "retries": 3,
+    "userAgent": "pcu-custom/1.0.0"
+  }
+}
+```
+
+</CodeGroup>
+
+### Registry-Priorität
+
+1. **CLI `--registry`-Flag** (höchste Priorität)
+2. **PCU-Konfiguration** (`.pcurc.json` Registry-Sektion)
+3. **Projekt `.npmrc/.pnpmrc`**
+4. **Globale `.npmrc/.pnpmrc`**
+5. **Standard-NPM-Registry** (niedrigste Priorität)
+
+---
+
+## Erweiterte Cache-Konfiguration
+
+PCU enthält ein erweiterte Caching-System zur Leistungsverbesserung:
+
+<CodeGroup>
+
+```json {{ title: 'Cache-Konfiguration' }}
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "strategy": "lru"
+  }
+}
+```
+
+```bash {{ title: 'Cache-Verwaltung' }}
+# Alle Caches löschen
+rm -rf ~/.pcu/cache
+
+# Cache-Informationen im ausführlichen Modus anzeigen
+pcu -c --verbose
+
+# Caching für einzelnen Lauf deaktivieren
+pcu -c --no-cache
+
+# Benutzerdefiniertes Cache-Verzeichnis setzen
+export PCU_CACHE_DIR="/tmp/pcu-cache"
+```
+
+</CodeGroup>
+
+### Cache-Einstellungen
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Cache-System aktivieren/deaktivieren
+  </Property>
+  <Property name="ttl" type="number" default="3600000">
+    Lebensdauer in Millisekunden (standardmäßig 1 Stunde)
+  </Property>
+  <Property name="maxSize" type="number" default="52428800">
+    Maximale Cache-Größe in Bytes (standardmäßig 50MB)
+  </Property>
+  <Property name="maxEntries" type="number" default="10000">
+    Maximale Anzahl von Cache-Einträgen
+  </Property>
+  <Property name="persistToDisk" type="boolean" default="true">
+    Cache zwischen Läufen auf Festplatte speichern
+  </Property>
+  <Property name="cacheDir" type="string" default="~/.pcu/cache">
+    Verzeichnis für persistente Cache-Speicherung
+  </Property>
+  <Property name="strategy" type="enum" default="lru">
+    Cache-Eviction-Strategie: lru, fifo, lfu
+  </Property>
+</Properties>
+
+---
+
+## Validierungskonfiguration
+
+PCU enthält umfassende Validierung mit hilfreichen Vorschlägen:
+
+<CodeGroup>
+
+```json {{ title: 'Validierungskonfiguration' }}
+{
+  "validation": {
+    "strict": true,
+    "warnOnRiskyUpdates": true,
+    "requireConfirmationFor": ["major"],
+    "suggestions": {
+      "enabled": true,
+      "includePerformanceTips": true,
+      "includeBestPractices": true
+    }
+  }
+}
+```
+
+```bash {{ title: 'Validierungsbeispiele' }}
+# Strikten Validierungsmodus aktivieren
+pcu -u --force  # Zeigt Warnungen über fehlende Backups
+
+# Validierungsvorschläge anzeigen
+pcu -c --verbose  # Zeigt zusätzliche Tipps und Vorschläge
+
+# Konfigurationsdatei validieren
+node -e "console.log(JSON.parse(require('fs').readFileSync('.pcurc.json')))"
+```
+
+</CodeGroup>
+
+### Validierungsoptionen
+
+<Properties>
+  <Property name="strict" type="boolean" default="false">
+    Strikten Validierungsmodus mit zusätzlichen Prüfungen aktivieren
+  </Property>
+  <Property name="warnOnRiskyUpdates" type="boolean" default="true">
+    Warnungen für potenziell riskante Updates anzeigen
+  </Property>
+  <Property name="requireConfirmationFor" type="array" default="[]">
+    Update-Typen, die Bestätigung erfordern: major, minor, patch
+  </Property>
+  <Property name="suggestions.enabled" type="boolean" default="true">
+    Hilfreiche Vorschläge und Tipps aktivieren
+  </Property>
+  <Property name="suggestions.includePerformanceTips" type="boolean" default="true">
+    Leistungsoptimierungs-Vorschläge einbeziehen
+  </Property>
+  <Property name="suggestions.includeBestPractices" type="boolean" default="true">
+    Best-Practice-Empfehlungen einbeziehen
+  </Property>
+</Properties>
+
+---
+
+## Interaktive Modus-Konfiguration
+
+Konfigurieren Sie interaktive Eingabeaufforderungen und Benutzererfahrung:
+
+<CodeGroup>
+
+```json {{ title: 'Interaktive Konfiguration' }}
+{
+  "interactive": {
+    "enabled": true,
+    "pageSize": 15,
+    "showPackageDescriptions": true,
+    "showReleaseNotes": false,
+    "autoComplete": {
+      "enabled": true,
+      "fuzzyMatching": true,
+      "maxSuggestions": 10
+    },
+    "confirmations": {
+      "majorUpdates": true,
+      "forceUpdates": true,
+      "multiplePackages": false
+    }
+  }
+}
+```
+
+```bash {{ title: 'Interaktive Modus-Beispiele' }}
+# Interaktiven Modus starten
+pcu -i
+
+# Interaktiv mit Paketbeschreibungen
+pcu -i --verbose  # Zeigt mehr Details in interaktiver Auswahl
+
+# Interaktive Theme-Auswahl verwenden
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### Interaktive Einstellungen
+
+<Properties>
+  <Property name="enabled" type="boolean" default="true">
+    Interaktive Modus-Funktionen aktivieren
+  </Property>
+  <Property name="pageSize" type="number" default="15">
+    Anzahl der Elemente pro Seite in Listen
+  </Property>
+  <Property name="showPackageDescriptions" type="boolean" default="false">
+    Paketbeschreibungen in Auswahllisten anzeigen
+  </Property>
+  <Property name="showReleaseNotes" type="boolean" default="false">
+    Release-Notes für Updates anzeigen (erfordert Netzwerk)
+  </Property>
+  <Property name="autoComplete.enabled" type="boolean" default="true">
+    Auto-Vervollständigung für Paketnamen aktivieren
+  </Property>
+  <Property name="autoComplete.fuzzyMatching" type="boolean" default="true">
+    Fuzzy-Matching für Auto-Vervollständigung aktivieren
+  </Property>
+  <Property name="confirmations.majorUpdates" type="boolean" default="true">
+    Bestätigung für Major-Versions-Updates erforderlich
+  </Property>
+</Properties>
+
+---
+
+## Monorepo-Konfiguration
+
+PCU bietet erweiterte Features speziell für große Monorepos und komplexes Workspace-Management.
+
+### Versionssynchronisation
+
+Halten Sie verwandte Pakete über Ihr Monorepo hinweg synchronisiert:
+
+<CodeGroup>
+
+```json {{ title: 'Versions-Sync-Konfiguration' }}
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "react-ecosystem",
+          "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+          "strategy": "exact" // oder "compatible", "latest"
+        },
+        {
+          "name": "testing-libraries",
+          "packages": ["jest", "@testing-library/*", "@types/jest"],
+          "strategy": "compatible"
+        }
+      ]
+    },
+    "catalogPriority": ["default", "react17", "node18"],
+    "crossWorkspaceDependencies": {
+      "analyze": true,
+      "enforce": "warn" // "error", "warn", "off"
+    }
+  }
+}
+```
+
+```json {{ title: 'Große Workspace-Optimierung' }}
+{
+  "monorepo": {
+    "performance": {
+      "batchSize": 50,
+      "concurrency": 15,
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true
+    },
+    "workspacePackages": {
+      "autoDiscover": true,
+      "includePrivate": false,
+      "excludePatterns": ["**/node_modules", "**/dist", "**/coverage"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### Erweiterte Workspace-Verwaltung
+
+#### Katalog-Prioritätssystem
+
+Definieren Sie, welche Kataloge Vorrang haben, wenn Konflikte auftreten:
+
+```json
+{
+  "catalogPriority": ["production", "default", "experimental"],
+  "catalogConflictResolution": "priority" // oder "interactive", "error"
+}
+```
+
+#### Cross-Workspace-Dependencies
+
+Analysieren und verwalten Sie Abhängigkeiten zwischen Workspace-Paketen:
+
+<Properties>
+  <Property name="analyze" type="boolean" default="false">
+    Cross-Workspace-Dependencies analysieren
+  </Property>
+  <Property name="enforce" type="enum" default="warn">
+    Wie mit Versionskonflikten umgegangen wird: error, warn, off
+  </Property>
+  <Property name="reportUnused" type="boolean" default="true">
+    Pakete in Katalogen melden, die von keinem Workspace-Paket verwendet werden
+  </Property>
+  <Property name="validateVersions" type="boolean" default="true">
+    Validieren, dass alle Workspace-Pakete Katalogversionen verwenden
+  </Property>
+</Properties>
+
+### Monorepo-spezifische Paketregeln
+
+Erstellen Sie anspruchsvolle Regeln für verschiedene Bereiche Ihres Monorepos:
+
+<CodeGroup>
+
+```json {{ title: 'Monorepo-Paketregeln' }}
+{
+  "packageRules": [
+    {
+      "name": "Frontend-Pakete",
+      "patterns": ["react*", "@types/react*", "next*"],
+      "workspacePackages": ["apps/web", "apps/admin"],
+      "target": "minor",
+      "groupUpdate": true,
+      "requireConfirmation": true
+    },
+    {
+      "name": "Backend-Dependencies",
+      "patterns": ["express*", "@types/express*", "fastify*"],
+      "workspacePackages": ["apps/api", "services/*"],
+      "target": "patch",
+      "autoUpdate": false
+    },
+    {
+      "name": "Entwicklungstools",
+      "patterns": ["eslint*", "prettier", "typescript"],
+      "workspacePackages": ["*"], // Alle Pakete
+      "target": "latest",
+      "autoUpdate": true,
+      "excludeFromProduction": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Workspace-spezifische Konfiguration
+
+Verschiedene Konfigurationen für verschiedene Teile Ihres Monorepos:
+
+<CodeGroup>
+
+```json {{ title: 'Per-Workspace-Regeln' }}
+{
+  "workspaceRules": {
+    "apps/web": {
+      "defaults": {
+        "target": "minor",
+        "createBackup": true
+      },
+      "packageRules": [
+        {
+          "patterns": ["react*"],
+          "target": "patch"
+        }
+      ]
+    },
+    "packages/*": {
+      "defaults": {
+        "target": "latest",
+        "requireConfirmation": false
+      }
+    },
+    "tools/*": {
+      "defaults": {
+        "target": "latest",
+        "autoUpdate": true
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### Leistungsoptimierung für große Monorepos
+
+#### Batch-Processing-Konfiguration
+
+<Properties>
+  <Property name="batchSize" type="number" default="20">
+    Anzahl der Pakete, die in jedem Batch verarbeitet werden
+  </Property>
+  <Property name="concurrency" type="number" default="5">
+    Maximale Anzahl gleichzeitiger Operationen
+  </Property>
+  <Property name="cacheWorkspaceStructure" type="boolean" default="true">
+    Workspace-Paket-Discovery zwischen Läufen cachen
+  </Property>
+  <Property name="parallelCatalogProcessing" type="boolean" default="true">
+    Mehrere Kataloge parallel verarbeiten
+  </Property>
+</Properties>
+
+#### Speicherverwaltung
+
+```json
+{
+  "monorepo": {
+    "memoryOptimization": {
+      "streamingMode": true, // Pakete verarbeiten ohne alles in den Speicher zu laden
+      "maxMemoryUsage": "2GB", // Speicherlimit für große Workspaces
+      "temporaryFileCleanup": "immediate" // "immediate", "session-end", "manual"
+    }
+  }
+}
+```
+
+### Monorepo-Validierung
+
+Umfassende Validierung für komplexe Workspace-Setups:
+
+#### Validierungsregeln
+
+<Properties>
+  <Property name="enforceWorkspaceProtocol" type="boolean" default="true">
+    Sicherstellen, dass workspace:-Protokoll für interne Dependencies verwendet wird
+  </Property>
+  <Property name="validateCatalogCoverage" type="boolean" default="true">
+    Sicherstellen, dass alle Dependencies von Katalogen abgedeckt sind
+  </Property>
+  <Property name="requireConsistentVersions" type="boolean" default="false">
+    Erfordern, dass alle Workspace-Pakete die gleiche Version geteilter Dependencies verwenden
+  </Property>
+  <Property name="detectCircularDependencies" type="boolean" default="true">
+    Zirkuläre Dependencies zwischen Workspace-Paketen erkennen
+  </Property>
+</Properties>
+
+### Verwendungsbeispiele für Monorepos
+
+#### Großes Enterprise-Monorepo-Setup
+
+```json
+{
+  "monorepo": {
+    "syncVersions": {
+      "enabled": true,
+      "groups": [
+        {
+          "name": "core-frontend",
+          "packages": ["react", "react-dom", "react-router", "@types/react*"],
+          "strategy": "exact"
+        },
+        {
+          "name": "ui-libraries",
+          "packages": ["@company/design-system", "@company/components"],
+          "strategy": "workspace"
+        }
+      ]
+    },
+    "performance": {
+      "batchSize": 100,
+      "concurrency": 20,
+      "streamingMode": true
+    },
+    "workspaceRules": {
+      "apps/*": { "target": "minor", "requireConfirmation": true },
+      "packages/*": { "target": "latest", "autoUpdate": true },
+      "tools/*": { "target": "latest", "autoUpdate": true }
+    }
+  }
+}
+```
+
+#### CI/CD-optimierte Konfiguration
+
+```json
+{
+  "monorepo": {
+    "ci": {
+      "parallelCatalogProcessing": true,
+      "skipInteractivePrompts": true,
+      "generateReport": true,
+      "reportFormat": "json",
+      "exitOnError": true
+    },
+    "validation": {
+      "enforceWorkspaceProtocol": true,
+      "validateCatalogCoverage": true,
+      "failOnInconsistentVersions": true
+    }
+  }
+}
+```

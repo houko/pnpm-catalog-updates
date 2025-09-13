@@ -1,0 +1,657 @@
+export const metadata = {
+  title: '開発',
+  description:
+    '開発用にpnpm-catalog-updatesをセットアップします。プロジェクト構造、開発ワークフロー、および貢献方法について学びます。',
+};
+
+# 開発
+
+PCUを開発用にセットアップし、プロジェクトへの貢献方法を学びます。このガイドでは、プロジェクトのセットアップ、アーキテクチャ、および開発ワークフローを説明します。{{ className: 'lead' }}
+
+## 前提条件
+
+PCUの開発を開始する前に、必要なツールがあることを確認してください：
+
+<Note>開発にはNode.js >= 22.0.0およびpnpm >= 10.0.0が必要です。</Note>
+
+<CodeGroup>
+
+```bash {{ title: 'バージョン確認' }}
+node --version  # >= 22.0.0である必要があります
+pnpm --version  # >= 10.0.0である必要があります
+```
+
+```bash {{ title: 'ツールのインストール' }}
+# nvmでNode.jsをインストール（推奨）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# pnpmをインストール
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## プロジェクトセットアップ
+
+リポジトリをクローンして開発環境をセットアップします：
+
+<CodeGroup>
+
+```bash {{ title: 'クローンとセットアップ' }}
+# リポジトリをクローン
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# 依存関係をインストール
+pnpm install
+
+# プロジェクトをビルド
+pnpm build
+
+# テストを実行してセットアップを確認
+pnpm test
+```
+
+```bash {{ title: '開発モード' }}
+# 開発モードで実行
+pnpm dev --help
+
+# ウォッチモードでビルド
+pnpm build:watch
+
+# ウォッチモードでテスト実行
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## プロジェクトアーキテクチャ
+
+PCUは明確な関心の分離を持つクリーンアーキテクチャの原則に従っています：
+
+```text
+├── apps/
+│   ├── cli/                    # CLIアプリケーション層
+│   │   ├── src/cli/           # CLIインターフェース
+│   │   │   ├── commands/      # コマンドハンドラー
+│   │   │   ├── formatters/    # 出力フォーマッター
+│   │   │   ├── interactive/   # インタラクティブプロンプト
+│   │   │   ├── themes/        # カラーテーマ
+│   │   │   └── validators/    # 入力検証
+│   │   └── bin/               # 実行可能バイナリ
+│   └── docs/                  # ドキュメントサイト
+├── packages/
+│   ├── core/                  # コアビジネスロジック
+│   │   └── src/
+│   │       ├── application/   # アプリケーションサービス
+│   │       ├── domain/        # ドメインモデル（DDD）
+│   │       └── infrastructure/# インフラストラクチャー層
+│   └── utils/                 # 共有ユーティリティ
+└── scripts/                   # ビルドとデプロイ
+```
+
+### アーキテクチャ層
+
+<Properties>
+  <Property name="CLI層" type="apps/cli">
+    ユーザーインターフェース、コマンド解析、出力フォーマット
+  </Property>
+  <Property name="アプリケーション層" type="packages/core/application">
+    ビジネスロジックのオーケストレーション、ユースケース
+  </Property>
+  <Property name="ドメイン層" type="packages/core/domain">
+    コアビジネスエンティティ、値オブジェクト、リポジトリインターフェース
+  </Property>
+  <Property name="インフラストラクチャー層" type="packages/core/infrastructure">
+    外部APIクライアント、ファイルシステムアクセス、リポジトリ実装
+  </Property>
+  <Property name="ユーティリティ層" type="packages/utils">
+    共有ユーティリティ、設定、ログ、エラーハンドリング
+  </Property>
+</Properties>
+
+## 開発ワークフロー
+
+### 変更を行う
+
+1. **フィーチャーブランチを作成**：
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. **コーディング標準に従って変更を行う**
+
+3. **変更にテストを追加**：
+
+   ```bash
+   pnpm test:watch  # ウォッチモードでテストを実行
+   ```
+
+4. **品質チェックが通ることを確認**：
+
+   ```bash
+   pnpm lint        # コードスタイルをチェック
+   pnpm typecheck   # 型チェック
+   pnpm test        # 全テストを実行
+   ```
+
+5. **変更をコミット**：
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+
+### テスト戦略
+
+PCUは包括的なテストアプローチを使用しています：
+
+<CodeGroup>
+
+```bash {{ title: '単体テスト' }}
+# 単体テストを実行
+pnpm test
+
+# カバレッジテストを実行
+pnpm test:coverage
+
+# 特定のパッケージをテスト
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: 'エンドツーエンドテスト' }}
+# E2Eテストを実行
+pnpm test:e2e
+
+# 実際のプロジェクトでテスト
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: '統合テスト' }}
+# CLIコマンドをテスト
+pnpm test:cli
+
+# 異なるNodeバージョンでテスト
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### コード品質
+
+PCUは高いコード品質標準を維持しています：
+
+<CodeGroup>
+
+```bash {{ title: 'リントとフォーマット' }}
+# コードスタイルをチェック
+pnpm lint
+
+# リント問題を修正
+pnpm lint:fix
+
+# コードをフォーマット
+pnpm format
+
+# TypeScript型をチェック
+pnpm typecheck
+```
+
+```json {{ title: '品質標準' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "TypeScriptルール付きESLint",
+  "format": "カスタム設定付きPrettier",
+  "types": "厳密なTypeScript設定"
+}
+```
+
+</CodeGroup>
+
+## 機能の追加
+
+### 新しいコマンドの作成
+
+1. **`apps/cli/src/cli/commands/`にコマンドハンドラーを作成**：
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('新しいコマンドの説明')
+    .option('-f, --format <type>', '出力フォーマット', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // コマンド実装
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: 'コマンドの登録' }}
+// apps/cli/src/cli/index.tsで
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **`packages/core/src/application/services/`にビジネスロジックを追加**
+
+3. **CLIとコアロジックのテストを作成**
+
+4. **ドキュメントを更新**
+
+### 新しい出力フォーマットの追加
+
+1. **`apps/cli/src/cli/formatters/`にフォーマッターを作成**：
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // XMLフォーマットロジック
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **メインフォーマッターレジストリにフォーマッターを登録**
+
+3. **テストを追加**し、**ドキュメントを更新**
+
+## 貢献ガイド
+
+### コミットメッセージ規約
+
+PCUは[Conventional Commits](https://conventionalcommits.org/)を使用しています：
+
+<CodeGroup>
+
+```bash {{ title: 'コミットタイプ' }}
+feat: 新機能
+fix: バグ修正
+docs: ドキュメントのみの変更
+style: コードスタイルの変更（フォーマットなど）
+refactor: バグ修正も機能追加もしないコード変更
+test: 不足テストの追加や既存テストの修正
+chore: ビルドプロセスや補助ツールの変更
+```
+
+```bash {{ title: '例' }}
+feat: カスタムレジストリのサポートを追加
+fix: ネットワークタイムアウトを優雅に処理
+docs: 設定例を更新
+test: パッケージフィルタテストを追加
+```
+
+</CodeGroup>
+
+### プルリクエスト手順
+
+1. **リポジトリをフォーク**してフィーチャーブランチを作成
+2. **開発ワークフローに従って変更を行う**
+3. **すべてのテストが通過**し、コード品質チェックが成功することを確認
+4. **必要に応じてドキュメントを更新**
+5. **プルリクエストを提出**する際に含める内容：
+   - 変更の明確な説明
+   - 関連する課題へのリンク
+   - UI変更のスクリーンショット
+   - 該当する場合の破壊的変更の説明
+
+### コードレビューチェックリスト
+
+1. すべてのテストが通過
+2. コードカバレッジが維持されている（>85%）
+3. TypeScript型が正しい
+4. コードスタイルがプロジェクト標準に従っている
+5. ドキュメントが更新されている
+6. 破壊的変更が文書化されている
+7. パフォーマンスへの影響が考慮されている
+
+## デバッグ
+
+### 開発デバッグ
+
+<CodeGroup>
+
+```bash {{ title: 'CLIコマンドのデバッグ' }}
+# Node.jsインスペクターでデバッグ
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# VS Codeでデバッグ
+# .vscode/launch.jsonの起動設定を使用
+```
+
+```bash {{ title: '詳細ログ' }}
+# デバッグログを有効化
+DEBUG=pcu:* pnpm dev --verbose
+
+# 特定のモジュールをデバッグ
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### テストデバッグ
+
+```bash
+# 特定のテストをデバッグ
+npm test -- --grep "specific test name"
+
+# Nodeインスペクターでデバッグ
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## ビルドとリリース
+
+### ローカルテスト
+
+<CodeGroup>
+
+```bash {{ title: 'ローカルビルドのテスト' }}
+# ビルドしてローカルでテスト
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# インストールをテスト
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: '例プロジェクトでのテスト' }}
+# 例のワークスペースを使用
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### リリースプロセス
+
+1. **changesetsでバージョンを更新**：
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **ビルドとテスト**：
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **公開**（メンテナーのみ）：
+   ```bash
+   pnpm publish -r
+   ```
+
+## ヘルプの取得
+
+- 📖 **ドキュメント**：詳細なガイドについてはこのドキュメントを参照
+- 🐛 **課題**：[GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)でバグを報告
+- 💬 **ディスカッション**：[GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)で質問
+- 🔧 **開発**：IssuesやPRの開発ディスカッションに参加
+
+## 高度なアーキテクチャ詳細
+
+### コアドメインモデル
+
+ドメイン駆動設計（DDD）原則に基づき、PCUのコアドメインには以下が含まれます：
+
+<CodeGroup>
+
+```typescript {{ title: 'ドメインエンティティ' }}
+// packages/core/src/domain/entities/
+├── catalog.ts          // カタログ集約ルート
+├── package.ts          // パッケージエンティティ
+└── workspace.ts        // ワークスペース集約ルート
+
+// 主要ドメインコンセプト：
+interface Catalog {
+  readonly id: CatalogId;
+  readonly name: string;
+  packages: PackageCollection;
+  addPackage(packageInfo: Package): void;
+  updatePackage(name: string, version: Version): void;
+}
+
+interface Package {
+  readonly name: string;
+  readonly currentVersion: Version;
+  readonly latestVersion: Version;
+  readonly updateType: UpdateType;
+}
+```
+
+```typescript {{ title: '値オブジェクト' }}
+// packages/core/src/domain/value-objects/
+├── version.ts           // セマンティックバージョン処理
+├── workspacePath.ts     // パス検証
+├── workspaceConfig.ts   // 設定オブジェクト
+└── catalogCollection.ts // コレクション管理
+
+// 不変の値オブジェクトがデータ整合性を保証
+class Version {
+  constructor(private readonly value: string) {
+    if (!this.isValid(value)) {
+      throw new InvalidVersionError(value);
+    }
+  }
+
+  toString(): string { return this.value; }
+  compare(other: Version): number { /* semver比較 */ }
+}
+```
+
+</CodeGroup>
+
+### サービス層アーキテクチャ
+
+アプリケーション層はサービスを通じてビジネスロジックを編成します：
+
+<CodeGroup>
+
+```typescript {{ title: 'アプリケーションサービス' }}
+// packages/core/src/application/services/
+├── catalogUpdateService.ts  // メインオーケストレーション
+└── workspaceService.ts      // ワークスペース操作
+
+// サービス責務：
+class CatalogUpdateService {
+  async checkForUpdates(options: CheckOptions): Promise<UpdateReport>;
+  async updateCatalog(options: UpdateOptions): Promise<UpdateResult>;
+  async analyzeImpact(catalog: string, package: string): Promise<ImpactAnalysis>;
+}
+```
+
+```typescript {{ title: 'インフラストラクチャー層' }}
+// packages/core/src/infrastructure/
+├── external-services/
+│   └── npmRegistryService.ts   // NPM APIクライアント
+├── repositories/
+│   └── fileWorkspaceRepository.ts  // ファイルシステム永続化
+├── cache/
+│   └── cache.ts                # 高度なキャッシュシステム
+└── utils/
+    └── npmrcParser.ts          # 設定解析
+
+// インフラストラクチャーはドメインインターフェースを実装：
+class FileWorkspaceRepository implements WorkspaceRepository {
+  async findWorkspace(path: string): Promise<Workspace | null>;
+  async saveWorkspace(workspace: Workspace): Promise<void>;
+}
+```
+
+</CodeGroup>
+
+### CLI層設計
+
+CLI層はコアドメインにクリーンなインターフェースを提供します：
+
+<CodeGroup>
+
+```typescript {{ title: 'コマンド構造' }}
+// apps/cli/src/cli/commands/
+├── checkCommand.ts     // チェックコマンド実装
+├── updateCommand.ts    // 検証付き更新コマンド
+├── analyzeCommand.ts   # 影響分析コマンド
+├── workspaceCommand.ts # ワークスペース管理
+├── themeCommand.ts     # テーマ設定
+├── securityCommand.ts  # セキュリティスキャン
+└── initCommand.ts      # ワークスペース初期化
+
+// 各コマンドは一貫したパターンに従います：
+export class CheckCommand {
+  constructor(
+    private readonly catalogService: CatalogUpdateService,
+    private readonly validator: CommandValidator,
+    private readonly formatter: OutputFormatter
+  ) {}
+
+  async execute(options: CheckCommandOptions): Promise<void> {
+    const validation = this.validator.validateCheckOptions(options);
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors);
+    }
+
+    const result = await this.catalogService.checkForUpdates(options);
+    const formatted = this.formatter.format(result, options.format);
+    console.log(formatted);
+  }
+}
+```
+
+```typescript {{ title: '高度なCLI機能' }}
+// apps/cli/src/cli/
+├── validators/
+│   └── commandValidator.ts    # 提案付き入力検証
+├── interactive/
+│   └── interactivePrompts.ts  # 自動補完付きスマートプロンプト
+├── themes/
+│   └── colorTheme.ts          # 包括的テーマシステム
+├── formatters/
+│   └── outputFormatter.ts     # 複数出力フォーマット
+└── options/
+    └── globalOptions.ts       # 環境変数サポート
+
+// インタラクティブ機能：
+class InteractivePrompts {
+  async selectPackages(packages: Package[]): Promise<string[]>;
+  async confirmUpdates(updates: Update[]): Promise<boolean>;
+  async configurationWizard(): Promise<Configuration>;
+}
+```
+
+</CodeGroup>
+
+### テストアーキテクチャ
+
+全層にわたる包括的なテスト戦略：
+
+<CodeGroup>
+
+```bash {{ title: 'テスト構造' }}
+├── packages/core/src/**/__tests__/     # 単体テスト
+├── packages/utils/src/**/__tests__/    # ユーティリティテスト
+├── apps/cli/src/**/__tests__/         # CLI単体テスト
+├── tests/
+│   ├── e2e/                          # エンドツーエンドテスト
+│   ├── integration/                  # 統合テスト
+│   └── fixtures/                     # テストフィクスチャ
+└── .github/workflows/
+    └── test.yml                      # CIテストパイプライン
+```
+
+```typescript {{ title: 'テストパターン' }}
+// ドメイン層テスト
+describe('Catalog', () => {
+  it('should update package version', () => {
+    const catalog = new Catalog('default');
+    const package = new Package('react', '18.0.0', '18.2.0');
+
+    catalog.addPackage(package);
+    catalog.updatePackage('react', new Version('18.2.0'));
+
+    expect(catalog.getPackage('react').currentVersion.toString()).toBe('18.2.0');
+  });
+});
+
+// CLI統合テスト
+describe('CheckCommand', () => {
+  it('should handle network errors gracefully', async () => {
+    const mockService = createMockCatalogService();
+    mockService.checkForUpdates.mockRejectedValue(new NetworkError());
+
+    const command = new CheckCommand(mockService);
+
+    await expect(command.execute({})).rejects.toThrow('Network error occurred');
+  });
+});
+```
+
+</CodeGroup>
+
+### パフォーマンス考慮事項
+
+PCUは大規模なmonorepoに対してパフォーマンスが最適化されています：
+
+<CodeGroup>
+
+```typescript {{ title: 'キャッシュ戦略' }}
+// インテリジェントキャッシュがAPI呼び出しを削減
+class Cache<T> {
+  constructor(
+    private readonly options: {
+      ttl: number; // 生存時間
+      maxSize: number; // メモリ制限
+      persistToDisk: boolean; // ファイルキャッシュ
+      strategy: 'lru' | 'fifo' | 'lfu'; // 削除戦略
+    }
+  ) {}
+
+  async get(key: string): Promise<T | null>;
+  async set(key: string, value: T): Promise<void>;
+  getStats(): CacheStats; // ヒット率、メモリ使用量
+}
+```
+
+```typescript {{ title: '並行処理' }}
+// より良いパフォーマンスのための並列処理
+class NpmRegistryService {
+  constructor(private readonly concurrency: number = 5) {}
+
+  async getPackageInfo(names: string[]): Promise<PackageInfo[]> {
+    // 制御された並行性でパッケージをバッチ処理
+    const batches = chunk(names, this.concurrency);
+    const results = await Promise.allSettled(batches.map((batch) => this.processBatch(batch)));
+
+    return results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  }
+}
+```
+
+</CodeGroup>

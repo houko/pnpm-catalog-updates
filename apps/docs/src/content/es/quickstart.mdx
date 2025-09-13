@@ -1,0 +1,150 @@
+export const metadata = {
+  title: 'Inicio Rápido',
+  description:
+    'Comienza a usar pnpm-catalog-updates en minutos. Aprende cómo instalar, inicializar y actualizar las dependencias del catálogo de tu workspace de pnpm.',
+};
+
+# Inicio Rápido
+
+Comienza a usar pnpm-catalog-updates en minutos. Esta guía te llevará a través de la instalación, inicialización y tu primera actualización de dependencias. {{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates está específicamente diseñado para workspaces de pnpm que usan dependencias
+  de catálogo. Asegúrate de tener un workspace de pnpm antes de comenzar.
+</Note>
+
+## Instalación
+
+Elige tu método de instalación preferido:
+
+<CodeGroup>
+
+```bash {{ title: 'Instalación Global' }}
+npm install -g pcu
+# o
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (Sin Instalación)' }}
+npx pnpm-catalog-updates
+# o
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## Inicializa tu Workspace
+
+Si aún no tienes un workspace de pnpm, PCU puede crear uno para ti:
+
+```bash
+pcu init
+```
+
+Este comando crea:
+
+- `.pcurc.json` - Archivo de configuración de PCU
+- `package.json` - package.json raíz del workspace (si falta)
+- `pnpm-workspace.yaml` - Configuración del workspace de PNPM (si falta)
+- `packages/` - Directorio para paquetes del workspace (si falta)
+
+## Tu Primera Verificación de Actualizaciones
+
+Verifica dependencias del catálogo desactualizadas:
+
+```bash
+pcu -c
+```
+
+Esto te mostrará una hermosa tabla con:
+
+- Versiones actuales en tus catálogos
+- Últimas versiones disponibles
+- Nombres de paquetes y tipos de actualización
+- Indicadores de urgencia codificados por color
+
+## Actualizaciones Interactivas
+
+Actualiza dependencias con una interfaz interactiva:
+
+```bash
+pcu -i
+```
+
+Esto te permite:
+
+- ✅ Elegir qué dependencias actualizar
+- 🎯 Seleccionar versiones específicas
+- 📊 Ver análisis de impacto
+- 🔒 Crear respaldos automáticamente
+
+## Comandos Comunes
+
+Aquí están los comandos más utilizados frecuentemente:
+
+| Comando    | Descripción                  | Ejemplo                    |
+| ---------- | ---------------------------- | -------------------------- |
+| `pcu init` | Inicializar workspace        | `pcu init --verbose`       |
+| `pcu -c`   | Verificar actualizaciones    | `pcu -c --catalog default` |
+| `pcu -i`   | Actualizaciones interactivas | `pcu -i -b`                |
+| `pcu -u`   | Actualizar dependencias      | `pcu -u --target minor`    |
+| `pcu -a`   | Analizar impacto             | `pcu -a default react`     |
+
+## ¿Qué Sigue?
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="Referencia de Comandos"
+    description="Guía completa de todos los comandos y opciones de PCU."
+  />
+  <Resource
+    href="/configuration"
+    title="Configuración"
+    description="Aprende cómo configurar PCU para tu flujo de trabajo."
+  />
+  <Resource
+    href="/examples"
+    title="Ejemplos"
+    description="Ejemplos del mundo real y casos de uso."
+  />
+  <Resource
+    href="/development"
+    title="Desarrollo"
+    description="Configura PCU para desarrollo y contribución."
+  />
+</Resources>
+
+## Lista de Verificación para Comenzar
+
+Sigue esta lista de verificación para que PCU funcione en tu proyecto:
+
+1. **Instalar PCU** - Elige instalación global o usa npx
+2. **Inicializar workspace** - Ejecuta `pcu init` para la configuración inicial
+3. **Verificar actualizaciones** - Usa `pcu -c` para ver actualizaciones disponibles
+4. **Configurar ajustes** - Personaliza `.pcurc.json` para tus necesidades
+5. **Actualizar dependencias** - Usa modo interactivo `pcu -i` para actualizaciones seguras
+6. **Configurar automatización** - Considera integración CI/CD para verificaciones regulares
+
+## Referencia Rápida de Comandos Esenciales
+
+| Comando        | Propósito                 | Cuándo Usar                                 |
+| -------------- | ------------------------- | ------------------------------------------- |
+| `pcu init`     | Configurar workspace      | Primera configuración, nuevos proyectos     |
+| `pcu -c`       | Verificar actualizaciones | Desarrollo diario, verificaciones CI        |
+| `pcu -i`       | Actualización interactiva | Actualizaciones manuales seguras            |
+| `pcu -u`       | Actualización en lote     | Actualizaciones automatizadas, CI/CD        |
+| `pcu security` | Escaneo de seguridad      | Antes de lanzamientos, auditorías regulares |
+
+## Próximos Pasos
+
+Una vez que tengas PCU configurado, explora estas características avanzadas:
+
+- **[Configuración](/configuration)** - Personaliza PCU para tu flujo de trabajo específico
+- **[Escaneo de Seguridad](/command-reference#pcu-security)** - Integra escaneo de vulnerabilidades
+- **[Gestión de Monorepo](/configuration#monorepo-configuration)** - Características avanzadas de workspace
+- **[Integración CI/CD](/examples)** - Automatiza actualizaciones de dependencias en tu pipeline

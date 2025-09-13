@@ -1,0 +1,275 @@
+export const metadata = {
+  title: '代码写作',
+  description: '掌握代码块、语法高亮和使用CodeGroup组件的多语言示例。',
+};
+
+# 代码写作
+
+掌握在文档中展示代码的艺术。学习使用语法高亮、创建多语言示例，以及有效组织代码块来帮助开发者理解和实现您的解决方案。 {{ className: 'lead' }}
+
+## 单个代码块
+
+带有自动语法高亮的基础代码块：
+
+```javascript
+// 带语法高亮的JavaScript示例
+const greeting = '你好，世界！';
+console.log(greeting);
+```
+
+上面的JavaScript代码块使用以下MDX语法创建：
+
+````mdx
+```javascript
+const greeting = '你好，世界！';
+console.log(greeting);
+```
+````
+
+**Python示例：**
+
+```python
+# Python示例
+def greet(name):
+    return f"你好，{name}！"
+
+print(greet("世界"))
+```
+
+Python代码块的MDX语法：
+
+````mdx
+```python
+def greet(name):
+    return f"你好，{name}！"
+
+print(greet("世界"))
+```
+````
+
+**Bash/Shell命令：**
+
+```bash
+# Bash/Shell命令
+npm install @example/package
+pnpm add dependency
+```
+
+Bash代码块的MDX语法：
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## 多语言CodeGroup
+
+使用`<CodeGroup>`展示不同语言的相同示例：
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+上面的多语言代码组使用以下MDX语法创建：
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## API端点示例
+
+对于API文档，使用HTTP方法标签：
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "张三", "email": "zhangsan@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '张三',
+    email: 'zhangsan@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+上面的API端点示例使用以下MDX语法创建，注意`tag`和`label`属性：
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "张三", "email": "zhangsan@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '张三',
+    email: 'zhangsan@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### 代码块标题
+
+您也可以为单个代码块添加标题：
+
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API Client' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## 支持的语言
+
+我们的代码块支持多种编程语言的语法高亮，包括但不限于：
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Shell脚本**: `bash`, `shell`, `sh`
+- **其他语言**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**示例：**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+JSON代码块的MDX语法：
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**代码对比（Diff）：**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Diff代码块的MDX语法：
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## 最佳实践
+
+- 总是为代码块指定语言以获得语法高亮
+- 使用描述性标题来区分不同的代码示例
+- 包含完整、可运行的示例
+- 保持示例简洁但功能完整
+- 使用一致的格式和样式
+- 在CodeGroup中按照使用频率排序语言标签页
+
+## 下一步
+
+继续阅读[布局组件](/writing-layout)来有效组织您的内容。

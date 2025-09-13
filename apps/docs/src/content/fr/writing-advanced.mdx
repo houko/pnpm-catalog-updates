@@ -1,0 +1,79 @@
+export const metadata = {
+  title: "Fonctionnalités d'Écriture Avancées",
+  description:
+    "Maîtrisez les métadonnées, les paragraphes d'introduction, les contextes de style et les meilleures pratiques de documentation.",
+};
+
+# Fonctionnalités d'Écriture Avancées
+
+Maîtrisez les fonctionnalités avancées qui rendent votre documentation professionnelle et efficace. Apprenez les métadonnées, les paragraphes d'introduction, les contextes de style et les meilleures pratiques qui distinguent une excellente documentation d'une bonne documentation. {{ className: 'lead' }}
+
+## Métadonnées et SEO
+
+Chaque page doit inclure des métadonnées en haut :
+
+```mdx
+export const metadata = {
+  title: 'Titre de Votre Page',
+  description: 'Description brève pour le SEO et la navigation.',
+};
+
+;
+```
+
+## Paragraphes d'Introduction
+
+Faites ressortir les paragraphes d'introduction avec `{{ className: 'lead' }}` :
+
+```mdx
+Ceci est un paragraphe d'introduction qui présente le sujet avec un texte plus grand et plus proéminent. {{ className: 'lead' }}
+```
+
+## Contexte de Style
+
+### La Classe not-prose
+
+Utilisez `<div className="not-prose">` pour les composants qui doivent échapper au style prose :
+
+```mdx
+<div className="not-prose">
+  <Button href="/somewhere">Cliquez-moi</Button>
+</div>
+```
+
+## Meilleures Pratiques de Documentation
+
+### Structure du Contenu
+
+1. Commencez par les métadonnées et des titres clairs
+2. Utilisez des paragraphes d'introduction
+3. Organisez avec une hiérarchie de titres appropriée
+4. Ajoutez des Notes pour les informations importantes
+5. Incluez des exemples de code pratiques
+6. Terminez par des étapes suivantes claires
+
+### Style d'Écriture
+
+- Utilisez la voix active
+- Soyez concis mais complet
+- Incluez des exemples pour chaque concept
+- Testez tous les extraits de code
+- Maintenez une terminologie cohérente
+
+### Organisation
+
+- Groupez les sujets connexes ensemble
+- Utilisez les références croisées généreusement
+- Fournissez plusieurs points d'entrée
+- Considérez le parcours de l'utilisateur
+- Incluez des titres adaptés à la recherche
+
+## Flux de Travail de Documentation Complet
+
+1. **Planifier** : Esquissez la structure de votre contenu
+2. **Écrire** : Utilisez les composants appropriés pour chaque section
+3. **Réviser** : Vérifiez l'exhaustivité et la précision
+4. **Tester** : Vérifiez que tous les exemples fonctionnent
+5. **Itérer** : Améliorez basé sur les commentaires
+
+Vous avez maintenant tous les outils nécessaires pour créer une documentation de classe mondiale !

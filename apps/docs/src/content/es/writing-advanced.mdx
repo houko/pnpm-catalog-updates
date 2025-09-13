@@ -1,0 +1,79 @@
+export const metadata = {
+  title: 'Características Avanzadas de Escritura',
+  description:
+    'Domina metadatos, párrafos principales, contextos de estilo y mejores prácticas de documentación.',
+};
+
+# Características Avanzadas de Escritura
+
+Domina las características avanzadas que hacen que tu documentación sea profesional y efectiva. Aprende sobre metadatos, párrafos principales, contextos de estilo y las mejores prácticas que separan la gran documentación de la buena. {{ className: 'lead' }}
+
+## Metadatos y SEO
+
+Cada página debe incluir metadatos en la parte superior:
+
+```mdx
+export const metadata = {
+  title: 'Título de Tu Página',
+  description: 'Breve descripción para SEO y navegación.',
+};
+
+;
+```
+
+## Párrafos Principales
+
+Haz que los párrafos introductorios destaquen con `{{ className: 'lead' }}`:
+
+```mdx
+Este es un párrafo principal que introduce el tema con texto más grande y prominente. {{ className: 'lead' }}
+```
+
+## Contexto de Estilo
+
+### La Clase not-prose
+
+Usa `<div className="not-prose">` para componentes que necesitan escapar del estilo de prosa:
+
+```mdx
+<div className="not-prose">
+  <Button href="/somewhere">Haz Clic Aquí</Button>
+</div>
+```
+
+## Mejores Prácticas de Documentación
+
+### Estructura del Contenido
+
+1. Comienza con metadatos y títulos claros
+2. Usa párrafos principales para introducciones
+3. Organiza con jerarquía apropiada de encabezados
+4. Agrega Notes para información importante
+5. Incluye ejemplos prácticos de código
+6. Termina con próximos pasos claros
+
+### Estilo de Escritura
+
+- Usa voz activa
+- Sé conciso pero completo
+- Incluye ejemplos para cada concepto
+- Prueba todos los fragmentos de código
+- Mantén terminología consistente
+
+### Organización
+
+- Agrupa temas relacionados
+- Usa referencias cruzadas liberalmente
+- Proporciona múltiples puntos de entrada
+- Considera el viaje del usuario
+- Incluye encabezados amigables para búsqueda
+
+## Flujo de Trabajo Completo de Documentación
+
+1. **Planifica**: Esboza la estructura de tu contenido
+2. **Escribe**: Usa componentes apropiados para cada sección
+3. **Revisa**: Verifica completitud y precisión
+4. **Prueba**: Verifica que todos los ejemplos funcionen
+5. **Itera**: Mejora basándote en retroalimentación
+
+¡Ahora tienes todas las herramientas necesarias para crear documentación de clase mundial!

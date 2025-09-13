@@ -1,0 +1,216 @@
+export const metadata = {
+  title: "Bases de l'Écriture",
+  description:
+    'Apprenez les fondamentaux de la rédaction de documentation avec le formatage Markdown, les listes, les liens et la syntaxe de base.',
+};
+
+# Bases de l'Écriture
+
+Maîtrisez les éléments fondamentaux de la rédaction de documentation. Ce guide couvre la syntaxe Markdown standard, les options de formatage et les éléments de base que vous utiliserez dans chaque document. {{ className: 'lead' }}
+
+## Fondamentaux Markdown
+
+Le formatage Markdown standard est entièrement pris en charge et constitue la base de toute documentation :
+
+**Texte gras** pour l'emphase et l'importance  
+_Texte italique_ pour une emphase subtile  
+`code en ligne` pour les termes techniques, commandes et courts extraits de code
+
+Vous pouvez les combiner : **_gras et italique_** ou **gras avec `code`**
+
+## Formatage du Texte
+
+### Emphase et Texte Fort
+
+Utilisez des astérisques ou des underscores pour l'emphase :
+
+```markdown
+_Ceci est du texte en italique_
+_Ceci est aussi en italique_
+
+**Ceci est du texte en gras**
+**Ceci est aussi en gras**
+
+**_Ceci est gras et italique_**
+```
+
+### Code et Termes Techniques
+
+Pour le code en ligne, les variables ou les termes techniques, utilisez des backticks :
+
+```markdown
+Utilisez la commande `npm install` pour installer des paquets.
+Définissez la variable `NODE_ENV` à `production`.
+Le hook `useState` gère l'état du composant.
+```
+
+## Listes et Organisation
+
+### Listes Non Ordonnées
+
+Parfaites pour les listes de fonctionnalités, exigences ou tout élément non séquentiel :
+
+- Fonctionnalité principale ou point
+- Autre élément important
+- Troisième considération
+  - Sous-point imbriqué
+  - Détail supplémentaire
+- Retour au niveau principal
+
+### Listes Ordonnées
+
+Utilisez pour les instructions étape par étape, procédures ou éléments priorisés :
+
+1. Première étape du processus
+2. Deuxième étape avec détails importants
+3. Troisième étape
+   1. Sous-étape avec instructions spécifiques
+   2. Autre sous-étape
+4. Étape finale
+
+### Listes de Tâches
+
+Excellentes pour les listes de vérification et le suivi de progression :
+
+- [x] Tâche terminée
+- [x] Autre élément fini
+- [ ] Tâche en attente
+- [ ] Amélioration future
+
+## Liens et Navigation
+
+### Liens Internes
+
+Lien vers d'autres pages de votre documentation :
+
+```markdown
+Consultez notre [Guide de Démarrage Rapide](/quickstart) pour les instructions de configuration.
+Vérifiez la [Référence API](/api) pour les détails complets des points de terminaison.
+```
+
+Exemples :
+
+- [Guide de Référence des Commandes](/command-reference)
+- [Dépannage](/troubleshooting)
+- [Documentation SDK](/sdks)
+
+### Liens Externes
+
+Lien vers des ressources externes :
+
+```markdown
+Visitez [GitHub](https://github.com) pour le code source.
+Lisez la [documentation officielle](https://example.com/docs).
+```
+
+### Liens d'Ancrage
+
+Lien vers des sections spécifiques dans les pages :
+
+```markdown
+Aller à la section [Formatage du Texte](#formatage-du-texte) ci-dessus.
+Voir [Meilleures Pratiques](#meilleures-pratiques) ci-dessous.
+```
+
+## Titres et Structure
+
+Créez une hiérarchie de document claire avec des niveaux de titre appropriés :
+
+```markdown
+# Titre de Page (H1 - utilisé automatiquement depuis les métadonnées)
+
+## Section Principale (H2)
+
+### Sous-section (H3)
+
+#### Section de Détail (H4)
+
+##### Section Mineure (H5)
+
+###### Plus Petite Section (H6)
+```
+
+### Meilleures Pratiques des Titres
+
+- Utilisez H1 uniquement pour le titre de page (géré par les métadonnées)
+- Commencez les sections avec H2, les sous-sections avec H3
+- Ne sautez pas de niveaux de titre (pas de H2 → H4)
+- Gardez les titres descriptifs et scannables
+- Utilisez la casse de phrase : "Commencer" et non "Commencer"
+
+## Citations et Encadrés
+
+### Citations en Bloc
+
+Pour les citations importantes ou références :
+
+> "La documentation est une lettre d'amour que vous écrivez à votre futur moi."  
+> — Damian Conway
+
+> **Note Importante** : Ceci est une citation mise en évidence avec un contexte supplémentaire qui s'étend sur plusieurs lignes et fournit des informations cruciales.
+
+### Citations Multi-paragraphes
+
+> Ceci est le premier paragraphe d'une citation plus longue.
+>
+> Ceci est le deuxième paragraphe qui continue la pensée avec des détails et un contexte supplémentaires.
+
+## Règles Horizontales
+
+Séparez les sections majeures avec des règles horizontales :
+
+```markdown
+---
+```
+
+Crée une pause visuelle :
+
+---
+
+## Tableaux
+
+Tableaux simples pour les données structurées :
+
+| Fonctionnalité | De Base | Pro         | Entreprise     |
+| -------------- | ------- | ----------- | -------------- |
+| Utilisateurs   | 10      | 100         | Illimité       |
+| Stockage       | 1GB     | 10GB        | 100GB          |
+| Appels API     | 1,000   | 10,000      | Illimité       |
+| Support        | Email   | Prioritaire | 24/7 Téléphone |
+
+### Alignement des Tableaux
+
+Contrôlez l'alignement des colonnes :
+
+| Aligné à Gauche | Aligné au Centre | Aligné à Droite |
+| :-------------- | :--------------: | --------------: |
+| Texte           |      Texte       |           Texte |
+| Plus de contenu | Plus de contenu  | Plus de contenu |
+
+## Caractères Spéciaux
+
+Utilisez des antislashs pour échapper les caractères Markdown spéciaux :
+
+```markdown
+\*Pas en italique\*
+\`Pas du code\`
+\# Pas un titre
+```
+
+## Sauts de Ligne et Espacement
+
+- Terminez les lignes avec deux espaces pour des sauts durs
+- Utilisez des lignes vides pour séparer les paragraphes
+- Utilisez `\` en fin de ligne pour les sauts dans les listes
+
+## Étapes Suivantes
+
+Une fois que vous avez maîtrisé ces bases, explorez :
+
+- [Écriture de Composants](/writing-components) - Éléments UI interactifs
+- [Écriture de Code](/writing-code) - Blocs de code et coloration syntaxique
+- [Écriture de Mise en Page](/writing-layout) - Mises en page multi-colonnes et organisation
+- [Écriture API](/writing-api) - Composants de documentation API
+- [Écriture Avancée](/writing-advanced) - Fonctionnalités avancées et meilleures pratiques
+
+Ces fondamentaux forment la base de toute excellente documentation. Maîtrisez-les d'abord, puis développez-les avec les composants avancés et techniques couverts dans les autres guides.

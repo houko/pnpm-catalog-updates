@@ -1,0 +1,150 @@
+export const metadata = {
+  title: 'Schnellstart',
+  description:
+    'Starten Sie in wenigen Minuten mit pnpm-catalog-updates. Lernen Sie, wie Sie Ihre pnpm-Workspace-Katalog-Abhängigkeiten installieren, initialisieren und aktualisieren.',
+};
+
+# Schnellstart
+
+Starten Sie in wenigen Minuten mit pnpm-catalog-updates. Diese Anleitung führt Sie durch Installation, Initialisierung und Ihr erstes Dependency-Update. {{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates ist speziell für pnpm-Workspaces mit Katalog-Abhängigkeiten entwickelt.
+  Stellen Sie sicher, dass Sie einen pnpm-Workspace haben, bevor Sie beginnen.
+</Note>
+
+## Installation
+
+Wählen Sie Ihre bevorzugte Installationsmethode:
+
+<CodeGroup>
+
+```bash {{ title: 'Globale Installation' }}
+npm install -g pcu
+# oder
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (Keine Installation)' }}
+npx pnpm-catalog-updates
+# oder
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## Initialisieren Sie Ihren Workspace
+
+Wenn Sie noch keinen pnpm-Workspace haben, kann PCU einen für Sie erstellen:
+
+```bash
+pcu init
+```
+
+Dieser Befehl erstellt:
+
+- `.pcurc.json` - PCU-Konfigurationsdatei
+- `package.json` - Workspace-Root-package.json (falls fehlend)
+- `pnpm-workspace.yaml` - PNPM-Workspace-Konfiguration (falls fehlend)
+- `packages/` - Verzeichnis für Workspace-Pakete (falls fehlend)
+
+## Ihre erste Update-Überprüfung
+
+Überprüfen Sie veraltete Katalog-Abhängigkeiten:
+
+```bash
+pcu -c
+```
+
+Dies zeigt Ihnen eine übersichtliche Tabelle mit:
+
+- Aktuellen Versionen in Ihren Katalogen
+- Neuesten verfügbaren Versionen
+- Paketnamen und Update-Typen
+- Farbcodierten Dringlichkeits-Indikatoren
+
+## Interaktive Updates
+
+Aktualisieren Sie Abhängigkeiten mit einer interaktiven Benutzeroberfläche:
+
+```bash
+pcu -i
+```
+
+Dies ermöglicht Ihnen:
+
+- ✅ Auswahl der zu aktualisierenden Abhängigkeiten
+- 🎯 Auswahl spezifischer Versionen
+- 📊 Auswirkungsanalyse anzeigen
+- 🔒 Automatische Backups erstellen
+
+## Häufige Befehle
+
+Hier sind die am häufigsten verwendeten Befehle:
+
+| Befehl     | Beschreibung             | Beispiel                   |
+| ---------- | ------------------------ | -------------------------- |
+| `pcu init` | Workspace initialisieren | `pcu init --verbose`       |
+| `pcu -c`   | Nach Updates suchen      | `pcu -c --catalog default` |
+| `pcu -i`   | Interaktive Updates      | `pcu -i -b`                |
+| `pcu -u`   | Abhängigkeiten updaten   | `pcu -u --target minor`    |
+| `pcu -a`   | Auswirkungen analysieren | `pcu -a default react`     |
+
+## Was kommt als Nächstes?
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="Befehlsreferenz"
+    description="Vollständige Anleitung zu allen PCU-Befehlen und -Optionen."
+  />
+  <Resource
+    href="/configuration"
+    title="Konfiguration"
+    description="Lernen Sie, wie Sie PCU für Ihren Workflow konfigurieren."
+  />
+  <Resource
+    href="/examples"
+    title="Beispiele"
+    description="Praxisnahe Beispiele und Anwendungsfälle."
+  />
+  <Resource
+    href="/development"
+    title="Entwicklung"
+    description="PCU für Entwicklung und Beiträge einrichten."
+  />
+</Resources>
+
+## Erste Schritte Checkliste
+
+Folgen Sie dieser Checkliste, um PCU in Ihrem Projekt zum Laufen zu bringen:
+
+1. **PCU installieren** - Wählen Sie globale Installation oder verwenden Sie npx
+2. **Workspace initialisieren** - Führen Sie `pcu init` für die erstmalige Einrichtung aus
+3. **Nach Updates suchen** - Verwenden Sie `pcu -c`, um verfügbare Updates zu sehen
+4. **Einstellungen konfigurieren** - Passen Sie `.pcurc.json` an Ihre Bedürfnisse an
+5. **Abhängigkeiten aktualisieren** - Verwenden Sie den interaktiven Modus `pcu -i` für sichere Updates
+6. **Automatisierung einrichten** - Erwägen Sie CI/CD-Integration für regelmäßige Überprüfungen
+
+## Schnellreferenz wichtiger Befehle
+
+| Befehl         | Zweck                | Wann zu verwenden                      |
+| -------------- | -------------------- | -------------------------------------- |
+| `pcu init`     | Workspace einrichten | Ersteinrichtung, neue Projekte         |
+| `pcu -c`       | Updates überprüfen   | Tägliche Entwicklung, CI-Überprüfungen |
+| `pcu -i`       | Interaktives Update  | Sichere manuelle Updates               |
+| `pcu -u`       | Batch-Update         | Automatisierte Updates, CI/CD          |
+| `pcu security` | Sicherheitsscan      | Vor Releases, regelmäßige Audits       |
+
+## Nächste Schritte
+
+Sobald Sie PCU eingerichtet haben, erkunden Sie diese erweiterten Funktionen:
+
+- **[Konfiguration](/configuration)** - PCU für Ihren spezifischen Workflow anpassen
+- **[Sicherheitsscan](/command-reference#pcu-security)** - Schwachstellenscan integrieren
+- **[Monorepo-Verwaltung](/configuration#monorepo-configuration)** - Erweiterte Workspace-Funktionen
+- **[CI/CD-Integration](/examples)** - Dependency-Updates in Ihrer Pipeline automatisieren

@@ -1,0 +1,699 @@
+export const metadata = {
+  title: '성능 최적화',
+  description: '대규모 모노레포를 위한 PCU 성능 최적화, 실행 속도 개선, 리소스 사용량 절약.',
+};
+
+# 성능 최적화
+
+대규모 모노레포, 복잡한 워크스페이스, 리소스 제약 환경에서 PCU 성능을 최대화하세요. {{ className: 'lead' }}
+
+## PCU 성능 이해하기
+
+PCU 성능은 여러 요소에 따라 달라집니다:
+
+- **네트워크 지연**: 레지스트리 응답 시간 및 대역폭
+- **워크스페이스 크기**: 패키지 및 의존성 수
+- **캐시 효율성**: 히트율 및 저장소 최적화
+- **시스템 리소스**: CPU, 메모리, 디스크 I/O
+- **구성**: 동시성 설정 및 타임아웃 값
+
+### 성능 프로파일링
+
+상세한 성능 모니터링 활성화:
+
+```bash
+# 성능 프로파일링 활성화
+export PCU_PROFILE=true
+export DEBUG=pcu:performance,pcu:network,pcu:cache
+
+# 타이밍 정보와 함께 실행
+time pcu check --verbose
+```
+
+**출력 분석 예시:**
+
+```
+의존성 분석: 2.3s
+네트워크 요청: 4.1s (45개 요청)
+캐시 작업: 0.8s (12개 히트, 33개 미스)
+파일 I/O: 1.2s
+총 실행 시간: 8.4s
+```
+
+## 구성 최적화
+
+### 동시성 설정
+
+환경에 맞는 동시 작업 최적화:
+
+```json
+{
+  "concurrency": 3,
+  "timeout": 45000,
+  "advanced": {
+    "batchSize": 8,
+    "maxRetries": 2,
+    "retryDelay": 1000
+  }
+}
+```
+
+**동시성 가이드라인:**
+
+- **소규모 프로젝트 (20개 미만 패키지)**: `concurrency: 5-8`
+- **중간 프로젝트 (20-100개 패키지)**: `concurrency: 3-5`
+- **대규모 프로젝트 (100개 이상 패키지)**: `concurrency: 1-3`
+- **CI/CD 환경**: `concurrency: 2-3`
+
+### 메모리 관리
+
+**Node.js 메모리 최적화:**
+
+```bash
+# 대규모 모노레포를 위한 힙 크기 증가
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# 가비지 컬렉션 최적화 활성화
+export NODE_OPTIONS="--max-old-space-size=4096 --optimize-for-size"
+
+# 매우 큰 워크스페이스용
+export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=128"
+```
+
+**PCU 메모리 구성:**
+
+```json
+{
+  "advanced": {
+    "memoryOptimization": true,
+    "maxConcurrentAnalysis": 10,
+    "streamProcessing": true,
+    "gcInterval": 1000
+  }
+}
+```
+
+## 캐싱 전략
+
+### 로컬 캐시 최적화
+
+**캐시 구성:**
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 500,
+    "compression": true,
+    "strategy": "lru"
+  }
+}
+```
+
+**환경 변수:**
+
+```bash
+# 영구 캐싱 활성화
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_DIR="~/.pcu-cache"
+export PCU_CACHE_TTL=7200  # 2시간
+export PCU_CACHE_MAX_SIZE=1000  # 1GB
+```
+
+### 캐시 관리 명령어
+
+```bash
+# 캐시 통계 확인
+pcu cache --stats
+
+# 오래된 캐시 항목 정리
+pcu cache --clean
+
+# 더 빠른 후속 실행을 위한 캐시 워밍업
+pcu cache --warm
+
+# 캐시 완전 재설정
+pcu cache --reset
+```
+
+### CI/CD 캐시 통합
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+- name: Cache PCU Data
+  uses: actions/cache@v4
+  with:
+    path: |
+      ~/.pcu-cache
+      node_modules/.cache/pcu
+    key: pcu-cache-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml', 'packages/*/package.json') }}
+    restore-keys: |
+      pcu-cache-${{ runner.os }}-
+      pcu-cache-
+
+- name: Optimized PCU Check
+  run: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CONCURRENCY=3
+    pcu check --timeout 60000
+```
+
+```yaml {{ title: 'GitLab CI' }}
+cache:
+  key:
+    files:
+      - pnpm-workspace.yaml
+      - packages/*/package.json
+  paths:
+    - .pcu-cache/
+    - node_modules/.cache/pcu/
+
+performance_check:
+  script:
+    - export PCU_CACHE_ENABLED=true
+    - export PCU_CACHE_DIR="./.pcu-cache"
+    - pcu check --concurrency 2 --timeout 45000
+```
+
+```yaml {{ title: 'Azure DevOps' }}
+- task: Cache@2
+  inputs:
+    key: 'pcu | "$(Agent.OS)" | pnpm-workspace.yaml | packages/*/package.json'
+    restoreKeys: |
+      pcu | "$(Agent.OS)"
+      pcu
+    path: $(Pipeline.Workspace)/.pcu-cache
+
+- script: |
+    export PCU_CACHE_ENABLED=true
+    export PCU_CACHE_DIR="$(Pipeline.Workspace)/.pcu-cache"
+    pcu check --concurrency 2
+```
+
+</CodeGroup>
+
+## 네트워크 최적화
+
+### 레지스트리 구성
+
+**레지스트리 선택 최적화:**
+
+```bash
+# 지리적으로 가까운 레지스트리 사용
+export PCU_REGISTRY="https://registry-asia.npmjs.org/"  # 아시아용
+export PCU_REGISTRY="https://registry-eu.npmjs.org/"   # 유럽용
+
+# 기업 프록시 구성
+export HTTP_PROXY="http://proxy.company.com:8080"
+export HTTPS_PROXY="http://proxy.company.com:8080"
+export NO_PROXY="localhost,127.0.0.1,*.company.com"
+```
+
+**연결 최적화:**
+
+```json
+{
+  "network": {
+    "timeout": 30000,
+    "retries": 3,
+    "retryDelay": 2000,
+    "keepAlive": true,
+    "maxSockets": 15,
+    "maxFreeSockets": 10
+  }
+}
+```
+
+### 대역폭 관리
+
+```bash
+# 느린 연결을 위한 병렬 네트워크 요청 감소
+pcu check --concurrency 1 --timeout 90000
+
+# 요청 압축 활성화
+export PCU_COMPRESS_REQUESTS=true
+
+# 작은 요청들을 일괄 처리
+export PCU_BATCH_REQUESTS=true
+export PCU_BATCH_SIZE=5
+```
+
+## 대규모 모노레포 전략
+
+### 워크스페이스 분할
+
+**대형 워크스페이스 구성:**
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/frontend/*'
+  - 'apps/backend/*'
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'tools/*'
+
+catalog:
+  # 핵심 의존성
+  react: ^18.2.0
+  typescript: ^5.0.0
+
+catalogs:
+  # 프론트엔드 전용 카탈로그
+  frontend:
+    next: ^13.4.0
+    tailwindcss: ^3.3.0
+
+  # 백엔드 전용 카탈로그
+  backend:
+    express: ^4.18.0
+    prisma: ^5.0.0
+```
+
+**선택적 처리:**
+
+```bash
+# 제한과 함께 카테고리별 처리
+pcu check --include "@company/ui-*" --limit 10
+pcu check --include "@company/api-*" --limit 15
+pcu check --include "@company/tools-*" --limit 5
+
+# 점진적 업데이트
+pcu update --include "@types/*" --target latest
+pcu update --include "eslint*" --target minor
+pcu update --include "react*" --target patch --require-confirmation
+```
+
+### 점진적 처리
+
+**단계적 업데이트:**
+
+```json
+{
+  "strategies": {
+    "incremental": {
+      "enabled": true,
+      "batchSize": 20,
+      "delayBetweenBatches": 5000,
+      "pauseOnErrors": true
+    }
+  }
+}
+```
+
+**처리 워크플로:**
+
+<CodeGroup>
+
+```bash {{ title: '개발 의존성' }}
+# 1단계: 개발 도구 (안전한 업데이트)
+pcu update --include "@types/*,eslint*,prettier*" --target latest
+
+# 2단계: 빌드 도구 (마이너 업데이트만)
+pcu update --include "webpack*,babel*,rollup*" --target minor
+
+# 3단계: 테스팅 프레임워크 (패치 업데이트)
+pcu update --include "jest*,vitest*,playwright*" --target patch
+```
+
+```bash {{ title: '프로덕션 의존성' }}
+# 1단계: 패치 보안 업데이트
+pcu security --auto-fix --severity high
+
+# 2단계: 확인이 필요한 마이너 기능 업데이트
+pcu update --target minor --require-confirmation --exclude "react*,vue*"
+
+# 3단계: 메이저 업데이트 (대화형)
+pcu update --target latest --interactive --limit 5
+```
+
+</CodeGroup>
+
+## 메모리 및 리소스 관리
+
+### 메모리 프로파일링
+
+**메모리 사용량 모니터링:**
+
+```bash
+# 메모리 모니터링 활성화
+export NODE_OPTIONS="--inspect --max-old-space-size=4096"
+export PCU_MEMORY_PROFILING=true
+
+# 메모리 추적과 함께 실행
+pcu check --profile-memory
+```
+
+**메모리 최적화 기법:**
+
+```json
+{
+  "advanced": {
+    "streamProcessing": true,
+    "lazyLoading": true,
+    "memoryThreshold": 0.8,
+    "gcIntensity": "high",
+    "objectPooling": true
+  }
+}
+```
+
+### 디스크 I/O 최적화
+
+**SSD vs HDD 구성:**
+
+```bash
+# SSD 최적화 (더 빠른 랜덤 액세스)
+export PCU_IO_STRATEGY="random"
+export PCU_CACHE_STRATEGY="frequent"
+
+# HDD 최적화 (순차 액세스)
+export PCU_IO_STRATEGY="sequential"
+export PCU_CACHE_STRATEGY="batch"
+```
+
+**파일 시스템 캐싱:**
+
+```json
+{
+  "fileSystem": {
+    "watchFiles": false,
+    "bufferSize": 65536,
+    "asyncIO": true,
+    "preloadMetadata": true
+  }
+}
+```
+
+## 성능 모니터링
+
+### 메트릭 수집
+
+**내장 메트릭:**
+
+```bash
+# 성능 보고서 생성
+pcu check --metrics --output metrics.json
+
+# 성능 대시보드
+pcu dashboard --metrics
+```
+
+**사용자 정의 모니터링:**
+
+```bash
+# 모니터링 시스템과의 통합
+export PCU_METRICS_ENDPOINT="https://metrics.company.com/pcu"
+export PCU_METRICS_INTERVAL=30000
+
+pcu check --send-metrics
+```
+
+### 벤치마킹
+
+**성능 벤치마크:**
+
+<CodeGroup>
+
+```bash {{ title: '기준 측정' }}
+#!/bin/bash
+# benchmark-pcu.sh
+
+echo "=== PCU 성능 벤치마크 ==="
+echo "워크스페이스: $(pwd)"
+echo "패키지: $(find packages -name package.json | wc -l)"
+echo "Node 버전: $(node --version)"
+echo
+
+# 공정한 비교를 위한 캐시 정리
+pcu cache --reset
+
+# 워밍업 실행
+echo "워밍업 실행..."
+time pcu check > /dev/null 2>&1
+
+# 콜드 실행
+pcu cache --reset
+echo "콜드 실행..."
+time pcu check --verbose | tee benchmark-results.txt
+```
+
+```javascript {{ title: '성능 분석' }}
+// analyze-performance.js
+const fs = require('fs');
+const metrics = JSON.parse(fs.readFileSync('metrics.json', 'utf8'));
+
+const analysis = {
+  totalTime: metrics.endTime - metrics.startTime,
+  networkTime: metrics.network.totalTime,
+  cacheHitRate: metrics.cache.hits / (metrics.cache.hits + metrics.cache.misses),
+  packagesPerSecond: metrics.packages.total / (metrics.totalTime / 1000),
+  memoryPeak: metrics.memory.peak,
+  recommendations: [],
+};
+
+// 권장사항 생성
+if (analysis.cacheHitRate < 0.7) {
+  analysis.recommendations.push('캐시 TTL 증가를 고려하세요');
+}
+
+if (analysis.networkTime > analysis.totalTime * 0.5) {
+  analysis.recommendations.push('네트워크 지연이 감지됨, 레지스트리 최적화를 고려하세요');
+}
+
+console.log(JSON.stringify(analysis, null, 2));
+```
+
+</CodeGroup>
+
+### 성능 튜닝 가이드
+
+**단계별 최적화:**
+
+1. **기준 측정**
+
+   ```bash
+   pcu check --metrics --profile > baseline.txt
+   ```
+
+2. **캐싱 활성화**
+
+   ```bash
+   export PCU_CACHE_ENABLED=true
+   pcu check --metrics --profile > cached.txt
+   ```
+
+3. **동시성 최적화**
+
+   ```bash
+   # 다양한 동시성 레벨 테스트
+   for c in 1 2 3 5 8; do
+     echo "동시성 테스트: $c"
+     time pcu check --concurrency $c > /dev/null 2>&1
+   done
+   ```
+
+4. **네트워크 최적화**
+
+   ```bash
+   export PCU_REGISTRY="https://registry-eu.npmjs.org/"
+   pcu check --metrics --profile > optimized.txt
+   ```
+
+5. **메모리 튜닝**
+   ```bash
+   export NODE_OPTIONS="--max-old-space-size=2048"
+   pcu check --metrics --profile > memory-tuned.txt
+   ```
+
+## 성능 문제 해결
+
+### 일반적인 성능 문제
+
+**느린 네트워크 요청:**
+
+```bash
+# 네트워크 문제 진단
+export DEBUG=pcu:network
+pcu check --verbose
+
+# 레지스트리 연결 테스트
+curl -w "@curl-format.txt" -o /dev/null -s "https://registry.npmjs.org/react"
+
+# 대체 레지스트리
+export PCU_REGISTRY="https://registry.yarnpkg.com/"
+```
+
+**메모리 문제:**
+
+```bash
+# 메모리 사용량 모니터링
+export NODE_OPTIONS="--inspect --max-old-space-size=8192"
+pcu check --profile-memory
+
+# 메모리 사용량 줄이기
+export PCU_STREAM_PROCESSING=true
+export PCU_LAZY_LOADING=true
+```
+
+**캐시 문제:**
+
+```bash
+# 캐시 상태 확인
+pcu cache --verify
+
+# 손상된 캐시 재구축
+pcu cache --rebuild
+
+# 캐시 통계
+pcu cache --stats --verbose
+```
+
+### 성능 회귀 감지
+
+**자동화된 성능 테스팅:**
+
+```yaml
+# .github/workflows/performance.yml
+name: Performance Regression Test
+
+on:
+  pull_request:
+    paths: ['packages/**', 'pnpm-workspace.yaml']
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baseline Performance Test
+        run: |
+          git checkout main
+          pcu cache --reset
+          time pcu check --metrics > baseline.json
+
+      - name: PR Performance Test
+        run: |
+          git checkout ${{ github.head_ref }}
+          pcu cache --reset
+          time pcu check --metrics > pr.json
+
+      - name: Compare Performance
+        run: |
+          node scripts/compare-performance.js baseline.json pr.json
+```
+
+## 환경별 최적화
+
+### 로컬 개발
+
+**개발자 머신 설정:**
+
+```bash
+# ~/.bashrc or ~/.zshrc
+export PCU_CACHE_ENABLED=true
+export PCU_CACHE_TTL=3600
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# 프로젝트별 최적화
+alias pcu-fast="pcu check --concurrency 5 --limit 20"
+alias pcu-full="pcu check --concurrency 2"
+```
+
+### CI/CD 환경
+
+**다양한 CI 제공업체별 최적화:**
+
+<CodeGroup>
+
+```yaml {{ title: 'GitHub Actions' }}
+# 2코어 러너에 최적화
+env:
+  PCU_CONCURRENCY: 2
+  PCU_TIMEOUT: 60000
+  PCU_CACHE_ENABLED: true
+  NODE_OPTIONS: '--max-old-space-size=3072'
+
+steps:
+  - name: Optimize PCU
+    run: |
+      # DNS 해결 미리 워밍업
+      nslookup registry.npmjs.org
+
+      # GitHub 네트워크에 맞게 구성
+      export PCU_REGISTRY="https://registry.npmjs.org/"
+      pcu check --timeout 45000
+```
+
+```yaml {{ title: 'GitLab CI (Docker)' }}
+variables:
+  PCU_CONCURRENCY: '1'
+  PCU_CACHE_ENABLED: 'true'
+  NODE_OPTIONS: '--max-old-space-size=2048'
+
+before_script:
+  # Docker 컨테이너 최적화
+  - export PCU_CACHE_DIR="/cache/.pcu"
+  - mkdir -p /cache/.pcu
+
+performance_check:
+  cache:
+    - key: pcu-cache
+    - paths: ['/cache/.pcu/']
+  script:
+    - pcu check --concurrency 1 --timeout 120000
+```
+
+</CodeGroup>
+
+### 프로덕션 배포
+
+**프로덕션급 구성:**
+
+```json
+{
+  "production": true,
+  "concurrency": 1,
+  "timeout": 300000,
+  "retries": 5,
+  "cache": {
+    "enabled": true,
+    "ttl": 86400,
+    "persistent": true
+  },
+  "security": {
+    "strictMode": true,
+    "verifyChecksums": true
+  }
+}
+```
+
+---
+
+## 성능 체크리스트
+
+### 빠른 개선사항
+
+1. 영구 캐싱 활성화: `export PCU_CACHE_ENABLED=true`
+2. 환경에 맞는 동시성 최적화
+3. 지리적으로 가까운 레지스트리 사용
+4. 대형 프로젝트를 위한 Node.js 힙 크기 증가
+5. 요청 압축 및 keep-alive 활성화
+
+### 고급 최적화
+
+1. CI/CD 캐싱 전략 구현
+2. 대규모 모노레포를 위한 워크스페이스 분할 구성
+3. 성능 모니터링 및 알림 설정
+4. 지속적인 작업을 위한 메모리 관리 최적화
+5. 점진적 처리 워크플로 구현
+
+### 모니터링 및 유지보수
+
+1. 정기적인 성능 벤치마킹
+2. 캐시 상태 모니터링
+3. 네트워크 지연 측정
+4. 메모리 사용량 프로파일링
+5. 성능 회귀 감지

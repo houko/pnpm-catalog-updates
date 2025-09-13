@@ -1,0 +1,1130 @@
+export const metadata = {
+  title: '示例',
+  description: 'pnpm-catalog-updates 的真实世界示例和用例。从实际场景和常见工作流中学习。',
+};
+
+# 示例
+
+真实世界的示例和用例，帮助您充分利用 PCU。从简单更新到复杂的 monorepo 管理。{{ className: 'lead' }}
+
+## 初学者完全指南
+
+### 第一步：了解您的项目设置
+
+在开始使用PCU之前，让我们确认您的项目结构：
+
+<CodeGroup>
+
+```bash {{ title: '检查项目结构' }}
+# 确认您有pnpm工作空间
+ls -la | grep -E "(pnpm-workspace|pnpm-lock)"
+
+# 应该看到：
+# pnpm-workspace.yaml
+# pnpm-lock.yaml
+```
+
+```bash {{ title: '查看工作空间配置' }}
+# 查看您的工作空间设置
+cat pnpm-workspace.yaml
+
+# 典型输出：
+# packages:
+#   - "apps/*"
+#   - "packages/*"
+```
+
+</CodeGroup>
+
+如果您还没有pnpm工作空间，PCU可以帮您创建：
+
+```bash
+# 初始化完整的pnpm工作空间和PCU配置
+pcu init
+
+# PCU会创建：
+# ✅ pnpm-workspace.yaml（工作空间配置）
+# ✅ .pcurc.json（PCU配置文件）
+# ✅ packages/目录（如果不存在）
+```
+
+### 第二步：您的第一次依赖检查
+
+现在让我们看看您的项目有哪些可以更新的依赖：
+
+<CodeGroup>
+
+```bash {{ title: '简单检查' }}
+# 最简单的检查命令
+pcu check
+
+# 您会看到类似这样的表格：
+# ┌─────────────────┬─────────┬─────────┬────────────┬──────────┐
+# │ Package         │ Current │ Available │ Type       │ Security │
+# ├─────────────────┼─────────┼─────────┼────────────┼──────────┤
+# │ react           │ 18.2.0  │ 18.3.1  │ minor     │ ✅       │
+# │ typescript      │ 5.0.4   │ 5.2.2   │ minor     │ ✅       │
+# │ @types/node     │ 18.15.13│ 20.8.4  │ major     │ ✅       │
+# └─────────────────┴─────────┴─────────┴────────────┴──────────┘
+```
+
+```bash {{ title: '理解输出' }}
+# 让我们理解表格中的信息：
+
+# Package：包名称
+# Current：当前安装的版本
+# Available：可用的新版本
+# Type：更新类型
+#   - patch：错误修复（1.0.1 → 1.0.2）
+#   - minor：新功能，无破坏性变更（1.0.0 → 1.1.0）
+#   - major：可能包含破坏性变更（1.0.0 → 2.0.0）
+# Security：是否有安全问题 ⚠️ = 有安全问题，✅ = 安全
+```
+
+</CodeGroup>
+
+### 第三步：您的第一次安全更新
+
+安全永远是第一位的。让我们先处理任何安全问题：
+
+<CodeGroup>
+
+```bash {{ title: '检查安全问题' }}
+# 专门检查安全漏洞
+pcu security
+
+# 如果有漏洞，您会看到：
+# 🚨 发现 3 个安全漏洞
+#
+# ┌─────────────┬─────────┬──────────┬─────────────┬────────────┐
+# │ Package     │ Severity│ Current  │ Patched     │ Vulnerability│
+# ├─────────────┼─────────┼──────────┼─────────────┼────────────┤
+# │ lodash      │ High    │ 4.17.20  │ 4.17.21     │ CVE-2021-23337│
+# │ node-fetch  │ Moderate│ 2.6.1    │ 2.6.7       │ CVE-2022-0235│
+# └─────────────┴─────────┴──────────┴─────────────┴────────────┘
+```
+
+```bash {{ title: '自动修复安全问题' }}
+# 让PCU自动修复安全漏洞
+pcu security --fix-vulns
+
+# PCU会：
+# 1. 扫描所有依赖的安全漏洞
+# 2. 自动更新到修复版本
+# 3. 运行安全验证
+# ✅ 修复了 3 个安全漏洞
+# ✅ 无其他安全问题
+```
+
+</CodeGroup>
+
+### 第四步：您的第一次依赖更新
+
+现在让我们安全地更新一些依赖。我们从保守的方式开始：
+
+<CodeGroup>
+
+```bash {{ title: '交互式更新（推荐给新手）' }}
+# 交互式更新 - 您可以选择要更新哪些包
+pcu update --interactive
+
+# PCU会显示一个选择菜单：
+# ? 选择要更新的包：
+# ◯ react (18.2.0 → 18.3.1) [minor]
+# ◉ typescript (5.0.4 → 5.2.2) [minor]
+# ◯ @types/node (18.15.13 → 20.8.4) [major] ⚠️
+# ◯ eslint (8.42.0 → 8.50.0) [minor]
+#
+# 使用方向键移动，空格选择，回车确认
+```
+
+```bash {{ title: '自动创建备份' }}
+# 让PCU在更新前创建备份
+pcu update --interactive --create-backup
+
+# PCU会：
+# 1. 在更新前创建 pnpm-workspace.yaml.backup
+# 2. 让您选择要更新的包
+# 3. 应用更新
+# 4. 验证更新成功
+
+# 如果出现问题，您可以恢复：
+# cp pnpm-workspace.yaml.backup pnpm-workspace.yaml
+```
+
+</CodeGroup>
+
+### 第五步：验证更新结果
+
+更新后，让我们确认一切正常：
+
+<CodeGroup>
+
+```bash {{ title: '验证工作空间' }}
+# 检查工作空间状态
+pcu workspace --validate
+
+# 输出应该显示：
+# ✅ 工作空间配置有效
+# ✅ 所有包都存在于注册表中
+# ✅ 版本约束一致
+# ✅ 无循环依赖
+```
+
+```bash {{ title: '重新检查依赖' }}
+# 确认更新已应用
+pcu check
+
+# 您应该看到更少的可更新包
+# 或者看到 "✅ 所有依赖都是最新的"
+```
+
+</CodeGroup>
+
+### 常见新手错误及避免方法
+
+#### 错误 1：忘记备份就更新
+
+**❌ 错误做法：**
+
+```bash
+pcu update --target latest  # 危险！没有备份
+```
+
+**✅ 正确做法：**
+
+```bash
+pcu update --interactive --create-backup  # 安全！有备份
+```
+
+#### 错误 2：直接更新主版本
+
+**❌ 错误做法：**
+
+```bash
+pcu update --target latest  # 可能包含破坏性变更
+```
+
+**✅ 正确做法：**
+
+```bash
+# 先检查会更新什么
+pcu check
+
+# 从安全的小版本开始
+pcu update --target minor --create-backup
+
+# 对主版本更新要特别小心
+pcu update --interactive  # 手动选择主版本更新
+```
+
+#### 错误 3：忽略安全扫描
+
+**❌ 错误做法：**
+
+```bash
+pcu update  # 可能留下安全漏洞
+```
+
+**✅ 正确做法：**
+
+```bash
+# 先修复安全问题
+pcu security --fix-vulns
+
+# 再进行常规更新
+pcu update --target minor
+```
+
+### 新手友好的工作流
+
+建立这个简单的日常习惯：
+
+<CodeGroup>
+
+```bash {{ title: '每日检查（2分钟）' }}
+# 1. 快速查看可用更新
+pcu check --format minimal
+
+# 2. 检查是否有安全问题
+pcu security
+
+# 如果有安全问题，立即修复：
+pcu security --fix-vulns
+```
+
+```bash {{ title: '每周更新（10分钟）' }}
+# 1. 检查所有可用更新
+pcu check
+
+# 2. 交互式更新（有备份）
+pcu update --interactive --create-backup
+
+# 3. 验证一切正常
+pcu workspace --validate
+
+# 4. 运行您的测试
+npm test  # 或 pnpm test
+```
+
+</CodeGroup>
+
+### 真实场景：第一个项目
+
+让我们跟随新手李明的第一次PCU体验：
+
+<CodeGroup>
+
+```bash {{ title: '李明的React项目' }}
+# 李明有一个React项目，让我们帮他检查依赖
+
+# 第一步：查看项目结构
+ls -la
+# 他看到有 pnpm-lock.yaml 但没有 pnpm-workspace.yaml
+
+# 第二步：初始化PCU
+pcu init
+# ✅ 创建了 pnpm-workspace.yaml
+# ✅ 创建了 .pcurc.json
+# ✅ 项目现在支持目录依赖了！
+```
+
+```bash {{ title: '第一次检查' }}
+# 第三步：检查可更新的依赖
+pcu check
+
+# 李明看到：
+# ┌─────────────────┬─────────┬─────────┬────────────┬──────────┐
+# │ Package         │ Current │ Available │ Type       │ Security │
+# ├─────────────────┼─────────┼─────────┼────────────┼──────────┤
+# │ react           │ 18.0.0  │ 18.3.1  │ minor     │ ✅       │
+# │ lodash          │ 4.17.20 │ 4.17.21 │ patch     │ ⚠️       │
+# │ @types/react    │ 18.0.0  │ 18.2.25 │ minor     │ ✅       │
+# └─────────────────┴─────────┴─────────┴────────────┴──────────┘
+
+# 他注意到lodash有安全问题！
+```
+
+```bash {{ title: '修复安全问题' }}
+# 第四步：先修复安全问题
+pcu security --fix-vulns
+
+# ✅ 修复了 lodash 的安全漏洞
+# lodash 4.17.20 → 4.17.21
+
+# 第五步：更新其他依赖
+pcu update --interactive --create-backup
+
+# 李明选择更新 React 和类型定义
+# ✅ react 18.0.0 → 18.3.1
+# ✅ @types/react 18.0.0 → 18.2.25
+```
+
+</CodeGroup>
+
+现在李明的项目是最新和安全的！他学会了：
+
+1. ✅ 始终先检查和修复安全问题
+2. ✅ 使用交互模式仔细选择更新
+3. ✅ 总是创建备份以防出现问题
+4. ✅ 验证更新后的工作空间状态
+
+## 基本工作流
+
+### 日常依赖检查
+
+作为日常开发例程的一部分检查更新：
+
+<CodeGroup>
+
+```bash {{ title: '快速检查' }}
+# 使用简单输出检查更新
+pcu -c --format minimal
+
+# 示例输出：
+# react           ^18.2.0  →  ^18.3.0
+# typescript      ^5.0.0   →  ^5.2.0
+# @types/node     ^18.0.0  →  ^20.0.0
+```
+
+```bash {{ title: '详细检查' }}
+# 使用完整表格格式检查
+pcu -c
+
+# 显示彩色表格，包括：
+# - 包名称
+# - 当前版本
+# - 可用版本
+# - 更新类型（major/minor/patch）
+# - 安全指示器
+```
+
+</CodeGroup>
+
+### 带备份的安全更新
+
+使用自动备份安全地更新依赖：
+
+```bash
+# 带备份的交互式更新
+pcu -i -b
+
+# 或带备份的自动化小版本更新
+pcu -u --target minor --create-backup
+```
+
+### 目标特定更新
+
+仅更新特定类型的更改：
+
+<CodeGroup>
+
+```bash {{ title: '保守更新' }}
+# 仅补丁更新（错误修复）
+pcu -u --target patch
+
+# 仅小版本更新（新功能，无破坏性变更）
+pcu -u --target minor
+```
+
+```bash {{ title: '最新一切' }}
+# 更新到最新版本（包括主版本）
+pcu -u --target latest
+
+# 包含预发布版本
+pcu -u --prerelease
+```
+
+</CodeGroup>
+
+## 多目录工作空间
+
+### 遗留支持场景
+
+在一个工作空间中管理多个 React 版本：
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml' }}
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  # 默认目录 - 最新版本
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  @types/react: ^18.2.0
+
+catalogs:
+  # 遗留支持
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    @types/react: ^17.0.62
+
+  # 测试版测试
+  react-next:
+    react: ^19.0.0-beta
+    react-dom: ^19.0.0-beta
+```
+
+```bash {{ title: '目录特定更新' }}
+# 仅更新默认目录
+pcu -u --catalog default
+
+# 更新遗留 React 版本
+pcu -u --catalog react17 --target minor
+
+# 检查测试版本
+pcu -c --catalog react-next --prerelease
+```
+
+</CodeGroup>
+
+### 包使用
+
+```json {{ title: 'package.json' }}
+{
+  "name": "@myorg/modern-app",
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
+```
+
+```json {{ title: '遗留 package.json' }}
+{
+  "name": "@myorg/legacy-app",
+  "dependencies": {
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
+  }
+}
+```
+
+## 配置示例
+
+### React 生态系统管理
+
+React 和相关包的协调更新：
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "relatedPackages": [
+        "@types/react",
+        "@types/react-dom",
+        "react-router-dom",
+        "@testing-library/react"
+      ]
+    }
+  ],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true
+  }
+}
+```
+
+### TypeScript 项目配置
+
+保守的 TypeScript 更新与自动类型定义：
+
+```json {{ title: '.pcurc.json' }}
+{
+  "packageRules": [
+    {
+      "patterns": ["typescript"],
+      "target": "minor",
+      "requireConfirmation": true
+    },
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["eslint*", "@typescript-eslint/*"],
+      "target": "minor",
+      "groupUpdate": true
+    }
+  ]
+}
+```
+
+### 企业配置
+
+企业级配置，具有严格控制：
+
+```json {{ title: '.pcurc.json' }}
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "exclude": ["typescript", "@types/node", "react", "react-dom"],
+  "security": {
+    "autoFixVulnerabilities": true,
+    "allowMajorForSecurity": true,
+    "notifyOnSecurityUpdate": true
+  },
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 60000,
+    "retries": 5
+  },
+  "ui": {
+    "theme": "minimal",
+    "animations": false
+  }
+}
+```
+
+## CI/CD 集成
+
+### GitHub Actions
+
+在 CI 流水线中自动化依赖检查：
+
+<CodeGroup>
+
+```yaml {{ title: '.github/workflows/dependencies.yml' }}
+name: Check Dependencies
+
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # 每周一上午 9 点
+  workflow_dispatch:
+
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pcu
+
+      - name: Check for updates
+        run: pcu -c --format json > updates.json
+
+      - name: Create Issue if Updates Available
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const updates = JSON.parse(fs.readFileSync('updates.json', 'utf8'));
+            if (updates.length > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Dependencies Update Available',
+                body: `Found ${updates.length} packages that can be updated:
+
+` +
+                      updates.map(u => `- ${u.package}: ${u.current} → ${u.available}`).join('
+')
+              });
+            }
+```
+
+```bash {{ title: 'Package.json 脚本' }}
+# 添加到您的 package.json
+{
+  "scripts": {
+    "deps:check": "pcu -c",
+    "deps:update": "pcu -i -b",
+    "deps:update-minor": "pcu -u --target minor --create-backup",
+    "deps:analyze": "pcu -a default"
+  }
+}
+```
+
+</CodeGroup>
+
+## 错误处理和故障排除
+
+### 网络问题
+
+处理网络问题和注册表访问：
+
+```bash
+# 为慢连接增加超时
+pcu -c --timeout 60000
+
+# 为不稳定网络减少并发
+pcu -u --concurrency 2
+```
+
+### 工作空间验证
+
+验证工作空间设置：
+
+```bash
+# 检查工作空间配置
+pcu -s --validate
+
+# 获取详细工作空间信息
+pcu -s --stats --verbose
+```
+
+### 私有注册表
+
+PCU 自动读取 `.npmrc` 和 `.pnpmrc` 配置：
+
+<CodeGroup>
+
+```ini {{ title: '.npmrc' }}
+@myorg:registry=https://npm.private-registry.com/
+//npm.private-registry.com/:_authToken=${NPM_TOKEN}
+
+registry=https://registry.npmjs.org/
+```
+
+```bash {{ title: '使用方法' }}
+# PCU 将自动使用您的注册表设置
+pcu -c
+
+# 检查来自私有注册表的包
+pcu -c --include "@myorg/*"
+```
+
+</CodeGroup>
+
+## 高级用例
+
+### 影响分析
+
+分析更新特定包的影响：
+
+```bash
+# 分析 React 更新影响
+pcu -a default react
+
+# 使用特定版本分析
+pcu -a default react 18.3.0
+
+# 检查所有目录中的影响
+pcu -a react17 react 17.0.3
+```
+
+### 选择性更新
+
+仅更新特定包或模式：
+
+```bash
+# 仅更新 React 相关包
+pcu -u --include "react*"
+
+# 更新除核心框架外的所有内容
+pcu -u --exclude "react*,vue*,angular*"
+
+# 仅更新类型定义
+pcu -u --include "@types/*" --target latest
+```
+
+### 试运行分析
+
+在应用之前预览更改：
+
+```bash
+# 查看将被更新的内容
+pcu -u --dry-run --verbose
+
+# 预览特定目标
+pcu -u --dry-run --target minor --include "@types/*"
+```
+
+## 最佳实践
+
+### 日常工作流
+
+1. **晨间检查**：`pcu -c` 查看可用更新
+2. **审查影响**：对重要更新使用 `pcu -a`
+3. **安全更新**：使用 `pcu -i -b` 进行带备份的交互式更新
+4. **测试**：更新后运行测试套件
+5. **提交**：单独提交依赖更新
+
+### 团队工作流
+
+1. **共享配置**：将 `.pcurc.json` 提交到版本控制
+2. **定期审查**：安排每周依赖审查会议
+3. **安全优先**：始终优先处理安全更新
+4. **文档记录**：记录主要依赖决策
+5. **回滚计划**：保留备份以便轻松回滚
+
+### 发布工作流
+
+1. **预发布检查**：发布前 `pcu -c --target patch`
+2. **安全扫描**：在 CI 中启用 `autoFixVulnerabilities`
+3. **版本固定**：生产发布使用精确版本
+4. **更新计划**：在发布之间规划依赖更新
+
+## 安全监控
+
+### 持续安全扫描
+
+将安全扫描集成到您的开发工作流中：
+
+<CodeGroup>
+
+```bash {{ title: '日常安全检查' }}
+# 快速安全扫描
+pcu security
+
+# 自动修复漏洞
+pcu security --fix-vulns
+
+# 仅关注高危和严重问题
+pcu security --severity high --fix-vulns
+```
+
+```bash {{ title: '全面安全审计' }}
+# 使用 Snyk 集成的完整安全扫描
+pcu security --snyk --include-dev --verbose
+
+# 导出安全报告供审查
+pcu security --format json --snyk > security-report.json
+```
+
+</CodeGroup>
+
+### 安全导向的 CI/CD
+
+```yaml {{ title: '.github/workflows/security.yml' }}
+name: Security Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 每天凌晨2点
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pcu
+
+      - name: Security Scan
+        run: pcu security --fix-vulns --format json > security-results.json
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-results.json
+```
+
+## 主题定制
+
+### 交互式主题设置
+
+为您的团队配置 PCU 的外观：
+
+```bash
+# 启动交互式主题向导
+pcu theme --interactive
+
+# 设置特定主题
+pcu theme --set modern
+
+# 列出所有可用主题和预览
+pcu theme --list
+```
+
+### 团队主题配置
+
+```json {{ title: '.pcurc.json' }}
+{
+  "ui": {
+    "theme": "modern",
+    "progressBars": true,
+    "animations": true,
+    "colorScheme": "auto"
+  },
+  "output": {
+    "format": "table",
+    "color": true,
+    "verbose": false
+  }
+}
+```
+
+## 性能优化
+
+### 大型 Monorepo 配置
+
+针对包含数百个包的大型工作空间的优化配置：
+
+```json {{ title: '.pcurc.json' }}
+{
+  "advanced": {
+    "concurrency": 15,
+    "timeout": 120000,
+    "retries": 5,
+    "batchSize": 100
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 7200000,
+    "maxSize": 104857600,
+    "persistToDisk": true
+  },
+  "monorepo": {
+    "performance": {
+      "cacheWorkspaceStructure": true,
+      "parallelCatalogProcessing": true,
+      "streamingMode": true
+    }
+  }
+}
+```
+
+### 并行处理策略
+
+```bash
+# 高并发更新（适用于大型项目）
+pcu -u --concurrency 20 --timeout 180000
+
+# 批量处理模式
+pcu -u --batch-size 50 --progress-style fancy
+```
+
+## 迁移示例
+
+### 从 npm-check-updates 迁移
+
+从 `ncu` 迁移到 PCU：
+
+<CodeGroup>
+
+```bash {{ title: 'ncu 等效命令' }}
+# ncu 命令
+ncu
+
+# PCU 等效命令
+pcu -c
+```
+
+```bash {{ title: 'ncu 更新命令' }}
+# ncu 更新
+ncu -u
+
+# PCU 等效命令
+pcu -u --target latest
+```
+
+</CodeGroup>
+
+### 从传统依赖管理迁移
+
+迁移现有项目到 pnpm 目录系统：
+
+```bash
+# 第1步：分析现有依赖
+pcu migrate --analyze
+
+# 第2步：创建目录配置
+pcu migrate --create-catalogs
+
+# 第3步：转换 package.json
+pcu migrate --convert-packages
+
+# 第4步：验证迁移
+pcu analyze --validate-migration
+```
+
+## 迁移指南
+
+### 从 npm/yarn 工作空间迁移
+
+完整的迁移过程：
+
+<CodeGroup>
+
+```bash {{ title: '迁移准备' }}
+# 备份现有配置
+cp package.json package.json.backup
+cp package-lock.json package-lock.json.backup 2>/dev/null || true
+cp yarn.lock yarn.lock.backup 2>/dev/null || true
+
+# 分析项目结构
+pcu migrate --dry-run --verbose
+```
+
+```bash {{ title: '执行迁移' }}
+# 转换到 pnpm 工作空间
+pcu migrate --to-pnpm-workspace
+
+# 生成目录配置
+pcu migrate --generate-catalogs --strategy conservative
+
+# 验证迁移结果
+pcu analyze --migration-report
+```
+
+</CodeGroup>
+
+### 渐进式采用策略
+
+```json {{ title: '阶段1：基本设置' }}
+{
+  "defaults": {
+    "target": "patch"
+  },
+  "exclude": ["react", "react-dom", "typescript"]
+}
+```
+
+```json {{ title: '阶段2：扩展覆盖' }}
+{
+  "defaults": {
+    "target": "minor"
+  },
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+## CI/CD 工作流集成
+
+### 多环境部署
+
+针对不同环境的完整 CI/CD 工作流：
+
+```yaml {{ title: '.github/workflows/deploy.yml' }}
+name: Multi-Environment Deployment
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PCU_WORKSPACE: ./
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    outputs:
+      has-updates: ${{ steps.check.outputs.has-updates }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PCU
+        run: npm install -g pcu
+
+      - name: Check Dependencies
+        id: check
+        run: |
+          pcu -c --format json > updates.json
+          if [ -s updates.json ]; then
+            echo "has-updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-updates=false" >> $GITHUB_OUTPUT
+          fi
+
+  update-dependencies:
+    needs: dependency-check
+    if: needs.dependency-check.outputs.has-updates == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Update PR
+        run: |
+          pcu -u --target minor --create-backup
+          # 创建 PR 的逻辑...
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Staging
+        run: |
+          pcu security --fix-vulns
+          # 部署逻辑...
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [dependency-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Production Security Check
+        run: |
+          pcu security --severity critical --format json
+          # 部署逻辑...
+```
+
+## 企业工作流
+
+### 合规性和审计
+
+企业级合规性工作流：
+
+```json {{ title: '.pcurc.json - 企业配置' }}
+{
+  "enterprise": {
+    "compliance": {
+      "requireApproval": ["major"],
+      "auditTrail": true,
+      "licenseCheck": true,
+      "securityScan": "mandatory"
+    },
+    "approval": {
+      "majorUpdates": {
+        "approvers": ["security-team", "tech-lead"],
+        "timeout": "7d"
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "./logs/pcu-audit.log",
+    "includeUserInfo": true
+  }
+}
+```
+
+### 多团队协作
+
+```bash
+# 团队A：前端团队
+pcu -u --workspace-filter "@frontend/*" --target minor
+
+# 团队B：后端团队
+pcu -u --workspace-filter "@backend/*" --target patch
+
+# 团队C：共享库团队
+pcu -u --workspace-filter "@shared/*" --target latest
+```
+
+### 企业安全策略
+
+```json {{ title: '安全策略配置' }}
+{
+  "security": {
+    "policy": {
+      "allowedLicenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+      "blockedPackages": ["unsafe-package"],
+      "maxAge": "90d",
+      "severityThreshold": "moderate"
+    },
+    "scanning": {
+      "schedule": "daily",
+      "integrations": ["snyk", "whitesource"],
+      "notifications": {
+        "slack": "#security-alerts",
+        "email": ["security@company.com"]
+      }
+    }
+  }
+}
+```
+
+### 发布管理
+
+企业级发布管道集成：
+
+```bash
+# 预发布依赖检查
+pcu enterprise --pre-release-check
+
+# 依赖冻结
+pcu enterprise --freeze-deps --release v2.1.0
+
+# 发布后依赖解冻
+pcu enterprise --unfreeze-deps --post-release
+
+# 合规性报告生成
+pcu enterprise --compliance-report --format pdf
+```

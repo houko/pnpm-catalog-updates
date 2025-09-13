@@ -1,0 +1,275 @@
+export const metadata = {
+  title: '코드 작성',
+  description: '코드 블록, 구문 강조, CodeGroup 컴포넌트를 이용한 다중 언어 예제를 익혀보세요.',
+};
+
+# 코드 작성
+
+문서에서 코드를 제시하는 기술을 익혀보세요. 구문 강조 사용법, 다중 언어 예제 생성, 효과적인 코드 블록 구성을 통해 개발자들이 솔루션을 이해하고 구현할 수 있도록 도움을 주는 방법을 알아보세요. {{ className: 'lead' }}
+
+## 단일 코드 블록
+
+자동 구문 강조가 있는 기본 코드 블록:
+
+```javascript
+// 구문 강조가 있는 JavaScript 예제
+const greeting = '안녕, 세계!';
+console.log(greeting);
+```
+
+위의 JavaScript 코드 블록은 다음 MDX 구문을 사용하여 생성됩니다:
+
+````mdx
+```javascript
+const greeting = '안녕, 세계!';
+console.log(greeting);
+```
+````
+
+**Python 예제:**
+
+```python
+# Python 예제
+def greet(name):
+    return f"안녕, {name}!"
+
+print(greet("세계"))
+```
+
+Python 코드 블록 MDX 구문:
+
+````mdx
+```python
+def greet(name):
+    return f"안녕, {name}!"
+
+print(greet("세계"))
+```
+````
+
+**Bash/Shell 명령어:**
+
+```bash
+# Bash/Shell 명령어
+npm install @example/package
+pnpm add dependency
+```
+
+Bash 코드 블록 MDX 구문:
+
+````mdx
+```bash
+npm install @example/package
+pnpm add dependency
+```
+````
+
+## 다중 언어를 위한 CodeGroup
+
+`<CodeGroup>`을 사용하여 같은 예제를 다른 언어로 보여주세요:
+
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+
+위의 다중 언어 코드 그룹은 다음 MDX 구문을 사용하여 생성됩니다:
+
+````mdx
+<CodeGroup>
+
+```bash {{ title: 'cURL' }}
+curl -X GET https://api.example.com/users \
+  -H "Authorization: Bearer your-token"
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    Authorization: 'Bearer your-token',
+  },
+});
+```
+
+```python {{ title: 'Python' }}
+import requests
+
+response = requests.get(
+    'https://api.example.com/users',
+    headers={'Authorization': 'Bearer your-token'}
+)
+```
+
+</CodeGroup>
+````
+
+## API 엔드포인트 예제
+
+API 문서의 경우 HTTP 메서드 태그를 사용하세요:
+
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "홍길동", "email": "hong@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '홍길동',
+    email: 'hong@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+
+위의 API 엔드포인트 예제는 다음 MDX 구문을 사용하여 생성됩니다. `tag`와 `label` 속성에 주목하세요:
+
+````mdx
+<CodeGroup tag="POST" label="/v1/users">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "홍길동", "email": "hong@example.com"}'
+```
+
+```javascript {{ title: 'JavaScript' }}
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '홍길동',
+    email: 'hong@example.com',
+  }),
+});
+```
+
+</CodeGroup>
+````
+
+### 코드 블록 제목
+
+개별 코드 블록에 제목을 추가할 수도 있습니다:
+
+```javascript {{ title: 'API 클라이언트' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+
+````mdx
+```javascript {{ title: 'API 클라이언트' }}
+const client = new APIClient({
+  baseURL: 'https://api.example.com',
+  apiKey: 'your-api-key',
+});
+```
+````
+
+## 지원되는 언어
+
+코드 블록은 다음을 포함한 다양한 프로그래밍 언어의 구문 강조를 지원합니다:
+
+- **JavaScript/TypeScript**: `javascript`, `typescript`, `js`, `ts`
+- **Python**: `python`, `py`
+- **Shell scripts**: `bash`, `shell`, `sh`
+- **기타 언어**: `json`, `yaml`, `xml`, `sql`, `css`, `html`, `markdown`, `diff`
+
+**예제:**
+
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+
+JSON 코드 블록 MDX 구문:
+
+````mdx
+```json
+{
+  "name": "example-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.0.0"
+  }
+}
+```
+````
+
+**코드 비교 (Diff):**
+
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+
+Diff 코드 블록 MDX 구문:
+
+````mdx
+```diff
+  function calculateTotal(items) {
+-   return items.reduce((sum, item) => sum + item.price, 0);
++   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  const config = {
+-   timeout: 5000,
++   timeout: 10000,
+    retries: 3
+  };
+```
+````
+
+## 모범 사례
+
+- 구문 강조를 위해 항상 언어를 지정하세요
+- 코드 예제를 구분하기 위해 설명적인 제목을 사용하세요
+- 완전하고 실행 가능한 예제를 포함하세요
+- 예제는 간결하지만 기능적으로 유지하세요
+- 일관된 형식과 스타일을 사용하세요
+- CodeGroup에서 언어 탭을 사용 빈도순으로 정렬하세요
+
+## 다음 단계
+
+내용을 효과적으로 구성하기 위해 [레이아웃 컴포넌트](/writing-layout)로 계속하세요.

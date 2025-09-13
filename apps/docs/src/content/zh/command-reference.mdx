@@ -1,0 +1,1320 @@
+export const metadata = {
+  title: '命令参考',
+  description: '所有 pnpm-catalog-updates 命令、选项和使用模式的完整参考指南。',
+};
+
+# 命令参考
+
+所有 PCU 命令和选项的完整参考。了解每个命令、标志和可用的配置选项。{{ className: 'lead' }}
+
+## 命令概览
+
+PCU 提供几个主要命令，既有全名也有便捷的简写：
+
+| 完整命令        | 简写和别名          | 描述                            |
+| --------------- | ------------------- | ------------------------------- |
+| `pcu init`      | `pcu i`             | 初始化 PNPM 工作空间和 PCU 配置 |
+| `pcu check`     | `pcu chk`, `pcu -c` | 检查过时的目录依赖              |
+| `pcu update`    | `pcu u`, `pcu -u`   | 更新目录依赖                    |
+| `pcu analyze`   | `pcu a`, `pcu -a`   | 分析依赖更新的影响              |
+| `pcu workspace` | `pcu w`, `pcu -s`   | 显示工作空间信息和验证          |
+| `pcu theme`     | `pcu t`, `pcu -t`   | 配置颜色主题和 UI 设置          |
+| `pcu security`  | `pcu sec`           | 安全漏洞扫描和修复              |
+| `pcu help`      | `pcu h`, `pcu -h`   | 显示帮助信息                    |
+
+### 特殊快捷方式
+
+| 快捷方式               | 等效命令                   | 描述                       |
+| ---------------------- | -------------------------- | -------------------------- |
+| `pcu -i`               | `pcu update --interactive` | 交互式更新模式             |
+| `pcu --security-audit` | `pcu security`             | 运行安全扫描               |
+| `pcu --security-fix`   | `pcu security --fix-vulns` | 运行安全扫描并自动修复漏洞 |
+
+---
+
+## `pcu init` - 初始化工作空间
+
+初始化完整的 PNPM 工作空间环境和 PCU 配置。
+
+<CodeGroup>
+
+```bash {{ title: '基本用法' }}
+pcu init
+pcu i
+```
+
+```bash {{ title: '带选项' }}
+pcu init --force --verbose
+pcu init --workspace ./my-project
+pcu init --no-create-workspace
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="--force" type="boolean">
+    无需确认即覆盖现有配置文件
+  </Property>
+  <Property name="--full" type="boolean">
+    生成包含所有可用选项的全面配置
+  </Property>
+  <Property name="--interactive" type="boolean">
+    启动交互式配置向导，提供引导式设置
+  </Property>
+  <Property name="--template" type="enum">
+    配置模板：minimal、standard、full、monorepo、enterprise
+  </Property>
+  <Property name="--create-workspace" type="boolean" default="true">
+    如果缺失则创建 PNPM 工作空间结构
+  </Property>
+  <Property name="--no-create-workspace" type="boolean">
+    跳过创建 PNPM 工作空间结构
+  </Property>
+  <Property name="--packages-dir" type="string" default="packages">
+    工作空间包的目录名称
+  </Property>
+  <Property name="--package-rules" type="boolean" default="true">
+    在配置中包含常用包规则
+  </Property>
+  <Property name="--typescript" type="boolean">
+    添加 TypeScript 特定的包规则和设置
+  </Property>
+  <Property name="--react" type="boolean">
+    添加 React 生态系统包规则
+  </Property>
+  <Property name="--vue" type="boolean">
+    添加 Vue 生态系统包规则
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table、json、yaml、minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    工作空间目录（默认：当前目录）
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    显示详细信息和进度
+  </Property>
+</Properties>
+
+### 配置模板
+
+PCU 为常见项目类型提供预配置的模板：
+
+#### 模板类型
+
+- **`minimal`** - 仅包含基本设置的简单配置
+- **`standard`** - 适合大多数项目的平衡配置
+- **`full`** - 包含所有可用选项的全面配置
+- **`monorepo`** - 为大型单体仓库优化，具备高级功能
+- **`enterprise`** - 企业级，具备安全和治理功能
+
+<CodeGroup>
+
+```bash {{ title: '模板示例' }}
+# 使用简单模板
+pcu init --template minimal
+
+# 企业单体仓库设置
+pcu init --template enterprise --interactive
+
+# React 项目与 TypeScript
+pcu init --template standard --react --typescript
+```
+
+</CodeGroup>
+
+### 交互式配置向导
+
+交互式模式（`--interactive`）提供引导式设置体验：
+
+#### 向导功能
+
+- **项目检测**：自动检测项目类型（React、Vue、TypeScript）
+- **工作空间结构**：发现现有包并建议最优配置
+- **包规则设置**：交互式选择包规则和更新策略
+- **注册表配置**：设置自定义 NPM 注册表和身份验证
+- **性能调优**：根据项目大小和需求优化设置
+- **主题选择**：选择颜色主题和进度条样式
+- **验证设置**：配置质量门和安全检查
+
+### 创建的文件和目录
+
+#### 核心文件
+
+<Properties>
+  <Property name=".pcurc.json" type="file">
+    主配置文件，包含所有 PCU 设置
+  </Property>
+  <Property name="package.json" type="file">
+    工作空间根 package.json（如果缺失则创建）
+  </Property>
+  <Property name="pnpm-workspace.yaml" type="file">
+    PNPM 工作空间配置（如果缺失则创建）
+  </Property>
+</Properties>
+
+#### 目录结构
+
+<Properties>
+  <Property name="packages/" type="directory">
+    工作空间包的默认目录（可自定义）
+  </Property>
+  <Property name="apps/" type="directory">
+    为 monorepo 模板创建 - 应用程序包
+  </Property>
+  <Property name="tools/" type="directory">
+    为 monorepo 模板创建 - 开发工具
+  </Property>
+  <Property name="docs/" type="directory">
+    为 enterprise 模板创建 - 文档
+  </Property>
+</Properties>
+
+#### 模板特定文件
+
+<Properties>
+  <Property name=".nvmrc" type="file">
+    Node 版本规范（enterprise 模板）
+  </Property>
+  <Property name=".gitignore" type="file">
+    增强 PCU 特定模式（如果缺失）
+  </Property>
+  <Property name="tsconfig.json" type="file">
+    TypeScript 配置（使用 --typescript 标志）
+  </Property>
+</Properties>
+
+### 使用示例
+
+#### 快速开始
+
+```bash
+pcu init
+```
+
+使用自动项目检测的标准模板初始化。
+
+#### 交互式设置
+
+```bash
+pcu init --interactive
+```
+
+启动完整的配置向导，提供引导式设置。
+
+#### 单体仓库初始化
+
+```bash
+pcu init --template monorepo --typescript --verbose
+```
+
+创建企业级单体仓库，支持 TypeScript 并显示详细输出。
+
+---
+
+## `pcu check` - 检查更新
+
+检查 pnpm 工作空间目录中的过时依赖。
+
+<CodeGroup>
+
+```bash {{ title: '基本检查' }}
+pcu check
+pcu -c
+pcu chk
+```
+
+```bash {{ title: '高级用法' }}
+pcu -c --format minimal
+pcu check --catalog node18 --include "react*"
+pcu -c --target minor --prerelease
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="--catalog" type="string">
+    仅检查特定目录
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table、json、yaml、minimal
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    包含预发布版本
+  </Property>
+  <Property name="--include" type="string">
+    包含匹配模式的包
+  </Property>
+  <Property name="--exclude" type="string">
+    排除匹配模式的包
+  </Property>
+</Properties>
+
+### 输出格式
+
+- **table**：带颜色和详细信息的丰富表格格式
+- **minimal**：简单的 npm-check-updates 风格（package → version）
+- **json**：用于程序化使用的 JSON 输出
+- **yaml**：用于配置文件的 YAML 输出
+
+---
+
+## `pcu update` - 更新依赖
+
+将目录依赖更新到新版本。
+
+<CodeGroup>
+
+```bash {{ title: '交互式更新' }}
+pcu update --interactive
+pcu -u -i
+```
+
+```bash {{ title: '自动更新' }}
+pcu -u --target minor --create-backup
+pcu update --dry-run --verbose
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="-i, --interactive" type="boolean">
+    交互模式选择更新
+  </Property>
+  <Property name="-d, --dry-run" type="boolean">
+    预览更改而不写入文件
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="--catalog" type="string">
+    仅更新特定目录
+  </Property>
+  <Property name="--force" type="boolean">
+    即使有风险也强制更新
+  </Property>
+  <Property name="-b, --create-backup" type="boolean">
+    更新前创建备份文件
+  </Property>
+  <Property name="--include" type="string">
+    包含匹配模式的包（可多次使用）
+  </Property>
+  <Property name="--exclude" type="string">
+    排除匹配模式的包（可多次使用）
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    在更新中包含预发布版本
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table、json、yaml、minimal
+  </Property>
+  <Property name="--batch-size" type="number" default="10">
+    并行处理的包数量
+  </Property>
+  <Property name="--skip-peer-conflicts" type="boolean">
+    跳过存在对等依赖冲突的包
+  </Property>
+  <Property name="--confirm-major" type="boolean" default="true">
+    主版本更新需要确认
+  </Property>
+</Properties>
+
+### 交互式功能
+
+交互式模式（`--interactive` 或 `-i`）提供高级包选择功能：
+
+#### 包选择界面
+
+- **多选**：使用复选框选择单个包更新
+- **搜索功能**：按名称或描述过滤包
+- **批量操作**：选择/取消选择多个包
+- **更新策略选择**：为每个包选择更新策略（latest、greatest、minor、patch）
+
+#### 智能冲突解决
+
+- **对等依赖检测**：提供解决建议
+- **破坏性更改警告**：基于语义版本分析
+- **影响分析**：显示受影响的工作空间包
+- **回滚功能**：如果更新导致问题可回滚
+
+### 高级更新策略
+
+<CodeGroup>
+
+```bash {{ title: '保守型更新' }}
+# 仅补丁和小版本更新
+pcu update --target minor --confirm-major
+```
+
+```bash {{ title: '激进型更新' }}
+# 包含预发布和强制主版本更新
+pcu update --target greatest --prerelease --force
+```
+
+```bash {{ title: '选择性更新' }}
+# 使用模式更新特定包
+pcu update --include "react*" --exclude "*-dev" --create-backup
+```
+
+```bash {{ title: '批量处理' }}
+# 高效处理大型工作空间
+pcu update --batch-size 20 --skip-peer-conflicts
+```
+
+</CodeGroup>
+
+### 使用示例
+
+#### 安全交互式更新
+
+```bash
+pcu update --interactive --create-backup --target minor
+```
+
+交互式更新依赖，自动备份，仅限于小版本增量。
+
+#### 生产安全更新
+
+```bash
+pcu update --exclude "*-dev" --confirm-major --dry-run
+```
+
+显示生产依赖项中将被更新的内容，主版本更新需要确认。
+
+#### 框架特定更新
+
+```bash
+pcu update --include "react*,@types/*" --prerelease
+```
+
+更新 React 生态系统包，包括 TypeScript 定义，允许预发布版本。
+
+---
+
+## `pcu analyze` - 影响分析
+
+分析更新特定依赖的影响。
+
+<CodeGroup>
+
+```bash {{ title: '基本分析' }}
+pcu analyze default react
+pcu a default react 18.3.0
+pcu -a react17 @types/react
+```
+
+</CodeGroup>
+
+### 参数
+
+<Properties>
+  <Property name="catalog" type="string" required>
+    目录名称（例如，'default'、'react17'）
+  </Property>
+  <Property name="package" type="string" required>
+    包名称（例如，'react'、'@types/node'）
+  </Property>
+  <Property name="version" type="string">
+    新版本（可选，默认为最新）
+  </Property>
+</Properties>
+
+---
+
+## `pcu workspace` - 工作空间信息
+
+显示工作空间信息和验证。
+
+<CodeGroup>
+
+```bash {{ title: '基本信息' }}
+pcu workspace
+pcu -s
+```
+
+```bash {{ title: '带验证' }}
+pcu -s --validate --stats
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="--validate" type="boolean">
+    验证工作空间配置
+  </Property>
+  <Property name="-s, --stats" type="boolean">
+    显示工作空间统计信息
+  </Property>
+</Properties>
+
+---
+
+## `pcu theme` - 主题配置
+
+配置颜色主题和 UI 外观。
+
+<CodeGroup>
+
+```bash {{ title: '主题管理' }}
+pcu theme --list
+pcu -t --set modern
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="-s, --set" type="string">
+    设置颜色主题：default, modern, minimal, neon
+  </Property>
+  <Property name="-l, --list" type="boolean">
+    列出所有可用主题
+  </Property>
+  <Property name="-i, --interactive" type="boolean">
+    启动交互式主题配置向导，提供引导式设置
+  </Property>
+</Properties>
+
+### 可用主题
+
+- `default` - 通用使用的平衡颜色
+- `modern` - 开发环境的活泼颜色
+- `minimal` - 生产环境的简洁风格
+- `neon` - 演示的高对比度颜色
+
+### 使用示例
+
+#### 列出可用主题
+
+```bash
+pcu theme --list
+```
+
+显示所有可用主题及其描述。
+
+#### 直接设置主题
+
+```bash
+pcu theme --set modern
+pcu -t --set neon
+```
+
+直接设置指定主题。
+
+#### 交互式主题配置
+
+```bash
+pcu theme --interactive
+pcu -t -i
+```
+
+启动引导式主题选择向导，允许您预览主题并交互式配置 UI 设置。
+
+---
+
+## 全局选项
+
+这些选项适用于所有命令：
+
+<Properties>
+  <Property name="-w, --workspace" type="string">
+    工作空间目录路径
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    启用详细日志记录
+  </Property>
+  <Property name="--no-color" type="boolean">
+    禁用彩色输出
+  </Property>
+  <Property name="-V, --version" type="boolean">
+    输出版本号
+  </Property>
+  <Property name="-h, --help" type="boolean">
+    显示命令帮助
+  </Property>
+</Properties>
+
+---
+
+## `pcu security` - 安全漏洞扫描
+
+使用 npm audit 和可选的 Snyk 集成进行全面的安全漏洞扫描，具备自动修复功能。
+
+<CodeGroup>
+
+```bash {{ title: '基础安全扫描' }}
+pcu security
+pcu sec
+```
+
+```bash {{ title: '高级安全扫描' }}
+pcu security --fix-vulns --severity high
+pcu sec --snyk --include-dev --verbose
+pcu security --format json --workspace ./my-project
+```
+
+```bash {{ title: 'CI/CD 集成' }}
+pcu security --format json --severity critical > security-report.json
+pcu sec --auto-fix --no-color
+```
+
+</CodeGroup>
+
+### 选项
+
+<Properties>
+  <Property name="--audit" type="boolean" default="true">
+    执行 npm audit 扫描（默认启用）
+  </Property>
+  <Property name="--fix-vulns" type="boolean">
+    使用 npm audit fix 自动修复漏洞
+  </Property>
+  <Property name="--severity" type="enum">
+    按严重程度过滤：low, moderate, high, critical
+  </Property>
+  <Property name="--include-dev" type="boolean">
+    在扫描中包含开发依赖项
+  </Property>
+  <Property name="--snyk" type="boolean">
+    包含 Snyk 安全扫描（需要安装 snyk CLI）
+  </Property>
+  <Property name="--auto-fix" type="boolean">
+    自动应用安全修复，无需确认
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    工作空间目录路径（默认为当前目录）
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    显示详细的漏洞信息和修复步骤
+  </Property>
+</Properties>
+
+### 安全报告功能
+
+安全命令提供全面的漏洞分析：
+
+- **多扫描器集成**：结合 npm audit 和 Snyk 进行全面覆盖
+- **严重程度分类**：将漏洞分类为 critical、high、moderate、low 和 info
+- **自动修复**：使用 `--fix-vulns` 自动应用安全补丁
+- **包建议**：建议特定版本更新以解决漏洞
+- **开发依赖**：可选择包含或排除开发依赖
+- **CWE/CVE 信息**：详细的漏洞标识符和描述
+- **退出代码**：返回适当的代码（0 表示清洁，1 表示发现漏洞）
+- **CI/CD 就绪**：JSON 输出和非交互模式用于自动化
+
+### 使用示例
+
+#### 基础漏洞扫描
+
+```bash
+pcu security
+```
+
+使用 npm audit 执行标准安全扫描，在格式化表格中显示结果。
+
+#### 自动修复扫描
+
+```bash
+pcu security --fix-vulns
+```
+
+扫描漏洞并自动应用可用的安全修复。
+
+#### 高严重程度过滤
+
+```bash
+pcu security --severity high
+```
+
+仅显示高严重程度和关键严重程度的漏洞，过滤掉低优先级问题。
+
+#### 使用 Snyk 的全面扫描
+
+```bash
+pcu security --snyk --include-dev --verbose
+```
+
+运行 npm audit 和 Snyk 扫描，包括开发依赖项，显示详细的漏洞信息。
+
+#### CI/CD 管道集成
+
+```bash
+pcu security --format json --severity critical --no-color > security-report.json
+```
+
+将关键安全漏洞导出为 JSON 格式，用于 CI/CD 管道中的自动化处理。
+
+#### 生产环境自动修复
+
+```bash
+pcu security --auto-fix --severity moderate --exclude-dev
+```
+
+自动修复生产依赖项中中等及更高严重程度的漏洞。
+
+### 安全工作流集成
+
+#### 部署前安全检查
+
+```bash
+# 如果存在关键漏洞则构建失败
+pcu security --severity critical
+if [ $? -ne 0 ]; then
+  echo "发现关键安全漏洞。构建失败。"
+  exit 1
+fi
+```
+
+#### 自动化安全维护
+
+```bash
+# 每周安全维护
+pcu security --fix-vulns --severity moderate --create-backup
+```
+
+---
+
+## 全局选项
+
+这些选项适用于所有命令，可以通过环境变量设置：
+
+<Properties>
+  <Property name="-w, --workspace" type="string" env="PCU_WORKSPACE">
+    工作空间目录路径
+  </Property>
+  <Property name="-v, --verbose" type="boolean" env="PCU_VERBOSE">
+    启用详细日志记录和详细输出
+  </Property>
+  <Property name="--no-color" type="boolean" env="PCU_NO_COLOR">
+    禁用 CI/CD 环境的彩色输出
+  </Property>
+  <Property name="--registry" type="string" env="PCU_REGISTRY">
+    覆盖 NPM 注册表 URL
+  </Property>
+  <Property name="--timeout" type="number" env="PCU_TIMEOUT">
+    请求超时时间（毫秒，默认：30000）
+  </Property>
+  <Property name="--config" type="string" env="PCU_CONFIG">
+    自定义配置文件的路径
+  </Property>
+  <Property name="-V, --version" type="boolean">
+    输出版本号并检查更新
+  </Property>
+  <Property name="-h, --help" type="boolean">
+    显示命令帮助
+  </Property>
+</Properties>
+
+### 环境变量使用
+
+所有全局选项都可以通过环境变量配置：
+
+```bash
+# 全局设置工作空间
+export PCU_WORKSPACE="/path/to/workspace"
+
+# 默认启用详细日志
+export PCU_VERBOSE=true
+
+# 使用企业注册表
+export PCU_REGISTRY="https://npm.company.com/"
+
+# 为慢网络增加超时时间
+export PCU_TIMEOUT=60000
+
+# 使用自定义配置
+export PCU_CONFIG="/etc/pcu/config.json"
+```
+
+### 环境变量详细配置
+
+#### 核心环境变量
+
+<Properties>
+  <Property name="PCU_WORKSPACE" type="string">
+    默认工作空间目录路径
+  </Property>
+  <Property name="PCU_VERBOSE" type="boolean">
+    全局启用详细日志记录
+  </Property>
+  <Property name="PCU_NO_COLOR" type="boolean">
+    禁用彩色输出（对 CI/CD 有用）
+  </Property>
+  <Property name="PCU_REGISTRY" type="string">
+    默认 NPM 注册表 URL
+  </Property>
+  <Property name="PCU_TIMEOUT" type="number">
+    请求超时时间（毫秒）
+  </Property>
+  <Property name="PCU_CONFIG" type="string">
+    自定义配置文件路径
+  </Property>
+</Properties>
+
+#### 命令特定环境变量
+
+<Properties>
+  <Property name="PCU_CATALOG" type="string">
+    用于检查/更新操作的默认目录
+  </Property>
+  <Property name="PCU_OUTPUT_FORMAT" type="enum">
+    默认输出格式：table、json、yaml、minimal
+  </Property>
+  <Property name="PCU_UPDATE_TARGET" type="enum">
+    默认更新目标：latest、greatest、minor、patch、newest
+  </Property>
+  <Property name="PCU_PRERELEASE" type="boolean">
+    默认包含预发布版本
+  </Property>
+  <Property name="PCU_INCLUDE" type="string">
+    默认包包含模式
+  </Property>
+  <Property name="PCU_EXCLUDE" type="string">
+    默认包排除模式
+  </Property>
+  <Property name="PCU_INTERACTIVE" type="boolean">
+    默认启用交互模式
+  </Property>
+  <Property name="PCU_DRY_RUN" type="boolean">
+    默认启用试运行模式
+  </Property>
+  <Property name="PCU_FORCE" type="boolean">
+    强制更新而不确认
+  </Property>
+  <Property name="PCU_CREATE_BACKUP" type="boolean">
+    更新前创建备份文件
+  </Property>
+</Properties>
+
+#### 主题和显示环境变量
+
+<Properties>
+  <Property name="PCU_THEME" type="enum">
+    默认颜色主题：default、modern、minimal、neon
+  </Property>
+  <Property name="PCU_PROGRESS_STYLE" type="enum">
+    进度条样式：default、gradient、fancy、minimal、rainbow、neon
+  </Property>
+  <Property name="PCU_ENVIRONMENT" type="enum">
+    环境预设：development、production、presentation
+  </Property>
+</Properties>
+
+#### 安全和缓存环境变量
+
+<Properties>
+  <Property name="PCU_SECURITY_SEVERITY" type="enum">
+    默认安全严重程度过滤器：low、moderate、high、critical
+  </Property>
+  <Property name="PCU_AUTO_FIX" type="boolean">
+    自动修复漏洞
+  </Property>
+  <Property name="PCU_CACHE_ENABLED" type="boolean">
+    启用/禁用缓存系统
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number">
+    缓存生存时间（毫秒）
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string">
+    自定义缓存目录路径
+  </Property>
+</Properties>
+
+#### 高级配置环境变量
+
+<Properties>
+  <Property name="PCU_CONCURRENCY" type="number">
+    并行网络请求数
+  </Property>
+  <Property name="PCU_BATCH_SIZE" type="number">
+    批处理的包数量
+  </Property>
+  <Property name="PCU_RETRIES" type="number">
+    失败操作的重试次数
+  </Property>
+  <Property name="PCU_CHECK_UPDATES" type="boolean">
+    启动时检查 PCU CLI 更新
+  </Property>
+</Properties>
+
+### 环境变量示例
+
+<CodeGroup>
+
+```bash {{ title: '开发环境' }}
+# 启用全功能的开发设置
+export PCU_WORKSPACE="./my-workspace"
+export PCU_VERBOSE=true
+export PCU_THEME="modern"
+export PCU_PROGRESS_STYLE="fancy"
+export PCU_INTERACTIVE=true
+export PCU_CREATE_BACKUP=true
+```
+
+```bash {{ title: '生产环境' }}
+# 最小输出的生产设置
+export PCU_THEME="minimal"
+export PCU_NO_COLOR=true
+export PCU_PROGRESS_STYLE="minimal"
+export PCU_VERBOSE=false
+export PCU_DRY_RUN=true
+```
+
+```bash {{ title: 'CI/CD 环境' }}
+# 针对自动化管道优化
+export PCU_NO_COLOR=true
+export PCU_OUTPUT_FORMAT="json"
+export PCU_CHECK_UPDATES=false
+export PCU_TIMEOUT=120000
+export PCU_RETRIES=5
+```
+
+```bash {{ title: '安全重点设置' }}
+# 增强安全扫描
+export PCU_SECURITY_SEVERITY="moderate"
+export PCU_AUTO_FIX=true
+export PCU_INCLUDE_DEV=false
+export PCU_FORCE=false
+```
+
+</CodeGroup>
+
+### 配置优先级
+
+设置按以下顺序应用（后面的会覆盖前面的）：
+
+1. 内置默认值
+2. 全局配置（`~/.pcurc.json`）
+3. 项目配置（`.pcurc.json`）
+4. 环境变量（`PCU_*`）
+5. 命令行标志（最高优先级）
+
+---
+
+## 交互式功能和进度跟踪
+
+PCU 提供先进的交互功能和复杂的进度跟踪，贯穿所有命令。
+
+### 交互式命令界面
+
+#### 包选择系统
+
+- **智能多选**：使用视觉复选框和键盘快捷键选择特定包
+- **搜索和过滤**：实时包过滤，支持模式匹配和模糊搜索
+- **批量操作**：通过基于类别的选择来选择/取消选择整个组
+- **影响预览**：在应用任何更新之前查看潜在变化
+
+#### 配置向导
+
+交互式配置向导（`pcu init --interactive`）提供：
+
+- **工作空间检测**：自动发现现有 PNPM 工作空间
+- **模板选择**：在最小和完整配置模板之间选择
+- **包规则设置**：为不同包类别配置规则（React、Vue、TypeScript）
+- **注册表配置**：设置自定义 NPM 注册表和身份验证
+- **验证设置**：配置质量门和安全检查
+
+#### 目录和文件浏览器
+
+- **工作空间导航**：内置文件系统浏览器用于工作空间选择
+- **路径验证**：实时验证工作空间路径和结构
+- **预览模式**：在确认选择之前查看工作空间内容
+
+### 高级进度跟踪
+
+#### 多样式进度条
+
+PCU 提供六种不同的进度条样式，可以按命令或全局配置：
+
+<CodeGroup>
+
+```bash {{ title: '样式示例' }}
+# 使用渐变进度条
+pcu update --progress-style gradient
+
+# 彩虹动画进度
+pcu check --progress-style rainbow
+
+# CI/CD 环境的最小样式
+pcu security --progress-style minimal
+```
+
+</CodeGroup>
+
+#### 进度功能
+
+- **多步骤跟踪**：显示不同阶段的进度（扫描 → 分析 → 更新）
+- **并行操作状态**：为并发操作提供单独的进度条
+- **性能指标**：实时速度指示器、预计时间、经过时间
+- **内存安全显示**：稳定的多行输出，减少终端闪烁
+
+#### 批处理状态
+
+- **队列管理**：显示待处理、活跃和已完成的包操作
+- **冲突解决**：交互式处理对等依赖冲突
+- **错误恢复**：为失败操作提供跳过/重试选项和详细错误上下文
+- **回滚功能**：如果在更新期间检测到问题，可以撤消更改
+
+### 错误处理和恢复
+
+#### 智能错误检测
+
+- **验证错误**：预检查并为常见错误提供有用建议
+- **网络问题**：注册表故障的指数退避自动重试
+- **依赖冲突**：详细的冲突分析和解决建议
+- **权限问题**：文件系统权限问题的清晰指导
+
+#### 交互式恢复选项
+
+- **跳过并继续**：跳过有问题的包并继续其余更新
+- **使用选项重试**：使用不同参数重试失败的操作
+- **回滚更改**：如果批量操作期间出现问题，撤消部分更改
+- **导出错误报告**：生成详细的错误报告用于故障排除
+
+### 工作空间集成
+
+#### 自动发现功能
+
+- **PNPM 工作空间检测**：自动查找和验证工作空间配置
+- **目录发现**：检测现有目录及其包映射
+- **包分析**：分析工作空间结构和依赖关系
+- **配置继承**：自动应用特定于工作空间的设置
+
+#### 验证和健康检查
+
+- **结构验证**：确保工作空间遵循 PNPM 最佳实践
+- **依赖一致性**：检查跨包的版本不匹配
+- **配置完整性**：根据工作空间结构验证 PCU 配置
+- **健康指标**：提供全面的工作空间健康评估
+
+### 使用示例
+
+#### 具有高级功能的交互式更新
+
+```bash
+pcu update --interactive --progress-style fancy --batch-size 15
+```
+
+使用华丽的进度条和优化的批处理启动交互式更新。
+
+#### 带预览的配置
+
+```bash
+pcu init --interactive --preview --verbose
+```
+
+运行带预览模式和详细日志的配置向导。
+
+#### 错误恢复工作流
+
+```bash
+pcu update --interactive --create-backup --confirm-major
+```
+
+具有交互式错误恢复、自动备份和主要版本确认的更新。
+
+---
+
+## 自动更新系统
+
+PCU 包含一个复杂的自动更新机制，使 CLI 工具保持最新的功能和安全补丁。
+
+### 自动更新检查
+
+默认情况下，PCU 在运行任何命令时检查更新：
+
+<CodeGroup>
+
+```bash {{ title: '正常操作' }}
+# PCU 自动检查更新
+pcu check
+# 输出可能包含："📦 PCU v0.8.0 可用 (当前版本：v0.7.15)"
+```
+
+```bash {{ title: '禁用更新检查' }}
+# 为单个命令禁用
+pcu check --no-update-check
+
+# 通过环境变量全局禁用
+export PCU_SKIP_VERSION_CHECK=true
+pcu check
+```
+
+</CodeGroup>
+
+### 更新行为
+
+#### CI/CD 环境检测
+
+PCU 自动检测 CI/CD 环境并跳过更新检查以避免中断自动化管道：
+
+- **GitHub Actions**：通过 `GITHUB_ACTIONS` 环境变量检测
+- **CircleCI**：通过 `CIRCLECI` 环境变量检测
+- **Jenkins**：通过 `JENKINS_URL` 环境变量检测
+- **GitLab CI**：通过 `GITLAB_CI` 环境变量检测
+- **Azure DevOps**：通过 `TF_BUILD` 环境变量检测
+- **通用 CI**：通过 `CI` 环境变量检测
+
+#### 更新安装
+
+PCU 支持多个包管理器，具有自动回退功能：
+
+```bash
+# PCU 按顺序尝试：npm → pnpm → yarn
+npm install -g pcu@latest
+# 如果 npm 失败，尝试：
+pnpm add -g pnpm-catalog-updates@latest
+# 如果 pnpm 失败，尝试：
+yarn global add pnpm-catalog-updates@latest
+```
+
+### 配置选项
+
+#### 环境变量
+
+<Properties>
+  <Property name="PCU_SKIP_VERSION_CHECK" type="boolean">
+    完全禁用版本检查和更新通知
+  </Property>
+  <Property name="PCU_UPDATE_CHECK_INTERVAL" type="number">
+    更新检查间隔小时数（默认：24）
+  </Property>
+  <Property name="PCU_AUTO_UPDATE" type="boolean">
+    自动安装更新而不提示（谨慎使用）
+  </Property>
+  <Property name="PCU_UPDATE_TIMEOUT" type="number">
+    更新检查请求超时毫秒数（默认：5000）
+  </Property>
+</Properties>
+
+#### 配置文件设置
+
+```json
+{
+  "updates": {
+    "checkForUpdates": true,
+    "autoUpdate": false,
+    "checkInterval": 86400000,
+    "timeout": 5000,
+    "skipInCI": true,
+    "notifyPrerelease": false
+  }
+}
+```
+
+### 更新通知
+
+#### 标准通知
+
+```bash
+pcu check
+# ✨ PCU v0.8.0 可用 (当前版本：v0.7.15)
+# 运行 'npm install -g pcu@latest' 以更新
+# 使用 --no-update-check 禁用此消息
+```
+
+#### 安全更新通知
+
+```bash
+pcu security
+# 🔒 安全更新：PCU v0.7.16 包含安全修复 (当前版本：v0.7.15)
+# 立即更新：npm install -g pcu@latest
+```
+
+#### 预发布通知
+
+```bash
+# 仅在 notifyPrerelease: true 时显示
+pcu check
+# 🧪 PCU v0.8.0-beta.1 可用于测试 (当前版本：v0.7.15)
+# 使用以下命令安装：npm install -g pcu@beta
+```
+
+### 手动更新命令
+
+<CodeGroup>
+
+```bash {{ title: '检查更新状态' }}
+# 检查当前版本和可用更新
+pcu --version
+pcu -V
+```
+
+```bash {{ title: '手动更新' }}
+# 通过 npm 更新
+npm install -g pcu@latest
+
+# 通过 pnpm 更新
+pnpm add -g pnpm-catalog-updates@latest
+
+# 更新到特定版本
+npm install -g pcu@0.8.0
+```
+
+</CodeGroup>
+
+### 更新故障排除
+
+#### 更新检查失败
+
+```bash
+# 如果由于网络问题更新检查失败
+PCU_UPDATE_TIMEOUT=10000 pcu check
+
+# 即使在 CI 中也强制更新检查
+PCU_SKIP_VERSION_CHECK=false CI=false pcu check
+```
+
+#### 清除缓存
+
+```bash
+# 清除更新检查缓存
+rm -rf ~/.pcu/cache/version-check
+
+# 或完全禁用缓存
+PCU_CACHE_ENABLED=false pcu check
+```
+
+#### 权限问题
+
+```bash
+# 修复 npm 权限问题
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# 或使用处理权限更好的 pnpm/yarn
+pnpm add -g pnpm-catalog-updates@latest
+```
+
+---
+
+## 缓存管理系统
+
+PCU 包含一个全面的缓存系统来优化性能并减少网络请求。
+
+### 缓存类型
+
+#### 注册表缓存
+
+存储 NPM 包元数据和版本信息：
+
+- **默认 TTL**：1小时（3,600,000毫秒）
+- **最大大小**：每种缓存类型10MB
+- **最大条目数**：500个包
+- **磁盘持久化**：启用
+
+#### 工作空间缓存
+
+存储工作空间配置和 package.json 解析结果：
+
+- **默认 TTL**：5分钟（300,000毫秒）
+- **最大大小**：5MB
+- **最大条目数**：200个工作空间
+- **磁盘持久化**：禁用（仅内存）
+
+### 缓存配置
+
+#### 环境变量
+
+<Properties>
+  <Property name="PCU_CACHE_ENABLED" type="boolean" default="true">
+    启用/禁用整个缓存系统
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number" default="3600000">
+    默认缓存 TTL（毫秒）
+  </Property>
+  <Property name="PCU_CACHE_MAX_SIZE" type="number" default="52428800">
+    最大总缓存大小字节数（默认50MB）
+  </Property>
+  <Property name="PCU_CACHE_MAX_ENTRIES" type="number" default="10000">
+    最大缓存条目数
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string" default="~/.pcu/cache">
+    自定义缓存目录路径
+  </Property>
+  <Property name="PCU_CACHE_PERSIST" type="boolean" default="true">
+    为缓存启用磁盘持久化
+  </Property>
+</Properties>
+
+#### 配置文件设置
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "registry": {
+      "ttl": 3600000,
+      "maxSize": 10485760,
+      "maxEntries": 500
+    },
+    "workspace": {
+      "ttl": 300000,
+      "maxSize": 5242880,
+      "maxEntries": 200,
+      "persistToDisk": false
+    }
+  }
+}
+```
+
+### 缓存管理命令
+
+<CodeGroup>
+
+```bash {{ title: '缓存状态' }}
+# 查看缓存统计信息（通过详细模式）
+pcu check --verbose
+# 显示：缓存命中率：85%，大小：15.2MB，条目数：342
+```
+
+```bash {{ title: '清除缓存' }}
+# 清除所有缓存
+rm -rf ~/.pcu/cache
+
+# 清除特定缓存类型
+rm -rf ~/.pcu/cache/registry
+rm -rf ~/.pcu/cache/workspace
+
+# 为单个命令禁用缓存
+PCU_CACHE_ENABLED=false pcu check
+```
+
+</CodeGroup>
+
+### 缓存性能
+
+#### 优化功能
+
+- **LRU 淘汰**：最少使用的项目首先被移除
+- **自动清理**：过期条目每5分钟清理一次
+- **大小监控**：超过大小限制时自动淘汰
+- **并行处理**：缓存操作不会阻塞主线程
+
+#### 性能优势
+
+- **注册表请求**：NPM 注册表调用减少60-90%
+- **工作空间解析**：重复运行时工作空间分析快80-95%
+- **网络依赖**：减少对网络连接的依赖
+- **启动时间**：后续操作启动时间快2-5倍

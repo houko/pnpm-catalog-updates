@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'Writing API Documentation',
+  description:
+    'Create comprehensive API documentation using Properties, Tags, and specialized components.',
+};
+
+# Writing API Documentation
+
+Create comprehensive API documentation that developers love. Learn to use Properties for parameters, Tags for HTTP methods, Libraries for showcasing SDKs, and specialized components that make API references clear and actionable. {{ className: 'lead' }}
+
+## Properties Lists
+
+Document API parameters with `<Properties>` and `<Property>`:
+
+<Properties>
+  <Property name="id" type="string">
+    Unique identifier for the resource. Automatically generated when the resource is created.
+  </Property>
+
+<Property name="name" type="string">
+  Display name of the resource. Must be between 1 and 100 characters.
+</Property>
+
+<Property name="email" type="string">
+  Valid email address. Must be unique across all users.
+</Property>
+
+  <Property name="created_at" type="timestamp">
+    ISO 8601 timestamp indicating when the resource was created.
+  </Property>
+</Properties>
+
+```mdx
+<Properties>
+  <Property name="id" type="string">
+    Description of the parameter and its usage.
+  </Property>
+</Properties>
+```
+
+## HTTP Method Tags
+
+Tags automatically get colored based on HTTP methods:
+
+<div className="flex gap-2 flex-wrap">
+  <Tag>GET</Tag>
+  <Tag>POST</Tag>
+  <Tag>PUT</Tag>
+  <Tag>DELETE</Tag>
+  <Tag color="zinc">CUSTOM</Tag>
+  <Tag color="emerald">SUCCESS</Tag>
+  <Tag color="rose">ERROR</Tag>
+</div>
+
+```mdx
+<Tag>GET</Tag>
+<Tag>POST</Tag>
+<Tag color="emerald">SUCCESS</Tag>
+```
+
+## Libraries Components
+
+### Full Library Grid
+
+Showcase all official SDKs using the `<Libraries>` component:
+
+<Libraries />
+
+```mdx
+<Libraries />
+```
+
+### Single Library
+
+Use the `<Library>` component to display individual libraries:
+
+<Library language="node" />
+
+### Compact Libraries
+
+For smaller spaces, use compact mode with descriptions:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+Or without descriptions for even more compact display:
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+
+```mdx
+<Library language="node" />
+
+<!-- Compact libraries with descriptions -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="python" compact />
+  <Library language="go" compact />
+</div>
+
+<!-- Compact libraries without descriptions -->
+
+<div className="flex gap-3 flex-wrap">
+  <Library language="php" compact showDescription={false} />
+  <Library language="ruby" compact showDescription={false} />
+  <Library language="node" compact showDescription={false} />
+  <Library language="python" compact showDescription={false} />
+  <Library language="go" compact showDescription={false} />
+</div>
+```
+
+### Library Component Options
+
+- **language**: Choose from `php`, `ruby`, `node`, `python`, `go` (default: `node`)
+- **compact**: Use smaller styling (default: `false`)
+- **showDescription**: Show/hide description text (default: `true`)
+
+### Libraries Use Cases
+
+- **`<Libraries />`**: Full SDK overview pages, getting started sections
+- **`<Library />`**: Inline documentation, specific language guides
+- **`<Library compact />`**: Sidebar references, compact listings
+
+## API Best Practices
+
+- Always document all parameters with Properties components
+- Include example requests and responses
+- Use proper HTTP status codes with Tags
+- Provide clear error messages
+- Include authentication requirements
+- Use Libraries component for SDK pages
+- Keep Properties lists focused and well-organized
+
+## Next Steps
+
+Complete your documentation journey with [Advanced Features](/writing-advanced).

@@ -1,0 +1,146 @@
+export const metadata = {
+  title: 'Démarrage rapide',
+  description:
+    'Commencez avec pnpm-catalog-updates en quelques minutes. Apprenez comment installer, initialiser et mettre à jour vos dépendances de catalogue pnpm workspace.',
+};
+
+# Démarrage rapide
+
+Commencez avec pnpm-catalog-updates en quelques minutes. Ce guide vous guidera à travers l'installation, l'initialisation et votre première mise à jour de dépendances. {{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates est spécialement conçu pour les espaces de travail pnpm utilisant des
+  dépendances de catalogue. Assurez-vous d'avoir un espace de travail pnpm avant de commencer.
+</Note>
+
+## Installation
+
+Choisissez votre méthode d'installation préférée :
+
+<CodeGroup>
+
+```bash {{ title: 'Installation globale' }}
+npm install -g pcu
+# ou
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (sans installation)' }}
+npx pnpm-catalog-updates
+# ou
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## Initialiser votre espace de travail
+
+Si vous n'avez pas encore d'espace de travail pnpm, PCU peut en créer un pour vous :
+
+```bash
+pcu init
+```
+
+Cette commande crée :
+
+- `.pcurc.json` - Fichier de configuration PCU
+- `package.json` - package.json racine de l'espace de travail (si manquant)
+- `pnpm-workspace.yaml` - Configuration de l'espace de travail PNPM (si manquante)
+- `packages/` - Répertoire pour les packages de l'espace de travail (si manquant)
+
+## Votre première vérification de mise à jour
+
+Vérifiez les dépendances de catalogue obsolètes :
+
+```bash
+pcu -c
+```
+
+Cela vous montrera un beau tableau avec :
+
+- Les versions actuelles dans vos catalogues
+- Les dernières versions disponibles
+- Les noms de packages et types de mise à jour
+- Indicateurs d'urgence codés par couleur
+
+## Mises à jour interactives
+
+Mettez à jour les dépendances avec une interface interactive :
+
+```bash
+pcu -i
+```
+
+Cela vous permet de :
+
+- ✅ Choisir quelles dépendances mettre à jour
+- 🎯 Sélectionner des versions spécifiques
+- 📊 Voir l'analyse d'impact
+- 🔒 Créer des sauvegardes automatiquement
+
+## Commandes courantes
+
+Voici les commandes les plus fréquemment utilisées :
+
+| Commande   | Description                     | Exemple                    |
+| ---------- | ------------------------------- | -------------------------- |
+| `pcu init` | Initialiser l'espace de travail | `pcu init --verbose`       |
+| `pcu -c`   | Vérifier les mises à jour       | `pcu -c --catalog default` |
+| `pcu -i`   | Mises à jour interactives       | `pcu -i -b`                |
+| `pcu -u`   | Mettre à jour les dépendances   | `pcu -u --target minor`    |
+| `pcu -a`   | Analyser l'impact               | `pcu -a default react`     |
+
+## Et maintenant ?
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="Référence des commandes"
+    description="Guide complet de toutes les commandes et options PCU."
+  />
+  <Resource
+    href="/configuration"
+    title="Configuration"
+    description="Apprenez comment configurer PCU pour votre flux de travail."
+  />
+  <Resource href="/examples" title="Exemples" description="Exemples concrets et cas d'usage." />
+  <Resource
+    href="/development"
+    title="Développement"
+    description="Configurer PCU pour le développement et la contribution."
+  />
+</Resources>
+
+## Liste de vérification pour débuter
+
+Suivez cette liste de vérification pour faire fonctionner PCU dans votre projet :
+
+1. **Installer PCU** - Choisissez l'installation globale ou utilisez npx
+2. **Initialiser l'espace de travail** - Exécutez `pcu init` pour la configuration initiale
+3. **Vérifier les mises à jour** - Utilisez `pcu -c` pour voir les mises à jour disponibles
+4. **Configurer les paramètres** - Personnalisez `.pcurc.json` selon vos besoins
+5. **Mettre à jour les dépendances** - Utilisez le mode interactif `pcu -i` pour des mises à jour sûres
+6. **Configurer l'automatisation** - Considérez l'intégration CI/CD pour des vérifications régulières
+
+## Référence rapide des commandes essentielles
+
+| Commande       | Objectif                       | Quand utiliser                            |
+| -------------- | ------------------------------ | ----------------------------------------- |
+| `pcu init`     | Configurer l'espace de travail | Première configuration, nouveaux projets  |
+| `pcu -c`       | Vérifier les mises à jour      | Développement quotidien, vérifications CI |
+| `pcu -i`       | Mise à jour interactive        | Mises à jour manuelles sûres              |
+| `pcu -u`       | Mise à jour par lots           | Mises à jour automatisées, CI/CD          |
+| `pcu security` | Analyse de sécurité            | Avant les versions, audits réguliers      |
+
+## Étapes suivantes
+
+Une fois que vous avez configuré PCU, explorez ces fonctionnalités avancées :
+
+- **[Configuration](/configuration)** - Personnalisez PCU pour votre flux de travail spécifique
+- **[Analyse de sécurité](/command-reference#pcu-security)** - Intégrez l'analyse des vulnérabilités
+- **[Gestion de Monorepo](/configuration#monorepo-configuration)** - Fonctionnalités avancées d'espace de travail
+- **[Intégration CI/CD](/examples)** - Automatisez les mises à jour de dépendances dans votre pipeline

@@ -1,0 +1,442 @@
+export const metadata = {
+  title: '마이그레이션 가이드',
+  description:
+    '다른 의존성 관리 도구에서 PCU로 마이그레이션하고 팀이 pnpm 카탈로그를 효과적으로 사용하도록 전환하세요.',
+};
+
+# 마이그레이션 가이드
+
+기존 의존성 관리 솔루션에서 PCU로 마이그레이션하고 팀을 pnpm 카탈로그 의존성으로 전환하는 방법을 알아보세요. {{ className: 'lead' }}
+
+## 마이그레이션 개요
+
+PCU는 카탈로그 의존성을 사용하는 pnpm 워크스페이스를 위해 특별히 설계되었습니다. 현재 다른 도구나 패키지 관리자를 사용하고 있다면, 이 가이드가 원활한 전환에 도움이 될 것입니다.
+
+### 시작하기 전에
+
+**PCU의 전제조건:**
+
+- 패키지 관리자로서의 pnpm (버전 8.0.0+)
+- 워크스페이스 구성 (`pnpm-workspace.yaml`)
+- 워크스페이스의 카탈로그 의존성
+
+**마이그레이션 의사결정 매트릭스:**
+
+| 현재 도구                | 마이그레이션 복잡성 | 이점                             | 고려사항                    |
+| ------------------------ | ------------------- | -------------------------------- | --------------------------- |
+| npm-check-updates        | 낮음                | 더 나은 pnpm 통합, 카탈로그 지원 | pnpm 워크스페이스 설정 필요 |
+| 수동 업데이트            | 낮음                | 자동화, 일관성, 보안 스캔        | 초기 구성 작업              |
+| Renovate                 | 중간                | 수동 제어, 워크스페이스별 기능   | 자동화 손실                 |
+| Dependabot               | 중간                | 향상된 카탈로그 관리             | GitHub 특정 기능            |
+| yarn upgrade-interactive | 높음                | 카탈로그 이점, 더 나은 성능      | 완전한 패키지 관리자 변경   |
+
+## npm-check-updates에서 마이그레이션
+
+### 현재 설정 분석
+
+현재 `npm-check-updates` (ncu)를 사용하고 있다면, 다음과 같은 스크립트가 있을 것입니다:
+
+```json
+{
+  "scripts": {
+    "deps:check": "ncu",
+    "deps:update": "ncu -u",
+    "deps:interactive": "ncu -i"
+  }
+}
+```
+
+### 마이그레이션 단계
+
+**1. pnpm 설치 및 워크스페이스 설정**
+
+```bash
+# npm에서 pnpm으로 전환
+npm install -g pnpm
+pnpm install  # 기존 lock 파일을 pnpm으로 변환
+
+# 워크스페이스 초기화 (필요한 경우)
+pcu init
+```
+
+**2. 카탈로그로 의존성 변환**
+
+기존 package.json 의존성을 카탈로그 의존성으로 변환:
+
+<CodeGroup>
+
+```yaml {{ title: 'pnpm-workspace.yaml' }}
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  react: ^18.2.0
+  typescript: ^5.0.0
+  '@types/node': ^20.0.0
+  eslint: ^8.0.0
+```
+
+```json {{ title: 'package.json (변환 후)' }}
+{
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "eslint": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+**3. PCU 구성**
+
+`.pcurc.json` 생성:
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest"
+    }
+  ]
+}
+```
+
+**4. 스크립트 업데이트**
+
+기존 ncu 스크립트를 PCU로 교체:
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update": "pcu update",
+    "deps:interactive": "pcu interactive"
+  }
+}
+```
+
+**5. 첫 실행 검증**
+
+```bash
+# 설정 검증
+pcu check
+
+# 테스트 업데이트
+pcu update --dry-run
+```
+
+### 기능 매핑
+
+| ncu 명령어               | PCU 동등 명령어                  | 참고사항                  |
+| ------------------------ | -------------------------------- | ------------------------- |
+| `ncu`                    | `pcu check`                      | 사용 가능한 업데이트 표시 |
+| `ncu -u`                 | `pcu update`                     | 의존성 업데이트           |
+| `ncu -i`                 | `pcu interactive`                | 대화형 업데이트 선택      |
+| `ncu --target minor`     | `pcu update --target minor`      | 특정 업데이트 레벨 타겟   |
+| `ncu --filter "react*"`  | `pcu update --include "react*"`  | 패턴별 필터링             |
+| `ncu --reject "eslint*"` | `pcu update --exclude "eslint*"` | 패키지 제외               |
+| `ncu --doctor`           | _해당 없음_                      | PCU는 자동 테스트 미지원  |
+
+## Renovate에서 마이그레이션
+
+### 현재 Renovate 구성 분석
+
+기존 `renovate.json`:
+
+```json
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "automerge": true
+    }
+  ],
+  "schedule": ["before 4am on Monday"]
+}
+```
+
+### 전환 전략
+
+**1. Renovate 비활성화**
+
+```json
+{
+  "enabled": false
+}
+```
+
+**2. 동등한 PCU 구성**
+
+```json
+{
+  "defaults": {
+    "target": "minor",
+    "createBackup": true
+  },
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ],
+  "schedule": {
+    "enabled": true,
+    "cron": "0 4 * * 1"
+  }
+}
+```
+
+**3. CI/CD 파이프라인 설정**
+
+Renovate의 자동 PR 생성을 CI/CD로 대체:
+
+```yaml
+name: 의존성 업데이트
+on:
+  schedule:
+    - cron: '0 4 * * 1' # 월요일 오전 4시
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - name: 의존성 업데이트
+        run: |
+          pcu update --target minor --create-backup
+          # 변경사항이 있으면 PR 생성
+```
+
+## Dependabot에서 마이그레이션
+
+### Dependabot 구성 비활성화
+
+`.github/dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'never' # Dependabot 비활성화
+```
+
+### PCU로 보안 업데이트 처리
+
+```bash
+# 보안 업데이트 확인
+pcu security
+
+# 자동 보안 수정
+pcu security --fix-vulns
+```
+
+## yarn에서 pnpm으로 완전 마이그레이션
+
+### 전체 패키지 관리자 변경
+
+**1. 기존 yarn 아티팩트 정리**
+
+```bash
+rm yarn.lock
+rm -rf node_modules
+```
+
+**2. pnpm으로 전환**
+
+```bash
+# pnpm 설치
+npm install -g pnpm
+
+# 의존성 설치
+pnpm install
+```
+
+**3. 스크립트 및 구성 업데이트**
+
+<CodeGroup>
+
+```json {{ title: 'package.json (이전)' }}
+{
+  "scripts": {
+    "upgrade": "yarn upgrade-interactive"
+  },
+  "workspaces": ["packages/*"]
+}
+```
+
+```yaml {{ title: 'pnpm-workspace.yaml (이후)' }}
+packages:
+  - 'packages/*'
+
+catalog:
+  lodash: ^4.17.21
+  react: ^18.2.0
+```
+
+</CodeGroup>
+
+**4. 팀 전환**
+
+```bash
+# .nvmrc와 함께 pnpm 버전 고정
+echo "8.15.0" > .pnpmrc
+
+# 팀용 설치 가이드
+echo "Please run: npm install -g pnpm@8.15.0" > SETUP.md
+```
+
+## 팀 전환 전략
+
+### 점진적 채택
+
+**1단계: 병렬 실행**
+
+- 기존 도구와 PCU를 모두 유지
+- PCU로 업데이트 확인만 수행
+- 3-4주간 비교 테스트
+
+**2단계: 파일럿 프로젝트**
+
+- 작은 프로젝트에서 PCU 전면 사용
+- 팀 피드백 수집
+- 워크플로 개선
+
+**3단계: 전면 전환**
+
+- 모든 프로젝트에서 PCU 사용
+- 기존 도구 제거
+- 문서화 및 교육
+
+### 교육 자료
+
+**팀용 체크리스트:**
+
+- [ ] pnpm 설치 (`npm install -g pnpm`)
+- [ ] PCU 설치 (`pnpm add -g pnpm-catalog-updates`)
+- [ ] 기본 명령어 학습 (`pcu check`, `pcu update`)
+- [ ] 구성 파일 이해 (`.pcurc.json`)
+- [ ] 긴급 롤백 절차 숙지
+
+**일반적인 명령어 참조:**
+
+```bash
+# 일일 사용
+pcu check                    # 업데이트 확인
+pcu interactive             # 대화형 업데이트
+
+# 주간 사용
+pcu security                # 보안 스캔
+pcu update --target minor   # 마이너 업데이트
+
+# 긴급 상황
+pcu restore                 # 백업에서 복원
+pcu analyze package 1.0.0   # 영향 분석
+```
+
+## 문제 해결
+
+### 일반적인 마이그레이션 문제
+
+**워크스페이스 감지 실패**
+
+```bash
+# 디렉토리 확인
+ls -la pnpm-workspace.yaml
+
+# 워크스페이스 재생성
+pcu init --force
+```
+
+**카탈로그 의존성 오류**
+
+```bash
+# 카탈로그 검증
+pnpm why catalog:react
+
+# 수동 카탈로그 동기화
+pcu sync
+```
+
+**성능 문제**
+
+```bash
+# 캐시 정리
+pcu cache clean
+
+# 동시성 조정
+pcu check --concurrency 2
+```
+
+### 롤백 절차
+
+즉각적인 롤백이 필요한 경우:
+
+```bash
+# PCU 백업에서 복원
+pcu restore --latest
+
+# 또는 수동 롤백
+git checkout HEAD~1 -- package.json pnpm-workspace.yaml
+pnpm install
+```
+
+## 마이그레이션 후 최적화
+
+### 고급 구성
+
+마이그레이션 완료 후 성능 최적화:
+
+```json
+{
+  "advanced": {
+    "concurrency": 3,
+    "timeout": 30000,
+    "batchSize": 10,
+    "cacheStrategy": "aggressive"
+  },
+  "notifications": {
+    "slack": {
+      "webhook": "https://hooks.slack.com/...",
+      "channel": "#dev-updates"
+    }
+  }
+}
+```
+
+### 모니터링 설정
+
+```bash
+# 성능 메트릭 활성화
+export PCU_METRICS=true
+
+# 로그 레벨 설정
+export PCU_LOG_LEVEL=info
+```
+
+### 성공 측정
+
+마이그레이션 성공을 측정하는 지표:
+
+- **업데이트 빈도**: 주간 의존성 업데이트 수
+- **보안 대응 시간**: 취약점 발견에서 수정까지의 시간
+- **팀 채택률**: PCU를 사용하는 개발자 비율
+- **자동화 수준**: 수동 개입 없이 처리되는 업데이트 비율
+
+---
+
+마이그레이션에 대한 추가 도움이 필요하시면 [GitHub 토론](https://github.com/houko/pnpm-catalog-updates/discussions)에 참여하거나 [이슈를 등록](https://github.com/houko/pnpm-catalog-updates/issues)해 주세요.

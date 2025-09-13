@@ -1,0 +1,827 @@
+export const metadata = {
+  title: '迁移指南',
+  description: '从其他依赖管理工具迁移到 PCU，并帮助团队有效过渡到使用 pnpm 目录依赖。',
+};
+
+# 迁移指南
+
+学习如何从现有的依赖管理解决方案迁移到 PCU，并帮助团队过渡到 pnpm 目录依赖。 {{ className: 'lead' }}
+
+## 迁移概述
+
+PCU 专为使用目录依赖的 pnpm 工作区而设计。如果您当前使用其他工具或包管理器，本指南将帮助您平滑过渡。
+
+### 开始之前
+
+**PCU 的前置条件：**
+
+- pnpm 作为您的包管理器（版本 8.0.0+）
+- 工作区配置（`pnpm-workspace.yaml`）
+- 工作区中的目录依赖
+
+**迁移决策矩阵：**
+
+| 当前工具                 | 迁移复杂度 | 好处                       | 考虑因素             |
+| ------------------------ | ---------- | -------------------------- | -------------------- |
+| npm-check-updates        | 低         | 更好的 pnpm 集成，目录支持 | 需要 pnpm 工作区设置 |
+| 手动更新                 | 低         | 自动化，一致性，安全扫描   | 初始配置工作         |
+| Renovate                 | 中         | 手动控制，工作区特定功能   | 失去自动化           |
+| Dependabot               | 中         | 增强的目录管理             | GitHub 特定功能      |
+| yarn upgrade-interactive | 高         | 目录优势，更好的性能       | 完全的包管理器变更   |
+
+## 从 npm-check-updates 迁移
+
+### 当前设置分析
+
+如果您当前使用 `npm-check-updates` (ncu)，您可能有以下脚本：
+
+```json
+{
+  "scripts": {
+    "deps:check": "ncu",
+    "deps:update": "ncu -u",
+    "deps:interactive": "ncu -i"
+  }
+}
+```
+
+### 迁移步骤
+
+**1. 安装 pnpm 并设置工作区**
+
+```bash
+# 全局安装 pnpm
+npm install -g pnpm
+
+# 初始化 pnpm 工作区
+echo 'packages:\n  - "packages/*"' > pnpm-workspace.yaml
+
+# 使用 pnpm 安装依赖
+pnpm install
+```
+
+**2. 转换为目录依赖**
+
+在 `pnpm-workspace.yaml` 中创建目录条目：
+
+```yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  # 提取公共依赖
+  react: ^18.2.0
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+  prettier: ^3.0.0
+
+  # 开发依赖
+  '@types/node': ^20.5.0
+  '@types/react': ^18.2.0
+```
+
+**3. 更新包文件**
+
+将 `package.json` 文件转换为使用目录引用：
+
+<CodeGroup>
+
+```json {{ title: '之前（传统）' }}
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```json {{ title: '之后（目录）' }}
+{
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:"
+  }
+}
+```
+
+</CodeGroup>
+
+**4. 安装和配置 PCU**
+
+```bash
+# 安装 PCU
+pnpm add -g pnpm-catalog-updates
+
+# 创建初始配置
+pcu init
+
+# 测试 PCU 功能
+pcu check
+```
+
+**5. 更新脚本**
+
+使用 PCU 等价命令替换 ncu 脚本：
+
+```json
+{
+  "scripts": {
+    "deps:check": "pcu check",
+    "deps:update": "pcu update --interactive",
+    "deps:security": "pcu security",
+    "deps:analyze": "pcu analyze default"
+  }
+}
+```
+
+### 配置迁移
+
+**ncu 配置 → PCU 配置：**
+
+<CodeGroup>
+
+```json {{ title: '.ncurc.json（之前）' }}
+{
+  "upgrade": true,
+  "interactive": true,
+  "target": "minor",
+  "reject": ["react", "react-dom"],
+  "timeout": 60000
+}
+```
+
+```json {{ title: '.pcurc.json（之后）' }}
+{
+  "target": "minor",
+  "timeout": 60000,
+  "requireConfirmation": true,
+  "exclude": ["react", "react-dom"],
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## 从 Renovate 迁移
+
+### 理解差异
+
+**Renovate vs PCU：**
+
+- **Renovate**：自动化 PR 创建，多语言支持，广泛配置
+- **PCU**：手动控制，pnpm 特定，目录专注，安全集成
+
+### 迁移策略
+
+**1. 导出 Renovate 配置**
+
+分析当前的 `renovate.json`：
+
+```json
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "minor": {
+        "automerge": true
+      }
+    },
+    {
+      "matchPackageNames": ["react", "react-dom"],
+      "groupName": "React",
+      "schedule": ["before 10am on monday"]
+    }
+  ],
+  "timezone": "America/New_York",
+  "schedule": ["before 10am every weekday"]
+}
+```
+
+**2. 转换为 PCU 配置**
+
+将 Renovate 规则映射到 PCU 等价物：
+
+```json
+{
+  "packageRules": [
+    {
+      "patterns": ["@types/*"],
+      "target": "latest",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react", "react-dom"],
+      "target": "minor",
+      "requireConfirmation": true,
+      "groupUpdate": true
+    }
+  ],
+  "schedule": {
+    "enabled": false
+  }
+}
+```
+
+**3. 设置手动工作流**
+
+用计划的手动审查替换自动化 PR：
+
+```bash
+# 每周依赖审查
+pcu check --format json > weekly-deps-$(date +%Y%m%d).json
+
+# 安全更新（立即）
+pcu security --severity high --require-confirmation
+
+# 常规更新（双周）
+pcu update --target minor --interactive
+```
+
+**4. 团队过渡**
+
+**阶段 1：并行运行（2 周）**
+
+- 保持 Renovate 启用
+- 引入 PCU 进行手动检查
+- 培训团队使用 PCU 命令
+
+**阶段 2：PCU 主导（2 周）**
+
+- 禁用 Renovate PR 创建
+- 对所有更新使用 PCU
+- 建立审查流程
+
+**阶段 3：完全迁移**
+
+- 移除 Renovate 配置
+- 优化 PCU 配置
+- 记录新工作流
+
+### Renovate 功能映射
+
+| Renovate 功能 | PCU 等价物         | 备注               |
+| ------------- | ------------------ | ------------------ |
+| 自动化 PR     | 手动 `pcu update`  | 更多控制，更少噪声 |
+| 调度          | Cron 作业 + PCU    | 灵活的时间安排     |
+| 分组更新      | `--include` 模式   | 分组相关包         |
+| 自动合并      | `autoUpdate: true` | 限于安全包         |
+| 漏洞警报      | `pcu security`     | 集成扫描           |
+| 配置预设      | 包规则             | 可重用模式         |
+
+## 从 Dependabot 迁移
+
+### GitHub 集成考虑
+
+**要复制的 Dependabot 优势：**
+
+- 安全漏洞警报
+- 自动化安全更新
+- GitHub 集成
+- PR 创建和管理
+
+### 迁移方法
+
+**1. 审核当前 Dependabot 配置**
+
+审查 `.github/dependabot.yml`：
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'team-leads'
+    allow:
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-patch'
+      - dependency-type: 'direct'
+        update-type: 'version-update:semver-minor'
+```
+
+**2. 使用 GitHub Actions 设置 PCU**
+
+创建 `.github/workflows/dependencies.yml`：
+
+```yaml
+name: 依赖管理
+
+on:
+  schedule:
+    - cron: '0 10 * * MON' # 周一上午10点
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装 PCU
+        run: pnpm add -g pnpm-catalog-updates
+
+      - name: 检查依赖
+        run: |
+          pcu check --format json > dep-check.json
+          pcu security --format json > security-check.json
+
+      - name: 为更新创建问题
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const depCheck = JSON.parse(fs.readFileSync('dep-check.json', 'utf8'));
+
+            if (depCheck.updates.length > 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `每周依赖更新可用`,
+                body: `发现 ${depCheck.updates.length} 个包有可用更新。\n\n运行 \`pcu update --interactive\` 来审查和应用更新。`
+              });
+            }
+```
+
+**3. 安全集成**
+
+替换 Dependabot 安全功能：
+
+```bash
+# 每日安全检查
+pcu security --severity critical --auto-fix
+
+# 每周全面扫描
+pcu security --comprehensive --format json > security-report.json
+```
+
+**4. 手动审查流程**
+
+建立以人为中心的工作流：
+
+```bash
+# 每周团队审查
+pcu check --limit 20 --require-confirmation
+
+# 每月主版本更新
+pcu check --target latest --interactive
+
+# 即时安全响应
+pcu security --fix-vulns --severity high
+```
+
+## 从手动依赖管理迁移
+
+### 评估阶段
+
+**当前状态分析：**
+
+1. **频率**：您多久更新一次依赖？
+2. **流程**：您当前的更新工作流是什么？
+3. **测试**：您如何验证更新？
+4. **安全**：您如何处理漏洞？
+
+**常见手动模式：**
+
+<CodeGroup>
+
+```bash {{ title: '临时更新' }}
+# 典型手动流程
+npm outdated
+npm update package-name
+npm audit
+npm audit fix
+```
+
+```bash {{ title: '批量更新' }}
+# 月度更新会议
+npm outdated > outdated.txt
+# 手动审查和更新
+npm update
+npm test
+```
+
+</CodeGroup>
+
+### 结构化迁移
+
+**阶段 1：评估（第 1 周）**
+
+```bash
+# 安装 PCU 进行评估
+pnpm add -g pnpm-catalog-updates
+
+# 分析当前状态
+pcu check --dry-run > current-state.txt
+pcu security > security-state.txt
+
+# 记录发现
+echo "需要更新的依赖: $(grep -c 'outdated' current-state.txt)"
+echo "安全漏洞: $(grep -c 'vulnerability' security-state.txt)"
+```
+
+**阶段 2：目录转换（第 2 周）**
+
+```bash
+# 转换为 pnpm 工作区
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+
+# 提取公共依赖
+pcu analyze-workspace > catalog-suggestions.json
+
+# 创建初始目录
+pcu generate-catalog >> pnpm-workspace.yaml
+```
+
+**阶段 3：流程集成（第 3-4 周）**
+
+```json
+{
+  "scripts": {
+    "deps:daily": "pcu security --severity critical",
+    "deps:weekly": "pcu check --limit 10",
+    "deps:monthly": "pcu update --target minor --interactive",
+    "deps:security": "pcu security --comprehensive"
+  }
+}
+```
+
+### 自动化策略
+
+**渐进式自动化：**
+
+1. **手动开始**：所有更新都需要确认
+2. **半自动化**：自动更新开发依赖和类型
+3. **智能自动化**：自动更新补丁，确认次要版本
+4. **完全自动化**：自动更新除主版本外的所有内容
+
+**配置演进：**
+
+<CodeGroup>
+
+```json {{ title: '阶段 1：手动' }}
+{
+  "target": "patch",
+  "requireConfirmation": true,
+  "autoUpdate": false
+}
+```
+
+```json {{ title: '阶段 2：半自动' }}
+{
+  "target": "minor",
+  "requireConfirmation": true,
+  "packageRules": [
+    {
+      "patterns": ["@types/*", "eslint*"],
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+```json {{ title: '阶段 3：智能自动' }}
+{
+  "target": "minor",
+  "packageRules": [
+    {
+      "patterns": ["*"],
+      "target": "patch",
+      "autoUpdate": true
+    },
+    {
+      "patterns": ["react*", "vue*"],
+      "target": "minor",
+      "requireConfirmation": true
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## 转换非 pnpm 项目
+
+### 从 npm 项目
+
+**1. 依赖分析**
+
+```bash
+# 备份当前状态
+cp package.json package.json.backup
+cp package-lock.json package-lock.json.backup
+
+# 分析依赖
+npm ls --depth=0 > npm-deps.txt
+```
+
+**2. pnpm 迁移**
+
+```bash
+# 安装 pnpm
+npm install -g pnpm
+
+# 移除 npm 工件
+rm -rf node_modules package-lock.json
+
+# 使用 pnpm 安装
+pnpm install
+
+# 创建工作区结构
+mkdir -p packages apps
+echo 'packages:\n  - "packages/*"\n  - "apps/*"' > pnpm-workspace.yaml
+```
+
+**3. 目录提取**
+
+```bash
+# 安装 PCU
+pnpm add -g pnpm-catalog-updates
+
+# 从 package.json 生成目录
+pcu extract-catalog package.json >> pnpm-workspace.yaml
+
+# 转换 package.json 以使用目录
+pcu convert-to-catalog package.json
+```
+
+### 从 Yarn 项目
+
+**1. 工作区转换**
+
+<CodeGroup>
+
+```json {{ title: 'yarn 工作区（之前）' }}
+{
+  "name": "my-monorepo",
+  "workspaces": ["packages/*", "apps/*"],
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "eslint": "^8.45.0"
+  }
+}
+```
+
+```yaml {{ title: 'pnpm 工作区（之后）' }}
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  typescript: ^5.0.0
+  eslint: ^8.45.0
+```
+
+</CodeGroup>
+
+**2. 迁移命令**
+
+```bash
+# 移除 yarn 工件
+rm -rf node_modules yarn.lock
+
+# 转换 yarn.lock 到 pnpm-lock.yaml
+pnpm import
+
+# 安装依赖
+pnpm install
+
+# 设置 PCU
+pnpm add -g pnpm-catalog-updates
+pcu init
+```
+
+### 单体仓库转换
+
+**大型单体仓库策略：**
+
+```bash
+# 阶段 1：分析结构
+find . -name "package.json" -not -path "./node_modules/*" | head -20
+
+# 阶段 2：创建工作区
+cat > pnpm-workspace.yaml << EOF
+packages:
+  - 'packages/ui/*'
+  - 'packages/utils/*'
+  - 'packages/services/*'
+  - 'apps/*'
+  - 'tools/*'
+EOF
+
+# 阶段 3：提取公共依赖
+pcu analyze-monorepo > common-deps.json
+
+# 阶段 4：生成目录
+pcu generate-multi-catalog common-deps.json >> pnpm-workspace.yaml
+```
+
+## 团队过渡策略
+
+### 变更管理
+
+**1. 沟通计划**
+
+- **第 -2 周**：宣布迁移计划
+- **第 -1 周**：培训课程和文档
+- **第 0 周**：开始并行运行
+- **第 2 周**：完全过渡
+- **第 4 周**：流程优化
+
+**2. 培训项目**
+
+**开发者培训会议（1 小时）：**
+
+```bash
+# 基本 PCU 命令
+pcu check                    # 检查更新
+pcu update --interactive     # 交互式更新
+pcu security                # 安全扫描
+
+# 高级功能
+pcu analyze default react    # 影响分析
+pcu --help                  # 完整命令参考
+```
+
+**团队领导培训（2 小时）：**
+
+- 配置管理
+- 安全政策集成
+- 性能优化
+- 监控和报告
+
+### 推出策略
+
+**试点项目方法：**
+
+1. **选择试点项目**：选择代表性但非关键的项目
+2. **迁移试点**：与试点团队完成迁移
+3. **经验教训**：记录问题和解决方案
+4. **规模推出**：将经验应用到其他项目
+
+**风险缓解：**
+
+```bash
+# 迁移前备份策略
+git branch backup-pre-pcu-migration
+tar -czf dependencies-backup-$(date +%Y%m%d).tar.gz package.json pnpm-workspace.yaml
+
+# 回滚计划
+git checkout backup-pre-pcu-migration
+npm install  # 或之前的包管理器
+```
+
+### 流程集成
+
+**代码审查集成：**
+
+```yaml
+# .github/workflows/pr-check.yml
+name: PR 依赖检查
+
+on: pull_request
+
+jobs:
+  deps-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 PCU
+        run: pnpm add -g pnpm-catalog-updates
+      - name: 检查依赖
+        run: |
+          pcu check --format json > pr-deps.json
+          if grep -q "outdated\|vulnerable" pr-deps.json; then
+            echo "::warning::检测到过时或有漏洞的依赖"
+          fi
+```
+
+**发布集成：**
+
+```bash
+# 发布前依赖检查
+pcu security --severity critical --exit-on-error
+pcu check --target latest --limit 5
+
+# 发布后依赖更新
+pcu update --target patch --auto-update
+```
+
+## 验证和测试
+
+### 迁移验证
+
+**1. 功能测试**
+
+```bash
+# 测试基本功能
+pnpm install
+pnpm run build
+pnpm run test
+
+# 测试 PCU 功能
+pcu check --dry-run
+pcu security --dry-run
+```
+
+**2. 性能比较**
+
+```bash
+# 迁移前基准测试
+time npm install
+time npm run build
+
+# 迁移后基准测试
+time pnpm install
+time pnpm run build
+time pcu check
+```
+
+**3. 依赖完整性**
+
+```bash
+# 比较依赖树
+npm ls --depth=1 > npm-tree.txt
+pnpm ls --depth=1 > pnpm-tree.txt
+diff npm-tree.txt pnpm-tree.txt
+```
+
+### 成功指标
+
+**关键绩效指标：**
+
+- **安装速度**：pnpm install vs npm install
+- **更新频率**：迁移前后每月更新次数
+- **安全响应**：修复漏洞的时间
+- **开发者满意度**：团队调查结果
+- **构建性能**：CI/CD 执行时间
+
+**监控仪表板：**
+
+```bash
+# 每周指标收集
+pcu metrics --output weekly-metrics-$(date +%Y%m%d).json
+```
+
+---
+
+## 迁移检查清单
+
+### 迁移前
+
+1. 评估当前依赖管理方法
+2. 在隔离环境中安装和测试 pnpm
+3. 规划工作区结构
+4. 识别目录的公共依赖
+5. 备份当前配置
+6. 培训核心团队成员
+
+### 迁移阶段
+
+1. 转换为 pnpm 工作区结构
+2. 将依赖提取到目录
+3. 更新 package.json 文件以使用目录引用
+4. 安装和配置 PCU
+5. 使用试点项目测试功能
+6. 更新 CI/CD 流水线
+7. 记录新流程
+
+### 迁移后
+
+1. 验证所有功能正常工作
+2. 培训其余团队成员
+3. 优化 PCU 配置
+4. 建立定期维护计划
+5. 监控和测量成功指标
+6. 收集反馈并迭代
+
+### 故障排除
+
+1. 记录常见迁移问题
+2. 创建回滚程序
+3. 建立支持渠道
+4. 定期健康检查和优化

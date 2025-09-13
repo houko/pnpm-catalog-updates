@@ -1,0 +1,256 @@
+export const metadata = {
+  title: 'Writing Components',
+  description:
+    'Learn to use interactive UI components like Notes, Buttons, and other elements to enhance your documentation.',
+};
+
+# Writing Components
+
+Enhance your documentation with interactive UI components. Learn to use Notes for important information, Buttons for actions, and other elements that make your docs more engaging and functional. {{ className: 'lead' }}
+
+## Notes and Callouts
+
+The `<Note>` component is perfect for highlighting important information, warnings, or tips that readers should pay special attention to.
+
+### Basic Note Usage
+
+<Note>
+  This is a basic note component. It automatically styles content with an emerald theme and info
+  icon, making important information stand out from regular text.
+</Note>
+
+```mdx
+<Note>This is a basic note component with important information.</Note>
+```
+
+### Notes with Rich Content
+
+Notes support full Markdown formatting, including **bold text**, _italic text_, `inline code`, and even [links to other pages](/writing-basics).
+
+<Note>
+  **Important Setup Requirement**: Before proceeding, ensure you have: - Node.js version 18 or
+  higher installed - Access to the project repository - Valid API credentials configured See the
+  [Command Reference Guide](/command-reference) for credential setup.
+</Note>
+
+```mdx
+<Note>
+  **Important Setup Requirement**: Before proceeding, ensure you have: - Node.js version 18 or
+  higher installed - Access to the project repository - Valid API credentials configured See the
+  [Command Reference Guide](/command-reference) for credential setup.
+</Note>
+```
+
+### Multi-paragraph Notes
+
+<Note>
+  This is the first paragraph of a longer note that contains multiple pieces of related information.
+
+This second paragraph continues the thought with additional context. You can include as many paragraphs as needed to fully explain the concept.
+
+Remember that good notes are concise but complete, providing just enough information to help readers understand the importance of the message.
+
+</Note>
+
+```mdx
+<Note>
+  First paragraph with initial information.
+
+Second paragraph with additional context and details.
+
+Final paragraph with summary or next steps.
+
+</Note>
+```
+
+## Buttons and Actions
+
+The `<Button>` component creates call-to-action elements that guide users to important links or next steps.
+
+### Button Variants
+
+#### Filled Buttons
+
+Use for primary actions and the most important calls-to-action:
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Learn About Code Components
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    Learn About Code Components
+  </Button>
+</div>
+```
+
+#### Outline Buttons
+
+Perfect for secondary actions and alternative paths:
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explore Layout Components
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    Explore Layout Components
+  </Button>
+</div>
+```
+
+#### Text Buttons
+
+Subtle links that blend with content while still standing out:
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Back to Basics
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    Back to Basics
+  </Button>
+</div>
+```
+
+### Button Arrows
+
+Buttons support directional arrows to indicate navigation:
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Previous Section
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Next Section
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    Previous Section
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    Next Section
+  </Button>
+</div>
+```
+
+### Button Best Practices
+
+- **Use sparingly**: Too many buttons reduce their effectiveness
+- **Clear action words**: "Get Started", "Learn More", "View Documentation"
+- **Logical hierarchy**: Filled for primary, outline for secondary, text for tertiary
+- **Directional arrows**: Left for "back/previous", right for "forward/next"
+- **Wrap in not-prose**: Always use `<div className="not-prose">` wrapper
+
+## Component Styling Context
+
+### The not-prose Wrapper
+
+Some components need to escape the default prose styling. Always wrap these components:
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    Your Button Text
+  </Button>
+</div>
+```
+
+Components that **require** `not-prose`:
+
+- All `<Button>` components
+- Custom layout elements
+- Interactive widgets
+- Complex styled components
+
+Components that **work without** `not-prose`:
+
+- `<Note>` components (self-contained styling)
+- Standard Markdown elements
+- Text-based components
+
+### Multiple Components
+
+When displaying multiple components together:
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API Documentation Guide
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Advanced Features
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    Review the Basics
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    API Documentation Guide
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    Advanced Features
+  </Button>
+</div>
+```
+
+## Component Accessibility
+
+All components are built with accessibility in mind:
+
+- **Semantic HTML**: Proper button and link elements
+- **ARIA labels**: Screen reader support where needed
+- **Keyboard navigation**: Full keyboard accessibility
+- **Focus management**: Clear focus indicators
+- **Color contrast**: WCAG compliant color schemes
+
+## When to Use Each Component
+
+### Use Notes When:
+
+- Highlighting critical information
+- Warning about potential issues
+- Providing helpful tips or context
+- Explaining prerequisites or requirements
+- Calling attention to important changes
+
+### Use Buttons When:
+
+- Guiding to next logical steps
+- Linking to external resources
+- Creating clear call-to-action moments
+- Navigation between major sections
+- Highlighting primary actions
+
+### Avoid Overuse:
+
+- Don't use notes for every paragraph
+- Limit buttons to 1-2 per section
+- Reserve components for truly important content
+- Let regular text and Markdown carry most content
+
+## Next Steps
+
+Now that you understand UI components, explore:
+
+- [Writing Code](/writing-code) - Syntax highlighting and code blocks
+- [Writing Layout](/writing-layout) - Multi-column layouts and organization
+- [Writing API](/writing-api) - API documentation components
+- [Writing Advanced](/writing-advanced) - Advanced features and metadata
+
+Master these interactive elements to create documentation that not only informs but guides and engages your readers effectively.

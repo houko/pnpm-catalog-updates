@@ -1,0 +1,260 @@
+export const metadata = {
+  title: 'コンポーネントライティング',
+  description:
+    'Notes、ButtonsなどのインタラクティブなUIコンポーネントを使用して、ドキュメントの効果を向上させる方法を学びます。',
+};
+
+# コンポーネントライティング
+
+インタラクティブなUIコンポーネントでドキュメントの効果を向上させましょう。Notesを使用して重要な情報を強調し、Buttonsでアクションガイダンスを提供し、ドキュメントをより魅力的で機能的にするその他の要素の使用方法を学びます。 {{ className: 'lead' }}
+
+## ヒントと注釈
+
+`<Note>`コンポーネントは、重要な情報、警告、または読者が特に注意すべきヒントを強調表示するのに最適です。
+
+### 基本的なNote用法
+
+<Note>
+  これは基本的なヒントコンポーネントです。エメラルドテーマと情報アイコンを自動的に使用してコンテンツをスタイル化し、重要な情報を通常のテキストから目立たせます。
+</Note>
+
+```mdx
+<Note>これは重要な情報を含む基本的なヒントコンポーネントです。</Note>
+```
+
+### リッチコンテンツを含むNotes
+
+Notesは**太字テキスト**、_斜体テキスト_、`インラインコード`、さらには[他のページへのリンク](/writing-basics)を含む完全なMarkdown形式をサポートしています。
+
+<Note>
+  **重要なセットアップ要件**：続行する前に、以下を確認してください： - Node.js
+  18以上がインストールされている - プロジェクトリポジトリにアクセスできる -
+  有効なAPI認証情報が設定されている
+  認証情報の設定については、[コマンドリファレンスガイド](/command-reference)を参照してください。
+</Note>
+
+```mdx
+<Note>
+  **重要なセットアップ要件**：続行する前に、以下を確認してください： - Node.js
+  18以上がインストールされている - プロジェクトリポジトリにアクセスできる -
+  有効なAPI認証情報が設定されている
+  認証情報の設定については、[コマンドリファレンスガイド](/command-reference)を参照してください。
+</Note>
+```
+
+### 複数段落のNotes
+
+<Note>
+  これは、複数の関連情報を含む長いヒントの最初の段落です。
+
+2番目の段落では、追加のコンテキストと考えを提供し続けます。概念を完全に説明するために、必要な数の段落を含めることができます。
+
+良いヒントは簡潔で完全であり、読者がメッセージの重要性を理解するのに十分な情報を提供することを覚えておいてください。
+
+</Note>
+
+```mdx
+<Note>
+  最初の情報を含む最初の段落。
+
+追加のコンテキストと詳細情報を含む2番目の段落。
+
+要約や次のステップを含む最後の段落。
+
+</Note>
+```
+
+## ボタンとアクション
+
+`<Button>`コンポーネントは、ユーザーを重要なリンクや次のステップに導く行動喚起要素を作成します。
+
+### ボタンバリエーション
+
+#### 塗りつぶしボタン
+
+主要なアクションと最も重要な行動喚起に使用：
+
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    コードコンポーネントを理解する
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-code" variant="filled" arrow="right">
+    コードコンポーネントを理解する
+  </Button>
+</div>
+```
+
+#### アウトラインボタン
+
+セカンダリアクションや代替パスに最適です：
+
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    レイアウトコンポーネントを探索
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-layout" variant="outline" arrow="right">
+    レイアウトコンポーネントを探索
+  </Button>
+</div>
+```
+
+#### テキストボタン
+
+コンテンツに溶け込みながらも目立つ、控えめなリンク：
+
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    基本に戻る
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose">
+  <Button href="/writing-basics" variant="text" arrow="left">
+    基本に戻る
+  </Button>
+</div>
+```
+
+### ボタンの矢印
+
+ボタンはナビゲーションを示すための方向矢印をサポートしています：
+
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    前のセクション
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    次のセクション
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex gap-4">
+  <Button href="#" variant="outline" arrow="left">
+    前のセクション
+  </Button>
+  <Button href="#" variant="filled" arrow="right">
+    次のセクション
+  </Button>
+</div>
+```
+
+### ボタンのベストプラクティス
+
+- **適度な使用**：ボタンが多すぎると効果が薄れます
+- **明確なアクション語**：「開始する」、「詳細を見る」、「ドキュメントを見る」
+- **論理的な階層**：塗りつぶしは主要、アウトラインは二次的、テキストは三次的
+- **方向矢印**：左矢印は「戻る/前へ」、右矢印は「進む/次へ」を示します
+- **not-proseで包む**：常に`<div className="not-prose">`ラッパーを使用
+
+## コンポーネントスタイルコンテキスト
+
+### not-proseラッパー
+
+一部のコンポーネントはデフォルトのプローズスタイルから脱却する必要があります。これらのコンポーネントは常にラップしてください：
+
+```mdx
+<div className="not-prose">
+  <Button href="#" variant="filled">
+    あなたのボタンテキスト
+  </Button>
+</div>
+```
+
+**`not-prose`が必要**なコンポーネント：
+
+- すべての`<Button>`コンポーネント
+- カスタムレイアウト要素
+- インタラクティブウィジェット
+- 複雑なスタイル化されたコンポーネント
+
+**`not-prose`が不要**なコンポーネント：
+
+- `<Note>`コンポーネント（自己完結スタイル）
+- 標準Markdown要素
+- テキストベースのコンポーネント
+
+### 複数のコンポーネント
+
+複数のコンポーネントを一緒に表示する場合：
+
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    APIドキュメントガイド
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    高度な機能
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    基本を復習
+  </Button>
+</div>
+
+```mdx
+<div className="not-prose flex flex-col gap-4">
+  <Button href="/writing-api" variant="filled">
+    APIドキュメントガイド
+  </Button>
+  <Button href="/writing-advanced" variant="outline">
+    高度な機能
+  </Button>
+  <Button href="/writing-basics" variant="text">
+    基本を復習
+  </Button>
+</div>
+```
+
+## コンポーネントのアクセシビリティ
+
+すべてのコンポーネントはアクセシビリティを考慮して設計されています：
+
+- **セマンティックHTML**：適切なボタンとリンク要素
+- **ARIAラベル**：必要に応じてスクリーンリーダーサポートを提供
+- **キーボードナビゲーション**：完全なキーボードアクセシビリティ
+- **フォーカス管理**：明確なフォーカスインジケーター
+- **色のコントラスト**：WCAGに準拠したカラースキーム
+
+## 各コンポーネントをいつ使用するか
+
+### Notesを使用する場合：
+
+- 重要な情報を強調表示する
+- 潜在的な問題について警告する
+- 有用なヒントやコンテキストを提供する
+- 前提条件や要件を説明する
+- 重要な変更に注意を引く
+
+### Buttonsを使用する場合：
+
+- 次の論理的なステップに誘導する
+- 外部リソースにリンクする
+- 明確なコールトゥアクションを作成する
+- 主要セクション間のナビゲーション
+- 主要なアクションを強調表示する
+
+### 過度な使用を避ける：
+
+- すべての段落でヒントを使用しない
+- 各セクションでボタンを1-2個に制限
+- 本当に重要なコンテンツのためにコンポーネントを保持
+- 通常のテキストとMarkdownに大部分のコンテンツを任せる
+
+## 次のステップ
+
+UIコンポーネントを理解したので、以下を探索できます：
+
+- [コード記述](/writing-code) - シンタックスハイライトとコードブロック
+- [レイアウト記述](/writing-layout) - マルチカラムレイアウトと組織
+- [API記述](/writing-api) - APIドキュメントコンポーネント
+- [高度な記述](/writing-advanced) - 高度な機能とメタデータ
+
+これらのインタラクティブ要素をマスターして、情報を提供するだけでなく、読者を効果的に導き、魅力的なドキュメントを作成しましょう。

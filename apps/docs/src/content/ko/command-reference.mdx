@@ -1,0 +1,1517 @@
+export const metadata = {
+  title: '명령어 참조',
+  description: '모든 pnpm-catalog-updates 명령어, 옵션 및 사용 패턴에 대한 완전한 참조 가이드.',
+};
+
+# 명령어 참조
+
+모든 PCU 명령어와 옵션에 대한 완전한 참조. 사용 가능한 모든 명령어, 플래그 및 구성 옵션에 대해 알아보세요. {{ className: 'lead' }}
+
+## 명령어 개요
+
+PCU는 전체 이름과 편리한 단축키를 모두 제공하는 여러 주요 명령어를 제공합니다:
+
+| 전체 명령어     | 단축키 & 별칭       | 설명                              |
+| --------------- | ------------------- | --------------------------------- |
+| `pcu init`      | `pcu i`             | PNPM 작업공간 및 PCU 구성 초기화  |
+| `pcu check`     | `pcu chk`, `pcu -c` | 오래된 카탈로그 종속성 확인       |
+| `pcu update`    | `pcu u`, `pcu -u`   | 카탈로그 종속성 업데이트          |
+| `pcu analyze`   | `pcu a`, `pcu -a`   | 종속성 업데이트의 영향 분석       |
+| `pcu workspace` | `pcu w`, `pcu -s`   | 작업공간 정보 및 유효성 검사 표시 |
+| `pcu theme`     | `pcu t`, `pcu -t`   | 색상 테마 및 UI 설정 구성         |
+| `pcu security`  | `pcu sec`           | 보안 취약점 스캔 및 수정          |
+| `pcu help`      | `pcu h`, `pcu -h`   | 도움말 정보 표시                  |
+
+### 특별 단축키
+
+| 단축키                 | 동등한 명령어              | 설명                              |
+| ---------------------- | -------------------------- | --------------------------------- |
+| `pcu -i`               | `pcu update --interactive` | 대화형 업데이트 모드              |
+| `pcu --security-audit` | `pcu security`             | 보안 스캔 실행                    |
+| `pcu --security-fix`   | `pcu security --fix-vulns` | 자동 수정을 포함한 보안 스캔 실행 |
+
+---
+
+## `pcu init` - 작업공간 초기화
+
+PCU 구성과 함께 완전한 PNPM 작업공간 환경을 초기화합니다.
+
+<CodeGroup>
+
+```bash {{ title: '기본 사용법' }}
+pcu init
+pcu i
+```
+
+```bash {{ title: '옵션 포함' }}
+pcu init --force --verbose
+pcu init --workspace ./my-project
+pcu init --no-create-workspace
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="--force" type="boolean">
+    확인 없이 기존 구성 파일 덮어쓰기
+  </Property>
+  <Property name="--full" type="boolean">
+    사용 가능한 모든 옵션이 포함된 포괄적인 구성 생성
+  </Property>
+  <Property name="--interactive" type="boolean">
+    가이드 설정이 포함된 대화형 구성 마법사 실행
+  </Property>
+  <Property name="--template" type="enum">
+    구성 템플릿: minimal, standard, full, monorepo, enterprise
+  </Property>
+  <Property name="--create-workspace" type="boolean" default="true">
+    누락된 경우 PNPM 작업공간 구조 생성
+  </Property>
+  <Property name="--no-create-workspace" type="boolean">
+    PNPM 작업공간 구조 생성 건너뛰기
+  </Property>
+  <Property name="--packages-dir" type="string" default="packages">
+    작업공간 패키지의 디렉토리 이름
+  </Property>
+  <Property name="--package-rules" type="boolean" default="true">
+    구성에 일반적인 패키지 규칙 포함
+  </Property>
+  <Property name="--typescript" type="boolean">
+    TypeScript 전용 패키지 규칙 및 설정 추가
+  </Property>
+  <Property name="--react" type="boolean">
+    React 생태계 패키지 규칙 추가
+  </Property>
+  <Property name="--vue" type="boolean">
+    Vue 생태계 패키지 규칙 추가
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    작업공간 디렉토리 (기본값: 현재 디렉토리)
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    자세한 정보 및 진행률 표시
+  </Property>
+</Properties>
+
+### 구성 템플릿
+
+PCU는 일반적인 프로젝트 유형에 대해 미리 구성된 템플릿을 제공합니다:
+
+#### 템플릿 유형
+
+- **`minimal`** - 필수 설정만 포함하는 기본 구성
+- **`standard`** - 대부분의 프로젝트에 적합한 균형잡힌 구성
+- **`full`** - 사용 가능한 모든 옵션이 포함된 포괄적인 구성
+- **`monorepo`** - 고급 기능을 갖춘 대규모 모노레포에 최적화
+- **`enterprise`** - 보안 및 거버넌스 기능을 갖춘 엔터프라이즈급
+
+<CodeGroup>
+
+```bash {{ title: '템플릿 예제' }}
+# 최소 템플릿 사용
+pcu init --template minimal
+
+# 엔터프라이즈 모노레포 설정
+pcu init --template enterprise --interactive
+
+# TypeScript를 사용하는 React 프로젝트
+pcu init --template standard --react --typescript
+```
+
+</CodeGroup>
+
+### 대화형 구성 마법사
+
+대화형 모드 (`--interactive`)는 가이드 설정 경험을 제공합니다:
+
+#### 마법사 기능
+
+- **프로젝트 감지**: 프로젝트 유형 자동 감지 (React, Vue, TypeScript)
+- **작업공간 구조**: 기존 패키지 탐색 및 최적 구성 제안
+- **패키지 규칙 설정**: 패키지 규칙 및 업데이트 전략의 대화형 선택
+- **레지스트리 구성**: 사용자 정의 NPM 레지스트리 및 인증 설정
+- **성능 튜닝**: 프로젝트 크기 및 요구사항에 따른 설정 최적화
+- **테마 선택**: 색상 테마 및 진행률 표시줄 스타일 선택
+- **유효성 검사 설정**: 품질 게이트 및 안전 확인 구성
+
+#### 마법사 흐름
+
+1. **프로젝트 분석**: 기존 파일을 스캔하여 프로젝트 구조 이해
+2. **템플릿 선택**: 분석을 바탕으로 적절한 템플릿 추천
+3. **패키지 규칙**: 패키지별 업데이트 전략의 대화형 설정
+4. **고급 설정**: 캐싱, 성능, UI 설정의 선택적 구성
+5. **유효성 검사**: 사전 확인 및 구성 유효성 검사
+6. **파일 생성**: 확인을 통한 모든 필요 파일 생성
+
+### 생성되는 파일 및 디렉토리
+
+#### 핵심 파일
+
+<Properties>
+  <Property name=".pcurc.json" type="file">
+    모든 PCU 설정이 포함된 주 구성 파일
+  </Property>
+  <Property name="package.json" type="file">
+    작업공간 루트 package.json (누락된 경우 생성)
+  </Property>
+  <Property name="pnpm-workspace.yaml" type="file">
+    PNPM 작업공간 구성 (누락된 경우 생성)
+  </Property>
+</Properties>
+
+#### 디렉토리 구조
+
+<Properties>
+  <Property name="packages/" type="directory">
+    작업공간 패키지의 기본 디렉토리 (사용자 정의 가능)
+  </Property>
+  <Property name="apps/" type="directory">
+    모노레포 템플릿용 생성 - 애플리케이션 패키지
+  </Property>
+  <Property name="tools/" type="directory">
+    모노레포 템플릿용 생성 - 개발 도구
+  </Property>
+  <Property name="docs/" type="directory">
+    엔터프라이즈 템플릿용 생성 - 문서
+  </Property>
+</Properties>
+
+#### 템플릿별 파일
+
+<Properties>
+  <Property name=".nvmrc" type="file">
+    Node 버전 사양 (엔터프라이즈 템플릿)
+  </Property>
+  <Property name=".gitignore" type="file">
+    PCU 전용 패턴으로 강화 (누락된 경우)
+  </Property>
+  <Property name="tsconfig.json" type="file">
+    TypeScript 구성 (--typescript 플래그 사용 시)
+  </Property>
+</Properties>
+
+### 고급 초기화
+
+#### 프레임워크별 설정
+
+<CodeGroup>
+
+```bash {{ title: 'React 프로젝트' }}
+# TypeScript가 포함된 React 모노레포
+pcu init --template monorepo --react --typescript --interactive
+```
+
+```bash {{ title: 'Vue 프로젝트' }}
+# 표준 구성의 Vue 프로젝트
+pcu init --template standard --vue --packages-dir libs
+```
+
+```bash {{ title: '엔터프라이즈 설정' }}
+# 보안 기능을 갖춘 대규모 엔터프라이즈 모노레포
+pcu init --template enterprise --full --interactive
+```
+
+</CodeGroup>
+
+#### 사용자 정의 작업공간 구조
+
+```bash
+# 사용자 정의 패키지 디렉토리 및 구조
+pcu init --packages-dir "libs" --create-workspace --verbose
+
+# 여러 패키지 디렉토리 (모노레포 템플릿)
+pcu init --template monorepo
+# 생성: apps/, packages/, tools/, docs/
+```
+
+### 유효성 검사 및 상태 확인
+
+init 명령어는 포괄적인 유효성 검사를 수행합니다:
+
+#### 초기화 전 확인
+
+- **디렉토리 권한**: 작업공간 디렉토리에 쓰기 액세스 보장
+- **PNPM 설치**: PNPM이 설치되고 액세스 가능한지 확인
+- **기존 구성**: 기존 구성을 감지하고 병합 제안
+- **Git 저장소**: 디렉토리가 git 저장소인지 확인
+
+#### 초기화 후 유효성 검사
+
+- **구성 구문**: 생성된 구성 파일 유효성 검사
+- **작업공간 구조**: PNPM 작업공간이 올바르게 구성되었는지 확인
+- **패키지 탐색**: PCU가 작업공간 패키지를 탐색할 수 있는지 확인
+- **종속성 분석**: 기존 종속성의 기본 상태 확인
+
+### 사용 예제
+
+#### 빠른 시작
+
+```bash
+pcu init
+```
+
+자동 프로젝트 감지를 사용하여 표준 템플릿으로 초기화합니다.
+
+#### 대화형 설정
+
+```bash
+pcu init --interactive
+```
+
+가이드 설정과 함께 완전한 구성 마법사를 실행합니다.
+
+#### 모노레포 초기화
+
+```bash
+pcu init --template monorepo --typescript --verbose
+```
+
+TypeScript 지원과 자세한 출력을 포함한 엔터프라이즈급 모노레포를 생성합니다.
+
+#### 사용자 정의 엔터프라이즈 설정
+
+```bash
+pcu init --template enterprise --interactive --force
+```
+
+기존 구성을 덮어쓰는 대화형 엔터프라이즈 설정입니다.
+
+---
+
+## `pcu check` - 업데이트 확인
+
+pnpm 작업공간 카탈로그에서 오래된 종속성을 확인합니다.
+
+<CodeGroup>
+
+```bash {{ title: '기본 확인' }}
+pcu check
+pcu -c
+pcu chk
+```
+
+```bash {{ title: '고급 사용법' }}
+pcu -c --format minimal
+pcu check --catalog node18 --include "react*"
+pcu -c --target minor --prerelease
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="--catalog" type="string">
+    특정 카탈로그만 확인
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    업데이트 대상: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    프리릴리즈 버전 포함
+  </Property>
+  <Property name="--include" type="string">
+    패턴에 일치하는 패키지 포함
+  </Property>
+  <Property name="--exclude" type="string">
+    패턴에 일치하는 패키지 제외
+  </Property>
+</Properties>
+
+### 출력 형식
+
+- **table**: 색상과 세부사항이 포함된 풍부한 표 형식
+- **minimal**: 간단한 npm-check-updates 스타일 (package → version)
+- **json**: 프로그래밍 방식 사용을 위한 JSON 출력
+- **yaml**: 구성 파일용 YAML 출력
+
+---
+
+## `pcu update` - 종속성 업데이트
+
+카탈로그 종속성을 새 버전으로 업데이트합니다.
+
+<CodeGroup>
+
+```bash {{ title: '대화형 업데이트' }}
+pcu update --interactive
+pcu -u -i
+pcu u -i
+```
+
+```bash {{ title: '자동 업데이트' }}
+pcu -u --target minor --create-backup
+pcu update --dry-run --verbose
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="-i, --interactive" type="boolean">
+    업데이트를 선택하는 대화형 모드
+  </Property>
+  <Property name="-d, --dry-run" type="boolean">
+    파일 쓰기 없이 변경 사항 미리보기
+  </Property>
+  <Property name="-t, --target" type="enum" default="latest">
+    업데이트 대상: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="--catalog" type="string">
+    특정 카탈로그만 업데이트
+  </Property>
+  <Property name="--force" type="boolean">
+    위험하더라도 업데이트 강제 실행
+  </Property>
+  <Property name="-b, --create-backup" type="boolean">
+    업데이트 전 백업 파일 생성
+  </Property>
+  <Property name="--include" type="string">
+    패턴에 일치하는 패키지 포함 (여러 번 사용 가능)
+  </Property>
+  <Property name="--exclude" type="string">
+    패턴에 일치하는 패키지 제외 (여러 번 사용 가능)
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    업데이트에 프리릴리즈 버전 포함
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+  <Property name="--batch-size" type="number" default="10">
+    병렬 처리할 패키지 수
+  </Property>
+  <Property name="--skip-peer-conflicts" type="boolean">
+    피어 종속성 충돌이 있는 패키지 건너뛰기
+  </Property>
+  <Property name="--confirm-major" type="boolean" default="true">
+    메이저 버전 업데이트에 대한 확인 요구
+  </Property>
+</Properties>
+
+### 대화형 기능
+
+대화형 모드 (`--interactive` 또는 `-i`)는 고급 패키지 선택 기능을 제공합니다:
+
+#### 패키지 선택 인터페이스
+
+- 개별 패키지 업데이트를 위한 체크박스가 있는 **다중 선택**
+- 이름이나 설명으로 패키지를 필터링하는 **검색 기능**
+- 여러 패키지를 선택/해제하는 **배치 작업**
+- 각 패키지에 대한 **업데이트 전략 선택** (latest, greatest, minor, patch)
+
+#### 스마트 충돌 해결
+
+- 해결 제안이 포함된 **피어 종속성 감지**
+- 의미적 버전 분석을 바탕으로 한 **호환성 변경 경고**
+- 영향받는 작업공간 패키지를 보여주는 **영향 분석**
+- 업데이트로 인한 문제 발생 시 **롤백 기능**
+
+#### 진행률 추적
+
+- 여러 시각적 스타일의 **실시간 진행률 표시줄**
+- 완료/대기 중인 업데이트를 보여주는 **배치 처리 상태**
+- 실패한 업데이트에 대한 건너뛰기/재시도 옵션이 있는 **오류 복구**
+- 모든 변경 사항 요약이 포함된 **성공 확인**
+
+### 고급 업데이트 전략
+
+<CodeGroup>
+
+```bash {{ title: '보수적 업데이트' }}
+# 패치 및 마이너 업데이트만
+pcu update --target minor --confirm-major
+```
+
+```bash {{ title: '적극적 업데이트' }}
+# 프리릴리즈 포함 및 메이저 업데이트 강제
+pcu update --target greatest --prerelease --force
+```
+
+```bash {{ title: '선택적 업데이트' }}
+# 패턴을 사용한 특정 패키지 업데이트
+pcu update --include "react*" --exclude "*-dev" --create-backup
+```
+
+```bash {{ title: '배치 처리' }}
+# 대규모 작업공간 효율적 처리
+pcu update --batch-size 20 --skip-peer-conflicts
+```
+
+</CodeGroup>
+
+### 사용 예제
+
+#### 안전한 대화형 업데이트
+
+```bash
+pcu update --interactive --create-backup --target minor
+```
+
+자동 백업과 함께 대화형으로 종속성을 업데이트하고, 마이너 버전 범프로 제한합니다.
+
+#### 프로덕션 안전 업데이트
+
+```bash
+pcu update --exclude "*-dev" --confirm-major --dry-run
+```
+
+메이저 업데이트에 대한 확인이 필요한 프로덕션 종속성에서 업데이트될 내용을 보여줍니다.
+
+#### 프레임워크별 업데이트
+
+```bash
+pcu update --include "react*,@types/*" --prerelease
+```
+
+프리릴리즈 버전을 허용하여 TypeScript 정의를 포함한 React 생태계 패키지를 업데이트합니다.
+
+---
+
+## `pcu analyze` - 영향 분석
+
+특정 종속성 업데이트의 영향을 분석하여 잠재적인 호환성 변경 및 영향받는 패키지를 이해합니다.
+
+<CodeGroup>
+
+```bash {{ title: '기본 분석' }}
+pcu analyze default react
+pcu a default react 18.3.0
+pcu -a react17 @types/react
+```
+
+```bash {{ title: '고급 분석' }}
+pcu analyze default typescript --format json
+pcu a my-catalog lodash 4.17.21 --verbose
+```
+
+</CodeGroup>
+
+### 인수
+
+<Properties>
+  <Property name="catalog" type="string" required>
+    카탈로그 이름 (예: 'default', 'react17')
+  </Property>
+  <Property name="package" type="string" required>
+    패키지 이름 (예: 'react', '@types/node')
+  </Property>
+  <Property name="version" type="string">
+    새 버전 (선택사항, 기본값은 latest)
+  </Property>
+</Properties>
+
+### 옵션
+
+<Properties>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+</Properties>
+
+### 분석 정보
+
+analyze 명령어는 다음을 제공합니다:
+
+- 업데이트에 의해 **영향받는 종속성**
+- 버전 간 감지된 **호환성 변경**
+- 이 종속성을 사용하는 **작업공간 패키지**
+- **업데이트 권장사항** 및 위험 평가
+- **버전 호환성** 분석
+
+### 사용 예제
+
+#### 최신 버전 영향 분석
+
+```bash
+pcu analyze default react
+```
+
+기본 카탈로그에서 React를 최신 버전으로 업데이트할 때의 영향을 분석합니다.
+
+#### 특정 버전 분석
+
+```bash
+pcu analyze default typescript 5.0.0
+```
+
+TypeScript를 버전 5.0.0으로 업데이트할 때의 영향을 분석합니다.
+
+#### 자동화를 위한 JSON 출력
+
+```bash
+pcu analyze default lodash --format json
+```
+
+프로그래밍 방식 처리를 위해 분석 결과를 JSON으로 출력합니다.
+
+---
+
+## `pcu workspace` - 작업공간 정보
+
+포괄적인 작업공간 분석과 함께 작업공간 정보 및 유효성 검사를 표시합니다.
+
+<CodeGroup>
+
+```bash {{ title: '기본 정보' }}
+pcu workspace
+pcu w
+```
+
+```bash {{ title: '유효성 검사 및 통계' }}
+pcu workspace --validate
+pcu workspace --stats
+pcu w --validate --stats --format json
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="--validate" type="boolean">
+    작업공간 구성 및 구조 유효성 검사
+  </Property>
+  <Property name="-s, --stats" type="boolean">
+    자세한 작업공간 통계 표시
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+</Properties>
+
+### 출력 정보
+
+#### 기본 정보 모드 (기본값)
+
+- 작업공간 이름 및 경로
+- 총 패키지 수
+- 카탈로그 수
+- 카탈로그 이름 목록
+
+#### 유효성 검사 모드 (`--validate`)
+
+- 구성 파일 유효성 검사
+- 작업공간 구조 유효성 검사
+- Package.json 일관성 확인
+- 카탈로그 무결성 확인
+- 종료 코드: 0 (유효), 1 (문제 발견)
+
+#### 통계 모드 (`--stats`)
+
+- 자세한 패키지 분석
+- 종속성 분석
+- 카탈로그 사용 통계
+- 작업공간 건강 지표
+
+### 사용 예제
+
+#### 기본 작업공간 정보
+
+```bash
+pcu workspace
+```
+
+작업공간 이름, 경로, 패키지 수 및 사용 가능한 카탈로그를 표시합니다.
+
+#### 포괄적 유효성 검사
+
+```bash
+pcu workspace --validate
+```
+
+작업공간 구성 및 구조를 유효성 검사하고 적절한 코드로 종료합니다.
+
+#### 자세한 통계
+
+```bash
+pcu workspace --stats --format json
+```
+
+JSON 형식으로 자세한 작업공간 통계를 표시합니다.
+
+#### 결합 분석
+
+```bash
+pcu w --validate --stats
+```
+
+유효성 검사를 수행하고 통계를 함께 표시합니다.
+
+---
+
+## `pcu security` - 보안 취약점 스캔
+
+npm audit 및 선택적 Snyk 통합을 사용한 포괄적인 보안 취약점 스캔과 자동 수정 기능.
+
+<CodeGroup>
+
+```bash {{ title: '기본 보안 스캔' }}
+pcu security
+pcu sec
+```
+
+```bash {{ title: '고급 보안 스캔' }}
+pcu security --fix-vulns --severity high
+pcu sec --snyk --include-dev --verbose
+pcu security --format json --workspace ./my-project
+```
+
+```bash {{ title: 'CI/CD 통합' }}
+pcu security --format json --severity critical > security-report.json
+pcu sec --auto-fix --no-color
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="--audit" type="boolean" default="true">
+    npm audit 스캔 수행 (기본값으로 활성화)
+  </Property>
+  <Property name="--fix-vulns" type="boolean">
+    npm audit fix를 사용하여 취약점 자동 수정
+  </Property>
+  <Property name="--severity" type="enum">
+    심각도 수준별 필터링: low, moderate, high, critical
+  </Property>
+  <Property name="--include-dev" type="boolean">
+    취약점 스캔에 개발 종속성 포함
+  </Property>
+  <Property name="--snyk" type="boolean">
+    Snyk 보안 스캔 포함 (snyk CLI 설치 필요)
+  </Property>
+  <Property name="--auto-fix" type="boolean">
+    확인 없이 보안 수정 자동 적용
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    출력 형식: table, json, yaml, minimal
+  </Property>
+  <Property name="-w, --workspace" type="string">
+    작업공간 디렉토리 경로 (기본값: 현재 디렉토리)
+  </Property>
+  <Property name="-v, --verbose" type="boolean">
+    자세한 취약점 정보 및 해결 단계 표시
+  </Property>
+</Properties>
+
+### 보안 리포트 기능
+
+security 명령어는 포괄적인 취약점 분석을 제공합니다:
+
+- **다중 스캐너 통합**: 철저한 커버리지를 위해 npm audit과 Snyk 결합
+- **심각도 분류**: 취약점을 critical, high, moderate, low, info로 분류
+- **자동 해결**: `--fix-vulns`로 보안 패치 자동 적용
+- **패키지 권장사항**: 취약점 해결을 위한 특정 버전 업데이트 제안
+- **개발 종속성**: 개발 종속성의 선택적 포함/제외
+- **CWE/CVE 정보**: 자세한 취약점 식별자 및 설명
+- **종료 코드**: 적절한 코드 반환 (정상 시 0, 취약점 발견 시 1)
+- **CI/CD 지원**: 자동화를 위한 JSON 출력 및 비대화형 모드
+
+### 사용 예제
+
+#### 기본 취약점 스캔
+
+```bash
+pcu security
+```
+
+npm audit을 사용하여 표준 보안 스캔을 수행하고 형식화된 표로 결과를 표시합니다.
+
+#### 자동 수정이 포함된 스캔
+
+```bash
+pcu security --fix-vulns
+```
+
+취약점을 스캔하고 사용 가능한 보안 수정을 자동으로 적용합니다.
+
+#### 높은 심각도 필터
+
+```bash
+pcu security --severity high
+```
+
+낮은 우선순위 문제를 필터링하여 높은 심각도 및 중요한 취약점만 표시합니다.
+
+#### Snyk를 포함한 포괄적 스캔
+
+```bash
+pcu security --snyk --include-dev --verbose
+```
+
+npm audit과 Snyk 스캔을 모두 실행하고, 자세한 취약점 정보와 함께 개발 종속성을 포함합니다.
+
+#### CI/CD 파이프라인 통합
+
+```bash
+pcu security --format json --severity critical --no-color > security-report.json
+```
+
+CI/CD 파이프라인에서 자동 처리를 위해 중요한 보안 취약점을 JSON으로 내보냅니다.
+
+#### 프로덕션용 자동 수정
+
+```bash
+pcu security --auto-fix --severity moderate --exclude-dev
+```
+
+프로덕션 종속성에서만 보통 이상의 심각도 취약점을 자동으로 수정합니다.
+
+### 보안 워크플로 통합
+
+#### 배포 전 보안 확인
+
+```bash
+# 중요한 취약점이 존재하면 빌드 실패
+pcu security --severity critical
+if [ $? -ne 0 ]; then
+  echo "중요한 보안 취약점이 발견되었습니다. 빌드가 실패했습니다."
+  exit 1
+fi
+```
+
+#### 자동 보안 유지보수
+
+```bash
+# 주간 보안 유지보수
+pcu security --fix-vulns --severity moderate --create-backup
+```
+
+---
+
+## `pcu theme` - 테마 구성
+
+색상 테마 및 UI 모양을 구성합니다.
+
+<CodeGroup>
+
+```bash {{ title: '테마 관리' }}
+pcu theme --list
+pcu -t --set modern
+pcu theme --interactive
+```
+
+</CodeGroup>
+
+### 옵션
+
+<Properties>
+  <Property name="-s, --set" type="string">
+    색상 테마 설정: default, modern, minimal, neon
+  </Property>
+  <Property name="-l, --list" type="boolean">
+    미리보기 샘플과 함께 사용 가능한 모든 테마 나열
+  </Property>
+  <Property name="-i, --interactive" type="boolean">
+    실시간 미리보기가 포함된 대화형 테마 구성 마법사 실행
+  </Property>
+  <Property name="--preview" type="boolean">
+    변경 사항을 적용하지 않고 테마 미리보기 표시
+  </Property>
+  <Property name="--progress-style" type="enum">
+    진행률 표시줄 스타일 설정: default, gradient, fancy, minimal, rainbow, neon
+  </Property>
+  <Property name="--environment" type="enum">
+    환경별 프리셋 설정: development, production, presentation
+  </Property>
+  <Property name="--reset" type="boolean">
+    모든 테마 설정을 기본값으로 재설정
+  </Property>
+</Properties>
+
+### 사용 가능한 테마
+
+#### 핵심 테마
+
+- **`default`** - 일반적인 터미널 사용에 최적화된 균형잡힌 색상
+- **`modern`** - 구문 강조 표시가 있는 개발 환경에 완벽한 생생한 색상
+- **`minimal`** - 프로덕션 환경 및 CI/CD에 이상적인 깔끔한 단색 디자인
+- **`neon`** - 프레젠테이션 및 데모용으로 설계된 높은 대비 사이버펑크 색상
+
+#### 진행률 표시줄 스타일
+
+- **`default`** - 표준 진행률 표시
+- **`gradient`** - 부드러운 색상 전환
+- **`fancy`** - 애니메이션이 포함된 풍부한 시각 효과
+- **`minimal`** - 간단하고 깔끔한 진행률 표시줄
+- **`rainbow`** - 다색 애니메이션 진행률
+- **`neon`** - 빛나는 효과의 진행률 표시줄
+
+#### 환경 프리셋
+
+- **`development`** - 전체 색상, 자세한 진행률, 상세한 출력
+- **`production`** - 최소한의 색상, 필수 정보만
+- **`presentation`** - 높은 대비, 큰 글꼴, 극적인 효과
+
+### 고급 테마 기능
+
+#### 의미적 색상 매핑
+
+- **성공** - 완료된 작업에 대한 녹색 톤
+- **경고** - 주의 상태에 대한 노란색/호박색
+- **오류** - 실패 및 중요한 문제에 대한 빨간색 톤
+- **정보** - 정보 메시지에 대한 파란색 톤
+- **진행률** - 진행 중인 작업에 대한 동적 색상
+- **강조** - 중요한 정보에 대한 강조 색상
+
+#### 대화형 테마 구성
+
+대화형 모드는 다음을 제공합니다:
+
+- 샘플 출력이 포함된 테마의 **실시간 미리보기**
+- 16진수 코드 지원이 포함된 **사용자 정의 색상 선택**
+- 자동 최적 설정이 포함된 **환경 감지**
+- 다양한 스타일의 실제 동작을 확인하는 **진행률 표시줄 테스트**
+- 테마 구성 **내보내기/가져오기**
+- 프로젝트별 스타일링을 위한 **작업공간별 테마**
+
+### 사용 예제
+
+#### 사용 가능한 테마 나열
+
+```bash
+pcu theme --list
+```
+
+설명과 함께 사용 가능한 모든 테마를 표시합니다.
+
+#### 테마 직접 설정
+
+```bash
+pcu theme --set modern
+pcu -t --set neon
+```
+
+특정 테마를 직접 설정합니다.
+
+#### 대화형 테마 구성
+
+```bash
+pcu theme --interactive
+pcu -t -i
+```
+
+테마를 미리보고 UI 설정을 대화형으로 구성할 수 있는 가이드 테마 선택 마법사를 실행합니다.
+
+---
+
+## 대화형 기능 및 진행률 추적
+
+PCU는 모든 명령어에서 고급 대화형 기능과 정교한 진행률 추적을 제공합니다.
+
+### 대화형 명령어 인터페이스
+
+#### 패키지 선택 시스템
+
+- **스마트 다중 선택**: 시각적 체크박스와 키보드 단축키로 특정 패키지 선택
+- **검색 및 필터**: 패턴 매칭과 퍼지 검색이 포함된 실시간 패키지 필터링
+- **배치 작업**: 카테고리 기반 선택으로 전체 그룹 선택/해제
+- **영향 미리보기**: 업데이트를 적용하기 전에 잠재적 변경 사항 확인
+
+#### 구성 마법사
+
+대화형 구성 마법사 (`pcu init --interactive`)는 다음을 제공합니다:
+
+- **작업공간 감지**: 기존 PNPM 작업공간 자동 탐색
+- **템플릿 선택**: 최소 및 전체 구성 템플릿 중 선택
+- **패키지 규칙 설정**: 다양한 패키지 카테고리 (React, Vue, TypeScript) 규칙 구성
+- **레지스트리 구성**: 사용자 정의 NPM 레지스트리 및 인증 설정
+- **유효성 검사 설정**: 품질 게이트 및 안전 확인 구성
+
+#### 디렉토리 및 파일 브라우저
+
+- **작업공간 탐색**: 작업공간 선택을 위한 내장 파일 시스템 브라우저
+- **경로 유효성 검사**: 작업공간 경로 및 구조의 실시간 유효성 검사
+- **미리보기 모드**: 선택 확인 전 작업공간 내용 확인
+
+### 고급 진행률 추적
+
+#### 다중 스타일 진행률 표시줄
+
+PCU는 명령어별 또는 전역적으로 구성 가능한 6가지 다른 진행률 표시줄 스타일을 제공합니다:
+
+<CodeGroup>
+
+```bash {{ title: '스타일 예제' }}
+# 그라데이션 진행률 표시줄 사용
+pcu update --progress-style gradient
+
+# 무지개 애니메이션 진행률
+pcu check --progress-style rainbow
+
+# CI/CD 환경용 최소
+pcu security --progress-style minimal
+```
+
+</CodeGroup>
+
+#### 진행률 기능
+
+- **다단계 추적**: 다른 단계에서의 진행률 표시 (스캔 → 분석 → 업데이트)
+- **병렬 작업 상태**: 동시 작업에 대한 개별 진행률 표시줄
+- **성능 지표**: 실시간 속도 표시기, 예상 완료 시간, 경과 시간
+- **메모리 안전 표시**: 터미널 깜빡임을 줄이는 안정적인 다중 라인 출력
+
+#### 배치 처리 상태
+
+- **대기열 관리**: 대기 중, 활성, 완료된 패키지 작업 표시
+- **충돌 해결**: 피어 종속성 충돌의 대화형 처리
+- **오류 복구**: 자세한 오류 컨텍스트와 함께 실패한 작업에 대한 건너뛰기/재시도 옵션
+- **롤백 기능**: 업데이트 중 문제가 감지되면 변경 사항 실행 취소
+
+### 오류 처리 및 복구
+
+#### 스마트 오류 감지
+
+- **유효성 검사 오류**: 일반적인 실수에 대한 유용한 제안이 포함된 사전 확인
+- **네트워크 문제**: 레지스트리 실패에 대한 지수 백오프를 포함한 자동 재시도
+- **종속성 충돌**: 해결 권장사항이 포함된 자세한 충돌 분석
+- **권한 문제**: 파일 시스템 권한 문제에 대한 명확한 안내
+
+#### 대화형 복구 옵션
+
+- **건너뛰기 및 계속**: 문제가 있는 패키지를 건너뛰고 나머지 업데이트 계속
+- **옵션을 포함한 재시도**: 다른 매개변수로 실패한 작업 재시도
+- **변경 사항 롤백**: 배치 작업 중 문제가 발생하면 부분 변경 사항 실행 취소
+- **오류 리포트 내보내기**: 문제 해결을 위한 자세한 오류 리포트 생성
+
+### 작업공간 통합
+
+#### 자동 탐색 기능
+
+- **PNPM 작업공간 감지**: 작업공간 구성 자동 찾기 및 유효성 검사
+- **카탈로그 탐색**: 기존 카탈로그 및 패키지 매핑 감지
+- **패키지 분석**: 작업공간 구조 및 종속성 관계 분석
+- **구성 상속**: 작업공간별 설정 자동 적용
+
+#### 유효성 검사 및 상태 확인
+
+- **구조 유효성 검사**: 작업공간이 PNPM 모범 사례를 따르는지 확인
+- **종속성 일관성**: 패키지 간 버전 불일치 확인
+- **구성 무결성**: 작업공간 구조에 대한 PCU 구성 유효성 검사
+- **건강 지표**: 포괄적인 작업공간 건강 평가 제공
+
+### 사용 예제
+
+#### 고급 기능을 포함한 대화형 업데이트
+
+```bash
+pcu update --interactive --progress-style fancy --batch-size 15
+```
+
+멋진 진행률 표시줄과 최적화된 배치 처리가 포함된 대화형 업데이트를 실행합니다.
+
+#### 미리보기가 포함된 구성
+
+```bash
+pcu init --interactive --preview --verbose
+```
+
+미리보기 모드와 자세한 로깅이 포함된 구성 마법사를 실행합니다.
+
+#### 오류 복구 워크플로
+
+```bash
+pcu update --interactive --create-backup --confirm-major
+```
+
+대화형 오류 복구, 자동 백업 및 메이저 버전 확인을 통해 업데이트합니다.
+
+---
+
+## 전역 옵션
+
+이러한 옵션은 모든 명령어와 함께 작동하며 환경 변수를 통해 설정할 수 있습니다:
+
+<Properties>
+  <Property name="-w, --workspace" type="string" env="PCU_WORKSPACE">
+    작업공간 디렉토리 경로
+  </Property>
+  <Property name="-v, --verbose" type="boolean" env="PCU_VERBOSE">
+    자세한 출력이 포함된 상세 로깅 활성화
+  </Property>
+  <Property name="--no-color" type="boolean" env="PCU_NO_COLOR">
+    CI/CD 환경용 색상 출력 비활성화
+  </Property>
+  <Property name="--registry" type="string" env="PCU_REGISTRY">
+    NPM 레지스트리 URL 재정의
+  </Property>
+  <Property name="--timeout" type="number" env="PCU_TIMEOUT">
+    요청 타임아웃 (밀리초) (기본값: 30000)
+  </Property>
+  <Property name="--config" type="string" env="PCU_CONFIG">
+    사용자 정의 구성 파일 경로
+  </Property>
+  <Property name="-V, --version" type="boolean">
+    버전 번호 출력 및 업데이트 확인
+  </Property>
+  <Property name="-h, --help" type="boolean">
+    명령어 도움말 표시
+  </Property>
+</Properties>
+
+### 환경 변수 사용법
+
+모든 전역 옵션과 명령어별 설정은 환경 변수를 통해 구성할 수 있습니다:
+
+#### 핵심 환경 변수
+
+<Properties>
+  <Property name="PCU_WORKSPACE" type="string">
+    기본 작업공간 디렉토리 경로
+  </Property>
+  <Property name="PCU_VERBOSE" type="boolean">
+    전역적으로 상세 로깅 활성화
+  </Property>
+  <Property name="PCU_NO_COLOR" type="boolean">
+    색상 출력 비활성화 (CI/CD에 유용)
+  </Property>
+  <Property name="PCU_REGISTRY" type="string">
+    기본 NPM 레지스트리 URL
+  </Property>
+  <Property name="PCU_TIMEOUT" type="number">
+    요청 타임아웃 (밀리초)
+  </Property>
+  <Property name="PCU_CONFIG" type="string">
+    사용자 정의 구성 파일 경로
+  </Property>
+</Properties>
+
+#### 명령어별 환경 변수
+
+<Properties>
+  <Property name="PCU_CATALOG" type="string">
+    확인/업데이트 작업에 사용할 기본 카탈로그
+  </Property>
+  <Property name="PCU_OUTPUT_FORMAT" type="enum">
+    기본 출력 형식: table, json, yaml, minimal
+  </Property>
+  <Property name="PCU_UPDATE_TARGET" type="enum">
+    기본 업데이트 대상: latest, greatest, minor, patch, newest
+  </Property>
+  <Property name="PCU_PRERELEASE" type="boolean">
+    기본적으로 프리릴리즈 버전 포함
+  </Property>
+  <Property name="PCU_INCLUDE" type="string">
+    기본 패키지 포함 패턴
+  </Property>
+  <Property name="PCU_EXCLUDE" type="string">
+    기본 패키지 제외 패턴
+  </Property>
+  <Property name="PCU_INTERACTIVE" type="boolean">
+    기본적으로 대화형 모드 활성화
+  </Property>
+  <Property name="PCU_DRY_RUN" type="boolean">
+    기본적으로 드라이런 모드 활성화
+  </Property>
+  <Property name="PCU_FORCE" type="boolean">
+    확인 없이 업데이트 강제 실행
+  </Property>
+  <Property name="PCU_CREATE_BACKUP" type="boolean">
+    업데이트 전 백업 파일 생성
+  </Property>
+</Properties>
+
+#### 테마 및 표시 환경 변수
+
+<Properties>
+  <Property name="PCU_THEME" type="enum">
+    기본 색상 테마: default, modern, minimal, neon
+  </Property>
+  <Property name="PCU_PROGRESS_STYLE" type="enum">
+    진행률 표시줄 스타일: default, gradient, fancy, minimal, rainbow, neon
+  </Property>
+  <Property name="PCU_ENVIRONMENT" type="enum">
+    환경 프리셋: development, production, presentation
+  </Property>
+</Properties>
+
+#### 보안 및 캐시 환경 변수
+
+<Properties>
+  <Property name="PCU_SECURITY_SEVERITY" type="enum">
+    기본 보안 심각도 필터: low, moderate, high, critical
+  </Property>
+  <Property name="PCU_AUTO_FIX" type="boolean">
+    자동으로 취약점 수정
+  </Property>
+  <Property name="PCU_CACHE_ENABLED" type="boolean">
+    캐싱 시스템 활성화/비활성화
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number">
+    캐시 생존 시간 (밀리초)
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string">
+    사용자 정의 캐시 디렉토리 경로
+  </Property>
+</Properties>
+
+#### 고급 구성 환경 변수
+
+<Properties>
+  <Property name="PCU_CONCURRENCY" type="number">
+    병렬 네트워크 요청 수
+  </Property>
+  <Property name="PCU_BATCH_SIZE" type="number">
+    배치로 처리할 패키지 수
+  </Property>
+  <Property name="PCU_RETRIES" type="number">
+    실패한 작업에 대한 재시도 횟수
+  </Property>
+  <Property name="PCU_CHECK_UPDATES" type="boolean">
+    시작 시 PCU CLI 업데이트 확인
+  </Property>
+</Properties>
+
+### 환경 변수 예제
+
+<CodeGroup>
+
+```bash {{ title: '개발 환경' }}
+# 전체 기능을 갖춘 개발 설정
+export PCU_WORKSPACE="./my-workspace"
+export PCU_VERBOSE=true
+export PCU_THEME="modern"
+export PCU_PROGRESS_STYLE="fancy"
+export PCU_INTERACTIVE=true
+export PCU_CREATE_BACKUP=true
+```
+
+```bash {{ title: '프로덕션 환경' }}
+# 최소 출력을 갖춘 프로덕션 설정
+export PCU_THEME="minimal"
+export PCU_NO_COLOR=true
+export PCU_PROGRESS_STYLE="minimal"
+export PCU_VERBOSE=false
+export PCU_DRY_RUN=true
+```
+
+```bash {{ title: 'CI/CD 환경' }}
+# 자동화된 파이프라인에 최적화
+export PCU_NO_COLOR=true
+export PCU_OUTPUT_FORMAT="json"
+export PCU_CHECK_UPDATES=false
+export PCU_TIMEOUT=120000
+export PCU_RETRIES=5
+```
+
+```bash {{ title: '보안 중심 설정' }}
+# 향상된 보안 스캔
+export PCU_SECURITY_SEVERITY="moderate"
+export PCU_AUTO_FIX=true
+export PCU_INCLUDE_DEV=false
+export PCU_FORCE=false
+```
+
+</CodeGroup>
+
+### 구성 우선순위
+
+설정은 다음 순서로 적용됩니다 (나중이 이전을 덮어씀):
+
+1. 내장 기본값
+2. 전역 구성 (`~/.pcurc.json`)
+3. 프로젝트 구성 (`.pcurc.json`)
+4. 환경 변수 (`PCU_*`)
+5. 명령줄 플래그 (최고 우선순위)
+
+---
+
+## 자동 업데이트 시스템
+
+PCU는 CLI 도구를 최신 기능 및 보안 패치로 유지하는 정교한 자동 업데이트 메커니즘을 포함합니다.
+
+### 자동 업데이트 확인
+
+기본적으로 PCU는 명령어를 실행할 때 업데이트를 확인합니다:
+
+<CodeGroup>
+
+```bash {{ title: '일반 작업' }}
+# PCU는 자동으로 업데이트를 확인합니다
+pcu check
+# 출력에 포함될 수 있음: "📦 PCU v0.8.0을 사용할 수 있습니다 (현재: v0.7.15)"
+```
+
+```bash {{ title: '업데이트 확인 비활성화' }}
+# 단일 명령어에 대해 비활성화
+pcu check --no-update-check
+
+# 환경을 통해 전역적으로 비활성화
+export PCU_SKIP_VERSION_CHECK=true
+pcu check
+```
+
+</CodeGroup>
+
+### 업데이트 동작
+
+#### CI/CD 환경 감지
+
+PCU는 자동으로 CI/CD 환경을 감지하고 자동화된 파이프라인을 방해하지 않도록 업데이트 확인을 건너뜁니다:
+
+- **GitHub Actions**: `GITHUB_ACTIONS` 환경 변수를 통해 감지
+- **CircleCI**: `CIRCLECI` 환경 변수를 통해 감지
+- **Jenkins**: `JENKINS_URL` 환경 변수를 통해 감지
+- **GitLab CI**: `GITLAB_CI` 환경 변수를 통해 감지
+- **Azure DevOps**: `TF_BUILD` 환경 변수를 통해 감지
+- **일반 CI**: `CI` 환경 변수를 통해 감지
+
+#### 업데이트 설치
+
+PCU는 자동 폴백과 함께 여러 패키지 관리자를 지원합니다:
+
+```bash
+# PCU는 순서대로 시도: npm → pnpm → yarn
+npm install -g pcu@latest
+# npm이 실패하면 시도:
+pnpm add -g pnpm-catalog-updates@latest
+# pnpm이 실패하면 시도:
+yarn global add pnpm-catalog-updates@latest
+```
+
+### 구성 옵션
+
+#### 환경 변수
+
+<Properties>
+  <Property name="PCU_SKIP_VERSION_CHECK" type="boolean">
+    버전 확인 및 업데이트 알림 완전히 비활성화
+  </Property>
+  <Property name="PCU_UPDATE_CHECK_INTERVAL" type="number">
+    업데이트 확인 간격 (시간) (기본값: 24)
+  </Property>
+  <Property name="PCU_AUTO_UPDATE" type="boolean">
+    프롬프트 없이 업데이트 자동 설치 (주의해서 사용)
+  </Property>
+  <Property name="PCU_UPDATE_TIMEOUT" type="number">
+    업데이트 확인 요청 타임아웃 (밀리초) (기본값: 5000)
+  </Property>
+</Properties>
+
+#### 구성 파일 설정
+
+```json
+{
+  "updates": {
+    "checkForUpdates": true,
+    "autoUpdate": false,
+    "checkInterval": 86400000,
+    "timeout": 5000,
+    "skipInCI": true,
+    "notifyPrerelease": false
+  }
+}
+```
+
+### 업데이트 알림
+
+#### 표준 알림
+
+```bash
+pcu check
+# ✨ PCU v0.8.0을 사용할 수 있습니다 (현재: v0.7.15)
+# 업데이트하려면 'npm install -g pcu@latest'를 실행하세요
+# 이 메시지를 비활성화하려면 --no-update-check를 사용하세요
+```
+
+#### 보안 업데이트 알림
+
+```bash
+pcu security
+# 🔒 보안 업데이트: PCU v0.7.16에 보안 수정이 포함되어 있습니다 (현재: v0.7.15)
+# 즉시 업데이트: npm install -g pcu@latest
+```
+
+#### 프리릴리즈 알림
+
+```bash
+# notifyPrerelease: true인 경우에만 표시
+pcu check
+# 🧪 테스트를 위해 PCU v0.8.0-beta.1을 사용할 수 있습니다 (현재: v0.7.15)
+# 설치: npm install -g pcu@beta
+```
+
+### 수동 업데이트 명령어
+
+<CodeGroup>
+
+```bash {{ title: '업데이트 상태 확인' }}
+# 현재 버전 및 사용 가능한 업데이트 확인
+pcu --version
+pcu -V
+```
+
+```bash {{ title: '수동 업데이트' }}
+# npm을 통한 업데이트
+npm install -g pcu@latest
+
+# pnpm을 통한 업데이트
+pnpm add -g pnpm-catalog-updates@latest
+
+# 특정 버전으로 업데이트
+npm install -g pcu@0.8.0
+```
+
+</CodeGroup>
+
+### 업데이트 문제 해결
+
+#### 업데이트 확인 실패
+
+```bash
+# 네트워크 문제로 인한 업데이트 확인 실패 시
+PCU_UPDATE_TIMEOUT=10000 pcu check
+
+# CI에서도 업데이트 확인 강제
+PCU_SKIP_VERSION_CHECK=false CI=false pcu check
+```
+
+#### 캐시 지우기
+
+```bash
+# 업데이트 확인 캐시 지우기
+rm -rf ~/.pcu/cache/version-check
+
+# 또는 캐싱 완전히 비활성화
+PCU_CACHE_ENABLED=false pcu check
+```
+
+#### 권한 문제
+
+```bash
+# npm 권한 문제 수정
+npm config set prefix ~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
+
+# 또는 권한을 더 잘 처리하는 pnpm/yarn 사용
+pnpm add -g pnpm-catalog-updates@latest
+```
+
+---
+
+## 캐시 관리 시스템
+
+PCU는 성능을 최적화하고 네트워크 요청을 줄이기 위한 포괄적인 캐싱 시스템을 포함합니다.
+
+### 캐시 유형
+
+#### 레지스트리 캐시
+
+NPM 패키지 메타데이터 및 버전 정보를 저장합니다:
+
+- **기본 TTL**: 1시간 (3,600,000ms)
+- **최대 크기**: 캐시 유형당 10MB
+- **최대 항목**: 500개 패키지
+- **디스크 지속**: 활성화
+
+#### 작업공간 캐시
+
+작업공간 구성 및 package.json 파싱 결과를 저장합니다:
+
+- **기본 TTL**: 5분 (300,000ms)
+- **최대 크기**: 5MB
+- **최대 항목**: 200개 작업공간
+- **디스크 지속**: 비활성화 (메모리만)
+
+### 캐시 구성
+
+#### 환경 변수
+
+<Properties>
+  <Property name="PCU_CACHE_ENABLED" type="boolean" default="true">
+    전체 캐싱 시스템 활성화/비활성화
+  </Property>
+  <Property name="PCU_CACHE_TTL" type="number" default="3600000">
+    기본 캐시 TTL (밀리초)
+  </Property>
+  <Property name="PCU_CACHE_MAX_SIZE" type="number" default="52428800">
+    최대 총 캐시 크기 (바이트) (기본값 50MB)
+  </Property>
+  <Property name="PCU_CACHE_MAX_ENTRIES" type="number" default="10000">
+    최대 캐시 항목 수
+  </Property>
+  <Property name="PCU_CACHE_DIR" type="string" default="~/.pcu/cache">
+    사용자 정의 캐시 디렉토리 경로
+  </Property>
+  <Property name="PCU_CACHE_PERSIST" type="boolean" default="true">
+    캐시에 대한 디스크 지속성 활성화
+  </Property>
+</Properties>
+
+#### 구성 파일 설정
+
+```json
+{
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 52428800,
+    "maxEntries": 10000,
+    "persistToDisk": true,
+    "cacheDir": "~/.pcu/cache",
+    "registry": {
+      "ttl": 3600000,
+      "maxSize": 10485760,
+      "maxEntries": 500
+    },
+    "workspace": {
+      "ttl": 300000,
+      "maxSize": 5242880,
+      "maxEntries": 200,
+      "persistToDisk": false
+    }
+  }
+}
+```
+
+### 캐시 관리 명령어
+
+<CodeGroup>
+
+```bash {{ title: '캐시 상태' }}
+# 캐시 통계 보기 (상세 모드를 통해)
+pcu check --verbose
+# 표시: 캐시 적중률: 85%, 크기: 15.2MB, 항목: 342
+```
+
+```bash {{ title: '캐시 지우기' }}
+# 모든 캐시 지우기
+rm -rf ~/.pcu/cache
+
+# 특정 캐시 유형 지우기
+rm -rf ~/.pcu/cache/registry
+rm -rf ~/.pcu/cache/workspace
+
+# 단일 명령어에 대해 캐시 비활성화
+PCU_CACHE_ENABLED=false pcu check
+```
+
+</CodeGroup>
+
+### 캐시 성능
+
+#### 최적화 기능
+
+- **LRU 축출**: 가장 오래 사용되지 않은 항목을 먼저 제거
+- **자동 정리**: 5분마다 만료된 항목 제거
+- **크기 모니터링**: 크기 제한을 초과하면 자동 축출
+- **병렬 처리**: 캐시 작업이 주 스레드를 차단하지 않음
+
+#### 성능 이점
+
+- **레지스트리 요청**: NPM 레지스트리 호출 60-90% 감소
+- **작업공간 파싱**: 반복 실행 시 작업공간 분석 80-95% 빨라짐
+- **네트워크 의존성**: 네트워크 연결에 대한 의존성 감소
+- **시작 시간**: 후속 작업에서 2-5배 빠른 시작

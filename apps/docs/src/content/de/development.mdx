@@ -1,0 +1,659 @@
+export const metadata = {
+  title: 'Entwicklung',
+  description:
+    'Richten Sie pnpm-catalog-updates für die Entwicklung ein. Lernen Sie die Projektstruktur, den Entwicklungsworkflow und wie Sie beitragen können.',
+};
+
+# Entwicklung
+
+Richten Sie PCU für die Entwicklung ein und lernen Sie, wie Sie zum Projekt beitragen können. Diese Anleitung behandelt Projektsetup, Architektur und Entwicklungsworkflows. {{ className: 'lead' }}
+
+## Voraussetzungen
+
+Bevor Sie mit der PCU-Entwicklung beginnen, stellen Sie sicher, dass Sie die erforderlichen Tools haben:
+
+<Note>Node.js >= 22.0.0 und pnpm >= 10.0.0 sind für die Entwicklung erforderlich.</Note>
+
+<CodeGroup>
+
+```bash {{ title: 'Versionen prüfen' }}
+node --version  # Sollte >= 22.0.0 sein
+pnpm --version  # Sollte >= 10.0.0 sein
+```
+
+```bash {{ title: 'Tools installieren' }}
+# Node.js über nvm installieren (empfohlen)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 22
+nvm use 22
+
+# pnpm installieren
+npm install -g pnpm@latest
+```
+
+</CodeGroup>
+
+## Projekt-Setup
+
+Klonen und Entwicklungsumgebung einrichten:
+
+<CodeGroup>
+
+```bash {{ title: 'Klonen und Setup' }}
+# Repository klonen
+git clone https://github.com/houko/pnpm-catalog-updates.git
+cd pnpm-catalog-updates
+
+# Dependencies installieren
+pnpm install
+
+# Projekt bauen
+pnpm build
+
+# Tests ausführen um Setup zu verifizieren
+pnpm test
+```
+
+```bash {{ title: 'Entwicklungsmodus' }}
+# Im Entwicklungsmodus ausführen
+pnpm dev --help
+
+# Im Watch-Modus bauen
+pnpm build:watch
+
+# Tests im Watch-Modus ausführen
+pnpm test:watch
+```
+
+</CodeGroup>
+
+## Projektarchitektur
+
+PCU folgt Clean Architecture-Prinzipien mit klarer Trennung der Belange:
+
+```text
+├── apps/
+│   ├── cli/                    # CLI-Anwendungsschicht
+│   │   ├── src/cli/           # CLI-Interface
+│   │   │   ├── commands/      # Befehlshandler
+│   │   │   ├── formatters/    # Ausgabe-Formatierer
+│   │   │   ├── interactive/   # Interaktive Prompts
+│   │   │   ├── themes/        # Farbthemen
+│   │   │   └── validators/    # Eingabe-Validierung
+│   │   └── bin/               # Ausführbare Binärdateien
+│   └── docs/                  # Dokumentations-Website
+├── packages/
+│   ├── core/                  # Kern-Geschäftslogik
+│   │   └── src/
+│   │       ├── application/   # Anwendungsservices
+│   │       ├── domain/        # Domain-Modell (DDD)
+│   │       └── infrastructure/# Infrastruktur-Schicht
+│   └── utils/                 # Geteilte Hilfsprogramme
+└── scripts/                   # Build- und Deployment-Skripte
+```
+
+### Architektur-Schichten
+
+<Properties>
+  <Property name="CLI-Schicht" type="apps/cli">
+    Benutzeroberfläche, Befehlsanalyse, Ausgabe-Formatierung
+  </Property>
+  <Property name="Anwendungsschicht" type="packages/core/application">
+    Geschäftslogik-Orchestrierung, Anwendungsfälle
+  </Property>
+  <Property name="Domain-Schicht" type="packages/core/domain">
+    Kern-Geschäftsentitäten, Value Objects, Repository-Interfaces
+  </Property>
+  <Property name="Infrastruktur-Schicht" type="packages/core/infrastructure">
+    Externe API-Clients, Dateisystem-Zugriff, Repository-Implementierungen
+  </Property>
+  <Property name="Utils-Schicht" type="packages/utils">
+    Geteilte Hilfsprogramme, Konfiguration, Logging, Fehlerbehandlung
+  </Property>
+</Properties>
+
+## Entwicklungsworkflow
+
+### Änderungen vornehmen
+
+1. **Feature-Branch erstellen**:
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. **Änderungen vornehmen** entsprechend den Coding Standards
+
+3. **Tests für Ihre Änderungen hinzufügen**:
+
+   ```bash
+   pnpm test:watch  # Tests im Watch-Modus ausführen
+   ```
+
+4. **Qualitätsprüfungen bestehen lassen**:
+
+   ```bash
+   pnpm lint        # Code-Stil prüfen
+   pnpm typecheck   # Typ-Überprüfung
+   pnpm test        # Alle Tests ausführen
+   ```
+
+5. **Änderungen committen**:
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+
+### Test-Strategie
+
+PCU verwendet einen umfassenden Test-Ansatz:
+
+<CodeGroup>
+
+```bash {{ title: 'Unit Tests' }}
+# Unit Tests ausführen
+pnpm test
+
+# Mit Coverage ausführen
+pnpm test:coverage
+
+# Spezifisches Paket testen
+pnpm --filter @pcu/core test
+```
+
+```bash {{ title: 'E2E Tests' }}
+# End-to-End-Tests ausführen
+pnpm test:e2e
+
+# Gegen echte Projekte testen
+pnpm test:e2e --project example-workspace
+```
+
+```bash {{ title: 'Integrationstests' }}
+# CLI-Befehle testen
+pnpm test:cli
+
+# Mit verschiedenen Node-Versionen testen
+nvm use 18 && pnpm test
+nvm use 20 && pnpm test
+nvm use 22 && pnpm test
+```
+
+</CodeGroup>
+
+### Code-Qualität
+
+PCU hält hohe Code-Qualitätsstandards aufrecht:
+
+<CodeGroup>
+
+```bash {{ title: 'Linting und Formatierung' }}
+# Code-Stil prüfen
+pnpm lint
+
+# Linting-Probleme beheben
+pnpm lint:fix
+
+# Code formatieren
+pnpm format
+
+# TypeScript-Typen prüfen
+pnpm typecheck
+```
+
+```json {{ title: 'Qualitätsstandards' }}
+{
+  "coverage": {
+    "statements": 85,
+    "branches": 80,
+    "functions": 85,
+    "lines": 85
+  },
+  "lint": "ESLint mit TypeScript-Regeln",
+  "format": "Prettier mit benutzerdefinierter Konfiguration",
+  "types": "Strikte TypeScript-Konfiguration"
+}
+```
+
+</CodeGroup>
+
+## Features hinzufügen
+
+### Neue Befehle erstellen
+
+1. **Befehlshandler erstellen** in `apps/cli/src/cli/commands/`:
+
+<CodeGroup>
+
+```typescript {{ title: 'newCommand.ts' }}
+import { Command } from 'commander';
+import { GlobalOptions } from '../options';
+
+export function createNewCommand(): Command {
+  return new Command('new')
+    .description('Beschreibung des neuen Befehls')
+    .option('-f, --format <type>', 'Ausgabeformat', 'table')
+    .action(async (options: NewCommandOptions) => {
+      // Befehlsimplementierung
+    });
+}
+
+interface NewCommandOptions extends GlobalOptions {
+  format: string;
+}
+```
+
+```typescript {{ title: 'Befehl registrieren' }}
+// In apps/cli/src/cli/index.ts
+import { createNewCommand } from './commands/newCommand';
+
+program.addCommand(createNewCommand());
+```
+
+</CodeGroup>
+
+2. **Geschäftslogik hinzufügen** in `packages/core/src/application/services/`
+
+3. **Tests erstellen** für sowohl CLI als auch Kern-Logik
+
+4. **Dokumentation aktualisieren**
+
+### Neue Ausgabeformate hinzufügen
+
+1. **Formatierer erstellen** in `apps/cli/src/cli/formatters/`:
+
+```typescript {{ title: 'xmlFormatter.ts' }}
+import { OutputFormatter, FormattedOutput } from './outputFormatter';
+
+export class XmlFormatter implements OutputFormatter {
+  format(data: any): FormattedOutput {
+    // XML-Formatierungslogik
+    return {
+      content: xmlContent,
+      type: 'xml',
+    };
+  }
+}
+```
+
+2. **Formatierer registrieren** in der Haupt-Formatierer-Registry
+
+3. **Tests hinzufügen** und **Dokumentation aktualisieren**
+
+## Beitragsrichtlinien
+
+### Commit-Message-Konvention
+
+PCU verwendet [Conventional Commits](https://conventionalcommits.org/):
+
+<CodeGroup>
+
+```bash {{ title: 'Commit-Typen' }}
+feat: Ein neues Feature
+fix: Ein Bugfix
+docs: Nur Dokumentationsänderungen
+style: Code-Stil-Änderungen (Formatierung, etc.)
+refactor: Code-Änderung, die weder Bug behebt noch Feature hinzufügt
+test: Fehlende Tests hinzufügen oder bestehende korrigieren
+chore: Änderungen am Build-Prozess oder Hilfswerkzeugen
+```
+
+```bash {{ title: 'Beispiele' }}
+feat: add support for custom registries
+fix: handle network timeouts gracefully
+docs: update configuration examples
+test: add tests for package filtering
+```
+
+</CodeGroup>
+
+### Pull Request-Prozess
+
+1. **Repository forken** und Feature-Branch erstellen
+2. **Änderungen vornehmen** entsprechend dem Entwicklungsworkflow
+3. **Alle Tests bestehen lassen** und Code-Qualitätsprüfungen erfolgreich
+4. **Dokumentation aktualisieren** falls nötig
+5. **Pull Request einreichen** mit:
+   - Klarer Beschreibung der Änderungen
+   - Link zu verwandten Issues
+   - Screenshots für UI-Änderungen
+   - Breaking Change-Notizen falls zutreffend
+
+### Code Review-Checkliste
+
+1. Alle Tests bestehen
+2. Code-Coverage aufrechterhalten (>85%)
+3. TypeScript-Typen sind korrekt
+4. Code-Stil folgt Projekt-Standards
+5. Dokumentation aktualisiert
+6. Breaking Changes dokumentiert
+7. Performance-Auswirkung berücksichtigt
+
+## Debugging
+
+### Entwicklungs-Debugging
+
+<CodeGroup>
+
+```bash {{ title: 'CLI-Befehle debuggen' }}
+# Mit Node.js Inspector debuggen
+node --inspect-brk ./apps/cli/bin/pcu.js --help
+
+# Mit VS Code debuggen
+# Verwenden Sie die Launch-Konfiguration in .vscode/launch.json
+```
+
+```bash {{ title: 'Ausführliche Protokollierung' }}
+# Debug-Logging aktivieren
+DEBUG=pcu:* pnpm dev --verbose
+
+# Spezifische Module debuggen
+DEBUG=pcu:core,pcu:cli pcu -c
+```
+
+</CodeGroup>
+
+### Test-Debugging
+
+```bash
+# Spezifischen Test debuggen
+npm test -- --grep "specific test name"
+
+# Mit Node Inspector debuggen
+node --inspect-brk node_modules/.bin/vitest run
+```
+
+## Bauen und Veröffentlichen
+
+### Lokale Tests
+
+<CodeGroup>
+
+```bash {{ title: 'Lokalen Build testen' }}
+# Lokal bauen und testen
+pnpm build
+pnpm --filter @pcu/cli start --help
+
+# Installation testen
+npm pack apps/cli
+npm install -g pcu-*.tgz
+```
+
+```bash {{ title: 'In Beispielprojekt testen' }}
+# Beispiel-Workspace verwenden
+cd apps/example
+pcu -c
+pcu -u --dry-run
+```
+
+</CodeGroup>
+
+### Release-Prozess
+
+1. **Version aktualisieren** mit Changesets:
+
+   ```bash
+   pnpm changeset
+   pnpm changeset version
+   ```
+
+2. **Bauen und testen**:
+
+   ```bash
+   pnpm build
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **Veröffentlichen** (nur Maintainer):
+   ```bash
+   pnpm publish -r
+   ```
+
+## Hilfe erhalten
+
+- 📖 **Dokumentation**: Prüfen Sie diese Dokumentation für detaillierte Anleitungen
+- 🐛 **Issues**: Melden Sie Bugs über [GitHub Issues](https://github.com/houko/pnpm-catalog-updates/issues)
+- 💬 **Diskussionen**: Stellen Sie Fragen in [GitHub Discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
+- 🔧 **Entwicklung**: Nehmen Sie an Entwicklungsdiskussionen in Issues und PRs teil
+
+---
+
+## Erweiterte Architektur-Details
+
+### Kern-Domain-Modell
+
+Basierend auf Domain-Driven Design (DDD)-Prinzipien umfasst PCUs Kern-Domain:
+
+<CodeGroup>
+
+```typescript {{ title: 'Domain-Entitäten' }}
+// packages/core/src/domain/entities/
+├── catalog.ts          // Catalog Aggregate Root
+├── package.ts          // Package-Entität
+└── workspace.ts        // Workspace Aggregate Root
+
+// Zentrale Domain-Konzepte:
+interface Catalog {
+  readonly id: CatalogId;
+  readonly name: string;
+  packages: PackageCollection;
+  addPackage(packageInfo: Package): void;
+  updatePackage(name: string, version: Version): void;
+}
+
+interface Package {
+  readonly name: string;
+  readonly currentVersion: Version;
+  readonly latestVersion: Version;
+  readonly updateType: UpdateType;
+}
+```
+
+```typescript {{ title: 'Value Objects' }}
+// packages/core/src/domain/value-objects/
+├── version.ts           // Semantic Version-Behandlung
+├── workspacePath.ts     // Pfad-Validierung
+├── workspaceConfig.ts   // Konfigurationsobjekt
+└── catalogCollection.ts // Collection-Management
+
+// Unveränderliche Value Objects gewährleisten Datenintegrität
+class Version {
+  constructor(private readonly value: string) {
+    if (!this.isValid(value)) {
+      throw new InvalidVersionError(value);
+    }
+  }
+
+  toString(): string { return this.value; }
+  compare(other: Version): number { /* semver-Vergleich */ }
+}
+```
+
+</CodeGroup>
+
+### Service-Schicht-Architektur
+
+Die Anwendungsschicht orchestriert Geschäftslogik durch Services:
+
+<CodeGroup>
+
+```typescript {{ title: 'Anwendungsservices' }}
+// packages/core/src/application/services/
+├── catalogUpdateService.ts  // Haupt-Orchestrierung
+└── workspaceService.ts      // Workspace-Operationen
+
+// Service-Verantwortlichkeiten:
+class CatalogUpdateService {
+  async checkForUpdates(options: CheckOptions): Promise<UpdateReport>;
+  async updateCatalog(options: UpdateOptions): Promise<UpdateResult>;
+  async analyzeImpact(catalog: string, package: string): Promise<ImpactAnalysis>;
+}
+```
+
+```typescript {{ title: 'Infrastruktur-Schicht' }}
+// packages/core/src/infrastructure/
+├── external-services/
+│   └── npmRegistryService.ts   // NPM-API-Client
+├── repositories/
+│   └── fileWorkspaceRepository.ts  // Dateisystem-Persistierung
+├── cache/
+│   └── cache.ts                # Erweiterte Caching-System
+└── utils/
+    └── npmrcParser.ts          # Konfigurationsanalyse
+
+// Infrastruktur implementiert Domain-Interfaces:
+class FileWorkspaceRepository implements WorkspaceRepository {
+  async findWorkspace(path: string): Promise<Workspace | null>;
+  async saveWorkspace(workspace: Workspace): Promise<void>;
+}
+```
+
+</CodeGroup>
+
+### CLI-Schicht-Design
+
+Die CLI-Schicht bietet eine saubere Schnittstelle zur Kern-Domain:
+
+<CodeGroup>
+
+```typescript {{ title: 'Befehlsstruktur' }}
+// apps/cli/src/cli/commands/
+├── checkCommand.ts     // Check-Befehl-Implementierung
+├── updateCommand.ts    // Update-Befehl mit Validierung
+├── analyzeCommand.ts   // Impact-Analyse-Befehl
+├── workspaceCommand.ts # Workspace-Management
+├── themeCommand.ts     # Theme-Konfiguration
+├── securityCommand.ts  # Sicherheitsscanning
+└── initCommand.ts      # Workspace-Initialisierung
+
+// Jeder Befehl folgt konsistenten Mustern:
+export class CheckCommand {
+  constructor(
+    private readonly catalogService: CatalogUpdateService,
+    private readonly validator: CommandValidator,
+    private readonly formatter: OutputFormatter
+  ) {}
+
+  async execute(options: CheckCommandOptions): Promise<void> {
+    const validation = this.validator.validateCheckOptions(options);
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors);
+    }
+
+    const result = await this.catalogService.checkForUpdates(options);
+    const formatted = this.formatter.format(result, options.format);
+    console.log(formatted);
+  }
+}
+```
+
+```typescript {{ title: 'Erweiterte CLI-Features' }}
+// apps/cli/src/cli/
+├── validators/
+│   └── commandValidator.ts    # Eingabe-Validierung mit Vorschlägen
+├── interactive/
+│   └── interactivePrompts.ts  # Intelligente Prompts mit Auto-Vervollständigung
+├── themes/
+│   └── colorTheme.ts          # Umfassendes Theming-System
+├── formatters/
+│   └── outputFormatter.ts     # Mehrere Ausgabeformate
+└── options/
+    └── globalOptions.ts       # Umgebungsvariablen-Unterstützung
+
+// Interaktive Features:
+class InteractivePrompts {
+  async selectPackages(packages: Package[]): Promise<string[]>;
+  async confirmUpdates(updates: Update[]): Promise<boolean>;
+  async configurationWizard(): Promise<Configuration>;
+}
+```
+
+</CodeGroup>
+
+### Test-Architektur
+
+Umfassende Test-Strategie über alle Schichten:
+
+<CodeGroup>
+
+```bash {{ title: 'Test-Struktur' }}
+├── packages/core/src/**/__tests__/     # Unit Tests
+├── packages/utils/src/**/__tests__/    # Hilfsprogramm-Tests
+├── apps/cli/src/**/__tests__/         # CLI Unit Tests
+├── tests/
+│   ├── e2e/                          # End-to-End-Tests
+│   ├── integration/                  # Integrationstests
+│   └── fixtures/                     # Test-Fixtures
+└── .github/workflows/
+    └── test.yml                      # CI-Test-Pipeline
+```
+
+```typescript {{ title: 'Test-Muster' }}
+// Domain-Schicht-Tests
+describe('Catalog', () => {
+  it('should update package version', () => {
+    const catalog = new Catalog('default');
+    const package = new Package('react', '18.0.0', '18.2.0');
+
+    catalog.addPackage(package);
+    catalog.updatePackage('react', new Version('18.2.0'));
+
+    expect(catalog.getPackage('react').currentVersion.toString()).toBe('18.2.0');
+  });
+});
+
+// CLI-Integrationstests
+describe('CheckCommand', () => {
+  it('should handle network errors gracefully', async () => {
+    const mockService = createMockCatalogService();
+    mockService.checkForUpdates.mockRejectedValue(new NetworkError());
+
+    const command = new CheckCommand(mockService);
+
+    await expect(command.execute({})).rejects.toThrow('Network error occurred');
+  });
+});
+```
+
+</CodeGroup>
+
+### Performance-Überlegungen
+
+PCU ist für Performance in großen Monorepos optimiert:
+
+<CodeGroup>
+
+```typescript {{ title: 'Caching-Strategie' }}
+// Intelligentes Caching reduziert API-Aufrufe
+class Cache<T> {
+  constructor(
+    private readonly options: {
+      ttl: number; // Time to live
+      maxSize: number; // Speicherlimit
+      persistToDisk: boolean; // Datei-Caching
+      strategy: 'lru' | 'fifo' | 'lfu'; // Eviction-Strategie
+    }
+  ) {}
+
+  async get(key: string): Promise<T | null>;
+  async set(key: string, value: T): Promise<void>;
+  getStats(): CacheStats; // Hit-Raten, Speicherverbrauch
+}
+```
+
+```typescript {{ title: 'Gleichzeitige Verarbeitung' }}
+// Parallele Verarbeitung für bessere Performance
+class NpmRegistryService {
+  constructor(private readonly concurrency: number = 5) {}
+
+  async getPackageInfo(names: string[]): Promise<PackageInfo[]> {
+    // Pakete in Batches mit kontrollierter Gleichzeitigkeit verarbeiten
+    const batches = chunk(names, this.concurrency);
+    const results = await Promise.allSettled(batches.map((batch) => this.processBatch(batch)));
+
+    return results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  }
+}
+```
+
+</CodeGroup>

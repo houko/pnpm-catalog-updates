@@ -52,6 +52,8 @@
     --shiki-token-function: var(--color-violet-300);
     --shiki-token-string-expression: var(--color-emerald-300);
     --shiki-token-punctuation: var(--color-zinc-200);
+    --shiki-token-deletion: var(--color-red-300);
+    --shiki-token-insertion: var(--color-green-300);
   }
 
   [inert] ::-webkit-scrollbar {

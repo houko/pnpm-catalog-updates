@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'クイックスタート',
+  description:
+    '数分で pnpm-catalog-updates を使い始めましょう。pnpm ワークスペースカタログ依存関係のインストール、初期化、更新方法を学びます。',
+};
+
+# クイックスタート
+
+数分で pnpm-catalog-updates を使い始めましょう。このガイドでは、インストール、初期化、最初の依存関係更新を順を追って説明します。{{ className: 'lead' }}
+
+<Note>
+  pnpm-catalog-updates は、カタログ依存関係を使用する pnpm
+  ワークスペース専用に設計されています。開始前に pnpm
+  ワークスペースが設定されていることを確認してください。
+</Note>
+
+## インストール
+
+お好みのインストール方法を選択してください：
+
+<CodeGroup>
+
+```bash {{ title: 'グローバルインストール' }}
+npm install -g pcu
+# または
+npm install -g pcu
+```
+
+```bash {{ title: 'npx (インストール不要)' }}
+npx pnpm-catalog-updates
+# または
+npx pcu
+```
+
+```bash {{ title: 'pnpm' }}
+pnpm add -g pnpm-catalog-updates
+```
+
+</CodeGroup>
+
+## ワークスペースの初期化
+
+まだ pnpm ワークスペースがない場合、PCU が作成できます：
+
+```bash
+pcu init
+```
+
+このコマンドで作成されるもの：
+
+- `.pcurc.json` - PCU 設定ファイル
+- `package.json` - ワークスペースルート package.json（存在しない場合）
+- `pnpm-workspace.yaml` - PNPM ワークスペース設定（存在しない場合）
+- `packages/` - ワークスペースパッケージディレクトリ（存在しない場合）
+
+## 初回更新チェック
+
+古いカタログ依存関係をチェック：
+
+```bash
+pcu -c
+```
+
+これは以下を含む美しいテーブルを表示します：
+
+- カタログ内の現在のバージョン
+- 利用可能な最新バージョン
+- パッケージ名と更新タイプ
+- 緊急度を示すカラーコード
+
+## インタラクティブ更新
+
+インタラクティブインターフェースで依存関係を更新：
+
+```bash
+pcu -i
+```
+
+これにより以下が可能です：
+
+- ✅ 更新する依存関係を選択
+- 🎯 特定のバージョンを選択
+- 📊 影響分析を表示
+- 🔒 自動バックアップ作成
+
+## 一般的なコマンド
+
+最もよく使用されるコマンド：
+
+| コマンド   | 説明                 | 例                         |
+| ---------- | -------------------- | -------------------------- |
+| `pcu init` | ワークスペース初期化 | `pcu init --verbose`       |
+| `pcu -c`   | 更新チェック         | `pcu -c --catalog default` |
+| `pcu -i`   | インタラクティブ更新 | `pcu -i -b`                |
+| `pcu -u`   | 依存関係更新         | `pcu -u --target minor`    |
+| `pcu -a`   | 影響分析             | `pcu -a default react`     |
+
+## 次のステップ
+
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="コマンドリファレンス"
+    description="すべての PCU コマンドとオプションの完全ガイド。"
+  />
+  <Resource
+    href="/configuration"
+    title="設定"
+    description="ワークフローに合わせた PCU の設定方法を学びます。"
+  />
+  <Resource href="/examples" title="例" description="実際の例とユースケース。" />
+  <Resource href="/development" title="開発" description="開発と貢献のための PCU セットアップ。" />
+</Resources>
+
+## 開始チェックリスト
+
+このチェックリストに従ってプロジェクトで PCU を稼働させましょう：
+
+1. **PCU をインストール** - グローバルインストールまたは npx を選択
+2. **ワークスペースを初期化** - 初回セットアップで `pcu init` を実行
+3. **更新をチェック** - `pcu -c` で利用可能な更新を表示
+4. **設定を構成** - 必要に応じて `.pcurc.json` をカスタマイズ
+5. **依存関係を更新** - 安全な更新のためインタラクティブモード `pcu -i` を使用
+6. **自動化をセットアップ** - 定期的なチェックのため CI/CD 統合を検討
+
+## 基本コマンドクイックリファレンス
+
+| コマンド       | 目的                 | いつ使用するか           |
+| -------------- | -------------------- | ------------------------ |
+| `pcu init`     | ワークスペース設定   | 初回設定、新プロジェクト |
+| `pcu -c`       | 更新チェック         | 日常開発、CI チェック    |
+| `pcu -i`       | インタラクティブ更新 | 安全な手動更新           |
+| `pcu -u`       | バッチ更新           | 自動更新、CI/CD          |
+| `pcu security` | セキュリティスキャン | リリース前、定期監査     |
+
+## 次のステップ
+
+PCU をセットアップしたら、これらの高度な機能を探索しましょう：
+
+- **[設定](/configuration)** - 特定のワークフローに合わせて PCU をカスタマイズ
+- **[セキュリティスキャン](/command-reference#pcu-security)** - 脆弱性スキャンを統合
+- **[Monorepo 管理](/configuration#monorepo-configuration)** - 高度なワークスペース機能
+- **[CI/CD 統合](/examples)** - パイプラインで依存関係更新を自動化
