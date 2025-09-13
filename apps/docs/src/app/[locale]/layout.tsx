@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import { type Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages, setRequestLocale } from 'next-intl/server'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { Providers } from '@/app/[locale]/providers'
@@ -11,11 +11,16 @@ import { locales, type Locale } from '@/i18n'
 
 import '@/styles/tailwind.css'
 
-export const metadata: Metadata = {
-  title: {
-    template: '%s - PCU Documentation',
-    default: 'PCU Documentation',
-  },
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'Home' })
+  
+  return {
+    title: {
+      template: `%s - ${t('title')}`,
+      default: t('title'),
+    },
+  }
 }
 
 type Props = {

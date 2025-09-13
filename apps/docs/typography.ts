@@ -7,9 +7,9 @@ export default {
         css: {
           '--tw-prose-body': theme('colors.zinc.700'),
           '--tw-prose-headings': theme('colors.zinc.900'),
-          '--tw-prose-links': theme('colors.emerald.500'),
-          '--tw-prose-links-hover': theme('colors.emerald.600'),
-          '--tw-prose-links-underline': theme('colors.emerald.500 / 0.3'),
+          '--tw-prose-links': theme('colors.amber.500'),
+          '--tw-prose-links-hover': theme('colors.amber.600'),
+          '--tw-prose-links-underline': theme('colors.amber.500 / 0.3'),
           '--tw-prose-bold': theme('colors.zinc.900'),
           '--tw-prose-counters': theme('colors.zinc.500'),
           '--tw-prose-bullets': theme('colors.zinc.300'),
@@ -25,11 +25,9 @@ export default {
 
           '--tw-prose-invert-body': theme('colors.zinc.400'),
           '--tw-prose-invert-headings': theme('colors.white'),
-          '--tw-prose-invert-links': theme('colors.emerald.400'),
-          '--tw-prose-invert-links-hover': theme('colors.emerald.500'),
-          '--tw-prose-invert-links-underline': theme(
-            'colors.emerald.500 / 0.3',
-          ),
+          '--tw-prose-invert-links': theme('colors.amber.400'),
+          '--tw-prose-invert-links-hover': theme('colors.amber.500'),
+          '--tw-prose-invert-links-underline': theme('colors.amber.500 / 0.3'),
           '--tw-prose-invert-bold': theme('colors.white'),
           '--tw-prose-invert-counters': theme('colors.zinc.400'),
           '--tw-prose-invert-bullets': theme('colors.zinc.600'),
@@ -131,6 +129,18 @@ export default {
           'ul ul, ul ol, ol ul, ol ol': {
             marginTop: theme('spacing.3'),
             marginBottom: theme('spacing.3'),
+          },
+
+          // Checkbox lists - reduce spacing
+          'li:has(input[type="checkbox"])': {
+            marginTop: theme('spacing.1'),
+            marginBottom: theme('spacing.1'),
+          },
+          'li:has(input[type="checkbox"]) > *:first-child': {
+            marginTop: '0',
+          },
+          'li:has(input[type="checkbox"]) > *:last-child': {
+            marginBottom: '0',
           },
 
           // Horizontal rules
@@ -333,8 +343,7 @@ export default {
           '--tw-prose-headings': 'var(--tw-prose-invert-headings)',
           '--tw-prose-links': 'var(--tw-prose-invert-links)',
           '--tw-prose-links-hover': 'var(--tw-prose-invert-links-hover)',
-          '--tw-prose-links-underline':
-            'var(--tw-prose-invert-links-underline)',
+          '--tw-prose-links-underline': 'var(--tw-prose-invert-links-underline)',
           '--tw-prose-bold': 'var(--tw-prose-invert-bold)',
           '--tw-prose-counters': 'var(--tw-prose-invert-counters)',
           '--tw-prose-bullets': 'var(--tw-prose-invert-bullets)',

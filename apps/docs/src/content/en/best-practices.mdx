@@ -39,10 +39,10 @@ Keep your PCU configuration consistent across team members by committing your `.
 
 **Pre-Review Checklist:**
 
-- [ ] Run `pcu check --dry-run` to preview changes
-- [ ] Verify no breaking changes in major version updates
-- [ ] Test critical functionality after dependency updates
-- [ ] Review CHANGELOG files for updated packages
+1. Run `pcu check --dry-run` to preview changes
+2. Verify no breaking changes in major version updates
+3. Test critical functionality after dependency updates
+4. Review CHANGELOG files for updated packages
 
 **Review Process:**
 
@@ -498,28 +498,28 @@ fi
 
 ### Daily Workflow
 
-- [ ] Check for security updates: `pcu security`
-- [ ] Review outdated dependencies: `pcu check --limit 10`
-- [ ] Update patch versions: `pcu update --target patch`
+1. Check for security updates: `pcu security`
+2. Review outdated dependencies: `pcu check --limit 10`
+3. Update patch versions: `pcu update --target patch`
 
 ### Weekly Workflow
 
-- [ ] Comprehensive dependency check: `pcu check`
-- [ ] Update minor versions: `pcu update --target minor --interactive`
-- [ ] Review and update exclusion rules
-- [ ] Generate dependency reports for team review
+1. Comprehensive dependency check: `pcu check`
+2. Update minor versions: `pcu update --target minor --interactive`
+3. Review and update exclusion rules
+4. Generate dependency reports for team review
 
 ### Monthly Workflow
 
-- [ ] Review major version updates: `pcu check --target latest`
-- [ ] Update development dependencies: `pcu update --dev`
-- [ ] Audit dependency licenses and compliance
-- [ ] Review and optimize PCU configuration
-- [ ] Clean up unused dependencies
+1. Review major version updates: `pcu check --target latest`
+2. Update development dependencies: `pcu update --dev`
+3. Audit dependency licenses and compliance
+4. Review and optimize PCU configuration
+5. Clean up unused dependencies
 
 ### Before Releases
 
-- [ ] Run full dependency audit: `pcu security --comprehensive`
-- [ ] Create backup: `pcu update --create-backup`
-- [ ] Test in staging environment
-- [ ] Generate release notes with dependency changes
+1. Run full dependency audit: `pcu security --comprehensive`
+2. Create backup: `pcu update --create-backup`
+3. Test in staging environment
+4. Generate release notes with dependency changes

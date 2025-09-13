@@ -11,15 +11,24 @@ export const metadata = {
 
 PCU 提供几个主要命令，既有全名也有便捷的简写：
 
-| 完整命令        | 简写     | 描述                            |
-| --------------- | -------- | ------------------------------- |
-| `pcu init`      | `pcu i`  | 初始化 PNPM 工作空间和 PCU 配置 |
-| `pcu check`     | `pcu -c` | 检查过时的目录依赖              |
-| `pcu update`    | `pcu -u` | 更新目录依赖                    |
-| `pcu analyze`   | `pcu -a` | 分析依赖更新的影响              |
-| `pcu workspace` | `pcu -s` | 显示工作空间信息和验证          |
-| `pcu theme`     | `pcu -t` | 配置颜色主题和 UI 设置          |
-| `pcu help`      | `pcu -h` | 显示帮助信息                    |
+| 完整命令        | 简写和别名          | 描述                            |
+| --------------- | ------------------- | ------------------------------- |
+| `pcu init`      | `pcu i`             | 初始化 PNPM 工作空间和 PCU 配置 |
+| `pcu check`     | `pcu chk`, `pcu -c` | 检查过时的目录依赖              |
+| `pcu update`    | `pcu u`, `pcu -u`   | 更新目录依赖                    |
+| `pcu analyze`   | `pcu a`, `pcu -a`   | 分析依赖更新的影响              |
+| `pcu workspace` | `pcu w`, `pcu -s`   | 显示工作空间信息和验证          |
+| `pcu theme`     | `pcu t`, `pcu -t`   | 配置颜色主题和 UI 设置          |
+| `pcu security`  | `pcu sec`           | 安全漏洞扫描和修复              |
+| `pcu help`      | `pcu h`, `pcu -h`   | 显示帮助信息                    |
+
+### 特殊快捷方式
+
+| 快捷方式               | 等效命令                   | 描述                       |
+| ---------------------- | -------------------------- | -------------------------- |
+| `pcu -i`               | `pcu update --interactive` | 交互式更新模式             |
+| `pcu --security-audit` | `pcu security`             | 运行安全扫描               |
+| `pcu --security-fix`   | `pcu security --fix-vulns` | 运行安全扫描并自动修复漏洞 |
 
 ---
 
@@ -46,7 +55,16 @@ pcu init --no-create-workspace
 
 <Properties>
   <Property name="--force" type="boolean">
-    覆盖现有配置文件
+    无需确认即覆盖现有配置文件
+  </Property>
+  <Property name="--full" type="boolean">
+    生成包含所有可用选项的全面配置
+  </Property>
+  <Property name="--interactive" type="boolean">
+    启动交互式配置向导，提供引导式设置
+  </Property>
+  <Property name="--template" type="enum">
+    配置模板：minimal、standard、full、monorepo、enterprise
   </Property>
   <Property name="--create-workspace" type="boolean" default="true">
     如果缺失则创建 PNPM 工作空间结构
@@ -54,20 +72,145 @@ pcu init --no-create-workspace
   <Property name="--no-create-workspace" type="boolean">
     跳过创建 PNPM 工作空间结构
   </Property>
+  <Property name="--packages-dir" type="string" default="packages">
+    工作空间包的目录名称
+  </Property>
+  <Property name="--package-rules" type="boolean" default="true">
+    在配置中包含常用包规则
+  </Property>
+  <Property name="--typescript" type="boolean">
+    添加 TypeScript 特定的包规则和设置
+  </Property>
+  <Property name="--react" type="boolean">
+    添加 React 生态系统包规则
+  </Property>
+  <Property name="--vue" type="boolean">
+    添加 Vue 生态系统包规则
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table、json、yaml、minimal
+  </Property>
   <Property name="-w, --workspace" type="string">
     工作空间目录（默认：当前目录）
   </Property>
   <Property name="-v, --verbose" type="boolean">
-    显示详细信息
+    显示详细信息和进度
   </Property>
 </Properties>
 
-### 创建的文件
+### 配置模板
 
-- `.pcurc.json` - PCU 配置文件，包含包规则和设置
-- `package.json` - 工作空间根 package.json（如果缺失）
-- `pnpm-workspace.yaml` - PNPM 工作空间配置（如果缺失）
-- `packages/` - 工作空间包目录（如果缺失）
+PCU 为常见项目类型提供预配置的模板：
+
+#### 模板类型
+
+- **`minimal`** - 仅包含基本设置的简单配置
+- **`standard`** - 适合大多数项目的平衡配置
+- **`full`** - 包含所有可用选项的全面配置
+- **`monorepo`** - 为大型单体仓库优化，具备高级功能
+- **`enterprise`** - 企业级，具备安全和治理功能
+
+<CodeGroup>
+
+```bash {{ title: '模板示例' }}
+# 使用简单模板
+pcu init --template minimal
+
+# 企业单体仓库设置
+pcu init --template enterprise --interactive
+
+# React 项目与 TypeScript
+pcu init --template standard --react --typescript
+```
+
+</CodeGroup>
+
+### 交互式配置向导
+
+交互式模式（`--interactive`）提供引导式设置体验：
+
+#### 向导功能
+
+- **项目检测**：自动检测项目类型（React、Vue、TypeScript）
+- **工作空间结构**：发现现有包并建议最优配置
+- **包规则设置**：交互式选择包规则和更新策略
+- **注册表配置**：设置自定义 NPM 注册表和身份验证
+- **性能调优**：根据项目大小和需求优化设置
+- **主题选择**：选择颜色主题和进度条样式
+- **验证设置**：配置质量门和安全检查
+
+### 创建的文件和目录
+
+#### 核心文件
+
+<Properties>
+  <Property name=".pcurc.json" type="file">
+    主配置文件，包含所有 PCU 设置
+  </Property>
+  <Property name="package.json" type="file">
+    工作空间根 package.json（如果缺失则创建）
+  </Property>
+  <Property name="pnpm-workspace.yaml" type="file">
+    PNPM 工作空间配置（如果缺失则创建）
+  </Property>
+</Properties>
+
+#### 目录结构
+
+<Properties>
+  <Property name="packages/" type="directory">
+    工作空间包的默认目录（可自定义）
+  </Property>
+  <Property name="apps/" type="directory">
+    为 monorepo 模板创建 - 应用程序包
+  </Property>
+  <Property name="tools/" type="directory">
+    为 monorepo 模板创建 - 开发工具
+  </Property>
+  <Property name="docs/" type="directory">
+    为 enterprise 模板创建 - 文档
+  </Property>
+</Properties>
+
+#### 模板特定文件
+
+<Properties>
+  <Property name=".nvmrc" type="file">
+    Node 版本规范（enterprise 模板）
+  </Property>
+  <Property name=".gitignore" type="file">
+    增强 PCU 特定模式（如果缺失）
+  </Property>
+  <Property name="tsconfig.json" type="file">
+    TypeScript 配置（使用 --typescript 标志）
+  </Property>
+</Properties>
+
+### 使用示例
+
+#### 快速开始
+
+```bash
+pcu init
+```
+
+使用自动项目检测的标准模板初始化。
+
+#### 交互式设置
+
+```bash
+pcu init --interactive
+```
+
+启动完整的配置向导，提供引导式设置。
+
+#### 单体仓库初始化
+
+```bash
+pcu init --template monorepo --typescript --verbose
+```
+
+创建企业级单体仓库，支持 TypeScript 并显示详细输出。
 
 ---
 
@@ -162,7 +305,98 @@ pcu update --dry-run --verbose
   <Property name="-b, --create-backup" type="boolean">
     更新前创建备份文件
   </Property>
+  <Property name="--include" type="string">
+    包含匹配模式的包（可多次使用）
+  </Property>
+  <Property name="--exclude" type="string">
+    排除匹配模式的包（可多次使用）
+  </Property>
+  <Property name="--prerelease" type="boolean">
+    在更新中包含预发布版本
+  </Property>
+  <Property name="-f, --format" type="enum" default="table">
+    输出格式：table、json、yaml、minimal
+  </Property>
+  <Property name="--batch-size" type="number" default="10">
+    并行处理的包数量
+  </Property>
+  <Property name="--skip-peer-conflicts" type="boolean">
+    跳过存在对等依赖冲突的包
+  </Property>
+  <Property name="--confirm-major" type="boolean" default="true">
+    主版本更新需要确认
+  </Property>
 </Properties>
+
+### 交互式功能
+
+交互式模式（`--interactive` 或 `-i`）提供高级包选择功能：
+
+#### 包选择界面
+
+- **多选**：使用复选框选择单个包更新
+- **搜索功能**：按名称或描述过滤包
+- **批量操作**：选择/取消选择多个包
+- **更新策略选择**：为每个包选择更新策略（latest、greatest、minor、patch）
+
+#### 智能冲突解决
+
+- **对等依赖检测**：提供解决建议
+- **破坏性更改警告**：基于语义版本分析
+- **影响分析**：显示受影响的工作空间包
+- **回滚功能**：如果更新导致问题可回滚
+
+### 高级更新策略
+
+<CodeGroup>
+
+```bash {{ title: '保守型更新' }}
+# 仅补丁和小版本更新
+pcu update --target minor --confirm-major
+```
+
+```bash {{ title: '激进型更新' }}
+# 包含预发布和强制主版本更新
+pcu update --target greatest --prerelease --force
+```
+
+```bash {{ title: '选择性更新' }}
+# 使用模式更新特定包
+pcu update --include "react*" --exclude "*-dev" --create-backup
+```
+
+```bash {{ title: '批量处理' }}
+# 高效处理大型工作空间
+pcu update --batch-size 20 --skip-peer-conflicts
+```
+
+</CodeGroup>
+
+### 使用示例
+
+#### 安全交互式更新
+
+```bash
+pcu update --interactive --create-backup --target minor
+```
+
+交互式更新依赖，自动备份，仅限于小版本增量。
+
+#### 生产安全更新
+
+```bash
+pcu update --exclude "*-dev" --confirm-major --dry-run
+```
+
+显示生产依赖项中将被更新的内容，主版本更新需要确认。
+
+#### 框架特定更新
+
+```bash
+pcu update --include "react*,@types/*" --prerelease
+```
+
+更新 React 生态系统包，包括 TypeScript 定义，允许预发布版本。
 
 ---
 

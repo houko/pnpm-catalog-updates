@@ -102,7 +102,7 @@ function ActivePageMarker({ group, pathname }: { group: NavGroup; pathname: stri
   return (
     <motion.div
       layout
-      className="absolute left-2 h-6 w-px bg-emerald-500"
+      className="absolute left-2 h-6 w-px bg-amber-500"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
@@ -181,6 +181,7 @@ function NavigationGroup({ group, className }: { group: NavGroup; className?: st
 export function useNavigation(): Array<NavGroup> {
   const t = useTranslations('Navigation')
   const tCommon = useTranslations('Common')
+  const isProduction = process.env.NODE_ENV === 'production'
 
   // Define which pages go in which sections
   const gettingStartedPages = ['quickstart', 'command-reference', 'configuration']
@@ -220,11 +221,15 @@ export function useNavigation(): Array<NavGroup> {
       title: tCommon('guidesAndExamples'),
       links: guidesPages.map(createNavLink),
     },
-    {
+  ]
+
+  // Only show Writing Documentation in development
+  if (!isProduction) {
+    navGroups.push({
       title: tCommon('writingDocumentation'),
       links: writingPages.map(createNavLink),
-    },
-  ]
+    })
+  }
 
   return navGroups
 }

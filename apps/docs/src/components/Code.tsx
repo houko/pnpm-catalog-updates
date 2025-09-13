@@ -71,7 +71,7 @@ function CopyButton({ code }: { code: string }) {
       className={clsx(
         'group/button text-2xs absolute right-4 top-3.5 overflow-hidden rounded-full py-1 pl-2 pr-3 font-medium opacity-0 backdrop-blur-sm transition focus:opacity-100 group-hover:opacity-100',
         copied
-          ? 'bg-emerald-400/10 ring-1 ring-inset ring-emerald-400/20'
+          ? 'bg-amber-400/10 ring-1 ring-inset ring-amber-400/20'
           : 'hover:bg-white/7.5 dark:bg-white/2.5 bg-white/5 dark:hover:bg-white/5'
       )}
       onClick={() => {
@@ -93,7 +93,7 @@ function CopyButton({ code }: { code: string }) {
       <span
         aria-hidden={!copied}
         className={clsx(
-          'pointer-events-none absolute inset-0 flex items-center justify-center text-emerald-400 transition duration-300',
+          'pointer-events-none absolute inset-0 flex items-center justify-center text-amber-400 transition duration-300',
           !copied && 'translate-y-1.5 opacity-0'
         )}
       >
@@ -211,7 +211,7 @@ function CodeGroupHeader({
               className={clsx(
                 'data-selected:not-data-focus:outline-hidden border-b py-3 transition',
                 childIndex === selectedIndex
-                  ? 'border-emerald-500 text-emerald-400'
+                  ? 'border-amber-500 text-amber-400'
                   : 'border-transparent text-zinc-400 hover:text-zinc-300'
               )}
             >

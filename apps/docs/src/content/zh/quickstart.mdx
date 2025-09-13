@@ -96,19 +96,43 @@ pcu -i
 
 ## 下一步
 
-现在您已经安装并运行了 PCU，探索更多功能：
+<Resources>
+  <Resource
+    href="/command-reference"
+    title="命令参考"
+    description="所有 PCU 命令和选项的完整指南。"
+  />
+  <Resource href="/configuration" title="配置" description="学习如何为您的工作流程配置 PCU。" />
+  <Resource href="/examples" title="示例" description="实际示例和用例。" />
+  <Resource href="/development" title="开发" description="设置 PCU 进行开发和贡献。" />
+</Resources>
 
-<div className="not-prose mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-  <Button href="/command-reference" variant="filled" arrow="right">
-    查看所有命令
-  </Button>
-  <Button href="/configuration" variant="outline" arrow="right">
-    学习配置选项
-  </Button>
-  <Button href="/examples" variant="outline" arrow="right">
-    查看示例和用例
-  </Button>
-  <Button href="/development" variant="text" arrow="right">
-    参与开发
-  </Button>
-</div>
+## 入门清单
+
+按照此清单在您的项目中运行 PCU：
+
+1. **安装 PCU** - 选择全局安装或使用 npx
+2. **初始化工作空间** - 运行 `pcu init` 进行首次设置
+3. **检查更新** - 使用 `pcu -c` 查看可用更新
+4. **配置设置** - 根据需要自定义 `.pcurc.json`
+5. **更新依赖** - 使用交互模式 `pcu -i` 进行安全更新
+6. **设置自动化** - 考虑 CI/CD 集成以进行定期检查
+
+## 基本命令快速参考
+
+| 命令           | 用途         | 使用时机          |
+| -------------- | ------------ | ----------------- |
+| `pcu init`     | 设置工作空间 | 首次设置，新项目  |
+| `pcu -c`       | 检查更新     | 日常开发，CI 检查 |
+| `pcu -i`       | 交互式更新   | 安全手动更新      |
+| `pcu -u`       | 批量更新     | 自动更新，CI/CD   |
+| `pcu security` | 安全扫描     | 发布前，定期审核  |
+
+## 后续步骤
+
+一旦您设置了 PCU，探索这些高级功能：
+
+- **[配置](/configuration)** - 为您的特定工作流程自定义 PCU
+- **[安全扫描](/command-reference#pcu-security)** - 集成漏洞扫描
+- **[Monorepo 管理](/configuration#monorepo-configuration)** - 高级工作空间功能
+- **[CI/CD 集成](/examples)** - 在您的流水线中自动化依赖更新

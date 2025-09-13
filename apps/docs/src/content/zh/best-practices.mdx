@@ -38,10 +38,10 @@ export const metadata = {
 
 **审查前检查清单：**
 
-- [ ] 运行 `pcu check --dry-run` 预览更改
-- [ ] 验证主版本更新中没有破坏性变更
-- [ ] 依赖更新后测试关键功能
-- [ ] 审查更新包的 CHANGELOG 文件
+1. 运行 `pcu check --dry-run` 预览更改
+2. 验证主版本更新中没有破坏性变更
+3. 依赖更新后测试关键功能
+4. 审查更新包的 CHANGELOG 文件
 
 **审查流程：**
 
@@ -497,28 +497,28 @@ fi
 
 ### 日常工作流
 
-- [ ] 检查安全更新：`pcu security`
-- [ ] 审查过时依赖：`pcu check --limit 10`
-- [ ] 更新补丁版本：`pcu update --target patch`
+1. 检查安全更新：`pcu security`
+2. 审查过时依赖：`pcu check --limit 10`
+3. 更新补丁版本：`pcu update --target patch`
 
 ### 每周工作流
 
-- [ ] 全面依赖检查：`pcu check`
-- [ ] 更新小版本：`pcu update --target minor --interactive`
-- [ ] 审查和更新排除规则
-- [ ] 为团队审查生成依赖报告
+1. 全面依赖检查：`pcu check`
+2. 更新小版本：`pcu update --target minor --interactive`
+3. 审查和更新排除规则
+4. 为团队审查生成依赖报告
 
 ### 每月工作流
 
-- [ ] 审查主版本更新：`pcu check --target latest`
-- [ ] 更新开发依赖：`pcu update --dev`
-- [ ] 审核依赖许可证和合规性
-- [ ] 审查和优化 PCU 配置
-- [ ] 清理未使用的依赖
+1. 审查主版本更新：`pcu check --target latest`
+2. 更新开发依赖：`pcu update --dev`
+3. 审核依赖许可证和合规性
+4. 审查和优化 PCU 配置
+5. 清理未使用的依赖
 
 ### 发布前
 
-- [ ] 运行完整依赖审核：`pcu security --comprehensive`
-- [ ] 创建备份：`pcu update --create-backup`
-- [ ] 在预发布环境测试
-- [ ] 生成包含依赖变更的发布说明
+1. 运行完整依赖审核：`pcu security --comprehensive`
+2. 创建备份：`pcu update --create-backup`
+3. 在预发布环境测试
+4. 生成包含依赖变更的发布说明

@@ -144,10 +144,49 @@
     "checkDependenciesLink": "View dependency management documentation",
     "learnErrorsLink": "Learn about PCU error handling"
   },
+  "Guides": {
+    "title": "Guides",
+    "readMore": "Read more",
+    "commandReference": {
+      "name": "Command Reference",
+      "description": "Complete reference for all PCU commands and their options."
+    },
+    "configuration": {
+      "name": "Configuration",
+      "description": "Learn how to configure PCU for your workflow and project needs."
+    },
+    "troubleshooting": {
+      "name": "Troubleshooting",
+      "description": "Common issues and solutions when working with PCU and dependencies."
+    },
+    "examples": {
+      "name": "Examples",
+      "description": "Practical examples and use cases for managing catalog dependencies."
+    }
+  },
+  "Resources": {
+    "title": "Resources",
+    "configuration": {
+      "name": "Configuration",
+      "description": "Learn about PCU configuration options and how to customize your setup for different workflows."
+    },
+    "examples": {
+      "name": "Examples",
+      "description": "Explore practical examples and common use cases for managing dependencies with PCU."
+    },
+    "troubleshooting": {
+      "name": "Troubleshooting",
+      "description": "Common issues and solutions when using PCU. Error messages, debugging tips, and troubleshooting guides."
+    },
+    "development": {
+      "name": "Development",
+      "description": "Learn about development workflows, contributing guidelines, and advanced PCU usage patterns."
+    }
+  },
   "Footer": {
     "previous": "Previous",
     "next": "Next",
-    "copyright": "Copyright {year}. All rights reserved.",
+    "copyright": "{year} pnpm-catalog-updates. All rights reserved.",
     "followGitHub": "Follow us on GitHub",
     "joinDiscord": "Join our Discord server"
   }
