@@ -11,10 +11,14 @@ import { locales, type Locale } from '@/i18n'
 
 import '@/styles/tailwind.css'
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Home' })
-  
+
   return {
     title: {
       template: `%s - ${t('title')}`,
