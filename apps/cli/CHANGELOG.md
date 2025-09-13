@@ -1,5 +1,13 @@
 # pcu
 
+## 0.7.17
+
+### Patch Changes
+
+- 6aefdbb: feat: update readme
+
+  add some content to readme
+
 ## 0.7.16
 
 ### Patch Changes
