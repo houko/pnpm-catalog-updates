@@ -109,6 +109,21 @@ function NpmIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   )
 }
 
+function AnalyticsIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true" {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M2 4.25A2.25 2.25 0 0 1 4.25 2h11.5A2.25 2.25 0 0 1 18 4.25v11.5A2.25 2.25 0 0 1 15.75 18H4.25A2.25 2.25 0 0 1 2 15.75V4.25zM4.25 3.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h11.5a.75.75 0 0 0 .75-.75V4.25a.75.75 0 0 0-.75-.75H4.25z"
+      />
+      <path d="M6.5 12.5A1.5 1.5 0 0 1 8 11v2a1.5 1.5 0 0 1-1.5 1.5V12.5z" />
+      <path d="M9.5 8.5A1.5 1.5 0 0 1 11 7v6a1.5 1.5 0 0 1-1.5 1.5V8.5z" />
+      <path d="M12.5 5.5A1.5 1.5 0 0 1 14 4v9a1.5 1.5 0 0 1-1.5 1.5V5.5z" />
+    </svg>
+  )
+}
+
 function SocialLink({
   href,
   icon: Icon,
@@ -146,6 +161,12 @@ function SmallPrint() {
         </SocialLink>
         <SocialLink href="https://www.npmjs.com/package/pcu" icon={NpmIcon}>
           NPM: pcu
+        </SocialLink>
+        <SocialLink
+          href="https://analytics.xiaomo.info/share/hK51sn4I3Ev7I2pc/pcu-cli.dev"
+          icon={AnalyticsIcon}
+        >
+          Analytics
         </SocialLink>
       </div>
     </div>

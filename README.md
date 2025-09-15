@@ -69,13 +69,13 @@ pcu -i
 
 ![Image](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
 
-** [Complete Installation & Usage Guide](https://pcu-cli.dev/en/quickstart)**
+**[Complete Installation & Usage Guide](https://pcu-cli.dev/en/quickstart)**
 
 ## Documentation
 
-** [Complete Command Reference](https://pcu-cli.dev/en/command-reference)**  
-** [Configuration Guide](https://pcu-cli.dev/en/configuration)**  
-** [Examples & Use Cases](https://pcu-cli.dev/en/examples)**
+**[Complete Command Reference](https://pcu-cli.dev/en/command-reference)**  
+**[Configuration Guide](https://pcu-cli.dev/en/configuration)**  
+**[Examples & Use Cases](https://pcu-cli.dev/en/examples)**
 
 ## Project Structure
 
@@ -89,7 +89,7 @@ This project is organized as a pnpm monorepo with clean architecture:
     └── utils/                  # Shared utilities
 ```
 
-** [Detailed Architecture Guide](https://pcu-cli.dev/en/development)**
+**[Detailed Architecture Guide](https://pcu-cli.dev/en/development)**
 
 ## Development
 
@@ -113,7 +113,7 @@ pnpm build
 pnpm dev --help
 ```
 
-** [Complete Development Guide](https://pcu-cli.dev/en/development)**
+**[Complete Development Guide](https://pcu-cli.dev/en/development)**
 
 ## Configuration Example
 
@@ -146,14 +146,14 @@ catalogs:
 }
 ```
 
-** [Configuration Examples & Templates](https://pcu-cli.dev/en/examples)**
+**[Configuration Examples & Templates](https://pcu-cli.dev/en/examples)**
 
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
 for details.
 
-** [Development Setup & Guidelines](https://pcu-cli.dev/en/development)**
+**[Development Setup & Guidelines](https://pcu-cli.dev/en/development)**
 
 ## License
 

@@ -1,5 +1,5 @@
 ---
-'pcu': patch
+'@pcu/docs': patch
 ---
 
 # fix: add docs i18n
