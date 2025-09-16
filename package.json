@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/houko/pnpm-catalog-updates/issues"
   },
-  "homepage": "https://github.com/houko/pnpm-catalog-updates#readme",
+  "homepage": "https://pcu-cli.dev",
   "engines": {
     "node": ">=22.0.0"
   },

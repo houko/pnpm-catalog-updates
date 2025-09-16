@@ -537,8 +537,7 @@ When reporting issues, include:
   [Report bugs and feature requests](https://github.com/houko/pnpm-catalog-updates/issues)
 - **Discussions**:
   [Join community discussions](https://github.com/houko/pnpm-catalog-updates/discussions)
-- **Documentation**:
-  [Read the docs](https://github.com/houko/pnpm-catalog-updates#readme)
+- **Documentation**: [Read the docs](https://pcu-cli.dev)
 
 ## 🔗 Useful Commands
 

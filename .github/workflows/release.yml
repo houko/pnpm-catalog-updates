@@ -164,7 +164,7 @@ jobs:
             pcu -s --validate
             ```
 
-            For complete documentation, visit: https://github.com/houko/pnpm-catalog-updates#readme
+            For complete documentation, visit: https://pcu-cli.dev
           draft: false
           prerelease: false
 

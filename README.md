@@ -1,7 +1,7 @@
 # pnpm-catalog-updates
 
-A powerful CLI tool to check and update pnpm workspace catalog
-dependencies,inspired by
+A powerful CLI tool to check and update pnpm workspace catalog dependencies,
+inspired by
 [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
 
 **Full Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
