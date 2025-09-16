@@ -163,7 +163,7 @@ function SmallPrint() {
           NPM: pcu
         </SocialLink>
         <SocialLink
-          href="https://analytics.xiaomo.info/share/hK51sn4I3Ev7I2pc/pcu-cli.dev"
+          href="https://analytics.pcu-cli.dev/share/hK51sn4I3Ev7I2pc/pcu-cli.dev"
           icon={AnalyticsIcon}
         >
           Analytics
