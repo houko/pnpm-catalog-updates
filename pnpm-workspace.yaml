@@ -28,7 +28,7 @@ catalog:
   "@headlessui/react": 2.2.9
   "@mdx-js/loader": 3.1.1
   "@mdx-js/react": 3.1.1
-  "@next/mdx": 16.1.6
+  "@next/mdx": 16.2.4
   npm-registry-fetch: 19.1.1
   pacote: 21.5.0
   lodash: ^4.17.23
@@ -74,7 +74,7 @@ catalog:
   # Frontend dependencies
   react: 19.2.4
   "react-dom": 19.2.4
-  next: 16.1.6
+  next: ^16.2.4
   tailwindcss: 4.2.1
   "@types/react": 19.2.14
   "@types/react-dom": 19.2.3
