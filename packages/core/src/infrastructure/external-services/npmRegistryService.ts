@@ -157,10 +157,10 @@ interface NpmAuditAdvisory {
 }
 
 /**
- * NPM audit response structure
+ * NPM audit response structure (v1 advisories format)
  */
 interface NpmAuditResponse {
-  advisories?: Record<string, NpmAuditAdvisory>
+  advisories?: Record<string, NpmAuditAdvisory | NpmAuditAdvisory[]>
 }
 
 /**
@@ -648,16 +648,16 @@ export class NpmRegistryService {
     }
 
     try {
-      // Use npm audit API
+      // Use npm v1 bulk advisories API (legacy /-/npm/v1/security/audits retired in pnpm v11)
       const auditData = {
-        name: packageName,
-        version: version,
-        requires: {},
-        dependencies: {},
+        query: {
+          name: packageName,
+          version: version,
+        },
       }
 
       const authConfig = this.getAuthConfig(registryUrl)
-      const response = await npmRegistryFetch('/-/npm/v1/security/audits', {
+      const response = await npmRegistryFetch('/v1/advisories/bulk', {
         method: 'POST',
         body: JSON.stringify(auditData),
         headers: {
@@ -671,19 +671,23 @@ export class NpmRegistryService {
       const auditResult = (await response.json()) as NpmAuditResponse
       const vulnerabilities: SecurityVulnerability[] = []
 
-      // Parse audit results
+      // Parse audit results (new npm v1 advisories format: advisories are arrays per package)
       if (auditResult.advisories) {
-        for (const advisory of Object.values(auditResult.advisories)) {
-          vulnerabilities.push({
-            id: advisory.id.toString(),
-            title: advisory.title,
-            severity: advisory.severity,
-            description: advisory.overview,
-            reference: advisory.url,
-            vulnerable_versions: advisory.vulnerable_versions,
-            patched_versions: advisory.patched_versions,
-            recommendation: advisory.recommendation,
-          })
+        for (const [pkgName, advisories] of Object.entries(auditResult.advisories)) {
+          // Each package name maps to an array of advisories
+          const advisoryList = Array.isArray(advisories) ? advisories : [advisories]
+          for (const advisory of advisoryList) {
+            vulnerabilities.push({
+              id: advisory.id.toString(),
+              title: advisory.title,
+              severity: advisory.severity,
+              description: advisory.overview,
+              reference: advisory.url,
+              vulnerable_versions: advisory.vulnerable_versions,
+              patched_versions: advisory.patched_versions,
+              recommendation: advisory.recommendation,
+            })
+          }
         }
       }
 
