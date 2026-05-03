@@ -104,7 +104,7 @@ export class ImpactAnalysisService {
       if (!isTransient) {
         logger.error(
           `Non-transient security analysis error for ${packageName}: ${errorMessage}`,
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         )
         throw error
       }
