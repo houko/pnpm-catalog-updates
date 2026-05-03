@@ -673,7 +673,7 @@ export class NpmRegistryService {
 
       // Parse audit results (new npm v1 advisories format: advisories are arrays per package)
       if (auditResult.advisories) {
-        for (const [pkgName, advisories] of Object.entries(auditResult.advisories)) {
+        for (const [_pkgName, advisories] of Object.entries(auditResult.advisories)) {
           // Each package name maps to an array of advisories
           const advisoryList = Array.isArray(advisories) ? advisories : [advisories]
           for (const advisory of advisoryList) {

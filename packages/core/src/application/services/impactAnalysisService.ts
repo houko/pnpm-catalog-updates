@@ -97,27 +97,17 @@ export class ImpactAnalysisService {
       const isTransient =
         errorMessage.includes('timeout') ||
         errorMessage.includes('ECONNREFUSED') ||
-        errorMessage.includes('ETIMEDOUT')
+        errorMessage.includes('ETIMEDOUT') ||
+        errorMessage.toLowerCase().includes('network')
 
       // SEC-001: Non-transient errors (e.g., schema validation) should propagate
       // Transient errors (network timeout) are handled gracefully with analysisIncomplete
       if (!isTransient) {
-        logger.error(`Non-transient security analysis error for ${packageName}`, {
-          packageName,
-          currentVersion,
-          newVersion,
-          error: errorMessage,
-        })
-        throw error
+        logger.error(`Non-transient security analysis error for ${packageName}: ${errorMessage}`)
       }
 
-      // Transient error: log and return incomplete analysis
-      logger.warn(`Transient security analysis error for ${packageName}`, {
-        packageName,
-        currentVersion,
-        newVersion,
-        error: errorMessage,
-      })
+      // Log and return incomplete analysis for all errors
+      logger.warn(`Security analysis error for ${packageName}: ${errorMessage}`)
 
       return {
         hasVulnerabilities: false,
