@@ -133,10 +133,8 @@ jobs:
         with:
           node-version: '22.13.0'
 
-      - name: Setup pnpm v11
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
