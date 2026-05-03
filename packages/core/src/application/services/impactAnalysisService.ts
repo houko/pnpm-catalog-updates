@@ -97,7 +97,8 @@ export class ImpactAnalysisService {
       const isTransient =
         errorMessage.includes('timeout') ||
         errorMessage.includes('ECONNREFUSED') ||
-        errorMessage.includes('ETIMEDOUT')
+        errorMessage.includes('ETIMEDOUT') ||
+        errorMessage.toLowerCase().includes('network')
 
       // SEC-001: Non-transient errors (e.g., schema validation) should propagate
       // Transient errors (network timeout) are handled gracefully with analysisIncomplete
