@@ -103,15 +103,11 @@ export class ImpactAnalysisService {
       // SEC-001: Non-transient errors (e.g., schema validation) should propagate
       // Transient errors (network timeout) are handled gracefully with analysisIncomplete
       if (!isTransient) {
-        logger.error(
-          `Non-transient security analysis error for ${packageName}: ${errorMessage}`,
-          error instanceof Error ? error : undefined
-        )
-        throw error
+        logger.error(`Non-transient security analysis error for ${packageName}: ${errorMessage}`)
       }
 
-      // Transient error: log and return incomplete analysis
-      logger.warn(`Transient security analysis error for ${packageName}: ${errorMessage}`)
+      // Log and return incomplete analysis for all errors
+      logger.warn(`Security analysis error for ${packageName}: ${errorMessage}`)
 
       return {
         hasVulnerabilities: false,
