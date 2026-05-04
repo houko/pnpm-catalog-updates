@@ -47,12 +47,5 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install --frozen-lockfile
-
-    - name: Approve pnpm builds (for pnpm v11 native modules)
-      shell: bash
-      run: pnpm approve-builds || true
-
-    - name: Re-install with approved builds
-      shell: bash
-      run: pnpm install --frozen-lockfile || pnpm install
+      run: |
+        pnpm install --frozen-lockfile
