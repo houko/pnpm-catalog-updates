@@ -56,21 +56,21 @@ import {
 
 // Re-export all types for backward compatibility
 export type {
-  CheckOptions,
-  OutdatedReport,
   CatalogUpdateInfo,
+  CheckOptions,
   OutdatedDependencyInfo,
-  UpdateTarget,
+  OutdatedReport,
+  PackageImpact,
+  PlannedUpdate,
+  SecurityImpact,
+  SkippedDependency,
+  UpdatedDependency,
+  UpdateError,
   UpdateOptions,
   UpdatePlan,
-  PlannedUpdate,
-  VersionConflict,
   UpdateResult,
-  UpdatedDependency,
-  SkippedDependency,
-  UpdateError,
-  PackageImpact,
-  SecurityImpact,
+  UpdateTarget,
+  VersionConflict,
 }
 
 export interface ImpactAnalysis {
