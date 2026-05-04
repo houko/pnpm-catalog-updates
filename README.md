@@ -84,3 +84,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 Made with love for the pnpm community
+# CI re-run 2026-05-04T15:35:41Z
