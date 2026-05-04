@@ -28,7 +28,7 @@
     "node": ">=22.13.0",
     "pnpm": ">=10 <12"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@11.0.4",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -90,14 +90,7 @@
       "rollup": "4.59.0",
       "sucrase": "3.35.1",
       "tar": "7.5.11"
-    },
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "@swc/core",
-      "esbuild",
-      "msw",
-      "sharp"
-    ]
+    }
   },
   "volta": {
     "node": ">=22.13.0",
