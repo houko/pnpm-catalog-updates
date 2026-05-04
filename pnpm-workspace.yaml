@@ -3,11 +3,11 @@ packages:
   - "apps/*"
   - "!apps/example"
 allowBuilds:
-  '@parcel/watcher': set this to true or false
-  '@swc/core': set this to true or false
-  esbuild: set this to true or false
-  msw: set this to true or false
-  sharp: set this to true or false
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  msw: true
+  sharp: true
 catalog:
   "@algolia/autocomplete-core": 1.19.6
   "@changesets/cli": ^2.30.0
