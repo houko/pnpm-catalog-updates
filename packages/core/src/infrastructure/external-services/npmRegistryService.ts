@@ -648,16 +648,14 @@ export class NpmRegistryService {
     }
 
     try {
-      // Use npm v1 bulk advisories API (legacy /-/npm/v1/security/audits retired in pnpm v11)
+      // npm /v6/audit endpoint 是当前 npm 和 pnpm v11+ 官方支持的标准 API
       const auditData = {
-        query: {
-          name: packageName,
-          version: version,
-        },
+        name: packageName,
+        version: version,
       }
 
       const authConfig = this.getAuthConfig(registryUrl)
-      const response = await npmRegistryFetch('/v1/advisories/bulk', {
+      const response = await npmRegistryFetch('/-/npm/v6/audit/quick', {
         method: 'POST',
         body: JSON.stringify(auditData),
         headers: {
@@ -668,26 +666,22 @@ export class NpmRegistryService {
         ...authConfig,
       })
 
-      const auditResult = (await response.json()) as NpmAuditResponse
+      const auditResult = (await response.json()) as any
       const vulnerabilities: SecurityVulnerability[] = []
 
-      // Parse audit results (new npm v1 advisories format: advisories are arrays per package)
+      // 解析 npm v6 audit quick API 响应格式
       if (auditResult.advisories) {
-        for (const [_pkgName, advisories] of Object.entries(auditResult.advisories)) {
-          // Each package name maps to an array of advisories
-          const advisoryList = Array.isArray(advisories) ? advisories : [advisories]
-          for (const advisory of advisoryList) {
-            vulnerabilities.push({
-              id: advisory.id.toString(),
-              title: advisory.title,
-              severity: advisory.severity,
-              description: advisory.overview,
-              reference: advisory.url,
-              vulnerable_versions: advisory.vulnerable_versions,
-              patched_versions: advisory.patched_versions,
-              recommendation: advisory.recommendation,
-            })
-          }
+        for (const [id, advisory] of Object.entries(auditResult.advisories)) {
+          vulnerabilities.push({
+            id: id,
+            title: advisory.title,
+            severity: advisory.severity,
+            description: advisory.overview,
+            reference: advisory.url,
+            vulnerable_versions: advisory.vulnerable_versions,
+            patched_versions: advisory.patched_versions,
+            recommendation: advisory.recommendation,
+          })
         }
       }
 
