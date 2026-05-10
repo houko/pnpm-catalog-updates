@@ -25,8 +25,8 @@
   },
   "homepage": "https://pcu-cli.dev",
   "engines": {
-    "node": ">=22.13.0",
-    "pnpm": ">=10 <12"
+    "pnpm": ">=11.0.0",
+    "node": ">=20.0.0"
   },
   "packageManager": "pnpm@11.0.4",
   "type": "module",
