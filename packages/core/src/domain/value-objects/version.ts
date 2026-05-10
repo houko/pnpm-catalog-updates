@@ -260,17 +260,17 @@ export class VersionRange {
     const minVer = this.getMinVersion()
     if (!minVer) return null
 
-    // For caret ranges (^1.2.3), max is < 2.0.0
+    // For caret ranges (^1.2.3), max is < 2.0.0 -> return 1.99999.99999
     if (this.value.startsWith('^')) {
       const major = minVer.getMajor()
-      return Version.fromComponents(major + 1, 0, 0)
+      return Version.fromComponents(major, 99999, 99999)
     }
 
-    // For tilde ranges (~1.2.3), max is < 1.3.0
+    // For tilde ranges (~1.2.3), max is < 1.3.0 -> return 1.2.99999
     if (this.value.startsWith('~')) {
       const major = minVer.getMajor()
       const minor = minVer.getMinor()
-      return Version.fromComponents(major, minor + 1, 0)
+      return Version.fromComponents(major, minor, 99999)
     }
 
     return null
