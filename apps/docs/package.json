@@ -32,7 +32,7 @@
     "gray-matter": "catalog:",
     "mdast-util-to-string": "catalog:",
     "mdx-annotations": "catalog:",
-    "next": "catalog:",
+    "next": "^16.3.1",
     "next-intl": "catalog:",
     "next-mdx-remote": "catalog:",
     "next-themes": "catalog:",
