@@ -104,10 +104,13 @@ export class ImpactAnalysisService {
       // Transient errors (network timeout) are handled gracefully with analysisIncomplete
       if (!isTransient) {
         logger.error(`Non-transient security analysis error for ${packageName}: ${errorMessage}`)
+        throw error
       }
 
-      // Log and return incomplete analysis for all errors
-      logger.warn(`Security analysis error for ${packageName}: ${errorMessage}`)
+      // Log and return incomplete analysis for transient network errors only
+      logger.warn(
+        `Transient network error during security analysis for ${packageName}: ${errorMessage}`
+      )
 
       return {
         hasVulnerabilities: false,
