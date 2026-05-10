@@ -672,15 +672,16 @@ export class NpmRegistryService {
       // 解析 npm v6 audit quick API 响应格式
       if (auditResult.advisories) {
         for (const [id, advisory] of Object.entries(auditResult.advisories)) {
+          const adv = advisory as any
           vulnerabilities.push({
             id: id,
-            title: advisory.title,
-            severity: advisory.severity,
-            description: advisory.overview,
-            reference: advisory.url,
-            vulnerable_versions: advisory.vulnerable_versions,
-            patched_versions: advisory.patched_versions,
-            recommendation: advisory.recommendation,
+            title: adv.title,
+            severity: adv.severity,
+            description: adv.overview,
+            reference: adv.url,
+            vulnerable_versions: adv.vulnerable_versions,
+            patched_versions: adv.patched_versions,
+            recommendation: adv.recommendation,
           })
         }
       }
