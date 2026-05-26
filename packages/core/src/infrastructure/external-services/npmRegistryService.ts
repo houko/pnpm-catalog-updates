@@ -157,13 +157,6 @@ interface NpmAuditAdvisory {
 }
 
 /**
- * NPM audit response structure (v1 advisories format)
- */
-interface NpmAuditResponse {
-  advisories?: Record<string, NpmAuditAdvisory | NpmAuditAdvisory[]>
-}
-
-/**
  * NPM download stats response
  */
 interface NpmDownloadStats {
