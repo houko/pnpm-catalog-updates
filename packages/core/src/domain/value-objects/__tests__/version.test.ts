@@ -321,8 +321,8 @@ describe('VersionRange', () => {
     it('should return max version for caret range', () => {
       const range = VersionRange.fromString('^1.2.3')
       const maxVersion = range.getMaxVersion()
-      // For ^1.2.3, max is <2.0.0
-      expect(maxVersion?.getMajor()).toBe(2)
+      // getMaxVersion returns the max *satisfying* version; for ^1.2.3 that is 1.x (< 2.0.0)
+      expect(maxVersion?.getMajor()).toBe(1)
     })
   })
 

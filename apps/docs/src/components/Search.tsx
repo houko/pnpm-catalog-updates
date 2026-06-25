@@ -327,6 +327,7 @@ function SearchDialog({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname/searchParams are intentional triggers to close the dialog on navigation
   useEffect(() => {
     setOpen(false)
   }, [pathname, searchParams, setOpen])
@@ -416,15 +417,12 @@ function useSearchProps() {
     },
     dialogProps: {
       open,
-      setOpen: useCallback(
-        (open: boolean) => {
-          const { width = 0, height = 0 } = buttonRef.current?.getBoundingClientRect() ?? {}
-          if (!open || (width !== 0 && height !== 0)) {
-            setOpen(open)
-          }
-        },
-        [setOpen]
-      ),
+      setOpen: useCallback((open: boolean) => {
+        const { width = 0, height = 0 } = buttonRef.current?.getBoundingClientRect() ?? {}
+        if (!open || (width !== 0 && height !== 0)) {
+          setOpen(open)
+        }
+      }, []),
     },
   }
 }
