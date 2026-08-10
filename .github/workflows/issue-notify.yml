@@ -6,7 +6,7 @@ on:
 
 jobs:
   notify:
-    runs-on: ubuntu-latest
+    runs-on: yldm-backend-runners
     steps:
       - name: Send Telegram Notification
         env:

@@ -30,7 +30,7 @@ jobs:
   prepare_release:
     name: Prepare Release
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_type != 'current' }}
-    runs-on: ubuntu-latest
+    runs-on: yldm-backend-runners
     timeout-minutes: 10
     permissions:
       contents: write
@@ -111,7 +111,7 @@ jobs:
           )
         )
       }}
-    runs-on: ubuntu-latest
+    runs-on: yldm-backend-runners
     timeout-minutes: 20
     permissions:
       contents: write
