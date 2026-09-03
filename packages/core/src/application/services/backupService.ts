@@ -56,6 +56,10 @@ export class BackupService {
    * Create a backup of the specified file
    */
   async createBackup(filePath: string): Promise<string> {
+    return this.createBackupFile(filePath, true)
+  }
+
+  private async createBackupFile(filePath: string, cleanup: boolean): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const fileName = path.basename(filePath)
     const dir = this.backupDir || path.dirname(filePath)
@@ -71,7 +75,9 @@ export class BackupService {
       logger.info('Backup created', { original: filePath, backup: backupPath })
 
       // Clean up old backups if necessary
-      await this.cleanupOldBackups(filePath)
+      if (cleanup) {
+        await this.cleanupOldBackups(filePath)
+      }
 
       return backupPath
     } catch (error) {
@@ -134,11 +140,14 @@ export class BackupService {
       await fs.access(backupPath)
 
       // Create a backup of current state before restoring (safety net)
-      const preRestoreBackup = await this.createBackup(originalFilePath)
+      // Do not run retention before reading the selected backup: it may be the oldest retained file.
+      const preRestoreBackup = await this.createBackupFile(originalFilePath, false)
       logger.info('Created pre-restore backup', { path: preRestoreBackup })
 
       // Restore from backup
       await fs.copyFile(backupPath, originalFilePath)
+
+      await this.cleanupOldBackups(originalFilePath)
 
       logger.info('Restored from backup', { original: originalFilePath, backup: backupPath })
 

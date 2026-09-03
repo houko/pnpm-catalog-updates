@@ -791,7 +791,7 @@ export class FileSystemService {
    */
   async createBackup(filePath: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const backupPath = `${filePath}.backup.${timestamp}`
+    const backupPath = `${filePath}.transaction-backup.${timestamp}`
 
     try {
       await fs.copyFile(filePath, backupPath)

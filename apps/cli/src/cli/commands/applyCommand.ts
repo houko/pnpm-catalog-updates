@@ -8,6 +8,7 @@ import {
   createWorkspaceFingerprint,
   updatePlanFromArtifact,
   verifyUpdatePlanArtifact,
+  verifyUpdatePlanPreconditions,
   WorkspacePath,
 } from '@pcu/core'
 import { CommandExitError } from '@pcu/utils'
@@ -42,14 +43,33 @@ export class ApplyCommand {
     const beforeVerification = verifyUpdatePlanArtifact(artifact, currentWorkspace)
 
     if (beforeVerification.success) {
+      const installResult = options.install
+        ? await this.packageManagerService.install({ cwd: workspacePath, verbose: false })
+        : undefined
+      const success = installResult?.success ?? true
       printWorkflowJson({
         kind: 'pcu.apply-result',
         schemaVersion: 1,
-        success: true,
+        success,
         changed: false,
         alreadyApplied: true,
         verification: beforeVerification,
+        ...(installResult
+          ? {
+              install: {
+                packageManager: this.packageManagerService.getName(),
+                success: installResult.success,
+                exitCode: installResult.code,
+              },
+            }
+          : {}),
       })
+      if (!success) {
+        throw CommandExitError.withCode(
+          WORKFLOW_EXIT_CODES.invalidInput,
+          'Catalog updates are present, but pnpm install failed'
+        )
+      }
       return
     }
 
@@ -71,6 +91,25 @@ export class ApplyCommand {
         },
       })
       throw CommandExitError.withCode(WORKFLOW_EXIT_CODES.stalePlan, 'Update plan is stale')
+    }
+
+    const preconditions = verifyUpdatePlanPreconditions(artifact, currentWorkspace)
+    if (!preconditions.success) {
+      printWorkflowJson({
+        kind: 'pcu.apply-result',
+        schemaVersion: 1,
+        success: false,
+        changed: false,
+        error: {
+          code: 'PLAN_PRECONDITION_FAILED',
+          message: 'The workspace does not contain every planned source version',
+          mismatches: preconditions.mismatches,
+        },
+      })
+      throw CommandExitError.withCode(
+        WORKFLOW_EXIT_CODES.stalePlan,
+        'Update plan preconditions do not match the workspace'
+      )
     }
 
     if (artifact.hasConflicts && !options.force) {
@@ -97,6 +136,7 @@ export class ApplyCommand {
         workspacePath,
         force: options.force ?? false,
         createBackup: options.backup ?? true,
+        requireBackup: options.backup ?? true,
         dryRun: false,
         noSecurity: true,
       }
@@ -104,17 +144,19 @@ export class ApplyCommand {
 
     const savedWorkspace = await this.workspaceRepository.getByPath(workspacePathValue)
     const verification = verifyUpdatePlanArtifact(artifact, savedWorkspace)
-    const installResult = options.install
-      ? await this.packageManagerService.install({ cwd: workspacePath, verbose: false })
-      : undefined
-    const success = result.success && result.totalErrors === 0 && verification.success
-    const completeSuccess = success && (installResult?.success ?? true)
+    const executionSucceeded = result.success && result.totalErrors === 0
+    const updateSucceeded = executionSucceeded && verification.success
+    const installResult =
+      options.install && updateSucceeded
+        ? await this.packageManagerService.install({ cwd: workspacePath, verbose: false })
+        : undefined
+    const completeSuccess = updateSucceeded && (installResult?.success ?? true)
 
     printWorkflowJson({
       kind: 'pcu.apply-result',
       schemaVersion: 1,
       success: completeSuccess,
-      changed: result.totalUpdated > 0,
+      changed: executionSucceeded && result.totalUpdated > 0,
       alreadyApplied: false,
       update: {
         totalUpdated: result.totalUpdated,
@@ -135,10 +177,10 @@ export class ApplyCommand {
         : {}),
     })
 
-    if (!success) {
-      const exitCode = verification.success
-        ? WORKFLOW_EXIT_CODES.invalidInput
-        : WORKFLOW_EXIT_CODES.verificationFailed
+    if (!updateSucceeded) {
+      const exitCode = executionSucceeded
+        ? WORKFLOW_EXIT_CODES.verificationFailed
+        : WORKFLOW_EXIT_CODES.invalidInput
       throw CommandExitError.withCode(exitCode, 'Failed to apply the complete update plan')
     }
 

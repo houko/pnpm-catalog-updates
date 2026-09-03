@@ -30,6 +30,8 @@ export type {
   // Impact Analysis types
   PackageImpact,
   PlannedUpdate,
+  PlanPreconditionMismatch,
+  PlanPreconditionMismatchReason,
   // Interface types
   ProgressReporter,
   ProgressReporterOptions,
@@ -42,6 +44,7 @@ export type {
   UpdatePlan,
   UpdatePlanArtifact,
   UpdatePlanCriteria,
+  UpdatePlanPreconditionVerification,
   UpdatePlanVerification,
   UpdateResult,
   UpdateTarget,
@@ -81,6 +84,7 @@ export {
   updatePlanArtifactSchema,
   updatePlanFromArtifact,
   verifyUpdatePlanArtifact,
+  verifyUpdatePlanPreconditions,
   WorkspaceService,
 } from './application/index.js'
 export type {

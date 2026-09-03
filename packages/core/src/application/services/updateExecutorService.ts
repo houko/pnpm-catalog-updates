@@ -64,8 +64,10 @@ export class UpdateExecutorService {
   async executeUpdates(plan: UpdatePlan, options: UpdateOptions): Promise<UpdateResult> {
     const workspacePath = WorkspacePath.fromString(plan.workspace.path)
 
-    // Load configuration for security settings
-    const config = await ConfigLoader.loadConfig(workspacePath.toString())
+    // Deterministic apply disables security checks and must not load executable workspace config.
+    const config = options.noSecurity
+      ? null
+      : await ConfigLoader.loadConfig(workspacePath.toString())
 
     // Load workspace (getByPath throws WorkspaceNotFoundError if not found)
     const workspace = await this.workspaceRepository.getByPath(workspacePath)
@@ -82,7 +84,7 @@ export class UpdateExecutorService {
 
     // PERF-001: Run security checks in parallel before processing updates
     const securityCheckResults = new Map<string, boolean>()
-    if (!options.noSecurity && config.security?.notifyOnSecurityUpdate) {
+    if (!options.noSecurity && config?.security?.notifyOnSecurityUpdate) {
       const concurrency = config.advanced?.concurrency ?? 8
       await parallelLimit(
         plan.updates,
@@ -143,7 +145,7 @@ export class UpdateExecutorService {
         })
 
         // Log security update notification
-        if (isSecurityUpdate && config.security?.notifyOnSecurityUpdate) {
+        if (isSecurityUpdate && config?.security?.notifyOnSecurityUpdate) {
           logger.info(
             `✅ Security fix applied: ${update.packageName}@${update.currentVersion} → ${update.newVersion}`
           )
@@ -171,20 +173,26 @@ export class UpdateExecutorService {
             backupPath = await this.backupService.createBackup(workspaceYamlPath)
             logger.info(`Backup created before update`, { backupPath })
           } catch (backupError) {
-            // Backup failure should not block updates, but log warning
+            if (options.requireBackup) {
+              throw backupError
+            }
+            // Preserve legacy update behavior where backup creation is best effort.
             logger.warn(`Failed to create backup, proceeding with update`, {
               error: backupError instanceof Error ? backupError.message : String(backupError),
               workspacePath: workspacePath.toString(),
             })
           }
         } else if (options.createBackup && !this.backupService) {
+          if (options.requireBackup) {
+            throw new Error('BackupService is required but not configured')
+          }
           logger.warn(`createBackup option is enabled but BackupService is not configured`)
         }
 
         await this.workspaceRepository.save(workspace)
 
         // Show summary of security updates if any
-        if (securityUpdates.length > 0 && config.security?.notifyOnSecurityUpdate) {
+        if (securityUpdates.length > 0 && config?.security?.notifyOnSecurityUpdate) {
           logger.info(`\n🔒 Security Updates Summary:`)
           logger.info(`   Applied ${securityUpdates.length} security fix(es):`)
           securityUpdates.forEach((update) => logger.info(`   • ${update}`))

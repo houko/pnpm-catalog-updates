@@ -140,6 +140,25 @@ export interface UpdatePlanVerification {
   mismatches: VerificationMismatch[]
 }
 
+export type PlanPreconditionMismatchReason =
+  | 'catalog-missing'
+  | 'package-missing'
+  | 'current-version-mismatch'
+
+export interface PlanPreconditionMismatch {
+  catalogName: string
+  packageName: string
+  expectedCurrentVersion: string
+  actualVersion: string | null
+  reason: PlanPreconditionMismatchReason
+}
+
+export interface UpdatePlanPreconditionVerification {
+  success: boolean
+  checkedUpdates: number
+  mismatches: PlanPreconditionMismatch[]
+}
+
 function isSemanticVersion(value: string): boolean {
   try {
     Version.fromString(value)
@@ -149,16 +168,22 @@ function isSemanticVersion(value: string): boolean {
   }
 }
 
+function compareText(a: string, b: string): number {
+  if (a < b) return -1
+  if (a > b) return 1
+  return 0
+}
+
 function compareUpdate(a: ArtifactPlannedUpdate, b: ArtifactPlannedUpdate): number {
   return (
-    a.catalogName.localeCompare(b.catalogName) ||
-    a.packageName.localeCompare(b.packageName) ||
-    a.newVersion.localeCompare(b.newVersion)
+    compareText(a.catalogName, b.catalogName) ||
+    compareText(a.packageName, b.packageName) ||
+    compareText(a.newVersion, b.newVersion)
   )
 }
 
 function compareConflict(a: ArtifactVersionConflict, b: ArtifactVersionConflict): number {
-  return a.packageName.localeCompare(b.packageName)
+  return compareText(a.packageName, b.packageName)
 }
 
 function toArtifactUpdate(update: PlannedUpdate): ArtifactPlannedUpdate {
@@ -168,7 +193,7 @@ function toArtifactUpdate(update: PlannedUpdate): ArtifactPlannedUpdate {
     currentVersion: update.currentVersion,
     newVersion: update.newVersion,
     updateType: update.updateType,
-    affectedPackages: [...update.affectedPackages].sort(),
+    affectedPackages: [...update.affectedPackages].sort(compareText),
     requireConfirmation: update.requireConfirmation ?? false,
     autoUpdate: update.autoUpdate ?? false,
     groupUpdate: update.groupUpdate ?? false,
@@ -180,7 +205,7 @@ function toArtifactConflict(conflict: VersionConflict): ArtifactVersionConflict 
     packageName: conflict.packageName,
     catalogs: conflict.catalogs
       .map((catalog) => ({ ...catalog }))
-      .sort((a, b) => a.catalogName.localeCompare(b.catalogName)),
+      .sort((a, b) => compareText(a.catalogName, b.catalogName)),
   }
 }
 
@@ -208,8 +233,8 @@ export function createUpdatePlanArtifact(
       includePrerelease: criteria.includePrerelease ?? false,
       securityChecks: criteria.securityChecks ?? false,
       ...(criteria.catalogName ? { catalogName: criteria.catalogName } : {}),
-      include: [...(criteria.include ?? [])].sort(),
-      exclude: [...(criteria.exclude ?? [])].sort(),
+      include: [...(criteria.include ?? [])].sort(compareText),
+      exclude: [...(criteria.exclude ?? [])].sort(compareText),
     },
     updates: plan.updates.map(toArtifactUpdate).sort(compareUpdate),
     conflicts: plan.conflicts.map(toArtifactConflict).sort(compareConflict),
@@ -301,6 +326,62 @@ export function verifyUpdatePlanArtifact(
   return {
     kind: UPDATE_VERIFICATION_KIND,
     schemaVersion: UPDATE_PLAN_ARTIFACT_SCHEMA_VERSION,
+    success: mismatches.length === 0,
+    checkedUpdates: artifact.updates.length,
+    mismatches,
+  }
+}
+
+/**
+ * Verify that every planned update still starts at the version recorded in the artifact.
+ * This prevents a validly-shaped, re-hashed artifact from causing partial writes.
+ */
+export function verifyUpdatePlanPreconditions(
+  artifact: UpdatePlanArtifact,
+  workspace: Workspace
+): UpdatePlanPreconditionVerification {
+  const mismatches: PlanPreconditionMismatch[] = []
+  const catalogs = workspace.getCatalogs()
+
+  for (const update of artifact.updates) {
+    const catalog = catalogs.get(update.catalogName)
+    if (!catalog) {
+      mismatches.push({
+        catalogName: update.catalogName,
+        packageName: update.packageName,
+        expectedCurrentVersion: update.currentVersion,
+        actualVersion: null,
+        reason: 'catalog-missing',
+      })
+      continue
+    }
+
+    const version = catalog.getDependencyVersion(update.packageName)
+    if (!version) {
+      mismatches.push({
+        catalogName: update.catalogName,
+        packageName: update.packageName,
+        expectedCurrentVersion: update.currentVersion,
+        actualVersion: null,
+        reason: 'package-missing',
+      })
+      continue
+    }
+
+    const actualVersion = version.toString()
+    const minimumVersion = version.getMinVersion()?.toString() ?? actualVersion
+    if (minimumVersion !== update.currentVersion) {
+      mismatches.push({
+        catalogName: update.catalogName,
+        packageName: update.packageName,
+        expectedCurrentVersion: update.currentVersion,
+        actualVersion,
+        reason: 'current-version-mismatch',
+      })
+    }
+  }
+
+  return {
     success: mismatches.length === 0,
     checkedUpdates: artifact.updates.length,
     mismatches,

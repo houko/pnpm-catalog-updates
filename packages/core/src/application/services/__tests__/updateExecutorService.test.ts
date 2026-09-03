@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WorkspaceRepository } from '../../../domain/repositories/workspaceRepository.js'
 import type { NpmRegistryService } from '../../../infrastructure/external-services/npmRegistryService.js'
+import type { BackupService } from '../backupService.js'
 import type { UpdatePlan } from '../updatePlanService.js'
 
 // Mock ConfigLoader
@@ -168,6 +169,28 @@ describe('UpdateExecutorService', () => {
       await service.executeUpdates(mockUpdatePlan, { noSecurity: true })
 
       expect(mockRegistryService.checkSecurityVulnerabilities).not.toHaveBeenCalled()
+      expect(configLoaderMocks.loadConfig).not.toHaveBeenCalled()
+    })
+
+    it('does not save when a required backup cannot be created', async () => {
+      const backupService = {
+        createBackup: vi.fn().mockRejectedValue(new Error('Backup unavailable')),
+      }
+      service = new UpdateExecutorService(
+        mockWorkspaceRepository as unknown as WorkspaceRepository,
+        mockRegistryService as unknown as NpmRegistryService,
+        backupService as unknown as BackupService
+      )
+
+      const result = await service.executeUpdates(mockUpdatePlan, {
+        createBackup: true,
+        requireBackup: true,
+        noSecurity: true,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.errors.some((error) => error.fatal)).toBe(true)
+      expect(mockWorkspaceRepository.save).not.toHaveBeenCalled()
     })
 
     it('should skip conflicting packages when force is not enabled', async () => {

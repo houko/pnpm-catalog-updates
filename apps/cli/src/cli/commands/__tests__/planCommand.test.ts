@@ -84,4 +84,20 @@ describe('PlanCommand', () => {
       error: { code: 'SOURCE_CHANGED_DURING_PLANNING' },
     })
   })
+
+  it('refuses to overwrite pnpm-workspace.yaml with plan JSON', async () => {
+    await expect(
+      createCommand().execute({
+        workspace: '/workspace',
+        out: '/workspace/pnpm-workspace.yaml',
+      })
+    ).rejects.toMatchObject({ exitCode: 2 })
+
+    expect(planUpdates).not.toHaveBeenCalled()
+    expect(writeJsonFile).not.toHaveBeenCalled()
+    expect(JSON.parse(String(output.prints[0]?.[0]))).toMatchObject({
+      success: false,
+      error: { code: 'INVALID_OUTPUT_PATH' },
+    })
+  })
 })

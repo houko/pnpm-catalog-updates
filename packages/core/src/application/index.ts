@@ -59,8 +59,11 @@ export { UpdateExecutorService } from './services/updateExecutorService.js'
 export type {
   ArtifactPlannedUpdate,
   ArtifactVersionConflict,
+  PlanPreconditionMismatch,
+  PlanPreconditionMismatchReason,
   UpdatePlanArtifact,
   UpdatePlanCriteria,
+  UpdatePlanPreconditionVerification,
   UpdatePlanVerification,
   VerificationMismatch,
   VerificationMismatchReason,
@@ -75,6 +78,7 @@ export {
   updatePlanArtifactSchema,
   updatePlanFromArtifact,
   verifyUpdatePlanArtifact,
+  verifyUpdatePlanPreconditions,
 } from './services/updatePlanArtifactService.js'
 export { UpdatePlanService } from './services/updatePlanService.js'
 

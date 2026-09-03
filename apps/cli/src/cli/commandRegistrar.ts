@@ -549,7 +549,7 @@ ${t('cli.help.tipLabel')} ${t('cli.help.tipContent', { locale: I18n.getLocale() 
             prerelease: options.prerelease,
             include: options.include ?? [],
             exclude: options.exclude ?? [],
-            createBackup: options.createBackup,
+            createBackup: options.backup === false ? false : options.createBackup,
             verbose: globalOptions.verbose,
             color: !globalOptions.noColor,
             ai: parseBooleanFlag(options.ai),

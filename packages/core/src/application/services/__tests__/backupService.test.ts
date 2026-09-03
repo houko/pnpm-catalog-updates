@@ -206,6 +206,27 @@ describe('BackupService', () => {
       )
     })
 
+    it('does not apply retention until after the selected backup is restored', async () => {
+      const selectedBackup = '/workspace/pnpm-workspace.yaml.backup.2024-01-12T10-30-45-123Z'
+      fsMocks.access.mockResolvedValue(undefined)
+      fsMocks.mkdir.mockResolvedValue(undefined)
+      fsMocks.copyFile.mockResolvedValue(undefined)
+      fsMocks.readdir.mockResolvedValue([
+        'pnpm-workspace.yaml.backup.2024-01-15T10-30-45-123Z',
+        'pnpm-workspace.yaml.backup.2024-01-14T10-30-45-123Z',
+        'pnpm-workspace.yaml.backup.2024-01-13T10-30-45-123Z',
+        'pnpm-workspace.yaml.backup.2024-01-12T10-30-45-123Z',
+      ])
+      fsMocks.stat.mockResolvedValue({ size: 1024 })
+      fsMocks.unlink.mockResolvedValue(undefined)
+
+      await service.restoreFromBackup('/workspace/pnpm-workspace.yaml', selectedBackup)
+
+      const restoreOrder = fsMocks.copyFile.mock.invocationCallOrder[1]!
+      const deleteOrder = fsMocks.unlink.mock.invocationCallOrder[0]!
+      expect(restoreOrder).toBeLessThan(deleteOrder)
+    })
+
     it('should throw error when backup file does not exist', async () => {
       fsMocks.access.mockRejectedValue(new Error('File not found'))
 

@@ -6,6 +6,7 @@ import {
   parseUpdatePlanArtifact,
   updatePlanFromArtifact,
   verifyUpdatePlanArtifact,
+  verifyUpdatePlanPreconditions,
 } from '../updatePlanArtifactService.js'
 import type { UpdatePlan } from '../updatePlanService.js'
 
@@ -66,6 +67,25 @@ describe('update plan artifacts', () => {
     expect(JSON.stringify(first)).not.toContain('本地化文本')
     expect(first.updates.map((update) => update.catalogName)).toEqual(['default', 'tools'])
     expect(first.updates[1]?.affectedPackages).toEqual(['api', 'web'])
+  })
+
+  it('uses locale-independent ordering for deterministic JSON', () => {
+    const base = createPlan().updates[0]!
+    const artifact = createUpdatePlanArtifact(
+      {
+        ...createPlan(),
+        updates: [
+          { ...base, catalogName: 'ä-catalog', packageName: 'ä-package' },
+          { ...base, catalogName: 'z-catalog', packageName: 'z-package' },
+        ],
+        totalUpdates: 2,
+      },
+      createWorkspaceFingerprint(source),
+      { include: ['ä-*', 'z-*'] }
+    )
+
+    expect(artifact.updates.map((update) => update.catalogName)).toEqual(['z-catalog', 'ä-catalog'])
+    expect(artifact.criteria.include).toEqual(['z-*', 'ä-*'])
   })
 
   it('rejects malformed and internally inconsistent artifacts', () => {
@@ -136,6 +156,45 @@ describe('update plan artifacts', () => {
           expectedVersion: '4.3.6',
           actualVersion: '4.3.5',
           reason: 'version-mismatch',
+        },
+      ],
+    })
+  })
+
+  it('rejects missing packages and changed source versions before apply', () => {
+    const artifact = createUpdatePlanArtifact(createPlan(), createWorkspaceFingerprint(source))
+    const defaultCatalog = {
+      getDependencyVersion: vi.fn().mockReturnValue({
+        toString: () => '^5.7.0',
+        getMinVersion: () => ({ toString: () => '5.7.0' }),
+      }),
+    }
+    const toolsCatalog = {
+      getDependencyVersion: vi.fn().mockReturnValue(null),
+    }
+    const workspace = {
+      getCatalogs: () => ({
+        get: (name: string) => (name === 'default' ? defaultCatalog : toolsCatalog),
+      }),
+    } as unknown as Workspace
+
+    expect(verifyUpdatePlanPreconditions(artifact, workspace)).toEqual({
+      success: false,
+      checkedUpdates: 2,
+      mismatches: [
+        {
+          catalogName: 'default',
+          packageName: 'typescript',
+          expectedCurrentVersion: '5.8.0',
+          actualVersion: '^5.7.0',
+          reason: 'current-version-mismatch',
+        },
+        {
+          catalogName: 'tools',
+          packageName: 'zod',
+          expectedCurrentVersion: '4.3.5',
+          actualVersion: null,
+          reason: 'package-missing',
         },
       ],
     })

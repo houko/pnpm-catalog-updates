@@ -29,6 +29,21 @@ export class PlanCommand {
   async execute(options: PlanCommandOptions = {}): Promise<void> {
     const workspacePath = resolveWorkspacePath(options.workspace)
     const workspaceFile = getWorkspaceFilePath(workspacePath)
+    if (options.out && path.resolve(options.out) === workspaceFile) {
+      printWorkflowJson({
+        kind: 'pcu.plan-result',
+        schemaVersion: 1,
+        success: false,
+        error: {
+          code: 'INVALID_OUTPUT_PATH',
+          message: 'The plan output path cannot overwrite pnpm-workspace.yaml',
+        },
+      })
+      throw CommandExitError.withCode(
+        WORKFLOW_EXIT_CODES.invalidInput,
+        'Plan output path would overwrite the workspace file'
+      )
+    }
     const sourceContentBeforePlanning = await this.fileSystemService.readTextFile(workspaceFile)
     const sourceSha256 = createWorkspaceFingerprint(sourceContentBeforePlanning)
     const target = options.target ?? 'latest'

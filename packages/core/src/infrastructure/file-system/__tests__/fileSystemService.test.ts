@@ -546,7 +546,7 @@ catalog:
 
       const result = await service.createBackup('/path/to/file.txt')
 
-      expect(result).toContain('/path/to/file.txt.backup.')
+      expect(result).toContain('/path/to/file.txt.transaction-backup.')
       expect(result).toContain('2024-01-15')
       expect(mocks.copyFile).toHaveBeenCalled()
 
