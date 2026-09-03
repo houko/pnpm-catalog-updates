@@ -1,7 +1,7 @@
 {
   "name": "pcu",
   "version": "1.3.0",
-  "description": "CLI application for pnpm-catalog-updates",
+  "description": "Deterministic dependency update workflows for pnpm workspace catalogs",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

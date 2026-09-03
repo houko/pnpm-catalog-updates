@@ -580,6 +580,17 @@ export class Logger {
   }
 
   /**
+   * Enable or disable console output for existing and future logger instances.
+   * Machine-readable commands use this to keep their protocol output clean.
+   */
+  static setGlobalConsole(enabled: boolean): void {
+    for (const instance of Logger.instances.values()) {
+      instance.setConsole(enabled)
+    }
+    DEFAULT_LOGGING_CONFIG.output.silent = !enabled
+  }
+
+  /**
    * Configure global logger defaults at runtime
    *
    * Provides runtime configuration without circular dependencies.

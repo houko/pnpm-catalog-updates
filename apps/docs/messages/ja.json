@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "PCU ドキュメント",
-    "description": "pnpm ワークスペースカタログ依存関係管理のための強力なCLIツール",
-    "heroTitle": "pnpm カタログを簡単に管理",
-    "heroDescription": "PCU は pnpm ワークスペースカタログ内の依存関係を効率的にチェック、更新、分析するのに役立ちます。",
+    "description": "pnpm ワークスペースカタログ向けの決定論的更新エンジン",
+    "heroTitle": "カタログ更新を計画、適用、検証、ロールバック",
+    "heroDescription": "PCU は開発者、CI、コーディングエージェントにレビュー可能な JSON 契約と安全な実行経路を提供します。",
     "exploreSdks": "コマンドリファレンスを見る",
     "gettingStartedTitle": "はじめに",
-    "gettingStartedDesc": "PCU は pnpm ワークスペース専用の依存関係管理ツールです。古い依存関係のチェック、バージョンの一括更新、カタログ設定の最適化に役立ちます。",
+    "gettingStartedDesc": "移植可能な計画を作成し、変更を確認し、ワークスペースの指紋が一致する場合のみ適用して、最終状態を機械的に検証します。",
     "getApiKey": "インストールを開始"
   },
   "NotFound": {

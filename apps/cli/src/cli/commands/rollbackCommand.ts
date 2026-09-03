@@ -10,16 +10,20 @@
 
 import path from 'node:path'
 import { type BackupInfo, BackupService } from '@pcu/core'
-import { t } from '@pcu/utils'
+import { CommandExitError, t } from '@pcu/utils'
 import inquirer from 'inquirer'
 import { StyledText } from '../themes/colorTheme.js'
 import { cliOutput } from '../utils/cliOutput.js'
 import { handleCommandError } from '../utils/commandHelpers.js'
+import { WORKFLOW_EXIT_CODES } from './workflowCommandHelpers.js'
 
 export interface RollbackCommandOptions {
   workspace?: string
   list?: boolean
   latest?: boolean
+  from?: string
+  yes?: boolean
+  json?: boolean
   select?: boolean
   deleteAll?: boolean
   verbose?: boolean
@@ -40,6 +44,15 @@ export class RollbackCommand {
     try {
       const workspacePath = options.workspace || process.cwd()
       const workspaceConfigPath = path.join(workspacePath, 'pnpm-workspace.yaml')
+
+      if (options.json) {
+        await this.executeJsonWorkflow(workspaceConfigPath, options)
+        return
+      }
+
+      if (options.from || options.yes) {
+        throw new Error('--from and --yes are only supported with --json')
+      }
 
       // List backups
       if (options.list) {
@@ -62,6 +75,9 @@ export class RollbackCommand {
       // Interactive selection (default behavior if no flags)
       await this.interactiveRestore(workspaceConfigPath)
     } catch (error) {
+      if (options.json) {
+        throw error
+      }
       handleCommandError(error, {
         verbose: options.verbose,
         errorMessage: 'Rollback command failed',
@@ -69,6 +85,113 @@ export class RollbackCommand {
       })
       throw error
     }
+  }
+
+  /**
+   * Non-interactive rollback contract for CI and agents.
+   */
+  private async executeJsonWorkflow(
+    workspaceConfigPath: string,
+    options: RollbackCommandOptions
+  ): Promise<void> {
+    if (options.list) {
+      const backups = await this.backupService.listBackups(workspaceConfigPath)
+      cliOutput.print(
+        JSON.stringify(
+          {
+            kind: 'pcu.rollback-list',
+            schemaVersion: 1,
+            success: true,
+            backups: backups.map((backup) => ({
+              path: backup.path,
+              timestamp: backup.timestamp.toISOString(),
+              size: backup.size,
+            })),
+          },
+          null,
+          2
+        )
+      )
+      return
+    }
+
+    if (!options.yes) {
+      this.failJson('CONFIRMATION_REQUIRED', 'JSON rollback requires --yes')
+    }
+
+    let backupPath = options.from
+      ? this.resolveWorkspaceBackup(workspaceConfigPath, options.from)
+      : ''
+    if (!backupPath && options.latest) {
+      const backups = await this.backupService.listBackups(workspaceConfigPath)
+      backupPath = backups[0]?.path ?? ''
+    }
+
+    if (!backupPath) {
+      this.failJson('BACKUP_REQUIRED', 'Use --from <backup-file> or --latest with --json --yes')
+    }
+
+    const preRestoreBackupPath = await this.backupService.restoreFromBackup(
+      workspaceConfigPath,
+      backupPath
+    )
+    const verification = await this.backupService.verifyRestoredFile(workspaceConfigPath)
+
+    cliOutput.print(
+      JSON.stringify(
+        {
+          kind: 'pcu.rollback-result',
+          schemaVersion: 1,
+          success: verification.success,
+          restoredFromPath: backupPath,
+          preRestoreBackupPath,
+          verification,
+        },
+        null,
+        2
+      )
+    )
+
+    if (!verification.success) {
+      throw CommandExitError.withCode(
+        WORKFLOW_EXIT_CODES.verificationFailed,
+        'Restored workspace did not pass verification'
+      )
+    }
+  }
+
+  private resolveWorkspaceBackup(workspaceConfigPath: string, backupPath: string): string {
+    const resolvedWorkspaceFile = path.resolve(workspaceConfigPath)
+    const resolvedBackup = path.resolve(backupPath)
+    const expectedPrefix = `${path.basename(resolvedWorkspaceFile)}.backup.`
+
+    if (
+      path.dirname(resolvedBackup) !== path.dirname(resolvedWorkspaceFile) ||
+      !path.basename(resolvedBackup).startsWith(expectedPrefix)
+    ) {
+      this.failJson(
+        'INVALID_BACKUP_PATH',
+        'Backup must be a pnpm-workspace.yaml backup in the selected workspace'
+      )
+    }
+
+    return resolvedBackup
+  }
+
+  private failJson(code: string, message: string): never {
+    cliOutput.print(
+      JSON.stringify(
+        {
+          kind: 'pcu.rollback-result',
+          schemaVersion: 1,
+          success: false,
+          error: { code, message },
+        },
+        null,
+        2
+      )
+    )
+    throw CommandExitError.withCode(WORKFLOW_EXIT_CODES.invalidInput, message)
   }
 
   /**
@@ -316,6 +439,9 @@ Options:
   --workspace <path>    Workspace directory (default: current directory)
   -l, --list            List available backups
   --latest              Restore from the most recent backup
+  --from <backup-file>  Restore an exact backup returned by pcu apply
+  --yes                 Confirm a non-interactive JSON restore
+  --json                Emit the stable machine-readable rollback contract
   --delete-all          Delete all backups
   --verbose             Show detailed information
 
@@ -323,6 +449,7 @@ Examples:
   pcu rollback              # Interactive backup selection
   pcu rollback --list       # List all available backups
   pcu rollback --latest     # Restore from the most recent backup
+  pcu rollback --from <path> --yes --json # Restore an exact backup without prompts
   pcu rollback --delete-all # Delete all backups
 
 Notes:

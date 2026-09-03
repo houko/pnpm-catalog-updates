@@ -404,6 +404,18 @@ describe('Logger', () => {
       })
     })
 
+    describe('setGlobalConsole', () => {
+      it('silences existing and future logger instances', () => {
+        const existing = Logger.getLogger('existing-console')
+
+        Logger.setGlobalConsole(false)
+        existing.error('existing should be silent')
+        Logger.getLogger('future-console').error('future should be silent')
+
+        expect(mocks.consoleError).not.toHaveBeenCalled()
+      })
+    })
+
     describe('configure', () => {
       it('should configure default log level', () => {
         Logger.configure({ level: 'debug' })

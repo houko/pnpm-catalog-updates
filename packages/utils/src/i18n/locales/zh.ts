@@ -374,7 +374,7 @@ export const zh: TranslationDictionary = {
   'command.security.highImpactFix': '高 - 安全漏洞修复',
 
   // CLI command descriptions
-  'cli.description.main': '用于检查和更新 pnpm 工作区目录依赖的 CLI 工具',
+  'cli.description.main': '面向 pnpm 工作区 catalog 的确定性更新引擎',
   'cli.description.check': '检查过时的目录依赖',
   'cli.description.update': '更新目录依赖',
   'cli.description.analyze': '分析更新特定依赖的影响',

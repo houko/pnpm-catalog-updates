@@ -6,7 +6,8 @@
  */
 
 import { execSync, type SpawnOptionsWithoutStdio, spawn } from 'node:child_process'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -151,6 +152,9 @@ catalog:
       expect(result.stdout).toContain('workspace')
       expect(result.stdout).toContain('security')
       expect(result.stdout).toContain('graph')
+      expect(result.stdout).toContain('plan')
+      expect(result.stdout).toContain('apply')
+      expect(result.stdout).toContain('verify')
     })
 
     it('should display version', async () => {
@@ -159,6 +163,177 @@ catalog:
       expect(result.exitCode).toBe(0)
       // Should contain a semver version
       expect(result.stdout).toMatch(/\d+\.\d+\.\d+/)
+    })
+  })
+
+  describe('deterministic workflow', () => {
+    function createWorkflowWorkspace(): { workspace: string; planPath: string } {
+      const workspace = join(tmpdir(), `pcu-workflow-test-${Date.now()}-${Math.random()}`)
+      mkdirSync(workspace, { recursive: true })
+      const workspaceSource = `packages: []\ncatalog:\n  lodash: 4.17.21\n`
+      writeFileSync(join(workspace, 'pnpm-workspace.yaml'), workspaceSource)
+      writeFileSync(
+        join(workspace, 'package.json'),
+        JSON.stringify({ name: 'workflow-test', private: true }, null, 2)
+      )
+
+      const planPath = join(workspace, 'update-plan.json')
+      writeFileSync(
+        planPath,
+        JSON.stringify(
+          {
+            kind: 'pcu.update-plan',
+            schemaVersion: 1,
+            workspace: { name: 'workflow-test' },
+            source: {
+              file: 'pnpm-workspace.yaml',
+              sha256: createHash('sha256').update(workspaceSource).digest('hex'),
+            },
+            criteria: {
+              target: 'latest',
+              includePrerelease: false,
+              securityChecks: false,
+              include: [],
+              exclude: [],
+            },
+            updates: [
+              {
+                catalogName: 'default',
+                packageName: 'lodash',
+                currentVersion: '4.17.21',
+                newVersion: '4.17.22',
+                updateType: 'patch',
+                affectedPackages: [],
+                requireConfirmation: false,
+                autoUpdate: false,
+                groupUpdate: false,
+              },
+            ],
+            conflicts: [],
+            totalUpdates: 1,
+            hasConflicts: false,
+          },
+          null,
+          2
+        )
+      )
+      return { workspace, planPath }
+    }
+
+    it('applies a reviewed plan and verifies the exact target state', async () => {
+      const fixture = createWorkflowWorkspace()
+      try {
+        const applyResult = await runCli(['apply', fixture.planPath, '--no-backup'], {
+          cwd: fixture.workspace,
+        })
+
+        expect(applyResult.exitCode).toBe(0)
+        expect(JSON.parse(applyResult.stdout)).toMatchObject({
+          kind: 'pcu.apply-result',
+          success: true,
+          changed: true,
+          verification: { success: true },
+        })
+        expect(readFileSync(join(fixture.workspace, 'pnpm-workspace.yaml'), 'utf-8')).toContain(
+          'lodash: 4.17.22'
+        )
+
+        const verifyResult = await runCli(['verify', fixture.planPath], {
+          cwd: fixture.workspace,
+        })
+        expect(verifyResult.exitCode).toBe(0)
+        expect(JSON.parse(verifyResult.stdout)).toMatchObject({
+          kind: 'pcu.verification',
+          success: true,
+          checkedUpdates: 1,
+        })
+
+        const secondApply = await runCli(['apply', fixture.planPath, '--no-backup'], {
+          cwd: fixture.workspace,
+        })
+        expect(secondApply.exitCode).toBe(0)
+        expect(JSON.parse(secondApply.stdout)).toMatchObject({
+          success: true,
+          changed: false,
+          alreadyApplied: true,
+        })
+      } finally {
+        rmSync(fixture.workspace, { recursive: true, force: true })
+      }
+    })
+
+    it('refuses a stale plan before changing the workspace', async () => {
+      const fixture = createWorkflowWorkspace()
+      try {
+        const workspaceFile = join(fixture.workspace, 'pnpm-workspace.yaml')
+        const changedSource = `${readFileSync(workspaceFile, 'utf-8')}# changed after review\n`
+        writeFileSync(workspaceFile, changedSource)
+
+        const result = await runCli(['apply', fixture.planPath, '--no-backup'], {
+          cwd: fixture.workspace,
+        })
+
+        expect(result.exitCode).toBe(3)
+        expect(JSON.parse(result.stdout)).toMatchObject({
+          success: false,
+          changed: false,
+          error: { code: 'STALE_PLAN' },
+        })
+        expect(readFileSync(workspaceFile, 'utf-8')).toBe(changedSource)
+      } finally {
+        rmSync(fixture.workspace, { recursive: true, force: true })
+      }
+    })
+
+    it('returns protocol-clean JSON for invalid plans', async () => {
+      const fixture = createWorkflowWorkspace()
+      try {
+        writeFileSync(fixture.planPath, '{}')
+
+        const result = await runCli(['apply', fixture.planPath], {
+          cwd: fixture.workspace,
+        })
+
+        expect(result.exitCode).toBe(2)
+        expect(result.stdout).toBe('')
+        expect(JSON.parse(result.stderr)).toMatchObject({
+          kind: 'pcu.workflow-error',
+          success: false,
+          error: { code: 'INVALID_INPUT' },
+        })
+      } finally {
+        rmSync(fixture.workspace, { recursive: true, force: true })
+      }
+    })
+
+    it('restores the exact apply backup through the JSON rollback contract', async () => {
+      const fixture = createWorkflowWorkspace()
+      try {
+        const applyResult = await runCli(['apply', fixture.planPath], {
+          cwd: fixture.workspace,
+        })
+        const applied = JSON.parse(applyResult.stdout) as {
+          update: { backupPath: string }
+        }
+
+        const rollbackResult = await runCli(
+          ['rollback', '--from', applied.update.backupPath, '--yes', '--json'],
+          { cwd: fixture.workspace }
+        )
+
+        expect(rollbackResult.exitCode).toBe(0)
+        expect(JSON.parse(rollbackResult.stdout)).toMatchObject({
+          kind: 'pcu.rollback-result',
+          success: true,
+          restoredFromPath: applied.update.backupPath,
+          verification: { success: true },
+        })
+        expect(readFileSync(join(fixture.workspace, 'pnpm-workspace.yaml'), 'utf-8')).toContain(
+          'lodash: 4.17.21'
+        )
+      } finally {
+        rmSync(fixture.workspace, { recursive: true, force: true })
+      }
     })
   })
 

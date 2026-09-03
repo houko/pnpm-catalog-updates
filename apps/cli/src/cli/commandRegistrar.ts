@@ -27,13 +27,16 @@ import chalk from 'chalk'
 import { type Command, Option } from 'commander'
 import { AiCommand } from './commands/aiCommand.js'
 import { AnalyzeCommand } from './commands/analyzeCommand.js'
+import { ApplyCommand } from './commands/applyCommand.js'
 import { CheckCommand } from './commands/checkCommand.js'
 import { GraphCommand } from './commands/graphCommand.js'
 import { InitCommand } from './commands/initCommand.js'
+import { PlanCommand } from './commands/planCommand.js'
 import { RollbackCommand } from './commands/rollbackCommand.js'
 import { SecurityCommand } from './commands/securityCommand.js'
 import { ThemeCommand } from './commands/themeCommand.js'
 import { UpdateCommand } from './commands/updateCommand.js'
+import { VerifyCommand } from './commands/verifyCommand.js'
 import { WorkspaceCommand } from './commands/workspaceCommand.js'
 import { CLI_CHOICES } from './constants/cliChoices.js'
 import { type OutputFormat, OutputFormatter } from './formatters/outputFormatter.js'
@@ -132,6 +135,36 @@ export function handleCommandError(error: unknown, commandName: string): never {
   })
   cliOutput.error(chalk.red(`❌ ${t('cli.error')}`), error)
   exitProcess(1)
+}
+
+/**
+ * Workflow commands promise JSON-only output and stable error exit codes.
+ */
+function handleWorkflowCommandError(error: unknown): never {
+  if (isCommandExitError(error)) {
+    exitProcess(error.exitCode)
+  }
+
+  cliOutput.error(
+    JSON.stringify(
+      {
+        kind: 'pcu.workflow-error',
+        schemaVersion: 1,
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      },
+      null,
+      2
+    )
+  )
+  exitProcess(2)
+}
+
+function prepareWorkflowOutput(): void {
+  Logger.setGlobalConsole(false)
 }
 
 /**
@@ -296,6 +329,93 @@ export function registerCommands(
       }
     })
 
+  // Deterministic workflow: plan -> apply -> verify -> rollback
+  program
+    .command('plan')
+    .description('Create a portable, reviewable update plan as JSON')
+    .option('--catalog <name>', 'Plan updates for one catalog')
+    .addOption(
+      new Option('-t, --target <type>', 'Choose the update target')
+        .choices(CLI_CHOICES.target)
+        .default('latest')
+    )
+    .option('--prerelease', 'Include prerelease versions')
+    .option('--include <pattern...>', 'Include packages matching patterns')
+    .option('--exclude <pattern...>', 'Exclude packages matching patterns')
+    .option('--security', 'Include security advisory checks while planning', false)
+    .option('-o, --out <file>', 'Also write the plan JSON to a file')
+    .action(async (options, command) => {
+      try {
+        prepareWorkflowOutput()
+        const globalOptions = (command.parent?.opts() ?? {}) as GlobalOptions
+        const services = await serviceFactory.get()
+        const planCommand = new PlanCommand(
+          services.catalogUpdateService,
+          services.fileSystemService
+        )
+        await planCommand.execute({
+          workspace: globalOptions.workspace,
+          catalog: options.catalog,
+          target: options.target,
+          prerelease: options.prerelease,
+          include: options.include ?? [],
+          exclude: options.exclude ?? [],
+          security: options.security,
+          out: options.out,
+        })
+      } catch (error) {
+        handleWorkflowCommandError(error)
+      }
+    })
+
+  program
+    .command('apply')
+    .description('Apply an update plan only if its source fingerprint still matches')
+    .argument('<plan-file>', 'Path to a plan created by pcu plan')
+    .option('--force', 'Apply a reviewed plan that contains conflicts')
+    .option('--no-backup', 'Do not create a rollback backup')
+    .option('--install', 'Run pnpm install after catalog changes', false)
+    .action(async (planPath, options, command) => {
+      try {
+        prepareWorkflowOutput()
+        const globalOptions = (command.parent?.opts() ?? {}) as GlobalOptions
+        const services = await serviceFactory.get()
+        const applyCommand = new ApplyCommand(
+          services.catalogUpdateService,
+          services.workspaceRepository,
+          services.fileSystemService,
+          services.packageManagerService
+        )
+        await applyCommand.execute(planPath, {
+          workspace: globalOptions.workspace,
+          force: options.force,
+          backup: options.backup,
+          install: options.install,
+        })
+      } catch (error) {
+        handleWorkflowCommandError(error)
+      }
+    })
+
+  program
+    .command('verify')
+    .description('Verify that a workspace exactly matches an update plan')
+    .argument('<plan-file>', 'Path to a plan created by pcu plan')
+    .action(async (planPath, _options, command) => {
+      try {
+        prepareWorkflowOutput()
+        const globalOptions = (command.parent?.opts() ?? {}) as GlobalOptions
+        const services = await serviceFactory.get()
+        const verifyCommand = new VerifyCommand(
+          services.workspaceRepository,
+          services.fileSystemService
+        )
+        await verifyCommand.execute(planPath, { workspace: globalOptions.workspace })
+      } catch (error) {
+        handleWorkflowCommandError(error)
+      }
+    })
+
   // Check command
   program
     .command('check')
@@ -372,8 +492,8 @@ export function registerCommands(
     )
     .option('--changelog', t('cli.option.changelog'))
     .option('--no-changelog', t('cli.option.noChangelog'))
-    // AI options (enabled by default)
-    .option('--ai', t('cli.option.ai'), true)
+    // AI options (explicitly opt-in; never part of the deterministic execution path)
+    .option('--ai', t('cli.option.ai'), false)
     .option('--no-ai', t('cli.option.noAi'))
     .addOption(
       new Option('--provider <name>', t('cli.option.provider'))
@@ -397,7 +517,7 @@ ${t('cli.help.optionGroupsTitle')}
   ${t('cli.help.groupBasic')}    -i, -d, --force, -b
   ${t('cli.help.groupFilter')}   --catalog, --include, --exclude, -t, --prerelease
   ${t('cli.help.groupOutput')}   -f, --changelog
-  ${t('cli.help.groupAI')}       --ai (default), --no-ai, --provider, --analysis-type, --skip-cache
+  ${t('cli.help.groupAI')}       --ai (opt-in), --provider, --analysis-type, --skip-cache
   ${t('cli.help.groupInstall')}  --install, --no-security
 
 ${t('cli.help.tipLabel')} ${t('cli.help.tipContent', { locale: I18n.getLocale() })}
@@ -654,6 +774,9 @@ ${t('cli.help.tipLabel')} ${t('cli.help.tipContent', { locale: I18n.getLocale() 
     .description(t('cli.description.rollback'))
     .option('-l, --list', t('cli.option.listBackups'))
     .option('--latest', t('cli.option.restoreLatest'))
+    .option('--from <backup-file>', 'Restore the exact backup returned by pcu apply')
+    .option('--yes', 'Confirm a non-interactive rollback')
+    .option('--json', 'Emit machine-readable JSON without prompts')
     .option('--delete-all', t('cli.option.deleteAllBackups'))
     .action(
       createCommandAction(
@@ -664,11 +787,17 @@ ${t('cli.help.tipLabel')} ${t('cli.help.tipContent', { locale: I18n.getLocale() 
           interactiveCollector: (opts) => interactiveOptionsCollector.collectRollbackOptions(opts),
         },
         async ({ options, globalOptions }) => {
+          if (options.json) {
+            prepareWorkflowOutput()
+          }
           const rollbackCommand = new RollbackCommand()
           await rollbackCommand.execute({
             workspace: globalOptions.workspace,
             list: options.list,
             latest: options.latest,
+            from: options.from,
+            yes: options.yes,
+            json: options.json,
             deleteAll: options.deleteAll,
             verbose: globalOptions.verbose,
             color: !globalOptions.noColor,

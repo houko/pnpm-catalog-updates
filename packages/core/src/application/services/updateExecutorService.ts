@@ -82,7 +82,7 @@ export class UpdateExecutorService {
 
     // PERF-001: Run security checks in parallel before processing updates
     const securityCheckResults = new Map<string, boolean>()
-    if (config.security?.notifyOnSecurityUpdate) {
+    if (!options.noSecurity && config.security?.notifyOnSecurityUpdate) {
       const concurrency = config.advanced?.concurrency ?? 8
       await parallelLimit(
         plan.updates,

@@ -377,7 +377,7 @@ export const en: TranslationDictionary = {
   'command.security.highImpactFix': 'High - Security vulnerability fix',
 
   // CLI command descriptions
-  'cli.description.main': 'A CLI tool to check and update pnpm workspace catalog dependencies',
+  'cli.description.main': 'A deterministic update engine for pnpm workspace catalogs',
   'cli.description.check': 'check for outdated catalog dependencies',
   'cli.description.update': 'update catalog dependencies',
   'cli.description.analyze': 'analyze the impact of updating a specific dependency',

@@ -1,7 +1,7 @@
 {
   "name": "pnpm-catalog-updates",
   "private": true,
-  "description": "A CLI tool to check and update pnpm workspace catalog dependencies",
+  "description": "A deterministic plan, apply, verify, and rollback engine for pnpm catalogs",
   "keywords": [
     "pnpm",
     "catalog",

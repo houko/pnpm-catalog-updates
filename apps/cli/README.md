@@ -1,110 +1,53 @@
 # pcu
 
-[![npm version](https://img.shields.io/npm/v/pcu.svg)](https://www.npmjs.com/package/pcu)
-[![npm weekly downloads](https://img.shields.io/npm/dw/pcu.svg)](https://www.npmjs.com/package/pcu)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.13.0-brightgreen.svg)](https://nodejs.org/)
+The deterministic update engine for pnpm workspace catalogs.
 
-A powerful CLI tool for managing pnpm workspace catalog dependencies with ease.
+PCU creates a portable dependency update plan, applies exactly the reviewed plan, verifies the
+result, and creates a rollback backup by default. Its JSON workflow is suitable for developers, CI,
+and coding agents.
 
-**Complete Documentation**: [https://pcu-cli.dev](https://pcu-cli.dev/en)
-
-## Quick Start
-
-### Installation
+## Install
 
 ```bash
-# Install globally
-npm install -g pcu
-
-# Or use with pnpm
-pnpm add -g pcu
-
-# Or use legacy package name
-npm install -g pnpm-catalog-updates
+npm install --global pcu
+# or
+pnpm add --global pcu
 ```
 
-### Usage
+## Safe automation workflow
 
 ```bash
-# Check for outdated catalog dependencies
+pcu plan --target minor --out pcu-plan.json
+pcu apply pcu-plan.json
+pcu verify pcu-plan.json
+pcu rollback --from <backupPath> --yes --json
+```
+
+The plan contains a SHA-256 fingerprint of `pnpm-workspace.yaml`. `apply` refuses stale plans before
+writing, performs atomic catalog updates, creates a backup, and verifies the exact target state.
+Applying an already-satisfied plan is a successful no-op.
+
+Use `--install` only when the apply step should also regenerate the lockfile:
+
+```bash
+pcu apply pcu-plan.json --install
+```
+
+Workflow exit codes are stable: `0` success, `2` invalid input/execution failure, `3` stale plan,
+`4` verification drift, and `5` unresolved conflicts.
+
+## Interactive and advisory tools
+
+```bash
 pcu check
-# or
-pcu -c
-
-# Update catalog dependencies interactively
 pcu update --interactive
-# or
-pcu -i
-
-# Update to latest versions
-pcu update
-# or
-pcu -u
-```
-
-### Hybrid Mode
-
-PCU features **Hybrid Mode** - when you run any command without flags, it automatically enters interactive mode to guide you through the options:
-
-```bash
-# No flags = Interactive prompts
-pcu check        # Prompts for format, target, filter options
-pcu update       # Prompts for catalog, format, target, etc.
-pcu security     # Prompts for output format, severity filter
-
-# With flags = Direct execution
-pcu check --format table    # Runs directly with specified options
-pcu update --target minor   # Runs directly with specified options
-
-# Analyze impact of updates
-pcu analyze
-# or
-pcu -a
-
-# Show workspace information
-pcu workspace
-# or
-pcu -s
-
-# AI-powered analysis (NEW!)
-pcu ai              # Check available AI providers
-pcu update --ai     # Update with AI recommendations
-pcu analyze react   # Analyze package with AI
-```
-
-### AI Analysis
-
-PCU integrates with AI CLI tools (Gemini, Claude, Codex, Cursor) to provide:
-
-- **Impact Analysis**: Understand how updates affect your code
-- **Security Assessment**: AI-powered vulnerability analysis
-- **Breaking Change Detection**: Detect potential compatibility issues
-- **Update Recommendations**: Get intelligent suggestions for safe updates
-
-```bash
-# Check available AI providers
-pcu ai
-
-# Update with AI-powered analysis
-pcu update --ai --interactive
-
-# Analyze a specific package
 pcu analyze react 19.0.0
+pcu security
+pcu rollback --latest
 ```
 
-**[Complete AI Analysis Documentation](https://pcu-cli.dev/en/ai-analysis)**
+AI analysis is opt-in with `pcu update --ai`. It can explain risk, but it is never called by
+`plan`, `apply`, or `verify`.
 
-![PCU Showcase](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
-
-**[Complete Command Reference & Examples](https://pcu-cli.dev/en/command-reference)**
-
-## Links
-
-- [Complete Documentation](https://pcu-cli.dev/en)
-- [Report Issues](https://github.com/yldm-tech/pnpm-catalog-updates/issues)
-- [GitHub Repository](https://github.com/yldm-tech/pnpm-catalog-updates)
-
-## License
-
-MIT © [Evan Hu](https://github.com/houko)
+See the [complete documentation](https://pcu-cli.dev/en) and the
+[GitHub repository](https://github.com/yldm-tech/pnpm-catalog-updates).

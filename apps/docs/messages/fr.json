@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "Documentation PCU",
-    "description": "Un outil CLI puissant pour gérer les dépendances de catalogue d'espace de travail pnpm",
-    "heroTitle": "Gérez vos catalogues pnpm avec facilité",
-    "heroDescription": "PCU vous aide à vérifier, mettre à jour et analyser efficacement les dépendances dans vos catalogues d'espace de travail pnpm.",
+    "description": "Un moteur de mise à jour déterministe pour les catalogues d'espaces de travail pnpm",
+    "heroTitle": "Planifiez, appliquez, vérifiez et annulez les mises à jour",
+    "heroDescription": "PCU fournit aux développeurs, à la CI et aux agents de code un contrat JSON révisable et un chemin d'exécution sûr.",
     "exploreSdks": "Voir la Référence des Commandes",
     "gettingStartedTitle": "Commencer",
-    "gettingStartedDesc": "PCU est un outil de gestion des dépendances conçu spécifiquement pour les espaces de travail pnpm. Il vous aide à vérifier les dépendances obsolètes, mettre à jour les versions par lots et optimiser votre configuration de catalogue.",
+    "gettingStartedDesc": "Créez un plan portable, révisez les changements, appliquez-le uniquement si l'empreinte correspond et vérifiez mécaniquement l'état final.",
     "getApiKey": "Commencer l'Installation"
   },
   "NotFound": {

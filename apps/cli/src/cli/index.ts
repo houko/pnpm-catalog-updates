@@ -87,6 +87,11 @@ function startBackgroundVersionCheck(
     })
 }
 
+function isAutomationInvocation(args: string[]): boolean {
+  if (args.includes('--ci')) return true
+  return args.some((argument) => ['plan', 'apply', 'verify'].includes(argument))
+}
+
 /**
  * Show update notification after command execution if available
  */
@@ -201,7 +206,9 @@ export async function main(): Promise<void> {
   preloadPackageSuggestions()
 
   // Start background version check (non-blocking)
-  const versionCheckPromise = startBackgroundVersionCheck(config)
+  const versionCheckPromise = isAutomationInvocation(process.argv)
+    ? null
+    : startBackgroundVersionCheck(config)
 
   // Create lazy service factory - services will only be instantiated when actually needed
   // This means --help and --version won't trigger service creation

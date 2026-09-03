@@ -158,6 +158,18 @@ describe('UpdateExecutorService', () => {
       expect(mockWorkspaceRepository.save).not.toHaveBeenCalled()
     })
 
+    it('does not run security checks during deterministic apply', async () => {
+      configLoaderMocks.loadConfig.mockResolvedValue({
+        security: {
+          notifyOnSecurityUpdate: true,
+        },
+      })
+
+      await service.executeUpdates(mockUpdatePlan, { noSecurity: true })
+
+      expect(mockRegistryService.checkSecurityVulnerabilities).not.toHaveBeenCalled()
+    })
+
     it('should skip conflicting packages when force is not enabled', async () => {
       const planWithConflicts: UpdatePlan = {
         ...mockUpdatePlan,

@@ -56,6 +56,26 @@ export type {
   UpdateError,
 } from './services/updateExecutorService.js'
 export { UpdateExecutorService } from './services/updateExecutorService.js'
+export type {
+  ArtifactPlannedUpdate,
+  ArtifactVersionConflict,
+  UpdatePlanArtifact,
+  UpdatePlanCriteria,
+  UpdatePlanVerification,
+  VerificationMismatch,
+  VerificationMismatchReason,
+} from './services/updatePlanArtifactService.js'
+export {
+  createUpdatePlanArtifact,
+  createWorkspaceFingerprint,
+  parseUpdatePlanArtifact,
+  UPDATE_PLAN_ARTIFACT_KIND,
+  UPDATE_PLAN_ARTIFACT_SCHEMA_VERSION,
+  UPDATE_VERIFICATION_KIND,
+  updatePlanArtifactSchema,
+  updatePlanFromArtifact,
+  verifyUpdatePlanArtifact,
+} from './services/updatePlanArtifactService.js'
 export { UpdatePlanService } from './services/updatePlanService.js'
 
 // Workspace Service

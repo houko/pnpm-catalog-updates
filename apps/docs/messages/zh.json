@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "PCU 文档",
-    "description": "强大的 pnpm 工作区目录依赖管理 CLI 工具",
-    "heroTitle": "轻松管理你的 pnpm catalogs",
-    "heroDescription": "PCU 帮助你高效地检查、更新和分析 pnpm 工作区目录中的依赖项。",
+    "description": "面向 pnpm workspace catalog 的确定性更新引擎",
+    "heroTitle": "计划、应用、验证并回滚 catalog 更新",
+    "heroDescription": "PCU 为开发者、CI 和编码 Agent 提供可审查的 JSON 契约与安全执行路径。",
     "exploreSdks": "查看命令参考",
     "gettingStartedTitle": "快速开始",
-    "gettingStartedDesc": "PCU 是一个专为 pnpm 工作区设计的依赖管理工具。它可以帮助你检查过时的依赖项，批量更新版本，并优化你的 catalog 配置。",
+    "gettingStartedDesc": "生成可移植计划、审查精确变更，仅在 workspace 指纹匹配时应用，并以机器方式验证最终状态。",
     "getApiKey": "开始安装"
   },
   "NotFound": {
