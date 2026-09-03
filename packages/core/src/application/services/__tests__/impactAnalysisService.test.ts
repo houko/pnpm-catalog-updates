@@ -91,14 +91,16 @@ describe('ImpactAnalysisService', () => {
     })
 
     it('should handle non-Error objects in catch block', async () => {
+      // A non-Error (string) rejection that is also transient, so it exercises the
+      // String(error) branch and returns analysisIncomplete instead of propagating (SEC-001).
       vi.mocked(mockRegistryService.checkSecurityVulnerabilities).mockRejectedValue(
-        'String error message'
+        'network connection timeout'
       )
 
       const result = await service.analyzeSecurityImpact('lodash', '4.17.0', '4.17.21')
 
       expect(result.analysisIncomplete).toBe(true)
-      expect(result.errorMessage).toBe('String error message')
+      expect(result.errorMessage).toBe('network connection timeout')
     })
   })
 

@@ -143,27 +143,6 @@ function extractAuthorFromManifest(manifest: unknown): string | PackageAuthor | 
 }
 
 /**
- * NPM audit advisory structure
- */
-interface NpmAuditAdvisory {
-  id: number
-  title: string
-  severity: 'low' | 'moderate' | 'high' | 'critical'
-  overview: string
-  url: string
-  vulnerable_versions: string
-  patched_versions?: string
-  recommendation?: string
-}
-
-/**
- * NPM audit response structure (v1 advisories format)
- */
-interface NpmAuditResponse {
-  advisories?: Record<string, NpmAuditAdvisory | NpmAuditAdvisory[]>
-}
-
-/**
  * NPM download stats response
  */
 interface NpmDownloadStats {
