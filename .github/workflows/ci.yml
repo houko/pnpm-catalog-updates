@@ -17,7 +17,7 @@ permissions:
 jobs:
   lint:
     name: Lint & Format Check
-    runs-on: yldm-backend-runners
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -35,7 +35,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: yldm-backend-runners
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   build:
     name: Build & Package
-    runs-on: yldm-backend-runners
+    runs-on: ubuntu-latest
     needs: [lint, test]
     timeout-minutes: 10
 
@@ -85,7 +85,7 @@ jobs:
 
   example:
     name: Example Workspace (Node ${{ matrix.node-version }})
-    runs-on: yldm-backend-runners
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -121,7 +121,7 @@ jobs:
 
   pnpm-v11-compat:
     name: pnpm v11 Compatibility (Node 22)
-    runs-on: yldm-backend-runners
+    runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
