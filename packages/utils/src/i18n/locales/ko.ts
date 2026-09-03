@@ -382,7 +382,7 @@ export const ko: TranslationDictionary = {
   'command.security.highImpactFix': '높음 - 보안 취약점 수정',
 
   // CLI command descriptions
-  'cli.description.main': 'pnpm 워크스페이스 카탈로그 종속성을 확인하고 업데이트하는 CLI 도구',
+  'cli.description.main': 'pnpm 워크스페이스 카탈로그를 위한 결정론적 업데이트 엔진',
   'cli.description.check': '오래된 카탈로그 종속성 확인',
   'cli.description.update': '카탈로그 종속성 업데이트',
   'cli.description.analyze': '특정 종속성 업데이트의 영향 분석',

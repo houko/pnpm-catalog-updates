@@ -1,87 +1,142 @@
 # pnpm-catalog-updates
 
-A powerful CLI tool to check and update pnpm workspace catalog dependencies, inspired by [npm-check-updates](https://github.com/raineorshine/npm-check-updates).
+The deterministic update engine for pnpm catalogs.
+
+PCU turns dependency discovery into a reviewable plan, applies exactly that plan, verifies the
+result, and keeps a rollback backup. It is designed to be a safe execution layer for developers,
+CI jobs, and coding agents—not another AI wrapper around `package.json` edits.
 
 [![npm version](https://img.shields.io/npm/v/pcu.svg)](https://www.npmjs.com/package/pcu)
 [![npm weekly downloads](https://img.shields.io/npm/dw/pcu.svg)](https://www.npmjs.com/package/pcu)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.13.0-brightgreen.svg)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![CI](https://img.shields.io/github/actions/workflow/status/yldm-tech/pnpm-catalog-updates/ci.yml?label=CI&logo=github)](https://github.com/yldm-tech/pnpm-catalog-updates/actions)
 
-## Documentation
+## Why PCU still matters in the AI era
 
-**[https://pcu-cli.dev](https://pcu-cli.dev/en)** - Full documentation with examples, configuration guides, and API reference.
+An agent can propose a version change. Production automation still needs guarantees:
 
-## Quick Start
+- the reviewed change is the change that gets applied;
+- a changed workspace invalidates an old plan before any write;
+- commands do not prompt, invoke AI, or add prose to JSON output;
+- the final catalog state can be verified mechanically;
+- every normal apply has a recovery path.
+
+PCU provides that trust boundary specifically for pnpm catalogs.
+
+## The workflow
 
 ```bash
-# Install globally
-npm install -g pcu
+# 1. Discover updates and save a portable plan
+pcu plan --target minor --out pcu-plan.json
 
-# Initialize workspace
-pcu init
+# 2. Review or let an agent inspect the JSON diff
+git diff -- pcu-plan.json
 
-# Check for updates
-pcu -c
+# 3. Apply only if pnpm-workspace.yaml still matches the reviewed source
+pcu apply pcu-plan.json
 
-# Interactive update mode
-pcu -i
+# 4. Assert the exact target state in CI
+pcu verify pcu-plan.json
+
+# Recover the exact backup path returned by apply
+pcu rollback --from <backupPath> --yes --json
 ```
 
-![Screenshot](https://github.com/user-attachments/assets/f05a970e-c58c-44f1-b3f1-351ae30b4a35)
+`pcu plan` writes schema-versioned JSON with sorted fields, no timestamp, no localized reason text,
+and no absolute workspace path. The artifact includes a SHA-256 fingerprint of
+`pnpm-workspace.yaml`, so it can be reviewed on one machine and safely applied in another checkout.
 
-## Features
+`pcu apply` is deliberately boring: it does not query the registry or call an AI provider. It
+validates the artifact, checks the source fingerprint, writes through PCU's atomic repository, makes
+a backup by default, and verifies the result. Reapplying an already-satisfied plan is a successful
+no-op.
 
-- **Catalog Focused** - Specialized for pnpm workspace catalog dependency management
-- **Hybrid Mode** - Commands auto-enter interactive prompts when no flags provided
-- **Interactive Mode** - Choose which dependencies to update with intuitive interface
-- **AI-Powered Analysis** - Intelligent recommendations using Claude, Gemini, or Codex CLI
-- **Security Scanning** - Built-in vulnerability detection with auto-fix capability
-- **High Performance** - Parallel API queries and intelligent caching
-- **Beautiful UI** - Multiple themes and progress bar styles
-- **i18n Support** - English, Chinese, Japanese, Korean, Spanish, German, French
+Run `pnpm install` explicitly when lockfile regeneration belongs in the same step:
 
-**[See all features](https://pcu-cli.dev/en)**
+```bash
+pcu apply pcu-plan.json --install
+```
 
-## Commands
+## Stable exit codes
 
-| Command | Description |
-|---------|-------------|
-| `pcu init` | Initialize PNPM workspace and PCU configuration |
-| `pcu check` (`pcu -c`) | Check for outdated catalog dependencies |
-| `pcu update` (`pcu -u`) | Update catalog dependencies |
-| `pcu -i` | Interactive update mode |
-| `pcu security` | Security vulnerability scanning |
-| `pcu ai` | AI provider management |
-| `pcu cache` | Cache management |
-| `pcu workspace` | Workspace information |
-| `pcu theme` | Theme configuration |
+| Code | Meaning |
+| ---: | --- |
+| `0` | Success, including an already-applied plan |
+| `2` | Invalid input or execution/install failure |
+| `3` | Stale plan: the source workspace fingerprint changed |
+| `4` | Verification failed: catalog state differs from the plan |
+| `5` | The plan contains unresolved conflicts; review or use `--force` |
 
-**[Complete Command Reference](https://pcu-cli.dev/en/command-reference)**
+Workflow commands emit JSON only. Expected failures also return structured JSON, making the
+contract suitable for CI and tool calling.
 
-## Documentation Links
+For rollback automation, pass the exact `update.backupPath` returned by `apply` to
+`pcu rollback --from <backupPath> --yes --json`. Interactive `pcu rollback` remains available for
+humans.
 
-- [Quick Start Guide](https://pcu-cli.dev/en/quickstart)
-- [Command Reference](https://pcu-cli.dev/en/command-reference)
-- [Configuration Guide](https://pcu-cli.dev/en/configuration)
-- [Examples & Use Cases](https://pcu-cli.dev/en/examples)
-- [Development Guide](https://pcu-cli.dev/en/development)
+## Install
 
-## Contributing
+```bash
+npm install --global pcu
+# or
+pnpm add --global pcu
+```
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+Node.js 20 or newer and pnpm 9 or newer are supported.
+
+## Planning options
+
+```bash
+pcu plan --target latest
+pcu plan --catalog default
+pcu plan --include "react*" "@types/*"
+pcu plan --exclude "*-alpha"
+pcu plan --prerelease
+pcu plan --security
+```
+
+Security advisory lookups are opt-in for deterministic planning with `--security`. They never run
+during `apply`.
+
+## Human-oriented commands
+
+The existing commands remain available for exploration and interactive use:
+
+| Command | Purpose |
+| --- | --- |
+| `pcu check` | Inspect outdated catalog dependencies |
+| `pcu update` | Interactive/convenience plan-and-apply flow |
+| `pcu analyze` | Explain update impact |
+| `pcu security` | Run vulnerability checks |
+| `pcu workspace` | Inspect or validate a workspace |
+| `pcu graph` | Render catalog dependency relationships |
+| `pcu rollback` | List or restore workspace backups |
+
+AI analysis is optional and never participates in the deterministic execution path. Use
+`pcu update --ai` or `pcu analyze` when an explanation is useful; use
+`plan → apply → verify` when correctness and automation matter.
+
+## Using PCU from an agent
+
+A reliable agent loop is small:
+
+1. Run `pcu plan --out pcu-plan.json`.
+2. Inspect `updates`, `conflicts`, and the repository diff.
+3. Run tests appropriate to the proposed versions.
+4. Run `pcu apply pcu-plan.json` only after approval.
+5. Run `pcu verify pcu-plan.json` and report its JSON result.
+
+The agent decides whether a plan is desirable. PCU guarantees what the plan means and whether it
+was applied faithfully.
+
+## Documentation and support
+
+- [Documentation](https://pcu-cli.dev/en)
+- [Issue tracker](https://github.com/yldm-tech/pnpm-catalog-updates/issues)
+- [Discussions](https://github.com/yldm-tech/pnpm-catalog-updates/discussions)
+- [Contributing guide](CONTRIBUTING.md)
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Support
-
-- [Documentation](https://pcu-cli.dev/en)
-- [Issue Tracker](https://github.com/yldm-tech/pnpm-catalog-updates/issues)
-- [Discussions](https://github.com/yldm-tech/pnpm-catalog-updates/discussions)
-
----
-
-Made with love for the pnpm community
-# CI re-run 2026-05-04T15:35:41Z
+MIT — see [LICENSE](LICENSE).

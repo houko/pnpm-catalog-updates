@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "PCU Dokumentation",
-    "description": "Ein leistungsstarkes CLI-Tool für die Verwaltung von pnpm Workspace Catalog Abhängigkeiten",
-    "heroTitle": "Verwalten Sie Ihre pnpm Catalogs mit Leichtigkeit",
-    "heroDescription": "PCU hilft Ihnen dabei, Abhängigkeiten in Ihren pnpm Workspace Catalogs effizient zu überprüfen, zu aktualisieren und zu analysieren.",
+    "description": "Eine deterministische Update-Engine für pnpm-Workspace-Kataloge",
+    "heroTitle": "Katalog-Updates planen, anwenden, prüfen und zurückrollen",
+    "heroDescription": "PCU bietet Entwicklern, CI-Jobs und Coding-Agenten einen prüfbaren JSON-Vertrag und einen sicheren Ausführungspfad.",
     "exploreSdks": "Befehlsreferenz anzeigen",
     "gettingStartedTitle": "Erste Schritte",
-    "gettingStartedDesc": "PCU ist ein Dependency-Management-Tool, das speziell für pnpm Workspaces entwickelt wurde. Es hilft dabei, veraltete Abhängigkeiten zu überprüfen, Versionen stapelweise zu aktualisieren und Ihre Catalog-Konfiguration zu optimieren.",
+    "gettingStartedDesc": "Erstellen Sie einen portablen Plan, prüfen Sie die Änderungen, wenden Sie ihn nur bei passendem Workspace-Fingerabdruck an und verifizieren Sie den Endzustand maschinell.",
     "getApiKey": "Installation starten"
   },
   "NotFound": {

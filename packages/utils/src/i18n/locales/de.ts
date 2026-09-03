@@ -404,8 +404,7 @@ export const de: TranslationDictionary = {
   'command.security.highImpactFix': 'Hoch - Sicherheitslücke behoben',
 
   // CLI command descriptions
-  'cli.description.main':
-    'CLI-Tool zum Überprüfen und Aktualisieren von pnpm Workspace-Katalog-Abhängigkeiten',
+  'cli.description.main': 'Deterministische Update-Engine für pnpm Workspace-Kataloge',
   'cli.description.check': 'Veraltete Katalog-Abhängigkeiten prüfen',
   'cli.description.update': 'Katalog-Abhängigkeiten aktualisieren',
   'cli.description.analyze':

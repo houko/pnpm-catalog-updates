@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "PCU Documentation",
-    "description": "A powerful CLI tool for managing pnpm workspace catalog dependencies",
-    "heroTitle": "Manage your pnpm catalogs with ease",
-    "heroDescription": "PCU helps you check, update, and analyze dependencies in your pnpm workspace catalogs efficiently.",
+    "description": "A deterministic update engine for pnpm workspace catalogs",
+    "heroTitle": "Plan, apply, verify, and roll back catalog updates",
+    "heroDescription": "PCU gives developers, CI jobs, and coding agents a reviewable JSON contract and a safe execution path.",
     "exploreSdks": "View Command Reference",
     "gettingStartedTitle": "Getting started",
-    "gettingStartedDesc": "PCU is a dependency management tool designed specifically for pnpm workspaces. It helps you check for outdated dependencies, update versions in batch, and optimize your catalog configuration.",
+    "gettingStartedDesc": "Create a portable plan, review the exact changes, apply only when the workspace fingerprint still matches, and verify the final state mechanically.",
     "getApiKey": "Start Installation"
   },
   "NotFound": {

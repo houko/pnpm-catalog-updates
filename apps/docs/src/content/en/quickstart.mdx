@@ -1,146 +1,140 @@
 export const metadata = {
   title: 'Quick Start',
-  description:
-    'Get started with pnpm-catalog-updates in minutes. Learn how to install, initialize, and update your pnpm workspace catalog dependencies.',
+  description: 'Create, review, apply, and verify a deterministic pnpm catalog update plan.',
 };
 
 # Quick Start
 
-Get started with pnpm-catalog-updates in minutes. This guide will walk you through installation, initialization, and your first dependency update. {{ className: 'lead' }}
+Use PCU as a deterministic execution layer for pnpm catalog updates. Discovery and execution are
+separate, so a developer, CI job, or coding agent can review the exact change before it is written.
+{{ className: 'lead' }}
 
 <Note>
-  pnpm-catalog-updates is specifically designed for pnpm workspaces using catalog dependencies. Make
-  sure you have a pnpm workspace before getting started.
+  PCU is designed for pnpm workspaces that define dependencies in `catalog` or `catalogs` inside
+  `pnpm-workspace.yaml`.
 </Note>
 
-## Installation
-
-Choose your preferred installation method:
+## Install
 
 <CodeGroup>
 
-```bash {{ title: 'Global Installation' }}
-npm install -g pcu
-# or
-npm install -g pcu
-```
-
-```bash {{ title: 'npx (No Installation)' }}
-npx pnpm-catalog-updates
-# or
-npx pcu
+```bash {{ title: 'npm' }}
+npm install --global pcu
 ```
 
 ```bash {{ title: 'pnpm' }}
-pnpm add -g pnpm-catalog-updates
+pnpm add --global pcu
+```
+
+```bash {{ title: 'No global install' }}
+pnpm dlx pcu --help
 ```
 
 </CodeGroup>
 
-## Initialize Your Workspace
+Node.js 20 or newer and pnpm 9 or newer are supported.
 
-If you don't have a pnpm workspace yet, PCU can create one for you:
+## Create a reviewable plan
 
-```bash
-pcu init
-```
-
-This command creates:
-
-- `.pcurc.json` - PCU configuration file
-- `package.json` - Workspace root package.json (if missing)
-- `pnpm-workspace.yaml` - PNPM workspace configuration (if missing)
-- `packages/` - Directory for workspace packages (if missing)
-
-## Your First Update Check
-
-Check for outdated catalog dependencies:
+Run this from the workspace root:
 
 ```bash
-pcu -c
+pcu plan --target minor --out pcu-plan.json
 ```
 
-This will show you a beautiful table with:
+The JSON artifact is stable and portable. It contains:
 
-- Current versions in your catalogs
-- Latest available versions
-- Package names and update types
-- Color-coded urgency indicators
+- a versioned schema;
+- the exact catalog updates and affected workspace packages;
+- normalized filters and update criteria;
+- a SHA-256 fingerprint of `pnpm-workspace.yaml`;
+- no timestamp, localized prose, or absolute checkout path.
 
-## Interactive Updates
+Review `pcu-plan.json` directly or commit it as part of an approval workflow.
 
-Update dependencies with an interactive interface:
+## Apply exactly the reviewed plan
 
 ```bash
-pcu -i
+pcu apply pcu-plan.json
 ```
 
-This lets you:
+Before writing, PCU validates the schema and checks the source fingerprint. It refuses a stale plan,
+uses atomic workspace persistence, creates a rollback backup by default, and verifies the final
+catalog versions. `apply` does not query the registry or call an AI provider.
 
-- ✅ Choose which dependencies to update
-- 🎯 Select specific versions
-- 📊 See impact analysis
-- 🔒 Create backups automatically
+Applying the same plan again is safe: if every target version is already present, PCU returns success
+with `changed: false`.
 
-## Common Commands
+To regenerate the lockfile in the same step, opt in explicitly:
 
-Here are the most frequently used commands:
+```bash
+pcu apply pcu-plan.json --install
+```
 
-| Command    | Description          | Example                    |
-| ---------- | -------------------- | -------------------------- |
-| `pcu init` | Initialize workspace | `pcu init --verbose`       |
-| `pcu -c`   | Check for updates    | `pcu -c --catalog default` |
-| `pcu -i`   | Interactive updates  | `pcu -i -b`                |
-| `pcu -u`   | Update dependencies  | `pcu -u --target minor`    |
-| `pcu -a`   | Analyze impact       | `pcu -a default react`     |
+## Verify in CI
 
-## What's Next?
+```bash
+pcu verify pcu-plan.json
+```
+
+`verify` compares each planned target with the current catalog state and emits JSON. Exit code `0`
+means an exact match; exit code `4` means drift.
+
+## Recover
+
+```bash
+pcu rollback --from <backupPath> --yes --json
+```
+
+Unless `apply` was run with `--no-backup`, its JSON result contains `update.backupPath`. Passing that
+exact path to the JSON rollback contract restores the reviewed pre-apply file without prompts and
+verifies its catalog structure. Interactive `pcu rollback` remains available for humans.
+
+## Exit codes
+
+| Code | Meaning |
+| ---: | --- |
+| `0` | Success, including an already-applied plan |
+| `2` | Invalid input or execution/install failure |
+| `3` | The plan is stale |
+| `4` | Verification failed |
+| `5` | The plan contains unresolved conflicts |
+
+## Optional advisory tools
+
+Use the interactive commands when you are exploring rather than automating:
+
+```bash
+pcu check
+pcu update --interactive
+pcu analyze react 19.0.0
+pcu security
+```
+
+AI analysis is opt-in with `pcu update --ai`. It can explain a proposed change, but it is never in
+the `plan → apply → verify` execution path.
+
+## What's next?
 
 <Resources>
   <Resource
     href="/command-reference"
     title="Command Reference"
-    description="Complete guide to all PCU commands and options."
+    description="See every deterministic workflow option and exit code."
   />
   <Resource
     href="/configuration"
     title="Configuration"
-    description="Learn how to configure PCU for your workflow."
+    description="Set package policies, targets, and catalog rules."
   />
-  <Resource href="/examples" title="Examples" description="Real-world examples and use cases." />
   <Resource
-    href="/development"
-    title="Development"
-    description="Set up PCU for development and contributing."
+    href="/cicd"
+    title="CI/CD Integration"
+    description="Put reviewed plans and verification into automation."
+  />
+  <Resource
+    href="/ai-analysis"
+    title="Optional AI Analysis"
+    description="Add explanations without changing the execution contract."
   />
 </Resources>
-
-## Getting Started Checklist
-
-Follow this checklist to get PCU running in your project:
-
-1. **Install PCU** - Choose global installation or use npx
-2. **Initialize workspace** - Run `pcu init` for first-time setup
-3. **Check for updates** - Use `pcu -c` to see available updates
-4. **Configure settings** - Customize `.pcurc.json` for your needs
-5. **Update dependencies** - Use interactive mode `pcu -i` for safe updates
-6. **Set up automation** - Consider CI/CD integration for regular checks
-
-## Essential Commands Quick Reference
-
-| Command        | Purpose            | When to Use                     |
-| -------------- | ------------------ | ------------------------------- |
-| `pcu init`     | Setup workspace    | First time setup, new projects  |
-| `pcu -c`       | Check updates      | Daily development, CI checks    |
-| `pcu -i`       | Interactive update | Safe manual updates             |
-| `pcu -u`       | Batch update       | Automated updates, CI/CD        |
-| `pcu security` | Security scan      | Before releases, regular audits |
-
-## Next Steps
-
-Once you have PCU set up, explore these advanced features:
-
-- **[Configuration](/configuration)** - Customize PCU for your specific workflow
-- **[Security Scanning](/command-reference#pcu-security)** - Integrate vulnerability scanning
-- **[Monorepo Management](/configuration#monorepo-configuration)** - Advanced workspace features
-- **[CI/CD Integration](/examples)** - Automate dependency updates in your pipeline

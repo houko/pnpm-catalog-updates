@@ -12,6 +12,8 @@ export type {
   // AI Analysis types
   AIAnalysisServiceOptions,
   AnalysisRequestOptions,
+  ArtifactPlannedUpdate,
+  ArtifactVersionConflict,
   // Backup types
   BackupInfo,
   BackupServiceOptions,
@@ -28,6 +30,8 @@ export type {
   // Impact Analysis types
   PackageImpact,
   PlannedUpdate,
+  PlanPreconditionMismatch,
+  PlanPreconditionMismatchReason,
   // Interface types
   ProgressReporter,
   ProgressReporterOptions,
@@ -38,10 +42,16 @@ export type {
   UpdateError,
   UpdateOptions,
   UpdatePlan,
+  UpdatePlanArtifact,
+  UpdatePlanCriteria,
+  UpdatePlanPreconditionVerification,
+  UpdatePlanVerification,
   UpdateResult,
   UpdateTarget,
   // Utility types
   UpdateTypeCounts,
+  VerificationMismatch,
+  VerificationMismatchReason,
   VersionConflict,
   // Workspace types
   WorkspaceStats,
@@ -62,9 +72,19 @@ export {
   // Utilities
   countUpdateTypes,
   countUpdateTypesFromCatalogs,
+  createUpdatePlanArtifact,
+  createWorkspaceFingerprint,
   ImpactAnalysisService,
+  parseUpdatePlanArtifact,
+  UPDATE_PLAN_ARTIFACT_KIND,
+  UPDATE_PLAN_ARTIFACT_SCHEMA_VERSION,
+  UPDATE_VERIFICATION_KIND,
   UpdateExecutorService,
   UpdatePlanService,
+  updatePlanArtifactSchema,
+  updatePlanFromArtifact,
+  verifyUpdatePlanArtifact,
+  verifyUpdatePlanPreconditions,
   WorkspaceService,
 } from './application/index.js'
 export type {

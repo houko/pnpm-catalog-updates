@@ -139,13 +139,16 @@ export class Version {
   /**
    * Get the difference type compared to another version
    */
-  public getDifferenceType(other: Version): 'major' | 'minor' | 'patch' | 'prerelease' | 'same' {
+  public getDifferenceType(other: Version): 'major' | 'minor' | 'patch' | 'same' {
     if (this.equals(other)) {
       return 'same'
     }
 
     const diff = semver.diff(this.value, other.value)
-    return diff as 'major' | 'minor' | 'patch' | 'prerelease'
+    if (diff === 'premajor') return 'major'
+    if (diff === 'preminor') return 'minor'
+    if (diff === 'prepatch' || diff === 'prerelease') return 'patch'
+    return diff as 'major' | 'minor' | 'patch'
   }
 
   /**

@@ -209,6 +209,18 @@ describe('Version', () => {
       const v2 = Version.fromString('1.0.0')
       expect(v1.getDifferenceType(v2)).toBe('same')
     })
+
+    it('normalizes prerelease differences into artifact-compatible update types', () => {
+      expect(
+        Version.fromString('1.0.0').getDifferenceType(Version.fromString('2.0.0-beta.1'))
+      ).toBe('major')
+      expect(
+        Version.fromString('1.0.0').getDifferenceType(Version.fromString('1.1.0-beta.1'))
+      ).toBe('minor')
+      expect(
+        Version.fromString('1.0.0-beta.1').getDifferenceType(Version.fromString('1.0.0-beta.2'))
+      ).toBe('patch')
+    })
   })
 
   describe('increment', () => {

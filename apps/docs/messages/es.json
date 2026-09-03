@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "Documentación de PCU",
-    "description": "Una poderosa herramienta CLI para gestionar dependencias de catálogo en espacios de trabajo pnpm",
-    "heroTitle": "Gestiona tus catálogos pnpm con facilidad",
-    "heroDescription": "PCU te ayuda a verificar, actualizar y analizar dependencias en tus catálogos de espacio de trabajo pnpm de manera eficiente.",
+    "description": "Un motor de actualización determinista para catálogos de espacios de trabajo pnpm",
+    "heroTitle": "Planifica, aplica, verifica y revierte actualizaciones",
+    "heroDescription": "PCU ofrece a desarrolladores, CI y agentes de código un contrato JSON revisable y una ruta de ejecución segura.",
     "exploreSdks": "Ver Referencia de Comandos",
     "gettingStartedTitle": "Empezando",
-    "gettingStartedDesc": "PCU es una herramienta de gestión de dependencias diseñada específicamente para espacios de trabajo pnpm. Te ayuda a verificar dependencias obsoletas, actualizar versiones en lote y optimizar tu configuración de catálogo.",
+    "gettingStartedDesc": "Crea un plan portátil, revisa los cambios, aplícalo solo si coincide la huella del workspace y verifica mecánicamente el estado final.",
     "getApiKey": "Comenzar Instalación"
   },
   "NotFound": {

@@ -3277,8 +3277,28 @@ export const searchData = {
           "Command Overview",
           "command-overview",
           [
-            "PCU provides several main commands with both full names and convenient shortcuts:",
-            "| Full Command    | Shortcuts & Aliases | Description                                     |\n| --------------- | ------------------- | ----------------------------------------------- |\n| pcu init      | pcu i             | Initialize PNPM workspace and PCU configuration |\n| pcu check     | pcu chk, pcu -c, pcu --check | Check for outdated catalog dependencies         |\n| pcu update    | pcu u, pcu -u, pcu --update  | Update catalog dependencies                     |\n| pcu analyze   | pcu a, pcu -a, pcu --analyze | Analyze impact of dependency updates            |\n| pcu ai        | -                   | Check AI provider status and manage AI cache    |\n| pcu workspace | pcu w, pcu -s, pcu --workspace-info | Show workspace information and validation       |\n| pcu theme     | pcu t, pcu -t, pcu --theme          | Configure color themes and UI settings          |\n| pcu security  | pcu sec           | Security vulnerability scanning and fixes       |\n| pcu rollback  | -                   | Rollback catalog updates to a previous state    |\n| pcu help      | pcu h, pcu -h   | Display help information                        |",
+            "PCU's primary automation contract is plan → apply → verify → rollback. Interactive and advisory\ncommands remain available for human-driven exploration.",
+            "| Full Command    | Shortcuts & Aliases | Description                                     |\n| --------------- | ------------------- | ----------------------------------------------- |\n| pcu plan      | -                   | Create a portable, reviewable JSON update plan  |\n| pcu apply     | -                   | Apply a plan if its source fingerprint matches  |\n| pcu verify    | -                   | Verify exact catalog state against a plan       |\n| pcu init      | pcu i             | Initialize PNPM workspace and PCU configuration |\n| pcu check     | pcu chk, pcu -c, pcu --check | Check for outdated catalog dependencies         |\n| pcu update    | pcu u, pcu -u, pcu --update  | Update catalog dependencies                     |\n| pcu analyze   | pcu a, pcu -a, pcu --analyze | Analyze impact of dependency updates            |\n| pcu ai        | -                   | Check AI provider status and manage AI cache    |\n| pcu workspace | pcu w, pcu -s, pcu --workspace-info | Show workspace information and validation       |\n| pcu theme     | pcu t, pcu -t, pcu --theme          | Configure color themes and UI settings          |\n| pcu security  | pcu sec           | Security vulnerability scanning and fixes       |\n| pcu rollback  | -                   | Rollback catalog updates to a previous state    |\n| pcu help      | pcu h, pcu -h   | Display help information                        |"
+          ]
+        ],
+        [
+          "Deterministic workflow",
+          "deterministic-workflow",
+          [
+            "pcu plan",
+            "Creates schema-versioned JSON. Output is always printed to stdout; --out <file> also writes the\nsame artifact to disk.",
+            "| Option | Description |\n| --- | --- |\n| -t, --target <type> | latest, greatest, minor, patch, or newest |\n| --catalog <name> | Limit discovery to one catalog |\n| --include <patterns...> | Include matching packages |\n| --exclude <patterns...> | Exclude matching packages |\n| --prerelease | Include prerelease versions |\n| --security | Opt into security advisory lookups while planning |\n| -o, --out <file> | Also save the artifact to a file |",
+            "The plan excludes timestamps, localized reason text, and absolute paths. If\npnpm-workspace.yaml changes while registry discovery is running, planning fails instead of\npublishing an inconsistent artifact.",
+            "pcu apply <plan-file>",
+            "Validates the artifact and its SHA-256 source fingerprint before writing. It makes a backup by\ndefault, applies through the atomic workspace repository, then verifies every target version.",
+            "| Option | Description |\n| --- | --- |\n| --force | Apply a reviewed plan that records conflicts |\n| --no-backup | Skip the normal rollback backup |\n| --install | Run pnpm install after catalog changes |",
+            "apply never queries the registry or calls AI. Reapplying an already-satisfied plan returns a\nsuccessful no-op.",
+            "pcu verify <plan-file>",
+            "Compares each planned target version with the current catalog and returns a structured mismatch list.",
+            "pcu rollback --from <backup-file> --yes --json",
+            "Restores the exact update.backupPath returned by apply, creates a pre-restore safety backup, and\nreturns structured YAML/catalog verification. The backup must belong to the selected workspace.\nUse --latest --yes --json when selecting the newest backup is intentional.",
+            "Workflow exit codes",
+            "| Code | Meaning |\n| ---: | --- |\n| 0 | Success, including an already-applied plan |\n| 2 | Invalid input or execution/install failure |\n| 3 | Stale plan or source changed during planning |\n| 4 | Verification drift |\n| 5 | Unresolved conflicts |",
             "Special Shortcuts",
             "| Shortcut               | Equivalent Command         | Description                            |\n| ---------------------- | -------------------------- | -------------------------------------- |\n| pcu -i               | pcu update --interactive | Interactive update mode                |\n| pcu --security-audit | pcu security             | Run security scan                      |\n| pcu --security-fix   | pcu security --fix-vulns | Run security scan with automatic fixes |"
           ]
@@ -5084,96 +5104,73 @@ export const searchData = {
           "Quick Start",
           null,
           [
-            "Get started with pnpm-catalog-updates in minutes. This guide will walk you through installation, initialization, and your first dependency update. ",
-            "pnpm-catalog-updates is specifically designed for pnpm workspaces using catalog dependencies. Make\nsure you have a pnpm workspace before getting started."
+            "Use PCU as a deterministic execution layer for pnpm catalog updates. Discovery and execution are\nseparate, so a developer, CI job, or coding agent can review the exact change before it is written.",
+            "PCU is designed for pnpm workspaces that define dependencies in catalog or catalogs inside\npnpm-workspace.yaml."
           ]
         ],
         [
-          "Installation",
-          "installation",
+          "Install",
+          "install",
           [
-            "Choose your preferred installation method:"
+            "Node.js 20 or newer and pnpm 9 or newer are supported."
           ]
         ],
         [
-          "Initialize Your Workspace",
-          "initialize-your-workspace",
+          "Create a reviewable plan",
+          "create-a-reviewable-plan",
           [
-            "If you don't have a pnpm workspace yet, PCU can create one for you:",
-            "This command creates:",
-            ".pcurc.json - PCU configuration file",
-            "package.json - Workspace root package.json (if missing)",
-            "pnpm-workspace.yaml - PNPM workspace configuration (if missing)",
-            "packages/ - Directory for workspace packages (if missing)"
+            "Run this from the workspace root:",
+            "The JSON artifact is stable and portable. It contains:",
+            "a versioned schema;",
+            "the exact catalog updates and affected workspace packages;",
+            "normalized filters and update criteria;",
+            "a SHA-256 fingerprint of pnpm-workspace.yaml;",
+            "no timestamp, localized prose, or absolute checkout path.",
+            "Review pcu-plan.json directly or commit it as part of an approval workflow."
           ]
         ],
         [
-          "Your First Update Check",
-          "your-first-update-check",
+          "Apply exactly the reviewed plan",
+          "apply-exactly-the-reviewed-plan",
           [
-            "Check for outdated catalog dependencies:",
-            "This will show you a beautiful table with:",
-            "Current versions in your catalogs",
-            "Latest available versions",
-            "Package names and update types",
-            "Color-coded urgency indicators"
+            "Before writing, PCU validates the schema and checks the source fingerprint. It refuses a stale plan,\nuses atomic workspace persistence, creates a rollback backup by default, and verifies the final\ncatalog versions. apply does not query the registry or call an AI provider.",
+            "Applying the same plan again is safe: if every target version is already present, PCU returns success\nwith changed: false.",
+            "To regenerate the lockfile in the same step, opt in explicitly:"
           ]
         ],
         [
-          "Interactive Updates",
-          "interactive-updates",
+          "Verify in CI",
+          "verify-in-ci",
           [
-            "Update dependencies with an interactive interface:",
-            "This lets you:",
-            "✅ Choose which dependencies to update",
-            "🎯 Select specific versions",
-            "📊 See impact analysis",
-            "🔒 Create backups automatically"
+            "verify compares each planned target with the current catalog state and emits JSON. Exit code 0\nmeans an exact match; exit code 4 means drift."
           ]
         ],
         [
-          "Common Commands",
-          "common-commands",
+          "Recover",
+          "recover",
           [
-            "Here are the most frequently used commands:",
-            "| Command    | Description          | Example                    |\n| ---------- | -------------------- | -------------------------- |\n| pcu init | Initialize workspace | pcu init --verbose       |\n| pcu -c   | Check for updates    | pcu -c --catalog default |\n| pcu -i   | Interactive updates  | pcu -i -b                |\n| pcu -u   | Update dependencies  | pcu -u --target minor    |\n| pcu -a   | Analyze impact       | pcu -a default react     |"
+            "Unless apply was run with --no-backup, its JSON result contains update.backupPath. Passing that\nexact path to the JSON rollback contract restores the reviewed pre-apply file without prompts and\nverifies its catalog structure. Interactive pcu rollback remains available for humans."
           ]
         ],
         [
-          "What's Next?",
+          "Exit codes",
+          "exit-codes",
+          [
+            "| Code | Meaning |\n| ---: | --- |\n| 0 | Success, including an already-applied plan |\n| 2 | Invalid input or execution/install failure |\n| 3 | The plan is stale |\n| 4 | Verification failed |\n| 5 | The plan contains unresolved conflicts |"
+          ]
+        ],
+        [
+          "Optional advisory tools",
+          "optional-advisory-tools",
+          [
+            "Use the interactive commands when you are exploring rather than automating:",
+            "AI analysis is opt-in with pcu update --ai. It can explain a proposed change, but it is never in\nthe plan → apply → verify execution path."
+          ]
+        ],
+        [
+          "What's next?",
           "whats-next",
           []
-        ],
-        [
-          "Getting Started Checklist",
-          "getting-started-checklist",
-          [
-            "Follow this checklist to get PCU running in your project:",
-            "Install PCU - Choose global installation or use npx",
-            "Initialize workspace - Run pcu init for first-time setup",
-            "Check for updates - Use pcu -c to see available updates",
-            "Configure settings - Customize .pcurc.json for your needs",
-            "Update dependencies - Use interactive mode pcu -i for safe updates",
-            "Set up automation - Consider CI/CD integration for regular checks"
-          ]
-        ],
-        [
-          "Essential Commands Quick Reference",
-          "essential-commands-quick-reference",
-          [
-            "| Command        | Purpose            | When to Use                     |\n| -------------- | ------------------ | ------------------------------- |\n| pcu init     | Setup workspace    | First time setup, new projects  |\n| pcu -c       | Check updates      | Daily development, CI checks    |\n| pcu -i       | Interactive update | Safe manual updates             |\n| pcu -u       | Batch update       | Automated updates, CI/CD        |\n| pcu security | Security scan      | Before releases, regular audits |"
-          ]
-        ],
-        [
-          "Next Steps",
-          "next-steps",
-          [
-            "Once you have PCU set up, explore these advanced features:",
-            "Configuration - Customize PCU for your specific workflow",
-            "Security Scanning - Integrate vulnerability scanning",
-            "Monorepo Management - Advanced workspace features",
-            "CI/CD Integration - Automate dependency updates in your pipeline"
-          ]
         ]
       ]
     },

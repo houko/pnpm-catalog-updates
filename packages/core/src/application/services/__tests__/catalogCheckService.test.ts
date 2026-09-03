@@ -208,6 +208,22 @@ describe('CatalogCheckService', () => {
       expect(report.totalOutdated).toBe(0)
     })
 
+    it('applies CLI include and exclude patterns at the filter level', async () => {
+      await service.checkOutdatedDependencies({
+        workspacePath: '/test/workspace',
+        include: ['lodash'],
+        exclude: ['typescript'],
+      })
+
+      expect(mocks.getPackageConfig).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          include: ['lodash'],
+          exclude: ['typescript'],
+        })
+      )
+    })
+
     it('should track progress when reporter provided', async () => {
       const mockReporter = {
         start: vi.fn(),

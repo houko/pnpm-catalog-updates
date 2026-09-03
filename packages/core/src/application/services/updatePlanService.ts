@@ -22,6 +22,8 @@ export interface UpdateOptions extends CheckOptions {
   dryRun?: boolean
   force?: boolean
   createBackup?: boolean
+  /** Fail without saving when a requested backup cannot be created. */
+  requireBackup?: boolean
 }
 
 export interface UpdatePlan {

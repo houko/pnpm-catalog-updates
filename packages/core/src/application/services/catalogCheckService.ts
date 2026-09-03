@@ -83,9 +83,14 @@ export class CatalogCheckService {
     const config = await ConfigLoader.loadConfig(workspacePath.toString())
     const configWithOptions: PackageFilterConfig = {
       ...config,
+      include:
+        options.include && options.include.length > 0 ? options.include : (config.include ?? []),
+      exclude:
+        options.exclude && options.exclude.length > 0 ? options.exclude : (config.exclude ?? []),
       defaults: {
         ...config.defaults,
-        ...options,
+        target: options.target ?? config.defaults?.target,
+        includePrerelease: options.includePrerelease ?? config.defaults?.includePrerelease ?? false,
       },
     }
 

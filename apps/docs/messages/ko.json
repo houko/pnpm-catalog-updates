@@ -42,12 +42,12 @@
   },
   "Home": {
     "title": "PCU 문서",
-    "description": "pnpm 워크스페이스 카탈로그 의존성을 관리하는 강력한 CLI 도구",
-    "heroTitle": "pnpm 카탈로그를 쉽게 관리하세요",
-    "heroDescription": "PCU는 pnpm 워크스페이스 카탈로그의 의존성을 효율적으로 확인, 업데이트 및 분석할 수 있도록 도와줍니다.",
+    "description": "pnpm 워크스페이스 카탈로그를 위한 결정론적 업데이트 엔진",
+    "heroTitle": "카탈로그 업데이트를 계획, 적용, 검증 및 롤백하세요",
+    "heroDescription": "PCU는 개발자, CI, 코딩 에이전트에게 검토 가능한 JSON 계약과 안전한 실행 경로를 제공합니다.",
     "exploreSdks": "명령어 참조 보기",
     "gettingStartedTitle": "시작하기",
-    "gettingStartedDesc": "PCU는 pnpm 워크스페이스를 위해 특별히 설계된 의존성 관리 도구입니다. 오래된 의존성을 확인하고, 버전을 일괄 업데이트하며, 카탈로그 구성을 최적화하는 데 도움을 줍니다.",
+    "gettingStartedDesc": "이식 가능한 계획을 만들고 변경을 검토한 뒤 워크스페이스 지문이 일치할 때만 적용하고 최종 상태를 기계적으로 검증합니다.",
     "getApiKey": "설치 시작"
   },
   "NotFound": {

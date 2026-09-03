@@ -10,10 +10,14 @@ Complete reference for all PCU commands and options. Learn about every command, 
 
 ## Command Overview
 
-PCU provides several main commands with both full names and convenient shortcuts:
+PCU's primary automation contract is `plan → apply → verify → rollback`. Interactive and advisory
+commands remain available for human-driven exploration.
 
 | Full Command    | Shortcuts & Aliases | Description                                     |
 | --------------- | ------------------- | ----------------------------------------------- |
+| `pcu plan`      | -                   | Create a portable, reviewable JSON update plan  |
+| `pcu apply`     | -                   | Apply a plan if its source fingerprint matches  |
+| `pcu verify`    | -                   | Verify exact catalog state against a plan       |
 | `pcu init`      | `pcu i`             | Initialize PNPM workspace and PCU configuration |
 | `pcu check`     | `pcu chk`, `pcu -c`, `pcu --check` | Check for outdated catalog dependencies         |
 | `pcu update`    | `pcu u`, `pcu -u`, `pcu --update`  | Update catalog dependencies                     |
@@ -24,6 +28,68 @@ PCU provides several main commands with both full names and convenient shortcuts
 | `pcu security`  | `pcu sec`           | Security vulnerability scanning and fixes       |
 | `pcu rollback`  | -                   | Rollback catalog updates to a previous state    |
 | `pcu help`      | `pcu h`, `pcu -h`   | Display help information                        |
+
+## Deterministic workflow
+
+```bash
+pcu plan --target minor --out pcu-plan.json
+pcu apply pcu-plan.json
+pcu verify pcu-plan.json
+pcu rollback --from <backupPath> --yes --json
+```
+
+### `pcu plan`
+
+Creates schema-versioned JSON. Output is always printed to stdout; `--out <file>` also writes the
+same artifact to disk.
+
+| Option | Description |
+| --- | --- |
+| `-t, --target <type>` | `latest`, `greatest`, `minor`, `patch`, or `newest` |
+| `--catalog <name>` | Limit discovery to one catalog |
+| `--include <patterns...>` | Include matching packages |
+| `--exclude <patterns...>` | Exclude matching packages |
+| `--prerelease` | Include prerelease versions |
+| `--security` | Opt into security advisory lookups while planning |
+| `-o, --out <file>` | Also save the artifact to a file |
+
+The plan excludes timestamps, localized reason text, and absolute paths. If
+`pnpm-workspace.yaml` changes while registry discovery is running, planning fails instead of
+publishing an inconsistent artifact.
+
+### `pcu apply <plan-file>`
+
+Validates the artifact and its SHA-256 source fingerprint before writing. It makes a backup by
+default, applies through the atomic workspace repository, then verifies every target version.
+
+| Option | Description |
+| --- | --- |
+| `--force` | Apply a reviewed plan that records conflicts |
+| `--no-backup` | Skip the normal rollback backup |
+| `--install` | Run `pnpm install` after catalog changes |
+
+`apply` never queries the registry or calls AI. Reapplying an already-satisfied plan returns a
+successful no-op.
+
+### `pcu verify <plan-file>`
+
+Compares each planned target version with the current catalog and returns a structured mismatch list.
+
+### `pcu rollback --from <backup-file> --yes --json`
+
+Restores the exact `update.backupPath` returned by `apply`, creates a pre-restore safety backup, and
+returns structured YAML/catalog verification. The backup must belong to the selected workspace.
+Use `--latest --yes --json` when selecting the newest backup is intentional.
+
+### Workflow exit codes
+
+| Code | Meaning |
+| ---: | --- |
+| `0` | Success, including an already-applied plan |
+| `2` | Invalid input or execution/install failure |
+| `3` | Stale plan or source changed during planning |
+| `4` | Verification drift |
+| `5` | Unresolved conflicts |
 
 ### Special Shortcuts
 

@@ -394,7 +394,7 @@ export const ja: TranslationDictionary = {
   'command.security.highImpactFix': '高 - セキュリティ脆弱性修正',
 
   // CLI command descriptions
-  'cli.description.main': 'pnpmワークスペースカタログ依存関係を確認・更新するCLIツール',
+  'cli.description.main': 'pnpmワークスペースカタログ向けの決定論的更新エンジン',
   'cli.description.check': '古いカタログ依存関係を確認',
   'cli.description.update': 'カタログ依存関係を更新',
   'cli.description.analyze': '特定の依存関係を更新した場合の影響を分析',

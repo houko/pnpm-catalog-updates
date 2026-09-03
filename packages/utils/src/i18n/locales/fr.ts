@@ -401,7 +401,7 @@ export const fr: TranslationDictionary = {
 
   // CLI command descriptions
   'cli.description.main':
-    'Outil CLI pour vérifier et mettre à jour les dépendances du catalogue de workspace pnpm',
+    'Moteur de mise à jour déterministe pour les catalogues de workspace pnpm',
   'cli.description.check': 'vérifier les dépendances de catalogue obsolètes',
   'cli.description.update': 'mettre à jour les dépendances du catalogue',
   'cli.description.analyze': "analyser l'impact de la mise à jour d'une dépendance spécifique",

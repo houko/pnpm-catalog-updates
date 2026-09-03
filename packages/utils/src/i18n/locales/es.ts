@@ -397,8 +397,7 @@ export const es: TranslationDictionary = {
   'command.security.highImpactFix': 'Alto - Corrección de vulnerabilidad de seguridad',
 
   // CLI command descriptions
-  'cli.description.main':
-    'Herramienta CLI para verificar y actualizar dependencias del catálogo de workspace pnpm',
+  'cli.description.main': 'Motor de actualización determinista para catálogos de workspace pnpm',
   'cli.description.check': 'verificar dependencias de catálogo desactualizadas',
   'cli.description.update': 'actualizar dependencias del catálogo',
   'cli.description.analyze': 'analizar el impacto de actualizar una dependencia específica',
