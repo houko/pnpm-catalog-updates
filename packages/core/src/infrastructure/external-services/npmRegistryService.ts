@@ -60,6 +60,23 @@ export interface SecurityReport {
 }
 
 /**
+ * Legacy advisory shape returned by the npm v6 audit endpoint.
+ */
+interface NpmAuditV6Advisory {
+  title: string
+  severity: SecurityVulnerability['severity']
+  overview: string
+  url: string
+  vulnerable_versions: string
+  patched_versions?: string
+  recommendation?: string
+}
+
+interface NpmAuditV6Response {
+  advisories?: Record<string, NpmAuditV6Advisory>
+}
+
+/**
  * NPM packument response structure (subset we use)
  */
 interface NpmPackument {
@@ -645,22 +662,21 @@ export class NpmRegistryService {
         ...authConfig,
       })
 
-      const auditResult = (await response.json()) as any
+      const auditResult = (await response.json()) as NpmAuditV6Response
       const vulnerabilities: SecurityVulnerability[] = []
 
       // 解析 npm v6 audit quick API 响应格式
       if (auditResult.advisories) {
         for (const [id, advisory] of Object.entries(auditResult.advisories)) {
-          const adv = advisory as any
           vulnerabilities.push({
             id: id,
-            title: adv.title,
-            severity: adv.severity,
-            description: adv.overview,
-            reference: adv.url,
-            vulnerable_versions: adv.vulnerable_versions,
-            patched_versions: adv.patched_versions,
-            recommendation: adv.recommendation,
+            title: advisory.title,
+            severity: advisory.severity,
+            description: advisory.overview,
+            reference: advisory.url,
+            vulnerable_versions: advisory.vulnerable_versions,
+            patched_versions: advisory.patched_versions,
+            recommendation: advisory.recommendation,
           })
         }
       }
