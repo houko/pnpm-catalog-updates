@@ -60,7 +60,7 @@ export interface SecurityReport {
 }
 
 /**
- * Legacy advisory shape returned by the npm v6 audit endpoint.
+ * Advisory shape returned by the npm v6 audit endpoint.
  */
 interface NpmAuditV6Advisory {
   title: string
